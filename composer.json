@@ -1,0 +1,30 @@
+{
+	"name": "infuse/libs",
+	"version": "0.1.9",
+	"description": "Libraries for infuse framework",
+	"type": "library",
+	"keywords": ["mvc","framework","infuse"],
+	"homepage": "http://infuse.jaredtking.com",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "jaredtking",
+			"email": "j@jaredtking.com",
+			"homepage": "http://jaredtking.com"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/jaredtking/infuse-libs/issues",
+		"source": "https://github.com/jaredtking/infuse-libs"
+	},
+    "autoload": {
+        "psr-0": {"infuse\\": "libs/"}
+    },
+	"require": {
+		"php": ">=5.3.0",
+		"smarty/smarty": "v3.1.14",
+		"mustangostang/spyc": "0.5.1",
+		"leafo/lessphp": "v0.3.9",
+		"linkorb/jsmin-php": "1.0.0"
+	}
+}
