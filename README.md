@@ -1,7 +1,7 @@
 infuse-libs
 ===========
 
-This repo contains the libraries for infuse framework. For installation instructions, docs and issues, see [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse-libs).
+This repo contains the libraries for infuse framework. For installation instructions, docs and issues, see [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
 
 Pull requests are welcome. :-)
 
