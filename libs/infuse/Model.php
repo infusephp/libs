@@ -1026,7 +1026,7 @@ abstract class Model extends Acl
 		$modelName = get_called_class();
 		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
 
-		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
+		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.set' );
 	
 		// permission?
 		if( !$this->can( 'edit' ) )
@@ -1157,7 +1157,7 @@ abstract class Model extends Acl
 		$modelName = get_called_class();
 		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
 
-		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
+		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.delete' );
 
 		// permission?
 		if( !$this->can( 'delete' ) )
