@@ -1167,7 +1167,7 @@ abstract class Model extends Acl
 		}
 		
 		// pre-hook
-		if( !$this->preRemoveHook() )
+		if( !$this->preDeleteHook() )
 			return false;
 		
 		// delete the model
@@ -1176,7 +1176,7 @@ abstract class Model extends Acl
 			$this->id( true ) ) )
 		{
 			// post-hook
-			$this->postRemoveHook();
+			$this->postDeleteHook();
 			
 			return true;
 		}
@@ -1200,9 +1200,9 @@ abstract class Model extends Acl
 	protected function postSetHook()
 	{ }
 	
-	protected function preRemoveHook()
+	protected function preDeleteHook()
 	{ return true; }
 	
-	protected function postRemoveHook()
+	protected function postDeleteHook()
 	{ }
 }
