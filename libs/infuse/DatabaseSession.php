@@ -1,4 +1,5 @@
 <?php
+
 /*
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -29,9 +30,9 @@ use \infuse\models\User as User;
 
 class DatabaseSession
 {
-	static function start($redis_conf = array(), $unpackItems = array())
+	static function start()
 	{
-		$obj = new self($redis_conf, $unpackItems);
+		$obj = new self();
 
 		session_set_save_handler(
 			array($obj, "open"),
@@ -46,16 +47,11 @@ class DatabaseSession
 		return $obj;
 	}
 
-	function __construct()
-	{
-
-	}
-
 	/**
 	* Opens a session
 	* @return boolean success
 	*/
-	function open( )
+	function open()
 	{
 		return true;
 	}
@@ -64,7 +60,7 @@ class DatabaseSession
 	* Closes a session
 	* @return boolean success
 	*/
-	function close( )
+	function close()
 	{
 		return true;
 	}
@@ -136,4 +132,4 @@ class DatabaseSession
 }
 
 // the following prevents unexpected effects when using objects as save handlers
-register_shutdown_function('session_write_close');
+register_shutdown_function( 'session_write_close' );

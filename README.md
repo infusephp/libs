@@ -1,9 +1,15 @@
-infuse-libs
+infuse/libs
 ===========
 
-This repo contains the libraries for infuse framework. For installation instructions, docs and issues, see [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
+infuse/libs were created to serve as a basis for web development. The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been seen the battlefield in projects small to large. There is even a framework built around these.
 
-Pull requests are welcome. :-)
+## MVC Framework
+
+An MVC framwork has been built using these libraries, called Infuse Framework. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
+
+## Contributing
+
+Please feel free to contribute by participating in the issues or by submitting a pull request. :-)
 
 ## License
 

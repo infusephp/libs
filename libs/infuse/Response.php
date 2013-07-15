@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -185,12 +186,15 @@ class Response
 			
 		$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
 		$parameters[ 'baseUrl' ] = ((Config::value('site','ssl-enabled'))?'https':'http') . '://' . Config::value('site','host-name') . '/';
+		$parameters[ 'errorStack' ] = ErrorStack::it();
 	
 		$engine = ViewEngine::engine();
 		
 		$engine->assignData( $parameters );
 		
 		$this->body = $engine->fetch( $template );
+		
+		return true;
 	}
 	
 	/**

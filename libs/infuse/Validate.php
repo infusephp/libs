@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class provides validation functions for commonly used fields, such as names, e-mail addresses, IP addresses, etc.
  * 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Base class for models
  * 
@@ -867,9 +868,11 @@ abstract class Model extends Acl
 	 */
 	static function create( $data )
 	{
-		ErrorStack::setContext( 'create' );
-
 		$modelName = get_called_class();
+		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
+
+		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
+
 		$model = new $modelName();
 		
 		// permission?
@@ -1020,7 +1023,10 @@ abstract class Model extends Acl
 	 */
 	function set( $data, $value = false )
 	{
-		ErrorStack::setContext( 'edit' );
+		$modelName = get_called_class();
+		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
+
+		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
 	
 		// permission?
 		if( !$this->can( 'edit' ) )
@@ -1148,8 +1154,11 @@ abstract class Model extends Acl
 	 */
 	function delete()
 	{
-		ErrorStack::setContext( 'delete' );
-		
+		$modelName = get_called_class();
+		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
+
+		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
+
 		// permission?
 		if( !$this->can( 'delete' ) )
 		{

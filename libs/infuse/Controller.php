@@ -1,4 +1,5 @@
 <?php
+
 /*
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -26,23 +27,6 @@ namespace infuse;
 
 abstract class Controller extends Acl
 {
-	/*
-	 * Constructor
-	*/
-	function __construct()
-	{
-		static::initialize();
-	}
-	
-	/*
-	 * Initializes the module (only called once)
-	*/
-	static function initialize()
-	{
-		// register autoloader
-		spl_autoload_register( get_called_class() . '::loadClass' );
-	}
-	
 	/////////////////////////
 	// GETTERS
 	/////////////////////////
@@ -55,32 +39,6 @@ abstract class Controller extends Acl
 	static function name()
 	{
 		return strtolower( str_replace( 'infuse\\controllers\\', '', get_called_class() ) );
-	}
-	
-	/**
-	 * Class autoloader
-	 *
-	 * @param string $class class
-	 *
-	 * @return null
-	*/
-	public static function loadClass( $class )
-	{
-		// look in modules/MODULE/CLASS.php
-		// i.e. /infuse/models/User -> modules/users/models/User.php
-		
-		$module = static::name();
-		if( $module != 'Module' || $module != '' )
-		{
-			$name = str_replace( '\\', '/', str_replace( 'infuse\\', '', $class ) );
-			$path = Modules::$moduleDirectory . "$module/$name.php";
-
-			if (file_exists($path) && is_readable($path))
-			{
-				include_once $path;
-				return;
-			}
-		}
 	}
 	
 	/**
@@ -104,10 +62,7 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Allows the controller to perform middleware tasks before routing
-	 *
-	 * NOTE: Middleware only gets called on required modules. A module must be specified
-	 * as required for middleware to work for every request.
+	 * Allows the controller to perform middleware tasks before routing. Must be explicitly called.
 	 *
 	 * @param Request $request
 	 * @param Response $response
@@ -280,13 +235,8 @@ abstract class Controller extends Acl
 				'success' => true ) );
 		else
 		{
-			$errors = ErrorStack::errorsWithContext( 'create' );
-			$messages = array();
-			foreach( $errors as $error )
-				$messages[] = $error['message'];
-			
 			$res->setBodyJson( array(
-				'error' => $messages ) );
+				'error' => ErrorStack::messages( strtolower( $modelClassName ) . '.create' ) ) );
 		}
 	}
 	
@@ -325,13 +275,8 @@ abstract class Controller extends Acl
 				'success' => true ) );
 		else
 		{
-			$errors = ErrorStack::errorsWithContext( 'edit' );
-			$messages = array();
-			foreach( $errors as $error )
-				$messages[] = $error['message'];
-			
 			$res->setBodyJson( array(
-				'error' => $messages ) );
+				'error' => ErrorStack::messages( strtolower( $modelClassName ) . '.edit' ) ) );
 		}
 	}
 	
@@ -438,6 +383,8 @@ abstract class Controller extends Acl
 				// convert to sql
 				$currentSchema[ $model ] = ($currentSchema[ $model ]) ? $modelObj::schemaToSql( $currentSchema[ $model ], true ) : false;				
 			}
+			
+			$params[ 'error' ] = false;
 
 			// update the schema?
 			if( val( $paths, 3 ) == 'update' )
@@ -529,36 +476,6 @@ abstract class Controller extends Acl
 		$name = self::name();
 		echo "$name\-\>cron($command) does not exist\n";
 		return false;
-	}
-	
-	/**
-	 * Gets the module path
-	 *
-	 * @return string path
-	*/
-	protected function modulePath()
-	{
-		return Modules::$moduleDirectory . static::name() . '/';
-	}
-	
-	/**
-	 * Gets the template path
-	 *
-	 * @return string path
-	*/
-	protected function templateDir()
-	{
-		return static::modulePath() . 'views/';
-	}
-	
-	/**
-	 * Gets the admin template path
-	 *
-	 * @return string path
-	*/
-	protected function adminTemplateDir()
-	{
-		return static::templateDir() . 'admin/';
 	}
 	
 	///////////////////////////////////

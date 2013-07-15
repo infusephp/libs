@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -27,45 +28,20 @@ namespace infuse;
 class Router
 {
 	/**
-	 * @staticvar $apiRoutes
-	 *
-	 * Default routes for modules with automatic api generation enabled
-	 */
-	private static $defaultApiRoutes = array(
-		'get /:controller' => 'findAll',
-		'get /:controller/:id' => 'find',
-		'post /:controller' => 'create',
-		'put /:controller/:id' => 'edit',
-		'delete /:controller/:id' => 'delete'
-	);
-	
-	private static $apiRoutes = array(
-		'get /:controller/:model' => 'findAll',
-		'get /:controller/:model/:id' => 'find',
-		'post /:controller/:model' => 'create',
-		'put /:controller/:model/:id' => 'edit',
-		'delete /:controller/:model/:id' => 'delete'
-	);	
-	
-	/**
 	 * Routes a request and resopnse to the appropriate controller. Sends a 404 if nothing was found.
 	 *
+	 * @param array $routes
 	 * @param Request $req
 	 * @param Response $res
+	 *
+	 * @return boolean a route match was made
 	 */
-	static function route( $req, $res )
+	static function route( $routes, $req, $res )
 	{
 		/*
 			Route Precedence:
 			1) global static routes (i.e. /about -> Controller::action())
 			2) global dynamic routes (i.e. /browse/:category)
-			3) controller routes (i.e. /users/:id/friends)
-			i) static routes
-			ii) dynamic routes
-			iii) automatic api routes
-			iiii) admin routes
-			4) view without a controller (i.e. /contact-us displays templates/contact-us.tpl)
-			5) not found
 			
 			Notes:
 			- No action supplied in route defaults to the 'index' action
@@ -73,8 +49,6 @@ class Router
 		
 		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->basePath();
 		$routeGenericStr = $req->basePath();
-
-		$routes = \infuse\Config::get( 'routes' );
 		
 		$staticRoutes = array();
 		$dynamicRoutes = array();
@@ -82,18 +56,18 @@ class Router
 		foreach( $routes as $routeStr => $route )
 		{
 			if( strpos( $routeStr, ':' ) )
-				$dynamicRoutes[$routeStr] = $route;
+				$dynamicRoutes[ $routeStr ] = $route;
 			else
-				$staticRoutes[$routeStr] = $route;
+				$staticRoutes[ $routeStr ] = $route;
 		}
-
+		
 		/* global static routes */						
 		if( isset( $staticRoutes[ $routeMethodStr ] ) )
 			return self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res );
 		
 		if( isset( $staticRoutes[ $routeGenericStr ] ) )
 			return self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res );
-
+		
 		/* global dynamic routes */
 		
 		foreach( $dynamicRoutes as $routeStr => $route )
@@ -102,170 +76,7 @@ class Router
 				return self::performRoute( $route, $req, $res );
 		}
 		
-		/* controller routes */
-		
-		// check if the first part of the path is a controller
-		$controller = $req->paths(0);
-		
-		if( Modules::exists( $controller ) )
-		{
-			Modules::load( $controller );
-			
-			$moduleRoutes = Modules::info($controller)['routes'];
-			
-			$staticRoutes = array();
-			$dynamicRoutes = array();
-			
-			foreach( $moduleRoutes as $routeStr => $route )
-			{
-				if( strpos( $routeStr, ':' ) )
-					$dynamicRoutes[$routeStr] = $route;
-				else
-					$staticRoutes[$routeStr] = $route;
-			}
-			
-			/* automatic generated API routes */
-			
-			$moduleInfo = Modules::info( $controller );
-			
-			if( $moduleInfo[ 'api' ] )
-			{
-				$models = Modules::models( $controller );
-				
-				$defaultModel = false;
-						
-				if( isset( $moduleInfo[ 'default-model' ] ) )
-					$defaultModel = $moduleInfo[ 'default-model' ];
-				
-				if( count( $models ) == 1 )
-				{
-					$modelKeys = array_keys( $models );
-					$defaultModel = $modelKeys[ 0 ];
-				}
-					
-				// this comes from /:module/:model
-				$secondPath = val( $req->paths(), 1 );
-				$possibleModel = Inflector::singularize( Inflector::camelize( $secondPath ) );
-				
-				// default model?
-				if( $defaultModel && !isset( $models[ $possibleModel ] ) )
-				{
-					$req->setParams( array( 'model' => $defaultModel ) );
-					
-					$dynamicRoutes = array_merge( $dynamicRoutes, self::$defaultApiRoutes );
-				}
-				// no default model
-				else
-				{
-					$req->setParams( array( 'model' => $secondPath ) );
-					
-					$dynamicRoutes = array_merge( $dynamicRoutes, self::$apiRoutes );
-				}
-			}
-			
-			/* static routes */
-			
-			if( isset( $staticRoutes[ $routeMethodStr ] ) )
-				return self::performRoute( array(
-					'controller' => $controller,
-					'action' => $staticRoutes[ $routeMethodStr ] ), $req, $res );
-			
-			if( isset( $staticRoutes[ $routeGenericStr ] ) )
-				return self::performRoute( array(
-					'controller' => $controller,
-					'action' => $staticRotues[ $routeGenericStr ] ), $req, $res );
-
-			/* dynamic routes */
-			
-			foreach( $dynamicRoutes as $routeStr => $route )
-			{
-				if( self::matchRouteToRequest( $routeStr, $req ) )
-					return self::performRoute( array(
-						'controller' => $controller,
-						'action' => $route ), $req, $res );
-			}
-		}
-				
-		/* admin panel routes */	
-			
-		if( $req->paths(0) == '4dm1n' )
-		{
-			$controller = $req->paths(1);
-			
-			/* Redirect /4dm1n -> /4dm1n/:default */
-			
-			if( empty( $controller ) && $default = \infuse\Config::value( 'site', 'default-admin-module' ) )
-				$res->redirect( '/4dm1n/' . $default );
-						
-			if( Modules::exists( $controller ) )
-			{
-				Modules::load( $controller );
-				
-				/* controller admin routes */
-							
-				$moduleRoutes = Modules::info($controller)['routes'];
-				
-				$staticRoutes = array();
-				$dynamicRoutes = array();
-				
-				foreach( $moduleRoutes as $routeStr => $route )
-				{
-					if( strpos( $routeStr, ':' ) )
-						$dynamicRoutes[$routeStr] = $route;
-					else
-						$staticRoutes[$routeStr] = $route;
-				}
-				
-				/* static routes */
-				
-				if( isset( $staticRoutes[ $routeMethodStr ] ) )
-					return self::performAdminRoute( array(
-						'controller' => $controller,
-						'action' => $staticRoutes[ $routeMethodStr ] ), $req, $res );
-				
-				if( isset( $staticRoutes[ $routeGenericStr ] ) )
-					return self::performAdminRoute( array(
-						'controller' => $controller,
-						'action' => $staticRotues[ $routeGenericStr ] ), $req, $res );
-				
-				/* dynamic routes */
-				
-				foreach( $dynamicRoutes as $routeStr => $route )
-				{
-					if( self::matchRouteToRequest( $routeStr, $req ) )
-						return self::performAdminRoute( array(
-							'controller' => $controller,
-							'action' => $route ), $req, $res );
-				}
-				
-				/* automatic admin routes */
-				
-				if( $req->method() == 'GET' )
-				{
-					$moduleInfo = Modules::info( $controller );
-					
-					if( val( $moduleInfo, 'admin' ) || val( $moduleInfo, 'hasAdmin' ) )
-						return self::performAdminRoute( array(
-							'controller' => $controller,
-							'action' => 'routeAdmin' ), $req, $res );
-				}
-			}
-		}
-		
-		/* view without a controller */
-		
-		// make sure the route does not peek into admin directory or touch special files
-		if( strpos( $routeGenericStr, '/admin/' ) !== 0 && !in_array( $routeGenericStr, array( '/error', '/parent' ) ) )
-		{
-			$templateFile = 'templates' . $routeGenericStr . '.tpl';
-			if( file_exists( $templateFile ) )
-				return $res->render( $templateFile );
-		}
-		
-		/* not found */
-		
-		if( !defined( 'DO_NOT_SHOW_404' ) )
-			$res->setCode( 404 );
+		return false;
 	}
 	
 	/**
@@ -277,32 +88,18 @@ class Router
 	 */
 	private static function performRoute( $route, $req, $res )
 	{
-		$controller = $route[ 'controller' ];
-		$action = (isset($route['action'])) ? $route['action'] : 'index';
+		$controller = (isset($route['controller'])) ? $route[ 'controller' ] : $req->params( 'controller' );
+		
+		$action = (isset($route['action'])) ? $route[ 'action' ] : 'index';
+	
+		if( !is_array( $route ) )
+			$action = $route;
 		
 		Modules::load( $controller );
 
 		Modules::controller( $controller )->$action( $req, $res );
-	}
-	
-	/**
-	 * Executes a route for an admin panel
-	 *
-	 * @param array $moduleInfo
-	 * @param array $route
-	 * @param Request $req
-	 * @param Response $res
-	 */
-	private static function performAdminRoute( $route, $req, $res )
-	{
-		$moduleInfo = Modules::info( $route[ 'controller' ] );
-	
-		ViewEngine::engine()->assignData( array(
-			'modulesWithAdmin' => \infuse\Modules::modulesWithAdmin(),
-			'selectedModule' => $route[ 'controller' ],
-			'title' => $moduleInfo[ 'title' ] ) );
-
-		self::performRoute( $route, $req, $res );
+		
+		return true;
 	}
 	
 	/**

@@ -2,7 +2,7 @@
 
 /**
  * Abstraction layer between the database and application. Uses PHP's PDO extension.
-/*
+ *
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
@@ -60,7 +60,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::alert( Logger::formatException( $e ) );
 			die( 'Could not connect to database.' );
 			return false;
 		}
@@ -224,7 +224,8 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::error( Logger::formatException( $e ) );
+
 			return false;
 		}
 	}
@@ -278,7 +279,8 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::error( Logger::formatException( $e ) );
+
 			return null;
 		}
 	}
@@ -384,7 +386,8 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::error( Logger::formatException() );
+
 			return false;
 		}
 		
@@ -447,7 +450,8 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::error( Logger::formatException( $e ) );
+
 			return false;
 		}
 		
@@ -490,8 +494,9 @@ class Database
 			self::$queryCount[ 'update' ]++;
 		}
 		catch(PDOException $e)
-		{  
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+		{
+			Logger::error( Logger::formatException( $e ) );
+
 			return false;
 		}
 		
@@ -546,7 +551,8 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			\infuse\ErrorStack::add( $e->getMessage(), __CLASS__, __FUNCTION__ );
+			Logger::error( Logger::formatException( $e ) );
+
 			return false;
 		}
 		

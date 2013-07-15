@@ -1,9 +1,9 @@
 {
 	"name": "infuse/libs",
-	"version": "0.1.9",
+	"version": "0.1.10",
 	"description": "Libraries for infuse framework",
 	"type": "library",
-	"keywords": ["mvc","framework","infuse"],
+	"keywords": ["infuse","libs"],
 	"homepage": "http://infuse.jaredtking.com",
 	"license": "MIT",
 	"authors": [
@@ -25,6 +25,7 @@
 		"smarty/smarty": "v3.1.14",
 		"mustangostang/spyc": "0.5.1",
 		"leafo/lessphp": "v0.3.9",
-		"linkorb/jsmin-php": "1.0.0"
+		"linkorb/jsmin-php": "1.0.0",
+		"monolog/monolog": "1.5.0"
 	}
 }

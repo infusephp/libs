@@ -1,4 +1,5 @@
 <?php
+
 /*
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -38,6 +39,7 @@ class Modules
 	
 	private static $controllers;
 	private static $info;
+	private static $loaded;
 	
 	//////////////////////////////////
 	// GETTERS
@@ -87,19 +89,7 @@ class Modules
 	*/
 	static function loaded( $module )
 	{
-		return isset( self::$controllers[ $module ] );
-	}	
-	
-	/**
-	* Gets the controller name for the module
-	*
-	* @param string $module module
-	*
-	* @return string
-	*/
-	static function controllerName( $module )
-	{
-		return '\\infuse\\Controllers\\' . ucfirst( strtolower( $module ) );	
+		return isset( self::$loaded[ $module ] );
 	}
 	
 	/**
@@ -261,6 +251,22 @@ class Modules
 		self::$info[ $module ] = $info;
 	}
 	
+	/**
+	* Initializes all modules
+	* @return null
+	*/
+	static function initializeAll()
+	{
+		// search directory to locate all modules
+		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
+		array_walk( $modules, function(&$n) {
+			$n = str_replace(self::$moduleDirectory,'',$n);
+		});
+
+		foreach( (array)$modules as $name )
+			self::initialize( $name );	
+	}	
+	
 	static function load( $module )
 	{
 		$module = strtolower( $module );
@@ -278,14 +284,14 @@ class Modules
 
 		// load module code
 		include_once self::$moduleDirectory . $module . '/' . 'controller.php';
-
-		// create a new instance of the module
-		$class = self::controllerName( $module );
-		$controller = new $class();
 		
 		// add module to loaded modules list
+		self::$loaded[] = $module;
+		
+		// setup controller
+		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
+		$controller = new $class();
 		self::$controllers[ $module ] = $controller;
-		//echo "$module loaded | ";
 
 		// load dependencies
 		if( isset( self::$info[ $module ][ 'dependencies' ] ) )
@@ -319,22 +325,6 @@ class Modules
 	}
 	
 	/**
-	* Initializes all modules
-	* @return null
-	*/
-	static function initializeAll()
-	{
-		// search directory to locate all modules
-		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
-		array_walk( $modules, function(&$n) {
-			$n = str_replace(self::$moduleDirectory,'',$n);
-		});
-
-		foreach( (array)$modules as $name )
-			self::initialize( $name );	
-	}
-	
-	/**
 	 * Loads required modules
 	 *
 	 */
@@ -345,7 +335,6 @@ class Modules
 			self::load( $name );
 	}
 	
-	
 	/**
 	 * Performs middleware on required modules
 	 *
@@ -353,34 +342,40 @@ class Modules
 	 * @param Repsonse $response
 	 *
 	 */
-	static function middleware( $request, $response )
+	static function middleware( $req, $res )
 	{
 		// load required modules
 		foreach( self::requiredModules() as $name )
-			self::$controllers[ $name ]->middleware( $request, $response );		
+			self::$controllers[ $name ]->middleware( $req, $res );
 	}
 	
 	/**
-	* Looks for new modules in the module directory
-	*
-	* @return boolean true if successful
+	 * Class autoloader
+	 *
+	 * @param string $class class
+	 *
+	 * @return null
 	*/
-	static function scanModules()
+	public static function autoloader( $class )
 	{
-		if ($dir = @opendir( self::$moduleDirectory ))
+		foreach( self::$loaded as $module )
 		{
-			while (($mod_name = readdir($dir)) !== false)
-			{
-				if ($mod_name != '.' && $mod_name != '..')
-				{
-					if( !self::exists( $mod_name ) )
-					{ }
-				}
-	    	}
-		}
+			// look in modules/:module/:class.php
+			// i.e. /infuse/models/User -> modules/users/models/User.php
 
-		return true;
-	}
+			if( $module != 'Module' || $module != '' )
+			{
+				$name = str_replace( '\\', '/', str_replace( 'infuse\\', '', $class ) );
+				$path = self::$moduleDirectory . "$module/$name.php";
+	
+				if (file_exists($path) && is_readable($path))
+				{
+					include_once $path;
+					return;
+				}
+			}
+		}
+	}	
 }
 
 // hack

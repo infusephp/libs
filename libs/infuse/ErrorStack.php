@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Handles the creation and storing of non-fatal errors. This class may be useful for logging errors or displaying them to users.
+ * Handles the creation and storing of non-fatal errors. This is useful for storing errors that should be displayed to the user (i.e. validation, catchable exceptions)
  *
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -34,207 +35,93 @@ class ErrorStack
 	
 	private static $stack = array();
 	private static $context = '';
+	private static $it;
+	
+	public static function it()
+	{
+		if( !self::$it )
+			self::$it = new ErrorStack();
+		
+		return self::$it;
+	}
 	
 	////////////////////////////
 	// GETTERS
 	////////////////////////////
 	
 	/**
-	* Gets error(s) in the stack based on the desired parameters
-	*
-	* This method is useful for pulling errors off the stack that occured within a class, function, context, by error code or any combination of
-	* these parameters.
-	*
-	* @param string $class class (optional)
-	* @param string $function function (optional)
-	* @param string $context context (optional)
-	* @param string|int $errorCode error code (optional)
-	*
-	* @return array errors
-	*/
-	public static function stack( $class = null, $function = null, $context = null,  $errorCode = null )
+	 * Gets all of the errors on the stack
+	 *
+	 * @param string $context optional context
+	 *
+	 * @return array errors
+	 */
+	function errors( $context = null )
 	{
-		$errors = self::$stack;
-		if( $class )
-		{
-			$errors = array();
-			foreach( self::$stack as $error )
-			{
-				if( $error[ 'class'] == $class )
-					$errors[] = $error;
-			}
-		}
-		
-		$errors2 = $errors;
-		if( $function )
-		{
-			$errors2 = array();
-			foreach( $errors as $error )
-			{
-				if( $error[ 'function' ] == $function )
-					$errors2[] = $error;
-			}
-		}
-		
-		$errors3 = $errors2;
 		if( $context )
 		{
-			$errors3 = array();
-			foreach( $errors2 as $error )
+			$errors = array();
+			
+			foreach( self::$stack as $error )
 			{
 				if( $error[ 'context' ] == $context )
-					$errors3[] = $error;
+					$errors[] = $error;
 			}
+			
+			return $errors;
 		}
+		else
+			return self::$stack;
+	}
+	
+	function messages( $context = null )
+	{
+		$errors = self::errors( $context );
 		
-		$errors4 = $errors3;
-		if( $errorCode )
+		$messages = array();
+		
+		foreach( $errors as $error )
+			$messages[] = $error[ 'message' ];
+		
+		return $messages;
+	}
+	
+	/**
+	 * Checks if an error exists with a specific property on the stack
+	 *
+	 * @param string $value value we are searching for
+	 * @param string $parameter parameter name
+	 *
+	 * @return boolean
+	 */
+	function has( $value, $parameter = 'field' )
+	{
+		return (boolean)$this->find( $value, $parameter );
+	}
+	
+	/**
+	 * Gets an error for a specific property on the stack
+	 *
+	 * @param string $value value we are searching for
+	 * @param string $parameter parameter name
+	 *
+	 * @return array|false
+	 */	
+	function find( $value, $parameter = 'field' )
+	{
+		foreach( self::$stack as $error )
 		{
-			$errors4 = array();
-			foreach( $errors3 as $error )
-			{
-				if( $error[ 'code' ] == $errorCode )
-					$errors4[] = $error;
-			}
+			if( val( $error[ 'params' ], $parameter ) === $value )
+				return $error;
 		}
 		
-		return $errors4;
+		return false;	
 	}
-	
-	/**
-	* Checks if an error exists based on the given parameters.
-	*
-	* @param string $class class
-	* @param string $function function
-	* @param string $context context
-	* @param string|int $errorCode error code
-	*
-	* @return boolean true if at least one error exists
-	*/
-	public static function hasError( $class = null, $function = null, $context = null, $errorCode = null )
-	{
-		return count( self::stack( $class, $function, $context, $errorCode ) ) > 0;
-	}
-	
-	public static function hasErrorWithCode( $code )
-	{
-		return count( self::stack( null, null, null, $code ) ) > 0;
-	}
-	
-	/** 
-	 * Finds errors based on the given parameters
-	 *
-	 * @param string $context error context
-	 *
-	 * @return array
-	 */
-	public static function errorsWithContext( $context )
-	{
-		return self::stack( null, null, $context, null );
-	}
-		
-	/**
-	* Gets a single (first) message based on the given parameters.
-	*
-	* If multiple errors are matched then only the first one will be returned. If more than one error is possible
-	* it is best to user the stack() method
-	*
-	* @param string $class class
-	* @param string $function function
-	* @param string $context context
-	* @param string|int $errorCode error code
-	*
-	* @return string message
-	*/
-	public static function getMessage( $class, $function, $context, $errorCode )
-	{
-		$errors = self::stack( $class, $function, $context, $errorCode );
-		return (count( $errors ) > 0 ) ? $errors[ 0 ][ 'message' ] : false;	
-	}
-	
-	/**
-	 * Gets the first message from the error stack for a given context
-	 *
-	 * @param string $context context
-	 *
-	 * @return string message
-	 */
-	public static function getMessageWithContext( $context )
-	{
-		return self::getMessage( '', '', $context, '' );
-	}	
-	
+
 	/////////////////////////////////////
 	// SETTERS
 	/////////////////////////////////////
 	
-	public static function push( $code, $params = array() )
-	{
-		self::add( array(
-			'error' => $code,
-			'params' => (array)$params ) );
-	}
-	
-	/**
-	* Adds an error message to the stack
-	*
-	* @param array $message message
-	* - error: error code
-	* - params: array of parameters to be passed to message
-	* - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
-	* - context: (optional) the context which the error message occured in
-	* - class: (optional) the class invoking the error
-	* - function: (optional) the function invoking the error
-	*
-	* N.B.: the other arguments are here for compatibility, for now, aim to remove them eventually
-	*
-	* @return boolean true if successful
-	*/
-	public static function add( $error, $class = null, $function = null, $params = array(), $context = null, $code = 0 )
-	{
-		// all of the arguments will be deprecated soon...
-		if( !is_array( $error ) )
-		{
-			$error = array(
-				'error' => $error,
-				'params' => $params,
-				'context' => ($context) ? $context : self::$context,
-				'class' => $class,
-				'function' => $function,
-				'message' => Messages::get( $error, $params )
-			);
-		}
-		else
-		{
-			if( !isset( $error[ 'context' ] ) )
-				$error[ 'context' ] = self::$context;
-			
-			if( !isset( $error[ 'message' ] ) )
-				$error[ 'message' ] = Messages::get( $error[ 'error' ], val( $error, 'params' ) );
-		}
-		
-		if( !val( $error, 'error' ) )
-			return false;
-	
-		if( !val( $error, 'function' ) )
-		{
-			// try to look up the call history using debug_backtrace()
-			$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
-			if( isset( $trace[ 1 ] ) )
-			{
-				// $trace[0] is ourself
-				// $trace[1] is our caller
-				// and so on...
-				$error[ 'class' ] = $trace[1]['class'];
-				$error[ 'function' ] = $trace[1]['function'];
-			}
-		}
-		
-		self::$stack[] = $error;
-		
-		return true;
-	}
-
 	/**
 	* Sets the context for all errors created.
 	*
@@ -258,13 +145,68 @@ class ErrorStack
 	public static function clearContext( )
 	{
 		self::$context = '';
-	}
+	}	
 	
 	/**
-	 * Prints out the error stack (for debugging)
-	 */
-	public static function dump()
+	* Adds an error message to the stack
+	*
+	* @param array $message message
+	* - error: error code
+	* - params: array of parameters to be passed to message
+	* - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
+	* - context: (optional) the context which the error message occured in
+	* - class: (optional) the class invoking the error
+	* - function: (optional) the function invoking the error
+	*
+	* N.B.: the other arguments are here for compatibility, for now, aim to remove them eventually
+	*
+	* @return boolean true if successful
+	*/
+	public static function add( $error, $class = null, $function = null, $params = array(), $context = null )
 	{
-		echo '<pre>' . print_r(ErrorStack::stack(), true) . '</pre>';
-	}	
+		// all of the arguments will be deprecated soon...
+		if( !is_array( $error ) )
+		{
+			$error = array(
+				'error' => $error,
+				'params' => $params,
+				'context' => ($context) ? $context : self::$context,
+				'class' => $class,
+				'function' => $function,
+				'message' => Messages::get( $error, $params )
+			);
+		}
+		else
+		{
+			if( !isset( $error[ 'context' ] ) )
+				$error[ 'context' ] = self::$context;
+				
+			if( !isset( $error[ 'params' ] ) )
+				$error[ 'params' ] = array();
+			
+			if( !isset( $error[ 'message' ] ) )
+				$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
+		}
+		
+		if( !val( $error, 'error' ) )
+			return false;
+	
+		if( !val( $error, 'function' ) )
+		{
+			// try to look up the call history using debug_backtrace()
+			$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
+			if( isset( $trace[ 1 ] ) )
+			{
+				// $trace[0] is ourself
+				// $trace[1] is our caller
+				// and so on...
+				$error[ 'class' ] = $trace[1]['class'];
+				$error[ 'function' ] = $trace[1]['function'];
+			}
+		}
+		
+		self::$stack[] = $error;
+		
+		return true;
+	}
 }

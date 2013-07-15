@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
@@ -62,10 +63,14 @@ class ViewEngine Extends \Smarty
         }
 
         // create temp and output dirs
-        @mkdir( INFUSE_TEMP_DIR . '/css' );
-        @mkdir( INFUSE_TEMP_DIR . '/js' );
-        @mkdir( INFUSE_APP_DIR . '/css' );
-        @mkdir( INFUSE_APP_DIR . '/js' );
+        if( !file_exists( INFUSE_TEMP_DIR . '/css' ) )
+        	mkdir( INFUSE_TEMP_DIR . '/css' );
+        if( !file_exists( INFUSE_TEMP_DIR . '/js' ) )
+        	mkdir( INFUSE_TEMP_DIR . '/js' );
+        if( !file_exists( INFUSE_APP_DIR . '/css' ) )
+        	mkdir( INFUSE_APP_DIR . '/css' );
+        if( !file_exists( INFUSE_APP_DIR . '/js' ) )
+        	mkdir( INFUSE_APP_DIR . '/js' );
 		
 		// minify CSS
 		$this->autoCompileLess( INFUSE_BASE_DIR . '/assets/css/styles.less', 'styles.css');
