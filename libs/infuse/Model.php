@@ -654,6 +654,8 @@ abstract class Model extends Acl
 				$length = (isset($property['length'])) ? $property['length'] : 65535;
 			
 				$column[ 'Type' ] = "text($length)";
+				
+				$column[ 'Default' ] = '';
 			break;
 			default:
 				$length = (isset($property['length'])) ? $property['length'] : 255;
