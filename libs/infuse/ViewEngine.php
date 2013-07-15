@@ -61,22 +61,16 @@ class ViewEngine Extends \Smarty
 			//$this->setCaching( Smarty::CACHING_LIFETIME_CURRENT);
 			//$this->compile_check = false;
         }
-
-        // create temp and output dirs
-        if( !file_exists( INFUSE_TEMP_DIR . '/css' ) )
-        	mkdir( INFUSE_TEMP_DIR . '/css' );
-        if( !file_exists( INFUSE_TEMP_DIR . '/js' ) )
-        	mkdir( INFUSE_TEMP_DIR . '/js' );
-        if( !file_exists( INFUSE_APP_DIR . '/css' ) )
-        	mkdir( INFUSE_APP_DIR . '/css' );
-        if( !file_exists( INFUSE_APP_DIR . '/js' ) )
-        	mkdir( INFUSE_APP_DIR . '/js' );
 		
 		// minify CSS
-		$this->autoCompileLess( INFUSE_BASE_DIR . '/assets/css/styles.less', 'styles.css');
+		$cssFile = INFUSE_BASE_DIR . '/assets/css/styles.less';
+		if( file_exists( $cssFile ) )
+			$this->autoCompileLess( $cssFile, 'styles.css');
 		
 		// minify JS
-		$this->autoCompileJs( INFUSE_BASE_DIR . '/assets/js', 'header.js' );
+		$jsFile = INFUSE_BASE_DIR . '/assets/js';
+		if( file_exists( $jsFile ) )
+			$this->autoCompileJs( $jsFile, 'header.js' );
 	}
 	
 	/**
@@ -88,6 +82,12 @@ class ViewEngine Extends \Smarty
 	 */
 	function autoCompileLess( $inputFile, $outputFileName )
 	{
+        // create temp and output dirs
+        if( !file_exists( INFUSE_TEMP_DIR . '/css' ) )
+        	mkdir( INFUSE_TEMP_DIR . '/css' );
+        if( !file_exists( INFUSE_APP_DIR . '/css' ) )
+        	mkdir( INFUSE_APP_DIR . '/css' );
+
 		$cacheFile = INFUSE_TEMP_DIR . '/css/' . $outputFileName . ".cache";
 		
 		$outputFile = INFUSE_APP_DIR . '/css/' . $outputFileName;
@@ -125,6 +125,12 @@ class ViewEngine Extends \Smarty
 	 */
 	function autoCompileJs( $jsDirectory, $outputFileName )
 	{
+        // create temp and output dirs
+        if( !file_exists( INFUSE_TEMP_DIR . '/js' ) )
+        	mkdir( INFUSE_TEMP_DIR . '/js' );
+        if( !file_exists( INFUSE_APP_DIR . '/js' ) )
+        	mkdir( INFUSE_APP_DIR . '/js' );
+
 		// NOTE js files get appended in order by filename
 		// to change the order of js files, change the filename
 		
