@@ -1,11 +1,11 @@
 infuse/libs
 ===========
 
-infuse/libs were created to serve as a basis for web development. The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been seen the battlefield in projects small to large. There is even a framework built around these.
+infuse/libs are as a jumping off point for web development, inspired by express.js (amongst others). The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been used in the battlefield in projects both small and large. There is even a framework built around these libraries.
 
-## MVC Framework
+## Infuse Framework
 
-An MVC framwork has been built using these libraries, called Infuse Framework. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
+An MVC framework, called Infuse Framework, has been built using these libraries. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
 
 ## Contributing
 
