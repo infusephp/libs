@@ -1,7 +1,7 @@
 infuse/libs
 ===========
 
-infuse/libs are as a jumping off point for web development, inspired by express.js (amongst others). The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been used in the battlefield in projects both small and large. There is even a framework built around these libraries.
+infuse/libs provide a jumping off point for web development, inspired by express.js (amongst others). The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been used in the battlefield in projects both small and large. There is even a framework built around these libraries.
 
 ## Infuse Framework
 
