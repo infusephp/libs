@@ -564,6 +564,20 @@ abstract class Model extends Acl
 	}
 	
 	/**
+	 * Fetches a single model according to criteria
+	 *
+	 * @param array $params array( start, limit, sort, search, where )
+	 *
+	 * @return Model|false
+	 */
+	static function findOne( $params = array() )
+	{
+		$models = static::find( $params );
+		
+		return ( $models[ 'count' ] > 0 ) ? reset( $models[ 'models' ] ) : false;
+	}
+	
+	/**
 	 * Gets the toal number of records matching an optional criteria
 	 *
 	 * @param array $where criteria
