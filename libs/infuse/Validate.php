@@ -27,12 +27,6 @@
  
 namespace infuse;
 
-use \infuse\ErrorStack as ErrorStack;
-use \infuse\Modules as Modules;
-use \infuse\models\User as User;
-use \infuse\Messages as Messages;
-use \infuse\Util as Util;
-
 class Validate
 {
 	/**
@@ -170,7 +164,7 @@ class Validate
 		}
 		
 		// cannot start out as an admin
-		if( $group_id == ADMIN && User::currentUser()->group()->id() != ADMIN )
+		if( $group_id == ADMIN && \infuse\models\User::currentUser()->group()->id() != ADMIN )
 		{
 			ErrorStack::add( ERROR_NO_PERMISSION );
 			return false;
@@ -180,7 +174,7 @@ class Validate
 		if( !isset( $parameters[ 'skipPermissionsCheck' ] ) &&
 			isset( $parameters[ 'model' ] ) &&
 			$parameters['model']->group()->id() != $group_id &&
-			User::currentUser()->group()->id() != ADMIN )
+			\infuse\models\User::currentUser()->group()->id() != ADMIN )
 		{
 			ErrorStack::add( ERROR_NO_PERMISSION );
 			return false;

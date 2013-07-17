@@ -25,8 +25,7 @@
  
 namespace infuse;
 
-use \infuse\Database as Database;
-use \infuse\models\User as User;
+use \infuse\models\User;
 
 class DatabaseSession
 {
@@ -94,7 +93,7 @@ class DatabaseSession
 	function write( $id, $data )
 	{
 		Database::delete( 'Sessions', array( 'id' => $id ) );
-		$uid = ( isset(User::$currentUser) && User::$currentUser->logged_in() ) ? User::$currentUser->id() : null;
+		$uid = ( class_exists(User) && isset(User::$currentUser) && User::$currentUser->logged_in() ) ? User::$currentUser->id() : null;
 		return Database::insert(
 			'Sessions',
 			array(
