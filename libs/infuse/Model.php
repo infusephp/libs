@@ -799,7 +799,7 @@ abstract class Model extends Acl
 	/////////////////////////////
 	
 	/**
-	 * Loads and cahces all of the properties from the model inside of the database table
+	 * Loads and caches all of the properties from the model inside of the database table
 	 *
 	 * @return null
 	 */
@@ -824,7 +824,7 @@ abstract class Model extends Acl
 	 */
 	function loadProperties()
 	{
-		$this->load();
+		return $this->load();
 	}
 	
 	/**
