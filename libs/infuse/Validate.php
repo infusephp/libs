@@ -30,11 +30,114 @@ namespace infuse;
 class Validate
 {
 	/**
-	* States (USA only)
-	* @staticvar array
-	*/
-	static $states = array('AL'=>"Alabama",  'AK'=>"Alaska",  'AZ'=>"Arizona",  'AR'=>"Arkansas",  'CA'=>"California",  'CO'=>"Colorado",  'CT'=>"Connecticut",  'DE'=>"Delaware",  'DC'=>"District Of Columbia",  'FL'=>"Florida",  'GA'=>"Georgia",  'HI'=>"Hawaii",  'ID'=>"Idaho",  'IL'=>"Illinois",  'IN'=>"Indiana",  'IA'=>"Iowa",  'KS'=>"Kansas",  'KY'=>"Kentucky",  'LA'=>"Louisiana",  'ME'=>"Maine",  'MD'=>"Maryland",  'MA'=>"Massachusetts",  'MI'=>"Michigan",  'MN'=>"Minnesota",  'MS'=>"Mississippi",  'MO'=>"Missouri",  'MT'=>"Montana",  'NE'=>"Nebraska",  'NV'=>"Nevada",  'NH'=>"New Hampshire",  'NJ'=>"New Jersey",  'NM'=>"New Mexico",  'NY'=>"New York",  'NC'=>"North Carolina",  'ND'=>"North Dakota",  'OH'=>"Ohio",  'OK'=>"Oklahoma",  'OR'=>"Oregon",  'PA'=>"Pennsylvania",  'RI'=>"Rhode Island",  'SC'=>"South Carolina",  'SD'=>"South Dakota",  'TN'=>"Tennessee",  'TX'=>"Texas",  'UT'=>"Utah",  'VT'=>"Vermont",  'VA'=>"Virginia",  'WA'=>"Washington",  'WV'=>"West Virginia",  'WI'=>"Wisconsin",  'WY'=>"Wyoming");
+	 * Validates one or more fields based upon certain filters. Filters may be chained and will be executed in order
+	 * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' )
+	 *
+	 * NOTE: some filters may modify the data, which is passed in by reference
+	 *
+	 * @param array|mixed $data can be key-value array matching requirements or a single value
+	 * @param array|string $requirements can be key-value array matching data or a string
+	 */
+	static function is( &$data, $requirements )
+	{
+		if( !is_array( $requirements ) )
+			return self::processRequirement( $data, $requirements );
+		else
+		{
+			$validated = true;
+
+			foreach( $requirements as $key => $requirement )
+				$validated = $validated && self::processRequirement( val( $data, $key ), $requirement );
+
+			return $validated;
+		}
+	}
+
+	/**
+	 * Validates a value according to its requirement
+	 *
+	 * @param mixed $value
+	 * @param string $requirement
+	 *
+	 * @return boolean
+	 */
+	private static function processRequirement( &$value, $requirement )
+	{
+		$validated = true;
 	
+		$filters = explode( '|', $requirement );
+		
+		foreach( $filters as $filterStr )
+		{
+			$exp = explode( ':', $filterStr );
+			$filter = $exp[ 0 ];
+			$validated = $validated && self::$filter( $value, array_slice( $exp, 1 ) );
+		}
+		
+		return $validated;
+	}
+
+	////////////////////////////////
+	// FILTERS
+	////////////////////////////////
+
+	/**
+	 * Validates an alpha string.
+	 * OPTIONAL alpha:5 can specify minimum length
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function alpha( &$value, $parameters )
+	{
+		return preg_match( '/^[A-Za-z]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+	}
+
+	/**
+	 * Validates an alpha-numeric string
+	 * OPTIONAL alpha_numeric:6 can specify minimum length
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function alpha_numeric( &$value, $parameters )
+	{
+		return preg_match( '/^[A-Za-z0-9]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+	}
+
+	/**
+	 * Validates an alpha-numeric string with dashes and underscores
+	 * OPTIONAL alpha_dash:7 can specify minimum length
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function alpha_dash( &$value, $parameters )
+	{
+		return preg_match( '/^[A-Za-z0-9_-]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+	}
+
+	/**
+	 * Validates a boolean value
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function boolean( &$value, $parameters )
+	{
+		$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+
+		return true;
+	}
+
 	/**
 	* Validates an e-mail address
 	*
@@ -43,346 +146,158 @@ class Validate
 	*
 	* @return boolean success
 	*/
-	static function email( &$email, $parameters = array() )
+	private static function email( &$value, $parameters )
 	{
-		$email = trim(strtolower($email));
+		$value = trim( strtolower( $value ) );
 
-		if( filter_var($email, FILTER_VALIDATE_EMAIL) === false )
-			return false;
-
-		if( !val( $parameters, 'skipBanCheck' ) )
-		{
-			Modules::load('bans');
-			if( \infuse\models\Ban::isBanned( $email, BAN_TYPE_EMAIL ) )
-			{
-				ErrorStack::add( 'email_address_banned' );
-				return false;
-			}
-		}
-
-		return true;
-	}
-	
-	/**
-	* Validates a user name
-	*
-	* @param string $username user name
-	* @param array $parameters parameters for validation
-	*
-	* @param boolean success
-	*/
-	static function username( &$username, $parameters = array() )
-	{
-		if (!(strlen($username) >= 1) || !preg_match( '/^[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*$/', $username ) )
-			return false;
-
-		if( !val( $parameters, 'skipBanCheck' ) )
-		{
-			Modules::load('bans');
-			if( \infuse\models\Ban::isBanned( $username, BAN_TYPE_USERNAME ) )
-			{
-				ErrorStack::add( 'user_name_banned' );
-				return false;
-			}
-		}
-
-		return true;
+		return filter_var( $value, FILTER_VALIDATE_EMAIL );
 	}
 
 	/**
-	* Validates two passwords making sure they are both equal and valid
-	*
-	* @param array|string password array(password 1, password 2) or passwordd
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function password( &$password, $parameters = array() )
+	 * Validates a value exists in an array. i.e. enum:blue,red,green,yellow
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function enum( &$value, $parameters )
 	{
-		$password1 = $password2 = '';
-		if( is_array( $password ) )
+		$enum = explode( ',', val( $parameters, 0 ) );
+
+		return isset( $enum[ $value ] );
+	}
+
+	/**
+	 * Validates a date string
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function date( &$value, $parameters )
+	{
+		return strtotime( $value );
+	}
+
+	/**
+	 * Validates an IP address
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function ip( &$value, $parameters )
+	{
+		return filter_var( $value, FILTER_VALIDATE_IP );
+	}
+
+	/**
+	 * Validates that an array of values matches. The array will
+	 * be flattened to a single value.
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function matching( &$value, $parameters )
+	{
+		if( !is_array( $value ) )
+			return true;
+
+		$matches = true;
+		$cur = reset( $value );
+		foreach( $value as $v )
 		{
-			$password1 = ( isset( $password[ 0 ] ) ) ? $password[ 0 ] : '';
-			$password2 = ( isset( $password[ 1 ] ) ) ? $password[ 1 ] : '';
+			$matches = ($v == $cur) && $matches;
+			$cur = $v;
 		}
-		else
-		{
-			$password1 = $password;
-			$password2 = $password;
-		}
+
+		$value = $cur;
+
+		return $matches;
+	}
+
+	/**
+	 * Validates a number.
+	 * OPTIONAL numeric:int specifies a type
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function numeric( &$value, $parameters )
+	{
+		$check = 'is_' . val( $parameters, 0 );
+		$value += 0;
 		
-		$min_pass_length = Modules::info( 'users' )[ 'minimum-password-length' ];
-
-		// Check if password is at least N characters long.
-		if( strlen( $password1 ) >= $min_pass_length )
-		{
-			 // Check if passwords match.
-			if( $password1 != $password2 )
-			{
-				ErrorStack::add( 'passwords_not_matching' );
-				return false;
-			}
-		}
-		else
-			return false;
-		
-		// encrypt password
-		$password = Util::encryptPassword( $password1 );
-
-		return true;
-	}
-	
-	/**
-	* Validates a boolean value which may be in string form
-	*
-	* @param string $val value
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function boolean_( &$val, $parameters = array() )
-	{
-		$val = isset($val) && ( $val === true || $val === 1 || $val === '1' || $val == 'y' || $val == 'yes' || $val == 'on' );
-		return true;
-	}
-	
-	/**
-	* Validates a group ID
-	*
-	* @param int $group_id group ID
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function group( &$group_id, $parameters = array() )
-	{
-		// check if the group ID exists
-		if( !is_numeric( $group_id ) )//|| !Groups::exists( $group_id ) )
-		{
-			// ERROR
-			return false;
-		}
-		
-		// cannot start out as an admin
-		if( $group_id == ADMIN && \infuse\models\User::currentUser()->group()->id() != ADMIN )
-		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
-			return false;
-		}
-
-		// can the user change groups?
-		if( !isset( $parameters[ 'skipPermissionsCheck' ] ) &&
-			isset( $parameters[ 'model' ] ) &&
-			$parameters['model']->group()->id() != $group_id &&
-			\infuse\models\User::currentUser()->group()->id() != ADMIN )
-		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
-			return false;
-		}
-		
-		return true;
+		return ( !isset( $parameters[ 0 ] ) && is_numeric( $value ) ) || $check( $value );
 	}
 
 	/**
-	* Validates a first name
-	*
-	* @param string $fname first name
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function firstName( &$fname, $parameters = array() )
+	 * Validates a password and hashes the value.
+	 * OPTIONAL password:10 sets the minimum length
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function password( &$value, $parameters )
 	{
-		if( !isset( $fname ) || strlen($fname) < 2 )
-			return false;
-	
-		return true;
-	}
-	
-	/**
-	* Validates a last name
-	*
-	* @param string $lname last name
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function lastName( &$lname, $parameters = array() )
-	{
-		// not doing anything here for now
-		return true;
-	}
-	
-	/**
-	* Validates a company
-	*
-	* @param string $company company
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function company( &$company, $parameters = array() )
-	{
-		// not doing anything here for now
-		return true;
-	}
-	
-	/**
-	* Validates an address
-	*
-	* @param string $address
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function address( &$address, $parameters = array() )
-	{
-		if (!(strlen($address) >= 5) )
-		{
-			// ERROR
-			return false;
-		}
-	
-		return true;
-	}
-	
-	/**
-	* Validates a zip code
-	*
-	* @param string $zip zip code
-	* @param array $parameters parameters for validation
-	*
-	* @return booelan success
-	*/
-	static function zip( &$zip, $parameters = array() )
-	{
-		$validated = true;
-		if (!is_numeric($zip))
-		{
-			if (!preg_match('/^[0-9]{5}([- ]?[0-9]{4})?$/', $zip))
-				$validated = false;
-		}
-		else
-		{
-			if (!is_numeric($zip) || !(strlen($zip) == 5 || strlen($zip) == 9)) // Check if zip code is a 5 or 9 character number.
-				$validated = false;
-		}
+		$minimumPasswordLength = (isset($parameters[0])) ? $parameters[0] : 8;
 		
+		if( strlen( $value ) < $minimumPasswordLength )
+			return false;
 
-		if (!$validated)
-		{
-			displayError("invalid_zip_code",'zip_code',NULL,'module');
-			return false;
-		}
-		
-		$zip = preg_replace("/[[:^digit:]]/", '', $zip);
-	
-		return true;
-	}
-	
-	/**
-	* Validates a city
-	* @param string $city city
-	* @return boolean success
-	*/
-	static function city( &$city, $parameters = array() )
-	{
-		if (!(strlen($city) >= 2))
-		{
-			// ERROR
-			return false;
-		}
-		elseif (!preg_match("/^[A-Za-z ]*$/", $city))
-		{
-			// ERROR
-			return false;
-		}
-		
-		return true;
-	}
-	
-	/**
-	* Validates a state
-	*
-	* @param string $state state
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function state( &$state, $parameters = array() )
-	{
-		if (!array_key_exists($state, self::$states))
-			return false;
-	
-		return true;
-	}
-	
-	/**
-	* Validates a country
-	*
-	* @param string $country country
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function country( &$country, $parameters = array() )
-	{
-		if (strlen($country) < 2)
-		{
-			// ERROR
-			return false;
-		}
-		elseif (!preg_match("/^[A-Za-z]*$/", $country))
-		{
-			// ERROR
-			return false;
-		}
-	
-		return true;
-	}
-	
-	/**
-	* Validates a phone number
-	* @param int $phone phone number
-	* @param boolean $null_allowed true if the phone number is allowed to be empty
-	* @param string $type phone number type
-	* @return int updated phone number
-	*/
-	static function phone( &$phone, $parameters = array() )
-	{	
-		if ($phone == '') return true;
-		
-		$phone = preg_replace("/[[:^digit:]]/", '', $phone);
-		
-		if (strlen($phone) < 7 || !is_numeric($phone)) {
-	
-			switch (val( $parameters, 'type' ))
-			{
-			case "work":		$field = "workphone";		break;
-			case "home":		$field = "homephone";		break;
-			case "cell":		$field = "cellphone";		break;
-			case "phone":		$field = "phone";			break;
-			case "fax":			$field = "fax";				break;
-			default:			$field = "error";			break;
-			}
-	
-			// ERROR
-			return false;
-		}
+		$value = Util::encryptPassword( $value );
 
 		return true;
 	}
 
 	/**
-	* Validates a time zone
-	*
-	* @param string $time_zone time zone
-	* @param array $parameters parameters for validation
-	*
-	* @return boolean success
-	*/
-	static function timeZone( &$time_zone, $parameters = array() )
-	{	
+	 * Makes sure that a variable is not empty
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function required( &$value, $parameters )
+	{
+		return !empty( $value );
+	}
+
+	/**
+	 * Validates a string. OPTIONAL string:5 supplies a minimum length
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function string( &$value, $parameters )
+	{
+		if( !is_string( $value ) )
+			return false;
+
+		return strlen( $value ) >= val( $parameters, 0 );
+	}
+
+	/**
+	 * Validates a PHP time zone identifier
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function time_zone( &$value, $parameters )
+	{
 		// thanks to http://stackoverflow.com/questions/5816960/how-to-check-is-timezone-identifier-valid-from-code
 		$valid = array();
 		$tza = timezone_abbreviations_list();
@@ -390,70 +305,38 @@ class Validate
 			foreach ($zone as $item)
 				$valid[$item['timezone_id']] = true;
 		unset($valid['']);
-		return !!$valid[$time_zone];
+		return !!$valid[$value];
 	}
-	
+
 	/**
-	* Validates then retrieves the full 9-digit zip code for an address
-	* @param string $address address
-	* @param string $address2 address 2
-	* @param string $city city
-	* @param string $state state
-	* @param string $zip zip code
-	* @return int zip code
-	*/
-	static function getZipCode( $address, $address2, $city, $state, $zip )
+	 * Validates a Unix timestamp. If the value is not a timestamp it will be
+	 * converted to one with strtotime()
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function timestamp( &$value, $parameters )
 	{
-		if (strlen( $zip ) == 5 || empty( $zip ) ) // Attempt to find the full 9-digit zip code
-		{	
-			$url = 'http://zip4.usps.com/zip4/zcl_0_results.jsp';
-			$fields = array(
-			 'visited'=>urlencode("1"),
-			 'pagenumber'=>urlencode("0"),
-			 'firmname'=>urlencode(""),
-			 'urbanization'=>urlencode(""),
-			 'address1'=>urlencode($address),
-			 'address2'=>urlencode($address2),
-			 'city'=>urlencode($city),
-			 'state'=>urlencode($state),
-			 'zip5'=>urlencode(""),
-			 'submit'=>urlencode("Find ZIP Code")
-			 );
-			
-			//url-ify the data for the POST
-			$fields_string = null;
-			foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
-			rtrim($fields_string,'&');
-			
-			//open connection
-			$ch = curl_init();
-			
-			//set the url, number of POST vars, POST data
-			curl_setopt($ch,CURLOPT_URL,$url);
-			curl_setopt($ch,CURLOPT_POST,count($fields));
-			curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
-			curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-			
-			//execute post
-			$result = curl_exec($ch);
-			
-			//close connection
-			curl_close($ch);
-			
-			$texttofind = strtoupper( $city )."&nbsp;".strtoupper( $state )."&nbsp;&nbsp;";
-			$start = strpos($result,$texttofind);
-			$result = substr($result,$start+strlen($texttofind),10);
-			if (!preg_match('/^[0-9]{5}([- ]?[0-9]{4})?$/', $result))
-				$result = "00000";
-				
-			if (substr($result, 0, 5) == $zip || empty( $zip ) )
-				return $result;
-			else
-				return $zip;
-		}
-		else if( strlen( $zip ) == 9 )
-			return substr_replace( $zip, '-', 5, 0);
-		else
-			return $zip;	
+		if( is_integer( $value ) )
+			return true;
+
+		$value = strtotime( $value );
+
+		return !!$value;
+	}
+
+	/**
+	 * Validates a URL
+	 * 
+	 * @param $value
+	 * @param $parameters
+	 *
+	 * @return boolean
+	 */
+	private static function url( &$value, $parameters )
+	{
+		return filter_var( $value, FILTER_VALIDATE_URL );
 	}
 }

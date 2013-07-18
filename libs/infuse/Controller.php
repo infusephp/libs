@@ -235,8 +235,7 @@ abstract class Controller extends Acl
 				'success' => true ) );
 		else
 		{
-			$res->setBodyJson( array(
-				'error' => ErrorStack::messages( strtolower( $modelClassName ) . '.create' ) ) );
+			$res->setBodyJson( array( 'error' => ErrorStack::it()->messages() ) );
 		}
 	}
 	
@@ -255,11 +254,11 @@ abstract class Controller extends Acl
 		// check if automatic api generation enabled
 		if( !$model || !$model[ 'api' ] )
 			return $res->setCode( 404 );
-
+		
 		// json only
 		if( !$req->isJson() )
 			return $res->setCode( 406 );
-
+		
 		$modelClassName = $model[ 'class_name' ];
 		$modelObj = new $modelClassName( $req->params( 'id' ) );
 		
@@ -276,7 +275,7 @@ abstract class Controller extends Acl
 		else
 		{
 			$res->setBodyJson( array(
-				'error' => ErrorStack::messages( strtolower( $modelClassName ) . '.edit' ) ) );
+				'error' => ErrorStack::it()->messages() ) );
 		}
 	}
 	

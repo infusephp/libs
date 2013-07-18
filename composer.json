@@ -1,6 +1,6 @@
 {
 	"name": "infuse/libs",
-	"version": "0.1.10.7",
+	"version": "0.1.11",
 	"description": "Libraries for infuse framework",
 	"type": "library",
 	"keywords": ["infuse","libs"],
