@@ -27,10 +27,8 @@
  
 /**
  *
- * The following properties are available:
- 
- 	Schema:
- 	
+ * The properties array looks like this:
+ 	'name' => array(
   		type:
   			The type of the property.
   			Accepted Types:
@@ -51,80 +49,79 @@
 	  		The default value to be used when creating new models.
 	  		String
 	  		Optional
-  		enum:
-  			A key-value map of acceptable values if property type is `enum`
-  			Array
-  			Required if specifying `enum` type
-	  	db_type:
-	  		The type of field in the database, overrides the default type for a property, if a default exists
+	  	id:
+	  		The type of property when the property type = id
 	  		String
 	  		Default: int
-	  		Required|Optional Required if property is `enum` or `number`
+	  		Optional
+	  	number:
+	  		The type of number when the property type = number
+	  		String
+	  		Default: int
+	  		Required if specifying number type
+  		enum:
+  			A key-value map of acceptable values for the enum type.
+  			Array
+  			Required if specifying enum type
+  		enumType:
+  			Type of the database column for the enum
+  			Default: varchar
+  			Required if specifying enum type
   		length:
-  			Overrides the default maximum length of the column values in the database. Use this when a different
-  			value is needed besides the one specified
+  			Overrides the default maximum length of the column values in the database. Use this when a different value is needed besides the one specified
   			Integer|String
   			Default: Chosen according to type
   			Optional
-  		auto_increment:
-  			Auto increments the property when creating new models within the schema
+  		null:
+  			Specifies whether the column is allowed to have null values.
   			Boolean
-  			Default: true if property type is `id`, otherwise false
+  			Default: false
   			Optional
-  			
-  	Validation:
-  	
-  		mutable:
-  			The property can be set
-  			Boolean
-  			Default: true, unless property type is `id` or `auto_increment` is true
+  		filter:
+  			An HTML string that will have values from the model injected. Only used in the admin panel.
+  			String
+  			Example: <a href="/users/profile/{uid}">{username}</a>
   			Optional
- 		validate:
- 			Validation string according to Validate::is()
- 			String
- 			Optional
  		required:
  			Specifies whether the field is required
  			Boolean
  			Default: false
  			Optional
- 		unique:
- 			Specified whether the field is required to be unique
- 			Boolean
- 			Default: false
+ 		validation:
+ 			Function reference to validate the input of the field (i.e. user creation, editing a user), returns true if valid.
+ 			The function should look like: function validate_email( &$property_value, $parameters )
+ 			The validation function is allowed to modify the property value
+ 			Array
  			Optional
-  		null:
-  			Specifies whether the column is allowed to have null values
+ 		validation_params:
+ 			An array of extra parameters to pass to the validation function. Comes through the second argument in an array.
+ 			Array
+ 			Default: null
+ 			Optional
+  		nosort:
+  			Prevents the column from being sortable in the admin panel.
   			Boolean
   			Default: false
   			Optional
-  			
-  	Admin Dashboard Settings:
-  		
-  		title:
-  			Title of the property that shows up in admin panel
-  			String
-  			Default: Derived from property `name`
-  			Optional
-  		filter:
-  			An HTML string that will have values from the model injected. Only used in the admin dashboard.
-  			String
-  			Example: <a href="/users/profile/{uid}">{username}</a>
-  			Optional
-  		no_sort:
-  			Prevents the column from being sortable in the admin dashboard
-  			Boolean
-  			Default: false
-  			Optional
-  		no_wrap:
-  			Prevents the column from wrapping in the admin dashboard
+  		nowrap:
+  			Prevents the column from wrapping in the admin panel.
   			Boolean
   			Default: false
   			Optional
   		truncate:
-  			Prevents the column from truncating values in the admin dashboard
+  			Prevents the column from truncating values in the admin panel.
   			Boolean
   			Default: true
+  			Optional
+  		title:
+  			Title of the property that shows up in admin panel
+  			String
+  			Default: Derived from property name
+  			Optional
+  		autoincrement:
+  			Auto increments the property when creating new models within the schema
+  			Boolean
+  			Default: true if property type is id, otherwise false
   			Optional
   	)
  *
@@ -638,15 +635,12 @@ abstract class Model extends Acl
 				'Default' => val( $property, 'default' ),
 				'Extra' => ''
 			);
-			
-			$type = (isset($property['db_type'])) ? $property['db_type'] : null;
-			$length = (isset($property['length'])) ? $property['length'] : null;
 						
 			switch( $property[ 'type' ] )
 			{
 			case 'id':
-				if( !$type ) $type = 'int';
-				if( !$length ) $length = 11;
+				$type = (isset($property['id'])) ? $property['id'] : 'int';
+				$length = (isset($property['length'])) ? $property['length'] : 11;
 			
 				$column[ 'Type' ] = "$type($length)";
 			break;
@@ -659,30 +653,27 @@ abstract class Model extends Acl
 				$column[ 'Type' ] = 'int(11)';
 			break;
 			case 'number':
-				if( !$type ) $type = 'int';
-				if( !$length ) $length = 11;
+				$type = (isset($property['number'])) ? $property['number'] : 'int';
+				$length = (isset($property['length'])) ? $property['length'] : 11;
 				
 				$column[ 'Type' ] = "$type($length)";
 			break;
 			case 'enum':
-				if( !$type ) $type = 'varchar';
-				if( !$length ) $length = 255;
+				$type = (isset($property['enumType'])) ? $property['enumType'] : 'varchar';
+				$length = (isset($property['length'])) ? $property['length'] : 255;
 				
 				$column[ 'Type' ] = "$type($length)";
 			break;
 			case 'longtext':
-				if( !$type ) $type = 'text';
-				if( !$length ) $length = 65535;
+				$length = (isset($property['length'])) ? $property['length'] : 65535;
 			
-				$column[ 'Type' ] = "$type($length)";
+				$column[ 'Type' ] = "text($length)";
 				
 				$column[ 'Default' ] = '';
 			break;
 			default:
-				if( !$type ) $type = 'varchar';
-				if( !$length ) $length = 255;
-
-				$column[ 'Type' ] = "$type($length)";
+				$length = (isset($property['length'])) ? $property['length'] : 255;
+				$column[ 'Type' ] = "varchar($length)";
 			break;
 			}
 			
@@ -690,10 +681,10 @@ abstract class Model extends Acl
 			{
 				$column[ 'Key' ] = 'PRI';
 				
-				if( !isset( $property[ 'auto_increment' ] ) )
-					$property[ 'auto_increment' ] = true;
+				if( !isset( $property[ 'autoincrement' ] ) )
+					$property[ 'autoincrement' ] = true;
 				
-				if( $property[ 'type' ] == 'id' && strtolower( substr( $column[ 'Type' ], 0, 3 ) ) == 'int' && $property[ 'auto_increment' ] )
+				if( $property[ 'type' ] == 'id' && strtolower( substr( $column[ 'Type' ], 0, 3 ) ) == 'int' && $property[ 'autoincrement' ] )
 					$column[ 'Extra' ] = 'auto_increment';
 			}
 
@@ -803,7 +794,7 @@ abstract class Model extends Acl
 	 *
 	 * @return null
 	 */
-	function load()
+	function loadProperties()
 	{
 		if( $this->hasNoId() )
 			return;
@@ -816,15 +807,7 @@ abstract class Model extends Acl
 				'singleRow' => true ) );
 		
 		foreach( (array)$info as $property => $item )
-			$this->cacheProperty( $property, $item );	
-	}
-	
-	/**
-	 * @deprecated see load()
-	 */
-	function loadProperties()
-	{
-		$this->load();
+			$this->cacheProperty( $property, $item );
 	}
 	
 	/**
@@ -931,15 +914,7 @@ abstract class Model extends Acl
 				$requiredProperties[] = $name;
 		}
 		
-		// add in default values
-		foreach( static::$properties as $name => $fieldInfo )
-		{
-			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) ) {
-				$data[ $name ] = $fieldInfo[ 'default' ];
-			}
-		}
-		
-		// loop through each supplied field and validate
+		// loop through each supplied field and validate, if setup
 		$insertArray = array();
 		foreach( $data as $field => $field_info )
 		{
@@ -951,7 +926,7 @@ abstract class Model extends Acl
 			$property = static::$properties[ $field ];
 
 			// cannot insert keys, unless explicitly allowed
-			if( self::isIdProperty( $field ) && !val( $property, 'mutable' ) )
+			if( self::isIdProperty( $field ) && !val( $property, 'canSetKey' ) )
 				continue;
 			
 			if( is_array( $property ) )
@@ -964,15 +939,24 @@ abstract class Model extends Acl
 				}
 				
 				// validate
-				if( isset( $property[ 'validate' ] ) && !Validate::is( $value, $property[ 'validate' ] ) )
+				if( is_callable( val( $property, 'validation' ) ) )
 				{
-					ErrorStack::add( array(
-						'error' => VALIDATION_FAILED,
-						'params' => array(
-							'field' => $field,
-							'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+					$parameters = array();
+					if( is_array( val( $property, 'validation_params' ) ) )
+						$parameters = array_merge( $parameters, $property[ 'validation_params' ] );
 					
-					$validated = false;
+					$args = array( &$value, $parameters );
+					
+					if( !call_user_func_array( $property[ 'validation' ], $args ) )
+					{
+						ErrorStack::add( array(
+							'error' => VALIDATION_FAILED,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+						
+						$validated = false;
+					}
 				}
 				
 				// check for uniqueness
@@ -997,9 +981,17 @@ abstract class Model extends Acl
 				}
 				
 				$insertArray[ $field ] = $value;
+			}			
+		}
+		
+		// add in default values
+		foreach( static::$properties as $name => $fieldInfo )
+		{
+			if( isset( $fieldInfo[ 'default' ] ) && !isset( $insertArray[ $name ] ) ) {
+				$insertArray[ $name ] = $fieldInfo[ 'default' ];
 			}
 		}
-				
+		
 		// check for required fields
 		foreach( $requiredProperties as $name )
 		{
@@ -1099,26 +1091,34 @@ abstract class Model extends Acl
 
 			if( is_array( $property ) )
 			{
-				// null values
 				if( val( $property, 'null' ) && empty( $value ) )
 				{
 					$updateArray[ $field ] = null;
 					continue;
 				}
 
-				// validate
-				if( isset( $property[ 'validate' ] ) && !Validate::is( $value, $property[ 'validate' ] ) )
+				if( is_callable( val( $property, 'validation' ) ) )
 				{
-					ErrorStack::add( array(
-						'error' => VALIDATION_FAILED,
-						'params' => array(
-							'field' => $field,
-							'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+					$parameters = array( 'model' => $this );
+					if( is_array( val( $property, 'validation_params' ) ) )
+						$parameters = array_merge( $parameters, $property[ 'validation_params' ] );
 					
-					$validated = false;
+					$args = array( &$value, $parameters );
+					
+					if( call_user_func_array( $property[ 'validation' ], $args ) )
+						$updateArray[ $field ] = $value;
+					else
+					{
+						ErrorStack::add( array(
+							'error' => VALIDATION_FAILED,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+
+						$validated = false;
+					}
 				}
 				
-				// check for uniqueness
 				if( val( $property, 'unique' ) && $value != $this->get( $field ) )
 				{
 					if( Database::select(
