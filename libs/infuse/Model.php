@@ -799,7 +799,7 @@ abstract class Model extends Acl
 	/////////////////////////////
 	
 	/**
-	 * Loads and caches all of the properties from the model inside of the database table
+	 * Loads and cahces all of the properties from the model inside of the database table
 	 *
 	 * @return null
 	 */
@@ -824,7 +824,7 @@ abstract class Model extends Acl
 	 */
 	function loadProperties()
 	{
-		return $this->load();
+		$this->load();
 	}
 	
 	/**
@@ -934,11 +934,10 @@ abstract class Model extends Acl
 		// add in default values
 		foreach( static::$properties as $name => $fieldInfo )
 		{
-			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) ) {
+			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
 				$data[ $name ] = $fieldInfo[ 'default' ];
-			}
 		}
-		
+				
 		// loop through each supplied field and validate
 		$insertArray = array();
 		foreach( $data as $field => $field_info )
@@ -963,18 +962,20 @@ abstract class Model extends Acl
 					continue;
 				}
 				
+				$thisIsValid = true;
+				
 				// validate
 				if( isset( $property[ 'validate' ] ) )
 				{
 					if( is_callable( $property[ 'validate' ] ) )
 					{
 						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$validated = false;
+							$thisIsValid = false;
 					}
 					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$validated = false;
+						$thisIsValid = false;
 					
-					if( !$validated )
+					if( !$thisIsValid )
 						ErrorStack::add( array(
 							'error' => VALIDATION_FAILED,
 							'params' => array(
@@ -983,7 +984,7 @@ abstract class Model extends Acl
 				}
 				
 				// check for uniqueness
-				if( val( $property, 'unique' ) )
+				if( $thisIsValid && val( $property, 'unique' ) )
 				{
 					if( Database::select(
 						static::tablename(),
@@ -999,9 +1000,11 @@ abstract class Model extends Acl
 								'field' => $field,
 								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
 					
-						$validated = false;
+						$thisIsValid = false;
 					}
 				}
+				
+				$validated = $validated && $thisIsValid;
 				
 				$insertArray[ $field ] = $value;
 			}
@@ -1113,18 +1116,20 @@ abstract class Model extends Acl
 					continue;
 				}
 
+				$thisIsValid = true;
+				
 				// validate
 				if( isset( $property[ 'validate' ] ) )
 				{
 					if( is_callable( $property[ 'validate' ] ) )
 					{
 						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$validated = false;
+							$thisIsValid = false;
 					}
 					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$validated = false;
+						$thisIsValid = false;
 					
-					if( !$validated )
+					if( !$thisIsValid )
 						ErrorStack::add( array(
 							'error' => VALIDATION_FAILED,
 							'params' => array(
@@ -1133,7 +1138,7 @@ abstract class Model extends Acl
 				}
 				
 				// check for uniqueness
-				if( val( $property, 'unique' ) && $value != $this->get( $field ) )
+				if( $thisIsValid && val( $property, 'unique' ) && $value != $this->get( $field ) )
 				{
 					if( Database::select(
 						static::tablename(),
@@ -1149,9 +1154,11 @@ abstract class Model extends Acl
 								'field' => $field,
 								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
 					
-						$validated = false;
+						$thisIsValid = false;
 					}
 				}
+				
+				$validated = $validated && $thisIsValid;
 				
 				$updateArray[ $field ] = $value;
 			}
