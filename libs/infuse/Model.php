@@ -1114,15 +1114,22 @@ abstract class Model extends Acl
 				}
 
 				// validate
-				if( isset( $property[ 'validate' ] ) && !Validate::is( $value, $property[ 'validate' ] ) )
+				if( isset( $property[ 'validate' ] ) )
 				{
-					ErrorStack::add( array(
-						'error' => VALIDATION_FAILED,
-						'params' => array(
-							'field' => $field,
-							'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+					if( is_callable( $property[ 'validate' ] ) )
+					{
+						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
+							$validated = false;
+					}
+					else if( !Validate::is( $value, $property[ 'validate' ] ) )
+						$validated = false;
 					
-					$validated = false;
+					if( !$validated )
+						ErrorStack::add( array(
+							'error' => VALIDATION_FAILED,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
 				}
 				
 				// check for uniqueness
