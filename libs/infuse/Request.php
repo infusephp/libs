@@ -87,8 +87,33 @@ class Request
             'REQUEST_TIME' => time()
         ), $server);
 
-		// Remove slash in front of requested url
-		$this->server['REQUEST_URI'] = substr_replace (val( $_SERVER, 'REQUEST_URI' ), "", 0, 1);
+		// remove slash in front of requested url
+		$this->server[ 'REQUEST_URI' ] = substr_replace( val( $_SERVER, 'REQUEST_URI' ), '', 0, 1 );
+		
+		// strip the starting directory from the REQUEST_URI
+		if( isset( $this->server[ 'DOCUMENT_URI' ] ) )
+		{
+			$docParts = explode( '/', substr_replace( $this->server[ 'DOCUMENT_URI' ], '', 0, 1 ) );
+			
+			$requestParts = explode( '/', $this->server[ 'REQUEST_URI' ] );
+			
+			foreach( $requestParts as $key => $part )
+			{
+				if( isset( $docParts[ $key ] ) && $docParts[ $key ] == $part )
+					unset( $requestParts[ $key ] );
+			
+				if( strpos( $part, '.php' ) !== false )
+					break;
+			}
+			
+			// ignore a trailing "/"
+			end( $requestParts );
+			$key = key( $requestParts );
+			if( empty( $requestParts[ $key ] ) )
+				unset( $requestParts[ $key ] );
+			
+			$this->server[ 'REQUEST_URI' ] = implode( '/', $requestParts );
+		}
         
 		// sometimes the DELETE and PUT request method is set by forms via POST
 		if( $this->server[ 'REQUEST_METHOD' ] == 'POST' && $requestMethod = val( $request, 'method' )  && in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
