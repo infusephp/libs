@@ -354,6 +354,7 @@ abstract class Controller extends Acl
 			$tablename = array();
 			$currentSchemaSql = array();
 			$suggestedSchema = array();
+			$extraFields = array();
 		
 			foreach( $models as $model => $info )
 			{
@@ -377,10 +378,29 @@ abstract class Controller extends Acl
 				$newTable = !$currentSchema[ $model ];
 				
 				// suggest a schema based on properties
-				$suggestedSchema[ $model ] = $modelObj::schemaToSql( $modelObj::suggestSchema( $currentSchema[ $model ] ), $newTable );
+				$suggested = $modelObj::suggestSchema( $currentSchema[ $model ] );
 
+				// check if there are any extra fields in the current schema
+				$extraFields[ $model ] = array();
+				foreach( $currentSchema[ $model ] as $field )
+				{
+					$found = false;
+					foreach( $suggested as $field2 )
+					{
+						if( $field[ 'Field' ] == $field2[ 'Field' ] )
+						{
+							$found = true;
+							break;
+						}
+					}
+					
+					if( !$found )
+						$extraFields[ $model ][] = $field[ 'Field' ];
+				}
+				
 				// convert to sql
 				$currentSchema[ $model ] = ($currentSchema[ $model ]) ? $modelObj::schemaToSql( $currentSchema[ $model ], true ) : false;				
+				$suggestedSchema[ $model ] = $modelObj::schemaToSql( $suggested, $newTable );
 			}
 			
 			$params[ 'error' ] = false;
@@ -402,11 +422,37 @@ abstract class Controller extends Acl
 					$params[ 'error' ] = $e->getMessage();
 				}
 			}
+			// remove extra fields from the schema
+			else if( val( $paths, 3 ) == 'clean' )
+			{
+				$model = val( $paths, 4 );
+
+				try
+				{
+					$sql = 'ALTER TABLE ' . $tablename[ $model ];
+					
+					$drops = array();
+					foreach( $extraFields[ $model ] as $field )
+						$drops[] = ' DROP COLUMN ' . $field;
+					
+					$sql .= implode( ',', $drops ) . ';';
+
+					$params[ 'success' ] = Database::sql( $sql );
+	
+					if( $params[ 'success' ] )
+						return $res->redirect( '/4dm1n/' . $module . '/schema?success=t' );
+				}
+				catch( \Exception $e )
+				{
+					$params[ 'error' ] = $e->getMessage();
+				}
+			}
 
 			$params[ 'schema' ] = true;
 			$params[ 'tablename' ] = $tablename;
 			$params[ 'currentSchema' ] = $currentSchema;
 			$params[ 'suggestedSchema' ] = $suggestedSchema;
+			$params[ 'extraFields' ] = $extraFields;
 			$params[ 'success' ] = $req->query( 'success' );
 		}
 		else
