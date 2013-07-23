@@ -61,16 +61,6 @@ class ViewEngine Extends \Smarty
 			//$this->setCaching( Smarty::CACHING_LIFETIME_CURRENT);
 			//$this->compile_check = false;
         }
-		
-		// minify CSS
-		$cssFile = INFUSE_BASE_DIR . '/assets/css/styles.less';
-		if( file_exists( $cssFile ) )
-			$this->autoCompileLess( $cssFile, 'styles.css');
-		
-		// minify JS
-		$jsFile = INFUSE_BASE_DIR . '/assets/js';
-		if( file_exists( $jsFile ) )
-			$this->autoCompileJs( $jsFile, 'header.js' );
 	}
 	
 	/**
@@ -80,7 +70,7 @@ class ViewEngine Extends \Smarty
 	 * @param string $inputFile input LESS file
 	 * @param sting $outputFileName output filename
 	 */
-	function autoCompileLess( $inputFile, $outputFileName )
+	function compileLess( $inputFile, $outputFileName )
 	{
         // create temp and output dirs
         if( !file_exists( INFUSE_TEMP_DIR . '/css' ) )
@@ -123,7 +113,7 @@ class ViewEngine Extends \Smarty
 	 * @param string $jsDirectory path containing javascript to compile
 	 * @param sting $outputFileName output filename
 	 */
-	function autoCompileJs( $jsDirectory, $outputFileName )
+	function compileJs( $jsDirectory, $outputFileName )
 	{
         // create temp and output dirs
         if( !file_exists( INFUSE_TEMP_DIR . '/js' ) )
