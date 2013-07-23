@@ -52,7 +52,7 @@ class Modules
 	*/
 	static function requiredModules()
 	{
-		return explode( ',', Config::value( 'site', 'required-modules' ) );
+		return explode( ',', Config::get( 'site', 'required-modules' ) );
 	}
 
 	/**

@@ -24,7 +24,10 @@
  */
  
 namespace infuse;
-  
+
+define( 'ACL_RESULT_NOT_CACHED', -1 );
+define( 'ACL_NO_ID', -1 );
+
 abstract class Acl
 {
 	///////////////////////////////

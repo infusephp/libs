@@ -137,7 +137,7 @@ class ViewEngine Extends \Smarty
 
 		$newCache = array(
 			'md5' => $this->md5OfDir( $jsFiles ),
-			'production' => Config::value( 'site', 'production-level' ) );
+			'production' => Config::get( 'site', 'production-level' ) );
 
 		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] ) {
 			// concatenate the js for every file
@@ -147,7 +147,7 @@ class ViewEngine Extends \Smarty
 			}
 			
 			// minify js in production mode
-			if( Config::value( 'site', 'production-level' ) ) {
+			if( Config::get( 'site', 'production-level' ) ) {
 				$js = \JSMin::minify( $js );
 			}
 			

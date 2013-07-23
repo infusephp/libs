@@ -38,20 +38,11 @@ class Config
 	/////////////////////////////
 	
 	/**
-	 * Gets a global configuration value
-	 *
-	 * @param string $section section
-	 * @param string $name configuration name
-	 *
-	 * @return string|null value
+	 * @deprecated
 	 */
 	static function value( $section, $property )
 	{
-		if( isset( self::$values[ $section ] ) &&
-			isset( self::$values[ $section ][ $property ] ) )
-			return self::$values[ $section ][ $property ];
-		
-		return null;
+		return self::get( $section, $property );
 	}
 	
 	/**

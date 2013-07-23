@@ -56,7 +56,7 @@ class Database
 		{
 			// Initialize database
 			if( self::$DBH == null )
-				self::$DBH = new \PDO( Config::value( 'database', 'type' ) . ':host=' . Config::value( 'database', 'host' ) . ';dbname=' . Config::value( 'database', 'name' ), Config::value( 'database', 'user' ), Config::value( 'database', 'password' ) );
+				self::$DBH = new \PDO( Config::get( 'database', 'type' ) . ':host=' . Config::get( 'database', 'host' ) . ';dbname=' . Config::get( 'database', 'name' ), Config::get( 'database', 'user' ), Config::get( 'database', 'password' ) );
 		}
 		catch(PDOException $e)
 		{
@@ -66,7 +66,7 @@ class Database
 		}
 		
 		// Set error level
-		if( \infuse\Config::value( 'site', 'production-level' ) )
+		if( \infuse\Config::get( 'site', 'production-level' ) )
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
 		else
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );

@@ -136,6 +136,11 @@ class Util
 	
 	static function encryptPassword( $password, $nonce = '' )
 	{ // nonce currently not used
-		return hash_hmac('sha512', $password . $nonce, Config::value( 'site', 'salt' ));
+		return hash_hmac('sha512', $password . $nonce, Config::get( 'site', 'salt' ));
 	}
+	
+	stati function array_val( $a = array(), $k = '' )
+	{
+		return (array_key_exists($k, (array)$a)) ? $a[$k] : null;
+	}	
 }

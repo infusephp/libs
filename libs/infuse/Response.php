@@ -185,7 +185,7 @@ class Response
 		}
 			
 		$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
-		$parameters[ 'baseUrl' ] = ((Config::value('site','ssl-enabled'))?'https':'http') . '://' . Config::value('site','host-name') . '/';
+		$parameters[ 'baseUrl' ] = ((Config::get('site','ssl-enabled'))?'https':'http') . '://' . Config::get('site','host-name') . '/';
 		$parameters[ 'errorStack' ] = ErrorStack::stack();
 	
 		$engine = ViewEngine::engine();

@@ -129,17 +129,13 @@
   	)
  *
  *
- * The model looks for data in this order Local Cache -> Memcache (if enabled) -> Database
+ * The model caching strategies are executed in this order:
+ 	- Memcache (if enabled)
+ 	- Local
  *
- * The local cache is just a static array laid out as follows:
- 	<class_name> : array(
- 		<id> : array(
- 			<property_name> : <value>
- 			<property_name> : <value>
- 		)
- * 
+ *
  */
- 
+
 namespace infuse;
 
 abstract class Model extends Acl
@@ -163,18 +159,9 @@ abstract class Model extends Acl
 	/////////////////////////////
 
 	private static $excludePropertyTypes = array( 'custom', 'html' );
-
-	// memcache
-	private static $memcache;
-	private static $memcacheConnectionAttempted;
-	public $memcachePrefix;
-
-	// local cache
-	private static $globalCache = array(); // used 
-	private $localCache = array();
-
-	private $cacheInitialized = false;
 	
+	private $cache;
+
 	/**
 	 * Creates a new model object
 	 *
@@ -186,50 +173,34 @@ abstract class Model extends Acl
 			$this->id = implode( ',', (array)$id );
 	}
 	
-	private function setupCache()
+	private function cache()
 	{
-		if( $this->cacheInitialized )
-			return;
-		
-		// generate keys for caching this model
-		$class = str_replace( '\\', '', get_class($this) );
-		
-		// initialize memcache if enabled
-		if( class_exists('Memcache') && Config::value( 'memcache', 'enabled' ) )
+		if( !$this->cache )
 		{
-			$this->memcachePrefix = Config::value( 'memcache', 'prefix' ) . '-' . $class . '-' . $this->id . '-';
-
-			// attempt to connect to memcache
-			try
+			// generate caching prefix for this model
+			$class = strtolower( str_replace( '\\', '', get_class($this) ) );		
+			$cachePrefix = $class . '.' . $this->id . '.';
+	
+			$strategies = array();
+			
+			// memcache strategy
+			if( Config::get( 'memcache', 'enabled' ) )
 			{
-				if( !self::$memcache && !self::$memcacheConnectionAttempted )
-				{
-					self::$memcache = new \Memcache;
-					
-					self::$memcache->connect( Config::value( 'memcache', 'host' ), Config::value( 'memcache', 'port' ) ) or (self::$memcache = false);
-					
-					self::$memcacheConnectionAttempted = true;
-				}				
+				$strategies[] = 'memcache';
+				$parameters[ 'memcache' ] = array_replace(
+					Config::get( 'memcache' ),
+					array( 'prefix' => Config::get( 'memcache', 'prefix' ) . '.' . $cachePrefix ) );
 			}
-			catch(\Exception $e)
-			{
-				self::$memcache = false;
-			}
+			
+			// local strategy fallback
+			$strategies[] = 'local';
+			$parameters[ 'local' ] = array( 'prefix' => $cachePrefix );
+			
+			// setup our cache with the appropriate strategies
+			$this->cache = new Cache( $strategies, $parameters );
 		}
 
-		// fallback to local cache if no memcache
-		if( !self::$memcache )
-		{
-			if( !isset( self::$globalCache[ $class ] ) )
-				self::$globalCache[ $class ] = array();
-			
-			if( !isset( self::$globalCache[ $class ][ $this->id ] ) )
-				self::$globalCache[ $class ][ $this->id ] = array();
-			
-			$this->localCache =& self::$globalCache[ $class ][ $this->id ];
-		}
-
-		$this->cacheInitialized = true;
+		return $this->cache;
 	}
 		
 	/////////////////////////////
@@ -305,53 +276,26 @@ abstract class Model extends Acl
 	 * Fetches properties from the model. If caching is enabled, then look there first. When
 	 * properties are not found in the cache then it will fall through to the Database layer.
 	 *
-	 * @param string|array $whichProperties columns
+	 * @param string|array $properties
 	 *
 	 * @return array|string|null requested info or not found
 	 */
-	function get( $whichProperties )
+	function get( $properties )
 	{
-		$this->setupCache();
-	
-		$properties = (is_string( $whichProperties )) ? explode(',', $whichProperties) : (array)$whichProperties;
+		$properties = (is_string( $properties )) ? explode(',', $properties) : (array)$properties;
 
 		$return = array();
 
-		// look to memcache first
-		if( self::$memcache )
+		// look up values in cache
+		$cached = $this->cache()->get( $properties, true );
+		
+		foreach( $cached as $property => $value )
 		{
-			$mKeys = array_map( function ($str) { return $this->memcachePrefix . $str; }, $properties );
+			// do not hit the database for cached values by removing key from search
+			$index = array_search( $property, $properties );
+			unset( $properties[ $index ] );
 			
-			$cache = self::$memcache->get( $mKeys );
-
-			foreach( $cache as $property => $value )
-			{
-				// strip memcache prefix
-				$property = str_replace( $this->memcachePrefix, '', $property );
-			
-				// remove from property search
-				$k = array_search( $property, $properties );
-				if( $k )
-					unset( $properties[ $k ] );
-				
-				// add to return
-				$return[ $property ] = $value;
-			}
-		}
-		// fallback to local cache
-		else
-		{
-			foreach( $properties as $key => $property )
-			{
-				if( isset( $this->localCache[ $property ] ) )
-				{
-					// remove from property search
-					unset( $properties[ $key ] );
-
-					// add to return
-					$return[ $property ] = $this->localCache[ $property ];
-				}
-			}
+			$return[ $property ] = $value;
 		}
 
 		// find remaining values in database
@@ -396,18 +340,6 @@ abstract class Model extends Acl
 	static function hasProperty( $property )
 	{
 		return isset( static::$properties[ $property ] );
-	}
-	
-	/**
-	 * Gets the stats inside of the cache
-	 *
-	 * @return array memcache statistics
-	 */	
-	static function getCacheStats()
-	{
-		$this->setupCache();
-	
-		return (self::$memcache) ? self::$memcache->getStats() : false;
 	}
 	
 	/**
@@ -826,8 +758,7 @@ abstract class Model extends Acl
 				'where' => $this->id( true ),
 				'singleRow' => true ) );
 		
-		foreach( (array)$info as $property => $item )
-			$this->cacheProperty( $property, $item );	
+		$this->cacheProperties( (array)$info );
 	}
 	
 	/**
@@ -848,15 +779,7 @@ abstract class Model extends Acl
 	 */
 	function cacheProperty( $property, $value )
 	{
-		$this->setupCache();
-	
-		// cache in memcache
-		if( self::$memcache )
-			self::$memcache->set( $this->memcachePrefix . $property, $value );
-		
-		// cache locally
-		else
-			$this->localCache[ $property ] = $value;
+		$this->cache()->set( $property, $value );
 	}
 	
 	/**
@@ -881,26 +804,18 @@ abstract class Model extends Acl
 	 */
 	function invalidateCachedProperty( $property )
 	{
-		$this->setupCache();
-		
-		// use memcache
-		if( self::$memcache )
-			self::$memcache->delete( $this->memcachePrefix . $property );
-		
-		// fallback to local cache
-		else
-			unset( $this->localCache[ $property ] );
+		$this->cache()->delete( $property );
 	}
 	
 	/**
-	 * Clears the local cache
+	 * Invalidates all cached properties for this model
 	 *
 	 * @return null
 	 */
-	function clearCache()
+	function emptyCache()
 	{
-		$this->localCache = array();
-		$this->cacheInitialized = false;
+		foreach( static::$properties as $property => $info )
+			$this->invalidateCachedProperty( $property );
 	}
 	
 	/**
@@ -1183,7 +1098,7 @@ abstract class Model extends Acl
 			$updateArray,
 			$updateKeys ) )
 		{
-			// update the local cache
+			// update the cache with our new values
 			$this->cacheProperties( $updateArray );
 				
 			// post-hook

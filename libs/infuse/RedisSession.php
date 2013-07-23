@@ -2,9 +2,13 @@
 	
 namespace infuse;
 
+function json_decode_array($d)
+{
+	return json_decode($d, true);
+}
+
 if(!class_exists('\Predis\Client'))
 {
-
 	require 'Predis/Autoloader.php';
 	\Predis\Autoloader::register();
 }
@@ -23,7 +27,7 @@ class RedisSession
 		if(!defined('REDIS_SESSION_SERIALIZER'))
 			define('REDIS_SESSION_SERIALIZER', 'json_encode' );
 		if(!defined('REDIS_SESSION_UNSERIALIZER'))
-			define('REDIS_SESSION_UNSERIALIZER', 'json_decode_array' );
+			define('REDIS_SESSION_UNSERIALIZER', '\\infuse\\json_decode_array' );
 		$obj = new self($redis_conf, $unpackItems);
 		session_set_save_handler(
 			array($obj, "open"),
@@ -38,7 +42,7 @@ class RedisSession
 	
 	function __construct($redis_conf, $unpackItems){
 		$this->serializer = function_exists(REDIS_SESSION_SERIALIZER) ? REDIS_SESSION_SERIALIZER : 'json_encode';
-		$this->unserializer = function_exists(REDIS_SESSION_UNSERIALIZER) ? REDIS_SESSION_UNSERIALIZER : 'json_decode_array';
+		$this->unserializer = function_exists(REDIS_SESSION_UNSERIALIZER) ? REDIS_SESSION_UNSERIALIZER : '\\infuse\\json_decode_array';
 		$this->unpackItems = $unpackItems;
 		
 		$this->redis = new \Predis\Client($redis_conf);
