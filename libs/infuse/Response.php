@@ -186,7 +186,7 @@ class Response
 			
 		$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
 		$parameters[ 'baseUrl' ] = ((Config::value('site','ssl-enabled'))?'https':'http') . '://' . Config::value('site','host-name') . '/';
-		$parameters[ 'errorStack' ] = ErrorStack::it();
+		$parameters[ 'errorStack' ] = ErrorStack::stack();
 	
 		$engine = ViewEngine::engine();
 		
@@ -200,7 +200,7 @@ class Response
 	/**
 	 * Performs a 302 redirect to a given URL. NOTE: this will exit the script.
 	 *
-	 * @param string $url URL to redirect to
+	 * @param string $url URL we redirect to
 	 */
 	public function redirect( $url )
 	{

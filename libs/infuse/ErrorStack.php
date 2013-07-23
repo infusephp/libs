@@ -35,14 +35,27 @@ class ErrorStack
 	
 	private static $stack = array();
 	private static $context = '';
-	private static $it;
+	private static $stackInstance;
 	
+	/**
+	 * Gets an instance of the stack
+	 *
+	 * @return ErrorStack
+	 */
+	public static function stack()
+	{
+		if( !self::$stackInstance )
+			self::$stackInstance = new ErrorStack();
+		
+		return self::$stackInstance;
+	}
+	
+	/**
+	 * @deprecated
+	 */
 	public static function it()
 	{
-		if( !self::$it )
-			self::$it = new ErrorStack();
-		
-		return self::$it;
+		return self::stack();
 	}
 	
 	////////////////////////////

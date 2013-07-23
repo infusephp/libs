@@ -611,20 +611,41 @@ abstract class Model extends Acl
 				'where' => $this->id( true ),
 				'single' => true ) ) == 1;
 	}
+
+	/**
+	 * Looks up the current schema for the model
+	 *
+	 * @return array|false
+	 */
+	static function currentSchema()
+	{
+		try
+		{
+			return Database::listColumns( static::tablename() );
+		}
+		catch( \Exception $e )
+		{
+			return false;
+		}
+	}
 	
 	/**
-	 * Suggests a schema given the model's properties
+	 * Suggests a schema based on the model's properties
 	 *
 	 * The output of this follows the same format as Database::listColumns( 'tablename' )
 	 *
-	 * @param array $currentSchema current schema
-	 *
-	 * @return array
+	 * @return array (current, suggested)
 	 */
-	static function suggestSchema( $currentSchema )
+	static function suggestSchema()
 	{
+		// get the current schema
+		$currentSchema = static::currentSchema();
+
 		$schema = array();
+
+		$different = true; // TODO not implemented
 		
+		// derive a database column from each property
 		foreach( static::$properties as $name => $property )
 		{
 			if( in_array( $property[ 'type' ], array( 'custom' ) ) )
@@ -713,7 +734,75 @@ abstract class Model extends Acl
 			$schema[] = $column;
 		}
 
-		return $schema;
+		// check if there are any extra fields in the current schema
+		$extraFields = array();
+		if( $currentSchema )
+		{
+			foreach( $currentSchema as $field )
+			{
+				$found = false;
+				foreach( $schema as $field2 )
+				{
+					if( $field[ 'Field' ] == $field2[ 'Field' ] )
+					{
+						$found = true;
+						break;
+					}
+				}
+				
+				if( !$found )
+					$extraFields[] = $field[ 'Field' ];
+	
+				// TOOD compare schemas to look for differences
+			}
+		}
+
+		$tablename = static::tablename();
+		
+		return array(
+			'tablename' => $tablename,
+			'current' => $currentSchema,
+			'currentSql' => Database::schemaToSql( $tablename, $currentSchema, true ),
+			'suggested' => $schema,
+			'suggestedSql' => Database::schemaToSql( $tablename, $schema, !$currentSchema ),
+			'extraFields' => $extraFields,
+			'different' => $different );
+	}
+
+	/**
+	 * Updates a schema
+	 *
+	 * @param boolean $cleanup when true, extra columns are deleted
+	 *
+	 * @return boolean success
+	 */
+	static function updateSchema( $cleanup = false )
+	{
+		$sql = '';
+
+		$suggested = static::suggestSchema();
+
+		if( $cleanup )
+		{
+			$sql = 'ALTER TABLE ' . $suggested[ 'tablename' ];
+			
+			$drops = array();
+			foreach( $suggested[ 'extraFields' ] as $field )
+				$drops[] = ' DROP COLUMN ' . $field;
+			
+			$sql .= implode( ',', $drops ) . ';';
+		}
+		else
+			$sql = $suggested[ 'suggestedSql' ];
+
+		try
+		{
+			return Database::sql( $sql );
+		}
+		catch( \Exception $e )
+		{
+			ErrorStack::add( array( 'error' => 'update_schema_error', 'messages' => $e->getMessage() ) );
+		}		
 	}
 	
 	/////////////////////////////
