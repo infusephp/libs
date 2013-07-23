@@ -133,22 +133,15 @@ class Modules
 		$models = array();
 
 		foreach( $modelNames as $model )
-		{		
-			$singularKey = Inflector::underscore( $model );
-			$pluralKey = Inflector::pluralize( $singularKey );
-			$properName = Inflector::humanize( $singularKey );			
-			
-			$models[ $model ] = array(
-				'model' => $model,
-				'class_name' => '\\infuse\\models\\' . $model,
+		{
+			$modelClassName = '\\infuse\\models\\' . $model;
+		
+			$info = $modelClassName::info();
+
+			$models[ $model ] = array_replace( $info, array(
 				'api' => val( $moduleInfo, 'api' ),
 				'admin' => val( $moduleInfo, 'admin' ),
-				'singular_key' => $singularKey,
-				'plural_key' => $pluralKey,
-				'route_base' => '/' . $module . '/' . $pluralKey,
-				'proper_name' => $properName,
-				'proper_name_plural' => Inflector::humanize( $pluralKey )
-			);
+				'route_base' => '/' . $module . '/' . $info[ 'plural_key' ] ) );
 		}
 		
 		return $models;

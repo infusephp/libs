@@ -208,24 +208,6 @@ abstract class Model extends Acl
 	/////////////////////////////
 
 	/**
-	 * Gets the tablename for the model
-	 *
-	 * @return string
-	 */
-	static function tablename()
-	{
-		// get model name
-		$modelClassName = get_called_class();
-		
-		// strip namespacing
-		$paths = explode( '\\', $modelClassName );
-		$modelName = end( $paths );
-		
-		// pluralize and camelize model name
-		return Inflector::camelize( Inflector::pluralize( $modelName ) );
-	}
-
-	/**
 	 * Gets the model identifier(s)
 	 *
 	 * @param boolean $keyValue return key-value array of id
@@ -250,6 +232,49 @@ abstract class Model extends Acl
 			$return[ $f ] = (count($ids)>0) ? array_pop( $ids ) : false;
 		
 		return $return;
+	}
+	
+	/**
+	 * Gets some basic info about the model
+	 *
+	 * @return array
+	 */
+	static function info()
+	{
+		$class_name = get_called_class();
+		
+		// strip namespacing
+		$paths = explode( '\\', $class_name );
+		$modelName = end( $paths );
+				
+		$singularKey = Inflector::underscore( $modelName );
+		$pluralKey = Inflector::pluralize( $singularKey );
+
+		return array(
+			'model' => $modelName,
+			'class_name' => $class_name,
+			'singular_key' => $singularKey,
+			'plural_key' => $pluralKey,
+			'proper_name' => Inflector::humanize( $singularKey ),
+			'proper_name_plural' => Inflector::humanize( $pluralKey ) );
+	}	
+
+	/**
+	 * Gets the tablename for the model
+	 *
+	 * @return string
+	 */
+	static function tablename()
+	{
+		// get model name
+		$modelClassName = get_called_class();
+		
+		// strip namespacing
+		$paths = explode( '\\', $modelClassName );
+		$modelName = end( $paths );
+		
+		// pluralize and camelize model name
+		return Inflector::camelize( Inflector::pluralize( $modelName ) );
 	}
 	
 	/**

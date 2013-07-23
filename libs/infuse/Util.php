@@ -139,7 +139,7 @@ class Util
 		return hash_hmac('sha512', $password . $nonce, Config::get( 'site', 'salt' ));
 	}
 	
-	stati function array_val( $a = array(), $k = '' )
+	static function array_val( $a = array(), $k = '' )
 	{
 		return (array_key_exists($k, (array)$a)) ? $a[$k] : null;
 	}	
