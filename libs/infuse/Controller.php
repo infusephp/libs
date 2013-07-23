@@ -42,26 +42,6 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Checks permissions on the controller
-	 *
-	 * @param string $permission permission
-	 * @param object $requester requester
-	 *
-	 * @param boolean
-	 */
-	function can( $permission, $requestor = null )
-	{
-		if( $requestor === null )
-			$requestor = \infuse\models\User::currentUser();
-		
-		// everyone in ADMIN group can view admin panel
-		if( $permission == 'view-admin' && $requestor->isMemberOf( ADMIN ) )
-			return true;
-
-		return parent::can( $permission, $requestor );
-	}
-	
-	/**
 	 * Allows the controller to perform middleware tasks before routing. Must be explicitly called.
 	 *
 	 * @param Request $request
@@ -399,8 +379,8 @@ abstract class Controller extends Acl
 				}
 				
 				// convert to sql
-				$currentSchema[ $model ] = ($currentSchema[ $model ]) ? $modelObj::schemaToSql( $currentSchema[ $model ], true ) : false;				
-				$suggestedSchema[ $model ] = $modelObj::schemaToSql( $suggested, $newTable );
+				$currentSchema[ $model ] = ($currentSchema[ $model ]) ? Database::schemaToSql( $tablename[ $model ], $currentSchema[ $model ], true ) : false;				
+				$suggestedSchema[ $model ] = Database::schemaToSql( $tablename[ $model ], $suggested, $newTable );
 			}
 			
 			$params[ 'error' ] = false;

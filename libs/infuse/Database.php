@@ -332,6 +332,82 @@ class Database
 		else
 			return self::$queryCount[ $key ];
 	}
+	
+	/**
+	 * Converts a schema into SQL statements
+	 *
+	 * @param array $schema
+	 * @param boolean $newTable true if a new table should be created
+	 *
+	 * @return string sql
+	 */
+	static function schemaToSql( $tablename, $schema, $newTable = true )
+	{
+		if( count( $schema ) == 0 )
+			return false;
+
+		$sql = '';
+
+		if( $newTable )
+			$sql .= "CREATE TABLE IF NOT EXISTS `$tablename` (\n";
+		else
+			$sql .= "ALTER TABLE `$tablename`\n";
+
+		$primaryKeys = array();
+
+		$cols = array();
+		foreach( $schema as $column )
+		{
+			$col = "\t";
+
+			if( !$newTable )
+				$col .= ( val( $column, 'Exists' ) ) ? 'MODIFY ' : 'ADD ';
+
+			$col .= "`{$column['Field']}` {$column['Type']} ";
+
+			$col .= ( strtolower( $column['Null'] ) == 'yes' ) ? 'NULL' : 'NOT NULL';
+			
+			if( $column[ 'Default' ] )
+				$col .= " DEFAULT '{$column['Default']}'";
+
+			if( $column['Extra'] )
+				$col .= " {$column['Extra']}";
+
+			if( $column['Key'] )
+			{
+				if( $column['Key'] == 'PRI' )
+					$primaryKeys[] = $column[ 'Field' ];
+				else if( $newTable )
+					$col .= ' ' . $column['Key'];
+			}
+
+			$cols[] = $col;
+		}
+
+		// TODO
+		// index
+		// unique index
+		
+		// primary key
+		if( $newTable )
+		{
+			$cols[] = "\t" . 'PRIMARY KEY(' . implode( ',', $primaryKeys ) . ')';		
+		}
+		else
+		{
+			$cols[] = "\t" . 'DROP PRIMARY KEY';
+			$cols[] = "\t" . 'ADD PRIMARY KEY(' . implode( ',', $primaryKeys ) . ')';
+		}
+
+		$sql .= implode( ",\n", $cols);
+
+		if( $newTable )
+			$sql .= "\n) ;";
+		else
+			$sql .= "\n ;";
+
+		return $sql;
+	}	
 		
 	////////////////////////////////
 	// SETTERS	
