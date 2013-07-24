@@ -31,6 +31,7 @@ class Request
 	private $query;
 	private $request;
 	private $cookies;
+	private $session;
 	private $files;
 	private $server;
 	private $headers;
@@ -48,8 +49,9 @@ class Request
 	 * @param array $cookies defaults to $_COOKIE
 	 * @param array $files defaults to $_FILES
 	 * @param array $server defaults to $_SERVER
+	 * @param array $session defaults to $_SESSION
 	 */
-	public function __construct( $query = null, $request = null, $cookies = null, $files = null, $server = null )
+	public function __construct( $query = null, $request = null, $cookies = null, $files = null, $server = null, $session = null )
 	{
 		$this->params = array();
 		
@@ -70,6 +72,13 @@ class Request
 		
 		if( !$server )
 			$server = $_SERVER;
+		
+		if( $session )
+			$this->session = $session;
+		else if( isset( $_SESSION ) )
+			$this->session = $_SESSION;
+		else
+			$this->session = array();
 		
 		$this->server = array_replace(array(
             'SERVER_NAME' => 'localhost',
@@ -358,6 +367,16 @@ class Request
 	}
 	
 	/**
+	 * Gets the user agent string from the request.
+	 *
+	 * @return string user agent string
+	 */
+	public function agent()
+	{
+		return val( $this->server, 'HTTP_USER_AGENT' );
+	}
+	
+	/**
 	 * Checks if the request accepts HTML
 	 *
 	 * @return boolean
@@ -497,6 +516,31 @@ class Request
 	}
 	
 	/**
+	 * Sets a cookie with the same signature as PHP's setcookie()
+	 *
+	 * @param string $name
+	 * @param string $value
+	 * @param int $expire
+	 * @param string $path
+	 * @param string $domain
+	 * @param boolean $secure
+	 * @param boolean $httponly
+	 *
+	 * @return boolean success
+	 */
+	public function setCookie( $name, $value, $expire, $path, $domain, $secure, $httponly )
+	{
+		if( setcookie( $name, $value, $expire, $path, $domain, $secure, $httponly ) )
+		{
+			$this->cookies[ $name ] = $value;
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Gets the files associated with the request. (i.e. $_FILES)
 	 * 
 	 * @param string $index optional
@@ -506,6 +550,50 @@ class Request
 	public function files( $index = false )
 	{
 		return ($index) ? val( $this->files, $index ) : $this->files;
+	}
+	
+	/**
+	 * Gets the session variables associated with the request.
+	 *
+	 * @param string $index optional
+	 *
+	 * @return mixed
+	 */
+	public function session( $index = false )
+	{
+		return ($index) ? val( $this->session, $index ) : $this->session;
+	}
+	
+	/**
+	 * Sets session variable(s)
+	 *
+	 * @param array|string $key key-value or just a key
+	 * @param mixed $value value to set if not supplying key-value map in first argument
+	 */
+	public function setSession( $key, $value = null )
+	{
+		if( is_array( $key ) )
+		{
+			foreach( $key as $k => $v )
+			{
+				$_SESSION[ $k ] = $v;
+				$this->session[ $k ] = $v;
+			}
+		}
+		else
+		{
+			$_SESSION[ $key ] = $value;
+			$this->session[ $key ] = $value;
+		}
+	}
+	
+	/**
+	 * Destroys the session for the request
+	 */
+	public function destroySession()
+	{
+		$_SESSION = array();
+		$this->session = array();
 	}
 	
 	////////////////////////////////////
