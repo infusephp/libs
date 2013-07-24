@@ -419,11 +419,11 @@ abstract class Model extends Acl
 		// unpack parameters
 		if( is_array( $start ) )
 		{
-			$where = (array)val( $start, 'where' );
-			$search = val( $start, 'search' );
-			$sort = val( $start, 'sort' );
-			$limit = val( $start, 'limit' );
-			$start = val( $start, 'start' ); // must be last
+			$where = (array)Util::array_value( $start, 'where' );
+			$search = Util::array_value( $start, 'search' );
+			$sort = Util::array_value( $start, 'sort' );
+			$limit = Util::array_value( $start, 'limit' );
+			$start = Util::array_value( $start, 'start' ); // must be last
 		}
 	
 		if( empty( $start ) || !is_numeric( $start ) || $start < 0 )
@@ -442,7 +442,7 @@ abstract class Model extends Acl
 			$w = array();
 			foreach( static::$properties as $name => $property )
 			{
-				if( !in_array( val( $property, 'type' ), self::$excludePropertyTypes ) )
+				if( !in_array( Util::array_value( $property, 'type' ), self::$excludePropertyTypes ) )
 					$w[] = "$name LIKE '%$search%'";
 			}
 			
@@ -611,9 +611,9 @@ abstract class Model extends Acl
 			$column = array(
 				'Field' => $name,
 				'Type' => 'varchar(255)',
-				'Null' => (val( $property, 'null' )) ? 'YES' : 'NO',
+				'Null' => (Util::array_value( $property, 'null' )) ? 'YES' : 'NO',
 				'Key' => '',
-				'Default' => val( $property, 'default' ),
+				'Default' => Util::array_value( $property, 'default' ),
 				'Extra' => ''
 			);
 			
@@ -631,7 +631,7 @@ abstract class Model extends Acl
 			case 'boolean':
 				$column[ 'Type' ] = 'tinyint(1)';
 				
-				$column[ 'Default' ] = (val($property, 'default')) ? '1' : 0;
+				$column[ 'Default' ] = (Util::array_value($property, 'default')) ? '1' : 0;
 			break;
 			case 'date':
 				$column[ 'Type' ] = 'int(11)';
@@ -878,7 +878,7 @@ abstract class Model extends Acl
 		foreach( static::$properties as $name => $property )
 		{
 			$propertyNames[] = $name;
-			if( val( $property, 'required' ) )
+			if( Util::array_value( $property, 'required' ) )
 				$requiredProperties[] = $name;
 		}
 		
@@ -901,13 +901,13 @@ abstract class Model extends Acl
 			$property = static::$properties[ $field ];
 
 			// cannot insert keys, unless explicitly allowed
-			if( self::isIdProperty( $field ) && !val( $property, 'mutable' ) )
+			if( self::isIdProperty( $field ) && !Util::array_value( $property, 'mutable' ) )
 				continue;
 			
 			if( is_array( $property ) )
 			{
 				// null value
-				if( val( $property, 'null' ) && empty( $value ) )
+				if( Util::array_value( $property, 'null' ) && empty( $value ) )
 				{
 					$updateArray[ $field ] = null;
 					continue;
@@ -935,7 +935,7 @@ abstract class Model extends Acl
 				}
 				
 				// check for uniqueness
-				if( $thisIsValid && val( $property, 'unique' ) )
+				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
 				{
 					if( Database::select(
 						static::tablename(),
@@ -1061,7 +1061,7 @@ abstract class Model extends Acl
 			if( is_array( $property ) )
 			{
 				// null values
-				if( val( $property, 'null' ) && empty( $value ) )
+				if( Util::array_value( $property, 'null' ) && empty( $value ) )
 				{
 					$updateArray[ $field ] = null;
 					continue;
@@ -1089,7 +1089,7 @@ abstract class Model extends Acl
 				}
 				
 				// check for uniqueness
-				if( $thisIsValid && val( $property, 'unique' ) && $value != $this->get( $field ) )
+				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->get( $field ) )
 				{
 					if( Database::select(
 						static::tablename(),

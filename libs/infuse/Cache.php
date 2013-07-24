@@ -55,7 +55,7 @@ class Cache
 		foreach( $strategies as $strategy )
 		{
 			$strategyFunc = "strategy_$strategy";
-			if( $this->$strategyFunc( (array)val( $parameters, $strategy ) ) )
+			if( $this->$strategyFunc( (array)Util::array_value( $parameters, $strategy ) ) )
 				return true;
 		}
 		
@@ -220,7 +220,7 @@ class Cache
 		
 		if( self::$memcache )
 		{
-			$this->cachePrefix = val( $parameters, 'prefix' );
+			$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
 			
 			$this->strategy = 'memcache';
 
@@ -232,7 +232,7 @@ class Cache
 	
 	private function strategy_local( $parameters = array() )
 	{
-		$this->cachePrefix = val( $parameters, 'prefix' );
+		$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
 		
 		$this->strategy = 'local';
 		

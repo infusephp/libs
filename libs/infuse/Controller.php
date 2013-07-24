@@ -139,7 +139,7 @@ abstract class Controller extends Acl
 		
 		// quirky datatables thing
 		if( $sEcho = $req->query( 'sEcho' ) )
-			$return->sEcho = intval( $sEcho );
+			$return->sEcho = intUtil::array_value( $sEcho );
 		
 		$res->setBodyJson( $return );
 	}
@@ -320,7 +320,7 @@ abstract class Controller extends Acl
 		if( !$this->can( 'view-admin' ) )
 			return $res->setCode( 401 );
 		
-		$selectedModel = val( $req->paths(), 2 );
+		$selectedModel = Util::array_value( $req->paths(), 2 );
 		
 		$params = array(
 			'moduleName' => $module,
@@ -332,12 +332,12 @@ abstract class Controller extends Acl
 		if( count( $paths ) >= 3 && $paths[ 2 ] == 'schema' )
 		{
 			// update the schema?
-			if( in_array( val( $paths, 3 ), array( 'update', 'cleanup' ) ) )
+			if( in_array( Util::array_value( $paths, 3 ), array( 'update', 'cleanup' ) ) )
 			{
-				$modelClassName = '\\infuse\\models\\' . val( $paths, 4 );
+				$modelClassName = '\\infuse\\models\\' . Util::array_value( $paths, 4 );
 				$modelObj = new $modelClassName();
 				
-				if( $modelObj::updateSchema( val( $paths, 3 ) == 'cleanup' ) )
+				if( $modelObj::updateSchema( Util::array_value( $paths, 3 ) == 'cleanup' ) )
 					return $res->redirect( '/4dm1n/' . $module . '/schema?success=t' );
 			}
 
@@ -450,7 +450,7 @@ abstract class Controller extends Acl
 		$modelName = Inflector::singularize( Inflector::camelize( $modelRouteName ) );
 		
 		// attempt to fetch the model info
-		$modelInfo = val( $modelsInfo, $modelName );
+		$modelInfo = Util::array_value( $modelsInfo, $modelName );
 
 		if( !$modelInfo )
 		{
@@ -458,7 +458,7 @@ abstract class Controller extends Acl
 			if( count( $modelsInfo ) == 1 )
 				$modelInfo = reset( $modelsInfo );
 			else if( isset( $moduleInfo[ 'default-model' ] ) )
-				$modelInfo = val( $modelsInfo, $moduleInfo[ 'default-model' ] );
+				$modelInfo = Util::array_value( $modelsInfo, $moduleInfo[ 'default-model' ] );
 		}
 		
 		return $modelInfo;

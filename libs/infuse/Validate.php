@@ -47,7 +47,7 @@ class Validate
 			$validated = true;
 
 			foreach( $requirements as $key => $requirement )
-				$validated = $validated && self::processRequirement( val( $data, $key ), $requirement );
+				$validated = $validated && self::processRequirement( Util::array_value( $data, $key ), $requirement );
 
 			return $validated;
 		}
@@ -92,7 +92,7 @@ class Validate
 	 */
 	private static function alpha( &$value, $parameters )
 	{
-		return preg_match( '/^[A-Za-z]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+		return preg_match( '/^[A-Za-z]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
 	}
 
 	/**
@@ -106,7 +106,7 @@ class Validate
 	 */
 	private static function alpha_numeric( &$value, $parameters )
 	{
-		return preg_match( '/^[A-Za-z0-9]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+		return preg_match( '/^[A-Za-z0-9]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
 	}
 
 	/**
@@ -120,7 +120,7 @@ class Validate
 	 */
 	private static function alpha_dash( &$value, $parameters )
 	{
-		return preg_match( '/^[A-Za-z0-9_-]*$/', $value ) && strlen( $value ) >= val( $parameters, 0 );
+		return preg_match( '/^[A-Za-z0-9_-]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
 	}
 
 	/**
@@ -163,7 +163,7 @@ class Validate
 	 */
 	private static function enum( &$value, $parameters )
 	{
-		$enum = explode( ',', val( $parameters, 0 ) );
+		$enum = explode( ',', Util::array_value( $parameters, 0 ) );
 
 		return isset( $enum[ $value ] );
 	}
@@ -232,7 +232,7 @@ class Validate
 	 */
 	private static function numeric( &$value, $parameters )
 	{
-		$check = 'is_' . val( $parameters, 0 );
+		$check = 'is_' . Util::array_value( $parameters, 0 );
 		$value += 0;
 		
 		return ( !isset( $parameters[ 0 ] ) && is_numeric( $value ) ) || $check( $value );
@@ -285,7 +285,7 @@ class Validate
 		if( !is_string( $value ) )
 			return false;
 
-		return strlen( $value ) >= val( $parameters, 0 );
+		return strlen( $value ) >= Util::array_value( $parameters, 0 );
 	}
 
 	/**

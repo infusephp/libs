@@ -124,7 +124,7 @@ class ErrorStack
 	{
 		foreach( self::$stack as $error )
 		{
-			if( val( $error[ 'params' ], $parameter ) === $value )
+			if( Util::array_value( $error[ 'params' ], $parameter ) === $value )
 				return $error;
 		}
 		
@@ -201,10 +201,10 @@ class ErrorStack
 				$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
 		}
 		
-		if( !val( $error, 'error' ) )
+		if( !Util::array_value( $error, 'error' ) )
 			return false;
 	
-		if( !val( $error, 'function' ) )
+		if( !Util::array_value( $error, 'function' ) )
 		{
 			// try to look up the call history using debug_backtrace()
 			$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );

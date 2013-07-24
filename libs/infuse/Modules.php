@@ -139,8 +139,8 @@ class Modules
 			$info = $modelClassName::info();
 
 			$models[ $model ] = array_replace( $info, array(
-				'api' => val( $moduleInfo, 'api' ),
-				'admin' => val( $moduleInfo, 'admin' ),
+				'api' => Util::array_value( $moduleInfo, 'api' ),
+				'admin' => Util::array_value( $moduleInfo, 'admin' ),
 				'route_base' => '/' . $module . '/' . $info[ 'plural_key' ] ) );
 		}
 		

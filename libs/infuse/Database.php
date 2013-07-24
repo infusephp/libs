@@ -361,7 +361,7 @@ class Database
 			$col = "\t";
 
 			if( !$newTable )
-				$col .= ( val( $column, 'Exists' ) ) ? 'MODIFY ' : 'ADD ';
+				$col .= ( Util::array_value( $column, 'Exists' ) ) ? 'MODIFY ' : 'ADD ';
 
 			$col .= "`{$column['Field']}` {$column['Type']} ";
 

@@ -97,7 +97,7 @@ class Request
         ), $server);
 
 		// remove slash in front of requested url
-		$this->server[ 'REQUEST_URI' ] = substr_replace( val( $_SERVER, 'REQUEST_URI' ), '', 0, 1 );
+		$this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $_SERVER, 'REQUEST_URI' ), '', 0, 1 );
 		
 		// strip the starting directory from the REQUEST_URI
 		if( isset( $this->server[ 'DOCUMENT_URI' ] ) )
@@ -125,21 +125,21 @@ class Request
 		}
         
 		// sometimes the DELETE and PUT request method is set by forms via POST
-		if( $this->server[ 'REQUEST_METHOD' ] == 'POST' && $requestMethod = val( $request, 'method' )  && in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
+		if( $this->server[ 'REQUEST_METHOD' ] == 'POST' && $requestMethod = Util::array_value( $request, 'method' )  && in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
 			$this->server[ 'REQUEST_METHOD' ] = $requestMethod;
         
         $this->headers = $this->parseHeaders( $this->server );
         
         // accept header
-		$this->accept = $this->parseAcceptHeader( val( $this->headers, 'ACCEPT' ) );
+		$this->accept = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT' ) );
 		
 		// accept Charsets header
-		$this->charsets = $this->parseAcceptHeader( val( $this->headers, 'ACCEPT_CHARSET' ) );
+		$this->charsets = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_CHARSET' ) );
 		
 		// accept Language header
-		$this->languages = $this->parseAcceptHeader( val( $this->headers, 'ACCEPT_LANGUAGE' ) );
+		$this->languages = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_LANGUAGE' ) );
 		
-		$this->setPath( val( $this->server, 'REQUEST_URI' ) );
+		$this->setPath( Util::array_value( $this->server, 'REQUEST_URI' ) );
 			
 		$this->request = array();
 		
@@ -191,7 +191,7 @@ class Request
 	 */
 	public function ip()
 	{
-		return val( $this->server, 'REMOTE_ADDR' );
+		return Util::array_value( $this->server, 'REMOTE_ADDR' );
 	}
 	
 	/**
@@ -202,7 +202,7 @@ class Request
 	public function protocol()
 	{
 	
-		if( val( $this->server, 'HTTPS' ) )
+		if( Util::array_value( $this->server, 'HTTPS' ) )
 			return 'https';
 		
 		return ($this->port() == 443) ? 'https' : 'http';
@@ -225,7 +225,7 @@ class Request
 	 */
 	public function port()
 	{
-		return val( $this->server, 'SERVER_PORT' );
+		return Util::array_value( $this->server, 'SERVER_PORT' );
 	}
 
 	/**
@@ -237,7 +237,7 @@ class Request
 	 */
 	public function header( $index = false )
 	{
-		return ($index) ? val( $this->headers, strtoupper( $index ) ) : $this->headers;
+		return ($index) ? Util::array_value( $this->headers, strtoupper( $index ) ) : $this->headers;
 	}
 	
 	/**
@@ -247,7 +247,7 @@ class Request
 	 */
 	public function user()
 	{
-		return val( $this->headers, 'PHP_AUTH_USER' );
+		return Util::array_value( $this->headers, 'PHP_AUTH_USER' );
 	}
 	
 	/**
@@ -257,7 +257,7 @@ class Request
 	 */
 	public function password()
 	{
-		return val( $this->headers, 'PHP_AUTH_PW' );
+		return Util::array_value( $this->headers, 'PHP_AUTH_PW' );
 	}
 	
 	/**
@@ -267,10 +267,10 @@ class Request
 	 */
 	public function host()
 	{
-		if( !$host = val( $this->headers, 'HOST' ) )
+		if( !$host = Util::array_value( $this->headers, 'HOST' ) )
 		{
-            if( !$host = val( $this->server, 'SERVER_NAME' ) )
-                $host = val( $this->server, 'SERVER_ADDR', '' );
+            if( !$host = Util::array_value( $this->server, 'SERVER_NAME' ) )
+                $host = Util::array_value( $this->server, 'SERVER_ADDR', '' );
         }
         
         // trim and remove port number from host
@@ -303,7 +303,7 @@ class Request
 	 */
 	public function paths( $index = false )
 	{
-		return (is_numeric($index)) ? val( $this->paths, $index ) : $this->paths;
+		return (is_numeric($index)) ? Util::array_value( $this->paths, $index ) : $this->paths;
 	}
 	
 	/**
@@ -323,7 +323,7 @@ class Request
 	 */
 	public function method()
 	{
-		return val( $this->server, 'REQUEST_METHOD' );
+		return Util::array_value( $this->server, 'REQUEST_METHOD' );
 	}
 	
 	/**
@@ -333,7 +333,7 @@ class Request
 	 */
 	public function contentType()
 	{
-		return val( $this->server, 'CONTENT_TYPE' );
+		return Util::array_value( $this->server, 'CONTENT_TYPE' );
 	}
 	
 	/**
@@ -373,7 +373,7 @@ class Request
 	 */
 	public function agent()
 	{
-		return val( $this->server, 'HTTP_USER_AGENT' );
+		return Util::array_value( $this->server, 'HTTP_USER_AGENT' );
 	}
 	
 	/**
@@ -431,7 +431,7 @@ class Request
 	 */
 	public function isXhr()
 	{
-		return val( $this->headers, 'X-Requested-With' ) == 'XMLHttpRequest';
+		return Util::array_value( $this->headers, 'X-Requested-With' ) == 'XMLHttpRequest';
 	}
 	
 	/**
@@ -466,7 +466,7 @@ class Request
 	 */
 	public function params( $index = false )
 	{
-		return ($index) ? val( $this->params, $index ) : $this->params;
+		return ($index) ? Util::array_value( $this->params, $index ) : $this->params;
 	}
 	
 	/**
@@ -488,7 +488,7 @@ class Request
 	 */
 	public function query( $index = false )
 	{
-		return ($index) ? val( $this->query, $index ) : $this->query;
+		return ($index) ? Util::array_value( $this->query, $index ) : $this->query;
 	}
 	
 	/**
@@ -500,7 +500,7 @@ class Request
 	 */
 	public function request( $index = false )
 	{
-		return ($index) ? val( $this->request, $index ) : $this->request;
+		return ($index) ? Util::array_value( $this->request, $index ) : $this->request;
 	}
 	
 	/**
@@ -512,7 +512,7 @@ class Request
 	 */
 	public function cookies( $index = false )
 	{
-		return ($index) ? val( $this->cookies, $index ) : $this->cookies;
+		return ($index) ? Util::array_value( $this->cookies, $index ) : $this->cookies;
 	}
 	
 	/**
@@ -549,7 +549,7 @@ class Request
 	 */
 	public function files( $index = false )
 	{
-		return ($index) ? val( $this->files, $index ) : $this->files;
+		return ($index) ? Util::array_value( $this->files, $index ) : $this->files;
 	}
 	
 	/**
@@ -561,7 +561,7 @@ class Request
 	 */
 	public function session( $index = false )
 	{
-		return ($index) ? val( $this->session, $index ) : $this->session;
+		return ($index) ? Util::array_value( $this->session, $index ) : $this->session;
 	}
 	
 	/**
