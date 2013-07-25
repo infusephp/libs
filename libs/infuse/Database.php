@@ -343,9 +343,9 @@ class Database
 	 */
 	static function schemaToSql( $tablename, $schema, $newTable = true )
 	{
-		if( count( $schema ) == 0 )
+		if( !$schema || count( $schema ) == 0 )
 			return false;
-
+			
 		$sql = '';
 
 		if( $newTable )

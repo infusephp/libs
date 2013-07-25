@@ -37,118 +37,54 @@ class Modules
 	// Private Class Variables
 	////////////////////////////////
 	
-	private static $controllers;
-	private static $info;
-	private static $loaded;
+	private static $info = array();
+	private static $controllers = array();
+	private static $loaded = array();
 	
 	//////////////////////////////////
 	// GETTERS
 	//////////////////////////////////
-	
-	/**
-	* Gets a list of required modules
-	*
-	* @return array required modules
-	*/
-	static function requiredModules()
-	{
-		return explode( ',', Config::get( 'site', 'required-modules' ) );
-	}
 
 	/**
-	* Checks if a module exists
-	*
-	* @param string $module module
-	*
-	* @return boolean
-	*/
+	 * Checks if a module exists
+	 *
+	 * @param string $module module
+	 *
+	 * @return boolean
+	 */
 	static function exists( $module )
 	{
 		$module = strtolower( $module );
+		
 		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . $module . '/controller.php');
 	}
 	
 	/**
-	* Checks if a module has been initialized
-	*
-	* @param string $module module
-	*
-	* @return boolean
-	*/
+	 * Checks if a module has been initialized
+	 *
+	 * @param string $module module
+	 *
+	 * @return boolean
+	 */
 	static function initialized( $module )
 	{
 		return isset( self::$info[ $module ] );
 	}	
 
 	/**
-	* Checks if a module has been loaded
-	*
-	* @param string $module module
-	*
-	* @return boolean
-	*/
+	 * Checks if a module has been loaded
+	 *
+	 * @param string $module module
+	 *
+	 * @return boolean
+	 */
 	static function loaded( $module )
 	{
 		return isset( self::$loaded[ $module ] );
 	}
 	
 	/**
-	 * Gets the class name of any module
-	 *
-	 * @param string $module module
-	 *
-	 * @return string class name
-	 */
-	static function controller( $module )
-	{
-		if( !self::loaded( $module ) )
-			self::load( $module );
-
-		return self::$controllers[ strtolower( $module ) ];
-	}
-	
-	/**
-	 * Gets the models associated with a module
-	 *
-	 * @param string $module module
-	 *
-	 * @return array models
-	 */
-	static function models( $module )
-	{
-		$moduleInfo = self::info( $module );
-		
-		$modelParams = array();
-		
-		if( isset( $moduleInfo[ 'models' ] ) && is_array( $moduleInfo[ 'models' ] ) )
-		{
-			foreach( (array)$moduleInfo[ 'models' ] as $model )
-				$modelNames[] = $model;
-		}
-		else if( isset( $moduleInfo[ 'model' ] ) )
-		{
-			$modelNames[] = $moduleInfo[ 'model' ];
-		}
-		
-		$models = array();
-
-		foreach( $modelNames as $model )
-		{
-			$modelClassName = '\\infuse\\models\\' . $model;
-		
-			$info = $modelClassName::info();
-
-			$models[ $model ] = array_replace( $info, array(
-				'api' => Util::array_value( $moduleInfo, 'api' ),
-				'admin' => Util::array_value( $moduleInfo, 'admin' ),
-				'route_base' => '/' . $module . '/' . $info[ 'plural_key' ] ) );
-		}
-		
-		return $models;
-	}
-	
-	/**
-	 * Gets information about a module from its module.yml file
+	 * Gets information about a module from its properties
 	 *
 	 * @return array info
 	 */
@@ -160,30 +96,22 @@ class Modules
 	}
 	
 	/**
-	 * Returns a list of all modules and associated meta-data
+	 * Returns a list of all modules
 	 *
 	 * @return array modules
 	 */
 	static function all()
 	{
-		self::initializeAll();
-		
-		$return = array();
-		
-		foreach( self::$info as $module => $info )
-		{
-			$info[ 'name' ] = $module;
-			$return[] = $info;
-		}
+		// search directory to locate all modules
+		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
+		array_walk( $modules, function(&$n) {
+			$n = str_replace(self::$moduleDirectory,'',$n);
+		});
 		
 		// sort by name
-		$cmp = function($a, $b) {
-		    return strcmp($a["name"], $b["name"]);
-		};
-
-		usort($return, $cmp);
-
-		return $return;	
+		sort( $modules );
+		
+		return $modules;
 	}
 	
 	/**
@@ -191,89 +119,108 @@ class Modules
 	 *
 	 * @return array modules with admin enabled
 	 */
-	static function modulesWithAdmin()
+	static function adminModules()
 	{
 		$return = array();
 		
-		foreach( self::all() as $module => $info )
+		foreach( self::all() as $module )
 		{
-			if( $info['admin'] )
+			$info = self::info( $module );
+			
+			if( Util::array_value( $info, 'admin' ) )
 				$return[] = $info;
 		}
-
+		
 		return $return;
 	}
+	
+	/**
+	 * Gets the controller of a module
+	 *
+	 * @param string $module module
+	 *
+	 * @return Controller
+	 */
+	static function controller( $module )
+	{
+		if( !self::loaded( $module ) )
+			self::load( $module );
+
+		return self::$controllers[ strtolower( $module ) ];
+	}	
 	
 	//////////////////////////////
 	// UTILITIES
 	//////////////////////////////
 
 	/**
-	* Initializes a module
-	*
-	* @return null
-	*/
+	 * Initializes a module. This means that the properties of the controller are loaded.
+	 *
+	 * @param array|string module name(s)
+	 *
+	 * @return boolean
+	 */
 	static function initialize( $module )
 	{
+		// initialize several modules at once
+		if( is_array( $module ) )
+		{
+			$success = true;
+			
+			foreach( $module as $m )
+				$success = self::initialize( $m ) && $success;
+			
+			return $success;
+		}
+		
 		$module = strtolower( $module );
 	
 		if( isset( self::$info[ $module ] ) )
 			return true;
 		
-		$configFile = self::$moduleDirectory . '/' . $module . '/module.yml';
+		// load module code
+		@include_once self::$moduleDirectory . $module . '/' . 'controller.php';
 		
-		// module defaults
-		$info = array(
-			'title' => $module,
-			'version' => 0,
-			'description' => '',
-			'author' => array(
-				'name' => '',
-				'email' => '',
-				'website' => '' ),
-			'model' => false,
-			'models' => false,
-			'api' => false,
-			'admin' => false,
-			'routes' => array()
-		);
+		// check if controller exists
+		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
+		if( !class_exists( $class ) )
+			return false;
 		
-		if( file_exists( $configFile ) )
-			$info = array_merge( $info, (array)spyc_load_file( $configFile ) );
-
-		self::$info[ $module ] = $info;
+		self::$info[ $module ] = $class::properties();
+		
+		return true;
 	}
 	
 	/**
-	* Initializes all modules
-	* @return null
-	*/
-	static function initializeAll()
-	{
-		// search directory to locate all modules
-		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
-		array_walk( $modules, function(&$n) {
-			$n = str_replace(self::$moduleDirectory,'',$n);
-		});
-
-		foreach( (array)$modules as $name )
-			self::initialize( $name );	
-	}	
-	
+	 * Loads a module. This means that the module is initialized, the controller is instantiated,
+	 * and it is available for autoloading.
+	 * 
+	 * @param array|string module name(s)
+	 *
+	 * @return boolean
+	 */
 	static function load( $module )
 	{
+		// load several modules at once
+		if( is_array( $module ) )
+		{
+			$success = true;
+			
+			foreach( $module as $m )
+				$success = self::load( $m ) && $success;
+			
+			return $success;
+		}
+		
 		$module = strtolower( $module );
 
 		// check if module has already been loaded
 		if( self::loaded( $module ) )
 			return true;
 		
-		// check if module exists
-		if( !self::exists( $module ) )
-			return false;
-		
 		// load settings
-		self::initialize( $module );
+		if( !self::initialize( $module ) )
+			return false;
 
 		// load module code
 		include_once self::$moduleDirectory . $module . '/' . 'controller.php';
@@ -298,47 +245,18 @@ class Modules
 		
 		return true;	
 	}
-
-	/**
-	* Loads all modules
-	*
-	* Loading a module only loads the class files into memory
-	* @return null
-	*/
-	static function loadAll()
-	{
-		// search directory to locate all modules
-		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
-		array_walk( $modules, function(&$n) {
-			$n = str_replace(self::$moduleDirectory,'',$n);
-		});
-
-		foreach( (array)$modules as $name )
-			self::load( $name );	
-	}
 	
 	/**
-	 * Loads required modules
-	 *
-	 */
-	static function loadRequired()
-	{
-		// load required modules
-		foreach( self::requiredModules() as $name )
-			self::load( $name );
-	}
-	
-	/**
-	 * Performs middleware on required modules
+	 * Performs middleware on all loaded modules
 	 *
 	 * @param Request $request
 	 * @param Repsonse $response
 	 *
+	 * @return void
 	 */
 	static function middleware( $req, $res )
 	{
-		// load required modules
-		foreach( self::requiredModules() as $name )
+		foreach( self::$loaded as $name )
 			self::$controllers[ $name ]->middleware( $req, $res );
 	}
 	
@@ -347,7 +265,7 @@ class Modules
 	 *
 	 * @param string $class class
 	 *
-	 * @return null
+	 * @return void
 	*/
 	public static function autoloader( $class )
 	{
@@ -368,7 +286,7 @@ class Modules
 				}
 			}
 		}
-	}	
+	}
 }
 
 // hack

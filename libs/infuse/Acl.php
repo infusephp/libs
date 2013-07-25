@@ -87,8 +87,7 @@ abstract class Acl
 		$this->loadACL();
 		
 		// check requester permissions
-		if( isset( $this->acl[ 'users' ][ $requestor->id() ] ) &&
-			isset( $this->acl[ 'users' ][ $requestor->id() ][ $permission ] ) )
+		if( Util::array_value( $this->acl, 'users.' . $requestor->id() . '.' . $permission ) )
 			return $this->cacheResult( $permission, $requestor, true );
 
 		// check requester's group permissions in relation to owner
@@ -98,8 +97,7 @@ abstract class Acl
 			if( $group->id() == ADMIN )
 				return $this->cacheResult( $permission, $requestor, true );
 			
-			if( isset( $this->acl[ 'groups' ][ $group->id() ] ) &&
-				isset( $this->acl[ 'groups' ][ $group->id() ][ $permission ] ) )
+			if( Util::array_value( $this->acl, 'groups.' . $group->id() . '.' . $permission ) )
 				return $this->cacheResult( $permission, $requestor, true );
 		}
 		
@@ -138,10 +136,10 @@ abstract class Acl
 		foreach( $acl_db as $acl )
 		{
 			if( !empty( $acl[ 'uid' ] ) )
-				$this->acl[ 'users' ][ $acl[ 'uid' ] ][ $acl[ 'permission' ] ] = true;
+				Util::array_set( $this->acl, "users.{$acl['uid']}.{$acl['permission']}", true );
 			
 			if( !empty( $acl[ 'gid' ] ) )
-				$this->acl[ 'groups' ][ $acl[ 'gid' ] ][ $acl[ 'permission' ] ] = true;
+				Util::array_set( $this->acl, "groups.{$acl['gid']}.{$acl['permission']}", true );
 		}
 
 		$this->aclLoaded = true;
@@ -153,25 +151,19 @@ abstract class Acl
 
 	private function cachedResult( $permission, $requestor )
 	{
-		$key = get_class( $requestor ) . '-' . $requestor->id();
+		$key = strtolower( str_replace( '\\', '', get_class( $requestor ) ) ) . '.' . $requestor->id();
 		
-		if( !isset( $this->aclCache[ $key ] ) )
-			$this->aclCache[ $key ] = array();
-		
-		if( isset( $this->aclCache[ $key ][ $permission ] ) )
-			return $this->aclCache[ $key ][ $permission ];
+		if( $value = Util::array_value( $this->aclCache, "$key.$permission" ) )
+			return $value;
 
 		return ACL_RESULT_NOT_CACHED;
 	}
 	
 	private function cacheResult( $permission, $requestor, $result )
 	{
-		$key = get_class( $requestor ) . '-' . $requestor->id();
+		$key = strtolower( str_replace( '\\', '', get_class( $requestor ) ) ) . '.' . $requestor->id();
 		
-		if( !isset( $this->aclCache[ $key ] ) )
-			$this->aclCache[ $key ] = array();
-		
-		$this->aclCache[ $key ][ $permission ] = $result;
+		Util::array_set( $this->aclCache, "$key.$permission", $result );
 	
 		return $result;
 	}

@@ -1,6 +1,6 @@
 {
 	"name": "infuse/libs",
-	"version": "0.1.12.2",
+	"version": "0.1.13",
 	"description": "Libraries for infuse framework",
 	"type": "library",
 	"keywords": ["infuse","libs"],
@@ -23,7 +23,6 @@
 	"require": {
 		"php": ">=5.3.0",
 		"smarty/smarty": "v3.1.14",
-		"mustangostang/spyc": "0.5.1",
 		"leafo/lessphp": "v0.3.9",
 		"linkorb/jsmin-php": "1.0.0",
 		"monolog/monolog": "1.5.0"

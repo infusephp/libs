@@ -27,12 +27,28 @@ namespace infuse;
 
 abstract class Controller extends Acl
 {
+	public static $properties = array(
+		'title' => '',
+		'version' => 0,
+		'description' => '',
+		'author' => array(
+			'name' => '',
+			'email' => '',
+			'website' => '' ),
+		'model' => false,
+		'models' => false,
+		'api' => false,
+		'admin' => false,
+		'routes' => array() );
+	
+	protected $models;
+
 	/////////////////////////
 	// GETTERS
 	/////////////////////////
 	
 	/**
-	 * Gets the name of the module
+	 * Gets the name of the controller
 	 *
 	 * @return string name
 	*/
@@ -40,6 +56,52 @@ abstract class Controller extends Acl
 	{
 		return strtolower( str_replace( 'infuse\\controllers\\', '', get_called_class() ) );
 	}
+	
+	/**
+	 * Gets the properties of the controller
+	 *
+	 * @return array
+	 */
+	static function properties()
+	{
+		return array_replace( self::$properties, array( 'name' => static::name() ), static::$properties );
+	}
+	
+	/**
+	 * Gets info about the models associated with this controller
+	 *
+	 * @return array models
+	 */
+	function models()
+	{
+		if( !$this->models )
+		{
+			$properties = static::properties();
+			
+			$modelParams = array();
+			
+			if( $models = Util::array_value( $properties, 'models' ) )
+				$modelNames = $models;
+			else if( $model = Util::array_value( $properties, 'model' ) )
+				$modelNames[] = $model;
+			
+			$this->models = array();
+	
+			foreach( $modelNames as $model )
+			{
+				$modelClassName = '\\infuse\\models\\' . $model;
+			
+				$info = $modelClassName::info();
+	
+				$this->models[ $model ] = array_replace( $info, array(
+					'api' => Util::array_value( $properties, 'api' ),
+					'admin' => Util::array_value( $properties, 'admin' ),
+					'route_base' => '/' . $properties[ 'name' ] . '/' . $info[ 'plural_key' ] ) );
+			}
+		}
+		
+		return $this->models;
+	}	
 	
 	/**
 	 * Allows the controller to perform middleware tasks before routing. Must be explicitly called.
@@ -53,7 +115,7 @@ abstract class Controller extends Acl
 	
 	
 	/**
-	 * Finds all matching models. Only words when the automatic API feature is turned on
+	 * Finds all matching models. Only works when API scaffolding is enabled.
 	 *
 	 * @param Request $req
 	 * @param Response $res
@@ -145,7 +207,7 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Finds a particular model. Only supported when automatic API turned on.
+	 * Finds a particular model. Only works when API scaffolding is enabled.
 	 *
 	 * @param Request $req
 	 * @param Response $res
@@ -180,7 +242,7 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Creates a new model. Only supported when automatic API turned on.
+	 * Creates a new model. Only works when API scaffolding is enabled.
 	 *
 	 * @param Request $req
 	 * @param Response $res
@@ -220,7 +282,7 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Edits a model. Requires that automatic API generation is enabled.
+	 * Edits a model. Only works when API scaffolding is enabled.
 	 *
 	 * @param Request $req
 	 * @param Response $res
@@ -260,7 +322,7 @@ abstract class Controller extends Acl
 	}
 	
 	/**
-	 * Deletes a model. Requires that automatic API generation is eanbled.
+	 * Deletes a model. Only works when API scaffolding is enabled.
 	 *
 	 * @param Request $req
 	 * @param Response $res	
@@ -296,7 +358,7 @@ abstract class Controller extends Acl
 	}
 
 	/**
-	 * Displays an automatically generated admin view of a module
+	 * Displays an automatically generated admin view of this controller when enabeld
 	 *
 	 * @param Request $req
 	 * @param Response $res	
@@ -304,12 +366,12 @@ abstract class Controller extends Acl
 	 */
 	function routeAdmin( $req, $res )
 	{
-		$module = self::name();
-		$moduleInfo = Modules::info( $module );		
-		$models = Modules::models( $module );
+		$properties = static::properties();
+		
+		$models = $this->models();
 				
 		// check if automatic admin generation enabled
-		if( !$moduleInfo[ 'admin' ] )
+		if( !$properties[ 'admin' ] )
 			return $res->setCode( 404 );
 
 		// html only
@@ -323,7 +385,7 @@ abstract class Controller extends Acl
 		$selectedModel = Util::array_value( $req->paths(), 2 );
 		
 		$params = array(
-			'moduleName' => $module,
+			'moduleName' => $properties[ 'name' ],
 			'models' => $models
 		);
 		
@@ -338,7 +400,7 @@ abstract class Controller extends Acl
 				$modelObj = new $modelClassName();
 				
 				if( $modelObj::updateSchema( Util::array_value( $paths, 3 ) == 'cleanup' ) )
-					return $res->redirect( '/4dm1n/' . $module . '/schema?success=t' );
+					return $res->redirect( '/4dm1n/' . $properties[ 'name' ] . '/schema?success=t' );
 			}
 
 			$schema = array();
@@ -362,14 +424,14 @@ abstract class Controller extends Acl
 			{
 				$defaultModel = false;
 				
-				if( isset( $moduleInfo[ 'default-model' ] ) )
-					$defaultModel = $moduleInfo[ 'default-model' ];
+				if( isset( $properties[ 'default-model' ] ) )
+					$defaultModel = $properties[ 'default-model' ];
 				
 				if( count( $models ) > 0 )
 					$defaultModel = reset( $models );
 				
 				if( $defaultModel )
-					return $res->redirect( '/4dm1n/' . $module . '/' . $defaultModel[ 'model' ] );
+					return $res->redirect( '/4dm1n/' . $properties[ 'name' ] . '/' . $defaultModel[ 'model' ] );
 			}
 			
 			// which model are we talking about?
@@ -419,7 +481,7 @@ abstract class Controller extends Acl
 	*/
 	function cron( $command )
 	{
-		$name = self::name();
+		$name = static::name();
 		echo "$name\-\>cron($command) does not exist\n";
 		return false;
 	}
@@ -437,14 +499,11 @@ abstract class Controller extends Acl
 	 */
 	private function fetchModelInfo( $modelRouteName )
 	{
-		// which module are we?
-		$module = self::name();
+		// get info about this controller
+		$properties = static::properties();
 		
-		// get info about module
-		$moduleInfo = Modules::info( $module );
-		
-		// fetch all model info for our module
-		$modelsInfo = Modules::models( $module );
+		// fetch all model info for our controller
+		$modelsInfo = $this->models();
 		
 		// convert the route name to the pluralized name
 		$modelName = Inflector::singularize( Inflector::camelize( $modelRouteName ) );
@@ -457,8 +516,8 @@ abstract class Controller extends Acl
 			// attempt to pick a default model
 			if( count( $modelsInfo ) == 1 )
 				$modelInfo = reset( $modelsInfo );
-			else if( isset( $moduleInfo[ 'default-model' ] ) )
-				$modelInfo = Util::array_value( $modelsInfo, $moduleInfo[ 'default-model' ] );
+			else if( isset( $properties[ 'default-model' ] ) )
+				$modelInfo = Util::array_value( $modelsInfo, $properties[ 'default-model' ] );
 		}
 		
 		return $modelInfo;

@@ -27,23 +27,7 @@ namespace infuse;
 
 class Config
 {
-	/////////////////////////////
-	// Private class variables
-	/////////////////////////////
-	
 	private static $values = array();
-	
-	/////////////////////////////
-	// GETTERS
-	/////////////////////////////
-	
-	/**
-	 * @deprecated
-	 */
-	static function value( $section, $property )
-	{
-		return self::get( $section, $property );
-	}
 	
 	/**
 	 * Gets a global configuration value, section, or all values
@@ -89,14 +73,22 @@ class Config
 	}
 	
 	/**
-	 * Loads the site configuration from a YAML file
+	 * Loads the site configuration from an array
 	 *
-	 * @param string $filename
+	 * @param array $value
 	 *
 	 * @return void
 	 */
-	static function load( $filename )
+	static function load( $values )
 	{
-		self::$values = (array)spyc_load_file( $filename );
+		self::$values = $values;
 	}
+	
+	/**
+	 * @deprecated
+	 */
+	static function value( $section, $property )
+	{
+		return self::get( $section, $property );
+	}	
 }
