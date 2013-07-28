@@ -698,12 +698,12 @@ class Request
 			if ($option[0] == 'q') {
 				$precedence = $option[1];
 			} else {
-				$tokens[$option[0]] = $option[1];
+				$tokens[$option[0]] = Util::array_value( $option, 1 );
 			}
 		}
 		$tokens = count ($tokens) ? $tokens : false;
 		return array($precedence, $tokens);
-	}	
+	}
 	
 	private function compare_media_ranges( $one, $two )
 	{

@@ -28,7 +28,10 @@ namespace infuse;
 class ViewEngine
 {		
 	private static $defaultOptions = array(
-		'engine' => 'smarty'
+		'engine' => 'smarty',
+		'viewsDir' => 'views',
+		'compileDir' => 'temp/smarty',
+		'cacheDir' => 'temp/smarty/cache'
 	);
 	
 	private static $extensionMap = array(
@@ -39,11 +42,13 @@ class ViewEngine
 	private static $engine;
 	
 	private $type;
+	private $viewsDir;
+	private $compileDir;
+	private $cacheDir;
+	
 	private $smarty;
-	private $base_template_dir;
-	private $admin_template_dir;
-	private $functions_dir;
-	private $data;	
+
+	private $data;
 	
 	/**
 	 * Creates a new instance
@@ -55,6 +60,9 @@ class ViewEngine
 		$options = array_replace( static::$defaultOptions, $options );
 		
 		$this->type = $options[ 'engine' ];
+		$this->viewsDir = $options[ 'viewsDir' ];
+		$this->compileDir = $options[ 'compileDir' ];
+		$this->cacheDir = $options[ 'cacheDir' ];
 	}
 	
 	/**
@@ -85,7 +93,7 @@ class ViewEngine
 			extract( $this->data );
 			
 			ob_start();
-			include $template;
+			include $this->viewsDir . '/' . $template;
 			$theTemplateRenderedString = ob_get_contents();
 			ob_end_clean();
 			
@@ -218,7 +226,7 @@ class ViewEngine
 	{
 		if( !self::$engine )
 			self::$engine = new self();
-				
+		
 		return self::$engine;
 	}
 	
@@ -243,27 +251,10 @@ class ViewEngine
 		{
 			$this->smarty = new \Smarty;
 			
-			$this->smarty->error_reporting = 1;
-			$this->smarty->base_template_dir = INFUSE_VIEWS_DIR;
-			$this->smarty->template_dir = $this->base_template_dir . '/';
-			$this->smarty->compile_dir = INFUSE_TEMP_DIR . '/smarty/';
-			$this->smarty->cache_dir = INFUSE_TEMP_DIR . '/smarty/cache/';
-			$this->smarty->functions_dir = INFUSE_BASE_DIR . '/libs/Smarty/functions';
-	        $this->smarty->assign( 'app_name', SITE_TITLE );
-	        
-	        if( isset( $options[ 'nocache' ] ) )
-			{
-				// turn off caching
-		        $this->smarty->smarty->caching = 0;
-	        	$this->smarty->force_compile = true;
-		        $this->smarty->compile_check = true;
-			}
-			else
-			{
-				// turn on caching
-				//$this->smarty->setCaching( Smarty::CACHING_LIFETIME_CURRENT);
-				//$this->smarty->compile_check = false;
-	        }
+			$this->smarty->muteExpectedErrors()
+						 ->setTemplateDir( $this->viewsDir )
+						 ->setCompileDir( $this->compileDir )
+						 ->setCacheDir( $this->cacheDir );
 		}
 		
 		return $this->smarty;
