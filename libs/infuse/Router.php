@@ -27,6 +27,11 @@ namespace infuse;
 
 class Router
 {
+	private static $config = array(
+		'base_class' => '\\infuse\\controllers',
+		'use_modules' => false
+	);
+	
 	/**
 	 * Routes a request and resopnse to the appropriate controller. Sends a 404 if nothing was found.
 	 *
@@ -36,8 +41,14 @@ class Router
 	 *
 	 * @return boolean a route match was made
 	 */
-	static function route( $routes, $req, $res )
+	static function route( $routes, $req = null, $res = null )
 	{
+		if( !$req )
+			$req = new Request();
+		
+		if( !$res )
+			$res = new Response();
+	
 		/*
 			Route Precedence:
 			1) global static routes (i.e. /about -> Controller::action())
@@ -49,7 +60,7 @@ class Router
 		
 		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->basePath();
 		$routeGenericStr = $req->basePath();
-		
+
 		$staticRoutes = array();
 		$dynamicRoutes = array();
 		
@@ -80,6 +91,16 @@ class Router
 	}
 	
 	/**
+	 * Changes the router settings
+	 *
+	 * @param array $config
+	 */
+	static function configure( $config )
+	{
+		self::$config = array_replace( self::$config, (array)$config );
+	}
+	
+	/**
 	 * Executes a route
 	 *
 	 * @param array $route
@@ -95,9 +116,20 @@ class Router
 		if( !is_array( $route ) )
 			$action = $route;
 		
-		Modules::load( $controller );
-
-		Modules::controller( $controller )->$action( $req, $res );
+		if( self::$config[ 'use_modules' ] )
+		{
+			Modules::load( $controller );
+			
+			Modules::controller( $controller )->$action( $req, $res );
+		}
+		else
+		{
+			$controller = self::$config[ 'base_class' ] . '\\' . $controller;
+			
+			$controllerObj = new $controller();
+			
+			$controllerObj->$action( $req, $res );
+		}
 		
 		return true;
 	}

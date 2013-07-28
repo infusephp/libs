@@ -163,11 +163,8 @@ class Response
 	 */
 	public function render( $template, $parameters = array() )
 	{
-		// add extension if left off
-		if( substr( $template, -4, 4 ) != '.tpl' )
-			$template .= '.tpl';
-
 		// deal with relative paths
+		// TODO this is not ideal, kind of a hack
 		if( substr( $template, 0, 1 ) != '/' )
 		{
 			// check if called from a controller
@@ -183,16 +180,19 @@ class Response
 				}
 			}
 		}
-			
-		$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
+		
+		// add some useful data to the template
+		if( class_exists( '\\infuse\\models\\User' ) )
+			$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
+		
 		$parameters[ 'baseUrl' ] = ((Config::get('site','ssl-enabled'))?'https':'http') . '://' . Config::get('site','host-name') . '/';
 		$parameters[ 'errorStack' ] = ErrorStack::stack();
-	
+		
 		$engine = ViewEngine::engine();
 		
 		$engine->assignData( $parameters );
 		
-		$this->body = $engine->fetch( $template );
+		$this->body = $engine->render( $template );
 		
 		return true;
 	}
@@ -290,7 +290,7 @@ class Response
 			
 			if( $contentType == 'text/html' )
 			{
-				$this->render( 'error.tpl', array(
+				$this->render( 'error', array(
 					'message' => $message,
 					'errorCode' => $this->code,
 					'title' => $this->code,

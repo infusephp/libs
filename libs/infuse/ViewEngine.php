@@ -25,42 +25,72 @@
 
 namespace infuse;
 
-class ViewEngine Extends \Smarty
-{
-	var $base_template_dir;
-	var $admin_template_dir;
-	var $functions_dir;
+class ViewEngine
+{		
+	private static $defaultOptions = array(
+		'engine' => 'smarty'
+	);
+	
+	private static $extensionMap = array(
+		'smarty' => '.tpl',
+		'php' => '.php'
+	);
 	
 	private static $engine;
 	
-	/*
-	* Constructor
-	*/
+	private $type;
+	private $smarty;
+	private $base_template_dir;
+	private $admin_template_dir;
+	private $functions_dir;
+	private $data;	
+	
+	/**
+	 * Creates a new instance
+	 *
+	 * @param array $options
+	 */
 	function __construct( $options = array() )
 	{
-		parent::__construct();
+		$options = array_replace( static::$defaultOptions, $options );
 		
-		$this->error_reporting = 1;
-		$this->base_template_dir = INFUSE_VIEWS_DIR;
-		$this->template_dir = $this->base_template_dir . '/';
-		$this->compile_dir = INFUSE_TEMP_DIR . '/smarty/';
-		$this->cache_dir = INFUSE_TEMP_DIR . '/smarty/cache/';
-		$this->functions_dir = INFUSE_BASE_DIR . '/libs/Smarty/functions';
-        $this->assign('app_name', SITE_TITLE);
-        
-        if( isset( $options[ 'nocache' ] ) )
+		$this->type = $options[ 'engine' ];
+	}
+	
+	/**
+	 * Renders a template with optional parameters
+	 *
+	 * @param string $template
+	 * @param array $parameters
+	 *
+	 * @return string rendered template
+	 */
+	function render( $template, $parameters = array() )
+	{
+		$extension = self::$extensionMap[ $this->type ];
+		
+		// add extension if left off
+		$len = strlen( $extension );
+		if( substr( $template, -$len, $len ) != $extension )
+			$template .= $extension;
+			
+		$this->assignData( $parameters );			
+		
+		if( $this->type == 'smarty' )
 		{
-			// turn off caching
-	        $this->caching = 0;
-        	$this->force_compile = true;
-	        $this->compile_check = true;
+			return $this->smarty()->fetch( $template );
 		}
-		else
+		else if( $this->type == 'php' )
 		{
-			// turn on caching
-			//$this->setCaching( Smarty::CACHING_LIFETIME_CURRENT);
-			//$this->compile_check = false;
-        }
+			extract( $this->data );
+			
+			ob_start();
+			include $template;
+			$theTemplateRenderedString = ob_get_contents();
+			ob_end_clean();
+			
+			return $theTemplateRenderedString;
+		}
 	}
 	
 	/**
@@ -158,7 +188,7 @@ class ViewEngine Extends \Smarty
 	}
 	
 	/**
-	 * Passes an input array of data to the templating engine
+	 * Passes a key-value map of variables to the template
 	 *
 	 * @param array $data key-value array
 	 */
@@ -166,6 +196,17 @@ class ViewEngine Extends \Smarty
 	{
 		foreach( (array)$data as $key => $value )
 			$this->assign( $key, $value );	
+	}
+	
+	/**
+	 * Sets a variable to be passed to the template
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
+	function assign( $key, $value )
+	{
+		$this->data[ $key ] = $value;
 	}
 	
 	/**
@@ -179,6 +220,53 @@ class ViewEngine Extends \Smarty
 			self::$engine = new self();
 				
 		return self::$engine;
+	}
+	
+	/**
+	 * Configures the engine to use the specified settings. This overwrites any previous instances of the engine.
+	 *
+	 * @param array $options
+	 */
+	static function configure( $options )
+	{
+		self::$engine = new self( $options );
+	}
+	
+	/**
+	 * Gets (and creates) the Smarty instance used by this clsas
+	 *
+	 * @return Smarty
+	 */
+	function smarty()
+	{
+		if( !$this->smarty )
+		{
+			$this->smarty = new \Smarty;
+			
+			$this->smarty->error_reporting = 1;
+			$this->smarty->base_template_dir = INFUSE_VIEWS_DIR;
+			$this->smarty->template_dir = $this->base_template_dir . '/';
+			$this->smarty->compile_dir = INFUSE_TEMP_DIR . '/smarty/';
+			$this->smarty->cache_dir = INFUSE_TEMP_DIR . '/smarty/cache/';
+			$this->smarty->functions_dir = INFUSE_BASE_DIR . '/libs/Smarty/functions';
+	        $this->smarty->assign( 'app_name', SITE_TITLE );
+	        
+	        if( isset( $options[ 'nocache' ] ) )
+			{
+				// turn off caching
+		        $this->smarty->smarty->caching = 0;
+	        	$this->smarty->force_compile = true;
+		        $this->smarty->compile_check = true;
+			}
+			else
+			{
+				// turn on caching
+				//$this->smarty->setCaching( Smarty::CACHING_LIFETIME_CURRENT);
+				//$this->smarty->compile_check = false;
+	        }
+		}
+		
+		return $this->smarty;
 	}
 	
 	/////////////////////////////////
