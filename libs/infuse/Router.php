@@ -101,6 +101,18 @@ class Router
 	}
 	
 	/**
+	 * Gets a setting of the router
+	 *
+	 * @param string $key
+	 *
+	 * @return mixed
+	 */
+	static function setting( $key )
+	{
+		return Util::array_value( self::$config, $key );
+	}
+	
+	/**
 	 * Executes a route
 	 *
 	 * @param array $route

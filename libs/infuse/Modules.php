@@ -56,7 +56,7 @@ class Modules
 	{
 		$module = strtolower( $module );
 		
-		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . $module . '/controller.php');
+		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . '/' . $module . '/controller.php' );
 	}
 	
 	/**
@@ -103,9 +103,9 @@ class Modules
 	static function all()
 	{
 		// search directory to locate all modules
-		$modules = glob(self::$moduleDirectory . '*' , GLOB_ONLYDIR);
+		$modules = glob(self::$moduleDirectory . '/*' , GLOB_ONLYDIR);
 		array_walk( $modules, function(&$n) {
-			$n = str_replace(self::$moduleDirectory,'',$n);
+			$n = str_replace(self::$moduleDirectory . '/','',$n);
 		});
 		
 		// sort by name
@@ -179,7 +179,7 @@ class Modules
 			return true;
 		
 		// load module code
-		@include_once self::$moduleDirectory . $module . '/' . 'controller.php';
+		@include_once self::$moduleDirectory . '/' . $module . '/' . 'controller.php';
 		
 		// check if controller exists
 		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
@@ -223,7 +223,7 @@ class Modules
 			return false;
 
 		// load module code
-		include_once self::$moduleDirectory . $module . '/' . 'controller.php';
+		include_once self::$moduleDirectory . '/' . $module . '/' . 'controller.php';
 		
 		// add module to loaded modules list
 		self::$loaded[] = $module;
@@ -277,7 +277,7 @@ class Modules
 			if( $module != 'Module' || $module != '' )
 			{
 				$name = str_replace( '\\', '/', str_replace( 'infuse\\', '', $class ) );
-				$path = self::$moduleDirectory . "$module/$name.php";
+				$path = self::$moduleDirectory . "/$module/$name.php";
 	
 				if (file_exists($path) && is_readable($path))
 				{
@@ -288,6 +288,3 @@ class Modules
 		}
 	}
 }
-
-// hack
-Modules::$moduleDirectory = INFUSE_MODULES_DIR . '/';

@@ -134,6 +134,46 @@ class Logger
 	}
 	
 	/**
+	 * Handles a PHP error
+	 */
+	static function phpErrorHandler( $errno, $errstr, $errfile, $errline, $errcontext )
+	{
+		$formattedErrorString = Logger::formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext );
+		
+		if( !Config::get( 'site', 'production-level' ) )
+			echo "<pre>$formattedErrorString</pre>";
+	
+		switch( $errno )
+		{
+		case E_CORE_ERROR:
+		case E_COMPILE_ERROR:
+		case E_ERROR:
+		case E_PARSE:
+			Logger::error( $formattedErrorString );
+			die();
+		break;
+		case E_USER_ERROR:
+		case E_RECOVERABLE_ERROR:
+			Logger::error( $formattedErrorString );
+		break;
+		case E_WARNING:
+		case E_CORE_WARNING:
+		case E_COMPILE_WARNING:
+		case E_USER_WARNING:
+		case E_NOTICE:
+		case E_USER_NOTICE:
+		case E_DEPRECATED:
+		case E_USER_DEPRECATED:
+		case E_STRICT:
+			Logger::warning( $formattedErrorString );
+		break;
+		}
+		
+		return true;
+	}
+	
+	
+	/**
 	 * Formats a PHP error into a log message
 	 *
 	 * @param ing $errno error type
@@ -197,6 +237,21 @@ class Logger
 	
 		return  "$errfile ($errline): $errstr - $errtype";
 	}
+	
+	/**
+	 * Handles an exception
+	 */
+	static function exceptionHandler( $exception )
+	{
+		$formattedExceptionString = Logger::formatException( $exception );
+			
+		if( !Config::get( 'site', 'production-level' ) )
+			echo $formattedExceptionString;
+	
+		Logger::error( $formattedExceptionString );
+		
+		die();
+	}	
 	
 	/** 
 	 * Formats an exception into a log message

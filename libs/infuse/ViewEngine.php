@@ -105,41 +105,32 @@ class ViewEngine
 	 * Compiles a LESS file and puts the output in APP_DIR/css
 	 * NOTE: this function employs caching of file modified timesteamps to do as little work as possible
 	 *
-	 * @param string $inputFile input LESS file
-	 * @param sting $outputFileName output filename
+	 * @param string $input LESS input filename
+	 * @param string $cacheFile cache file name
+	 * @param sting $output CSS output filename
 	 */
-	function compileLess( $inputFile, $outputFileName )
+	function compileLess( $input, $cacheFile, $output )
 	{
-        // create temp and output dirs
-        if( !file_exists( INFUSE_TEMP_DIR . '/css' ) )
-        	mkdir( INFUSE_TEMP_DIR . '/css' );
-        if( !file_exists( INFUSE_APP_DIR . '/css' ) )
-        	mkdir( INFUSE_APP_DIR . '/css' );
-
-		$cacheFile = INFUSE_TEMP_DIR . '/css/' . $outputFileName . ".cache";
-		
-		$outputFile = INFUSE_APP_DIR . '/css/' . $outputFileName;
-		
 		// load the cache
 		if( file_exists( $cacheFile ) ) {
 			$cache = unserialize( file_get_contents( $cacheFile ) );
 		} else {
-			$cache = $inputFile;
+			$cache = $input;
 		}
 		
 		$less = new \lessc;
 		try
 		{
-			$newCache = $less->cachedCompile($cache);
+			$newCache = $less->cachedCompile( $cache );
 			
 			if( !is_array( $cache ) || $newCache[ 'updated' ] > $cache[ 'updated' ] ) {
-				if( file_put_contents( $outputFile, $newCache[ 'compiled' ] ) )
+				if( file_put_contents( $output, $newCache[ 'compiled' ] ) )
 					file_put_contents( $cacheFile, serialize( $newCache ) );
 			}
 		}
 		catch( \Exception $ex )
 		{
-			echo "lessphp fatal error: " . $ex->getMessage();
+			Logger::error( "lessphp fatal error: " . $ex->getMessage() );
 		}
 	}
 	
@@ -148,46 +139,34 @@ class ViewEngine
 	 * If the framework is in production mode then the javascript will be minified.
 	 * NOTE: this function employs caching of file modified timesteamps to do as little work as possible
 	 *
-	 * @param string $jsDirectory path containing javascript to compile
-	 * @param sting $outputFileName output filename
+	 * @param string $dir path containing javascript to compile
+	 * @param string $cacheFile path containing cache
+	 * @param sting $output output filename
 	 */
-	function compileJs( $jsDirectory, $outputFileName )
+	function compileJs( $dir, $cacheFile, $output )
 	{
-        // create temp and output dirs
-        if( !file_exists( INFUSE_TEMP_DIR . '/js' ) )
-        	mkdir( INFUSE_TEMP_DIR . '/js' );
-        if( !file_exists( INFUSE_APP_DIR . '/js' ) )
-        	mkdir( INFUSE_APP_DIR . '/js' );
-
 		// NOTE js files get appended in order by filename
 		// to change the order of js files, change the filename
-		
-		$cacheFile = INFUSE_TEMP_DIR . '/js/' . $outputFileName . ".cache";
-		
-		$outputFile = INFUSE_APP_DIR . '/js/' . $outputFileName;
-
 		$cache = false;
-		if( file_exists( $cacheFile ) ) {
+		if( file_exists( $cacheFile ) )
 			$cache = unserialize( file_get_contents( $cacheFile ) );
-		}
 
-		$jsFiles = glob( $jsDirectory . '/*.js' );
+		$jsFiles = glob( $dir . '/*.js' );
 
 		$newCache = array(
 			'md5' => $this->md5OfDir( $jsFiles ),
 			'production' => Config::get( 'site', 'production-level' ) );
 
-		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] ) {
+		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] )
+		{
 			// concatenate the js for every file
 			$js = '';
-			foreach( $jsFiles as $file ) {
+			foreach( $jsFiles as $file )
 				$js .= file_get_contents( $file ) . "\n";
-			}
 			
 			// minify js in production mode
-			if( Config::get( 'site', 'production-level' ) ) {
+			if( Config::get( 'site', 'production-level' ) )
 				$js = \JSMin::minify( $js );
-			}
 			
 			// write the js and cache to the output file
 			if( file_put_contents( $outputFile, $js ) )
@@ -214,7 +193,10 @@ class ViewEngine
 	 */
 	function assign( $key, $value )
 	{
-		$this->data[ $key ] = $value;
+		if( $this->type == 'smarty' )
+			$this->smarty()->assign( $key, $value );
+		else if( $this->type == 'php' )
+			$this->data[ $key ] = $value;
 	}
 	
 	/**
@@ -251,8 +233,8 @@ class ViewEngine
 		{
 			$this->smarty = new \Smarty;
 			
-			$this->smarty->muteExpectedErrors()
-						 ->setTemplateDir( $this->viewsDir )
+			$this->smarty->muteExpectedErrors();
+			$this->smarty->setTemplateDir( $this->viewsDir )
 						 ->setCompileDir( $this->compileDir )
 						 ->setCacheDir( $this->cacheDir );
 		}

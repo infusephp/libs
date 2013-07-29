@@ -163,9 +163,9 @@ class Response
 	 */
 	public function render( $template, $parameters = array() )
 	{
-		// deal with relative paths
+		// deal with relative paths when using modules
 		// TODO this is not ideal, kind of a hack
-		if( substr( $template, 0, 1 ) != '/' )
+		if( Router::setting( 'use_modules' ) && substr( $template, 0, 1 ) != '/' )
 		{
 			// check if called from a controller
 			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
@@ -173,10 +173,10 @@ class Response
 			if( isset( $backtrace[ 1 ] ) )
 			{
 				if( strpos( $backtrace[ 1 ][ 'class' ], 'infuse\\controllers\\' ) !== false )
-				{					
+				{
 					$module = strtolower( str_replace( 'infuse\\controllers\\', '', $backtrace[ 1 ][ 'class' ] ) );
 					
-					$template = INFUSE_MODULES_DIR . '/' . $module . '/views/' . $template;
+					$template = Modules::$moduleDirectory . '/' . $module . '/views/' . $template;
 				}
 			}
 		}
