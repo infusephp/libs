@@ -93,7 +93,7 @@ class DatabaseSession
 	function write( $id, $data )
 	{
 		Database::delete( 'Sessions', array( 'id' => $id ) );
-		$uid = ( class_exists(User) && isset(User::$currentUser) && User::$currentUser->logged_in() ) ? User::$currentUser->id() : null;
+		$uid = ( class_exists( '\\infuse\\models\\User' ) && User::currentUser()->isLoggedIn() ) ? User::currentUser()->id() : null;
 		return Database::insert(
 			'Sessions',
 			array(

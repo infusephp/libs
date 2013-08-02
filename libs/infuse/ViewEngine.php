@@ -152,12 +152,12 @@ class ViewEngine
 			$cache = unserialize( file_get_contents( $cacheFile ) );
 
 		$jsFiles = glob( $dir . '/*.js' );
-
+		
 		$newCache = array(
 			'md5' => $this->md5OfDir( $jsFiles ),
 			'production' => Config::get( 'site', 'production-level' ) );
-
-		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] )
+		
+		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
 		{
 			// concatenate the js for every file
 			$js = '';
@@ -169,7 +169,7 @@ class ViewEngine
 				$js = \JSMin::minify( $js );
 			
 			// write the js and cache to the output file
-			if( file_put_contents( $outputFile, $js ) )
+			if( file_put_contents( $output, $js ) )
 				file_put_contents( $cacheFile, serialize( $newCache ) );
 		}
 	}
