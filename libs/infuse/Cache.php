@@ -94,7 +94,7 @@ class Cache
 			foreach( $keys as $i => $key )
 			{
 				if( isset( self::$local[ $prefixedKeys[ $i ] ] ) )
-					$return[ $key ] = $this->localCache[ $prefixedKeys[ $i ] ];
+					$return[ $key ] = self::$local[ $prefixedKeys[ $i ] ];
 			}
 		}
 		

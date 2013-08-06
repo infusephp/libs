@@ -635,6 +635,9 @@ abstract class Model extends Acl
 			break;
 			case 'date':
 				$column[ 'Type' ] = 'int(11)';
+				
+				if( !is_numeric( $column[ 'Default' ] ) )
+					$column[ 'Default' ] = '';
 			break;
 			case 'number':
 				if( !$type ) $type = 'int';
