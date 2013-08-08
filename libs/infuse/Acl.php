@@ -144,6 +144,16 @@ abstract class Acl
 
 		$this->aclLoaded = true;
 	}
+
+	/**
+	 * Sets up the ACL in the database
+	 *
+	 * @return boolean success
+	 */
+	static function install()
+	{
+		return Database::sql( 'CREATE TABLE `Permissions` (`id` int(11) NOT NULL auto_increment, PRIMARY KEY (`id`), `model` varchar(255) NOT NULL, `model_id` int(11) NULL, `uid` int(11) NOT NULL, `gid` int(11) NOT NULL, `permission` varchar(255) NOT NULL);' );
+	}
 	
 	/////////////////////////////////
 	// PRIVATE FUNCTIONS
