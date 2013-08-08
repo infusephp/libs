@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @package Infuse
+ * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 1.0
+ * @version 0.14.5
  * @copyright 2013 Jared King
  * @license MIT
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -22,7 +22,7 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
- 
+
 namespace infuse;
 
 class DatabaseSession

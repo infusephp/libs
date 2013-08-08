@@ -1,12 +1,10 @@
 <?php
 
 /**
- * Abstraction layer between the database and application. Uses PHP's PDO extension.
- *
- * @package Infuse
+ * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 1.0
+ * @version 0.14.5
  * @copyright 2013 Jared King
  * @license MIT
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and

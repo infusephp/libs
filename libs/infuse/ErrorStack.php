@@ -1,12 +1,10 @@
 <?php
 
 /**
- * Handles the creation and storing of non-fatal errors. This is useful for storing errors that should be displayed to the user (i.e. validation, catchable exceptions)
- *
- * @package Infuse
+ * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 1.0
+ * @version 0.14.5
  * @copyright 2013 Jared King
  * @license MIT
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
