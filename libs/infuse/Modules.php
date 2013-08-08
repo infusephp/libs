@@ -103,8 +103,8 @@ class Modules
 	static function all()
 	{
 		// search directory to locate all modules
-		$modules = glob(self::$moduleDirectory . '/*' , GLOB_ONLYDIR);
-		array_walk( $modules, function(&$n) {
+		$modules = glob( self::$moduleDirectory . '/*' , GLOB_ONLYDIR );
+		array_walk( $modules, function( &$n ) {
 			$n = str_replace(self::$moduleDirectory . '/','',$n);
 		});
 		

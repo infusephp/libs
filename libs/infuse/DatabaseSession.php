@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * @package Infuse
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
@@ -25,21 +25,27 @@
  
 namespace infuse;
 
-use \infuse\models\User;
-
 class DatabaseSession
 {
+	private $tablename = 'Sessions';
+	private $persistentTablename = 'PersistentSessions';
+
+	/**
+	 * Starts the session using this handler
+	 *
+	 * @return DatabaseSession
+	 */
 	static function start()
 	{
 		$obj = new self();
 
 		session_set_save_handler(
-			array($obj, "open"),
-			array($obj, "close"),
-			array($obj, "read"),
-			array($obj, "write"),
-			array($obj, "destroy"),
-			array($obj, "gc"));
+			array( $obj, 'open' ),
+			array( $obj, 'close' ),
+			array( $obj, 'read' ),
+			array( $obj, 'write' ),
+			array( $obj, 'destroy' ),
+			array( $obj, 'gc' ) );
 
 		session_start();
 
@@ -47,32 +53,36 @@ class DatabaseSession
 	}
 
 	/**
-	* Opens a session
-	* @return boolean success
-	*/
+	 * Opens a session
+	 *
+	 * @return boolean success
+	 */
 	function open()
 	{
 		return true;
 	}
 
 	/**
-	* Closes a session
-	* @return boolean success
-	*/
+	 * Closes a session
+	 *
+	 * @return boolean success
+	 */
 	function close()
 	{
 		return true;
 	}
 
 	/**
-	* Reads a session
-	* @param int $id session ID
-	* @return boolean success
-	*/
+	 * Reads a session
+	 *
+	 * @param int $id session ID
+	 *
+	 * @return boolean success
+	 */
 	function read( $id )
 	{
 		return Database::select(
-			'Sessions',
+			$this->tablename,
 			'session_data',
 			array(
 				'where' => array(
@@ -85,48 +95,65 @@ class DatabaseSession
 	}
 
 	/**
-	* Writes a session
-	* @param int $id session ID
-	* @param string $data session data
-	* @return boolean success
-	*/
+	 * Writes a session
+	 *
+	 * @param int $id session ID
+	 * @param string $data session data
+	 *
+	 * @return boolean success
+	 */
 	function write( $id, $data )
 	{
 		Database::delete( 'Sessions', array( 'id' => $id ) );
+
 		$uid = ( class_exists( '\\infuse\\models\\User' ) && User::currentUser()->isLoggedIn() ) ? User::currentUser()->id() : null;
+
 		return Database::insert(
-			'Sessions',
+			$this->tablename,
 			array(
 				'id' => $id,
 				'access' => time(),
-				'session_data' => $data,
-				'logged_in' => $uid ) );
+				'session_data' => $data ) );
 	}
 
 	/**
-	* Destroys a session
-	* @param int $id session ID
-	* @return boolean success
-	*/
+	 * Destroys a session
+	 *
+	 * @param int $id session ID
+	 *
+	 * @return boolean success
+	 */
 	function destroy( $id )
 	{
-		return Database::delete( 'Sessions', array( 'id' => $id ) );
+		return Database::delete( $this->tablename, array( 'id' => $id ) );
 	}
 
 	/**
-	* Performs garbage collection on sessions.
-	* @param int $max maximum number of seconds a session can live
-	* @return boolean success
-	*/
+	 * Performs garbage collection on sessions.
+	 *
+	 * @param int $max maximum number of seconds a session can live
+	 *
+	 * @return boolean success
+	 */
 	function gc( $max )
 	{
 		// delete persistent sessions older than 3 months
-		Database::delete( 'Persistent_Sessions', array( 'created < ' . (time() - 3600*24*30*3) ) );
+		Database::delete( $this->persistentTablename, array( 'created < ' . (time() - 3600*24*30*3) ) );
 		
 		// delete sessions older than max TTL
-		Database::delete( 'Sessions', array( 'access < ' . (time() - $max) ) );
+		Database::delete( $this->tablename, array( 'access < ' . (time() - $max) ) );
 		
 		return true;
+	}
+
+	/**
+	 * Installs schema for handling sessions in a database
+	 *
+	 * @return boolean success
+	 */
+	static function install()
+	{
+		return Database::sql( 'CREATE TABLE IF NOT EXISTS `Sessions` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
 	}
 }
 
