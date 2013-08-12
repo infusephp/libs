@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.14.5
+ * @version 0.1.14.6
  * @copyright 2013 Jared King
  * @license MIT
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -137,9 +137,6 @@ class DatabaseSession
 	 */
 	function gc( $max )
 	{
-		// delete persistent sessions older than 3 months
-		Database::delete( $this->persistentTablename, array( 'created < ' . (time() - 3600*24*30*3) ) );
-		
 		// delete sessions older than max TTL
 		Database::delete( $this->tablename, array( 'access < ' . (time() - $max) ) );
 		
