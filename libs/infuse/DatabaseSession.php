@@ -14,7 +14,6 @@ namespace infuse;
 class DatabaseSession
 {
 	private $tablename = 'Sessions';
-	private $persistentTablename = 'PersistentSessions';
 
 	/**
 	 * Starts the session using this handler
@@ -91,8 +90,6 @@ class DatabaseSession
 	function write( $id, $data )
 	{
 		Database::delete( 'Sessions', array( 'id' => $id ) );
-
-		$uid = ( class_exists( '\\infuse\\models\\User' ) && User::currentUser()->isLoggedIn() ) ? User::currentUser()->id() : null;
 
 		return Database::insert(
 			$this->tablename,
