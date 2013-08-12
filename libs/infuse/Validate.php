@@ -317,7 +317,7 @@ class Validate
 	 */
 	private static function timestamp( &$value, $parameters )
 	{
-		if( is_integer( $value ) )
+		if( ctype_digit( $value ) )
 			return true;
 
 		$value = strtotime( $value );
