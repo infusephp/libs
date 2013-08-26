@@ -4,18 +4,12 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.14.7
+ * @version 0.1.14.8
  * @copyright 2013 Jared King
  * @license MIT
  */
 
 namespace infuse;
-
-if(!class_exists('\Predis\Client'))
-{
-	require 'Predis/Autoloader.php';
-	\Predis\Autoloader::register();
-}
 
 class RedisSession
 {
