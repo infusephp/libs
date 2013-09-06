@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.14.8
+ * @version 0.1.15
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -580,6 +580,21 @@ class Request
 	{
 		$_SESSION = array();
 		$this->session = array();
+	}
+
+	/**
+	 * Gets the CLI arguments associated with the request.
+	 *
+	 * @param int $index optional
+	 *
+	 * @return mixed
+	 */
+	public function cliArgs( $index = false )
+	{
+		if( !$this->isCli() )
+			return false;
+		
+		return ($index) ? Util::array_value( $this->session[ 'argv' ], $index ) : $this->session[ 'argv' ];
 	}
 	
 	////////////////////////////////////
