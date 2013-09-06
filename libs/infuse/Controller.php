@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.15.1
+ * @version 0.1.15.2
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -66,6 +66,7 @@ abstract class Controller extends Acl
 			
 			$modelParams = array();
 			
+			$modelNames = array();
 			if( $models = Util::array_value( $properties, 'models' ) )
 				$modelNames = $models;
 			else if( $model = Util::array_value( $properties, 'model' ) )
@@ -372,12 +373,22 @@ abstract class Controller extends Acl
 		
 		$params = array(
 			'moduleName' => $properties[ 'name' ],
-			'models' => $models
+			'models' => $models,
+			'hasSchema' => false
 		);
 		
 		$paths = $req->paths();
-		
-		if( count( $paths ) >= 3 && $paths[ 2 ] == 'schema' )
+
+		foreach( $models as $info )
+		{
+			if( $info[ 'class_name' ]::hasSchema() )
+			{
+				$params[ 'hasSchema' ] = true;
+				break;
+			}
+		}
+
+		if( $params[ 'hasSchema' ] && count( $paths ) >= 3 && $paths[ 2 ] == 'schema' )
 		{
 			// update the schema?
 			if( in_array( Util::array_value( $paths, 3 ), array( 'update', 'cleanup' ) ) )
@@ -396,6 +407,9 @@ abstract class Controller extends Acl
 			{
 				$modelClassName = $info[ 'class_name' ];
 				$modelObj = new $modelClassName();
+
+				if( !$modelObj::hasSchema() )
+					continue;				
 				
 				// suggest a schema based on properties
 				$schema[ $model ] = $modelObj::suggestSchema();

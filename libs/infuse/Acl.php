@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.15.1
+ * @version 0.1.15.2
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -138,7 +138,7 @@ abstract class Acl
 	 */
 	static function install()
 	{
-		return Database::sql( 'CREATE TABLE `Permissions` (`id` int(11) NOT NULL auto_increment, PRIMARY KEY (`id`), `model` varchar(255) NOT NULL, `model_id` int(11) NULL, `uid` int(11) NOT NULL, `gid` int(11) NOT NULL, `permission` varchar(255) NOT NULL);' );
+		return Database::sql( 'CREATE TABLE IF NOT EXISTS `Permissions` (`id` int(11) NOT NULL auto_increment, PRIMARY KEY (`id`), `model` varchar(255) NOT NULL, `model_id` int(11) NULL, `uid` int(11) NOT NULL, `gid` int(11) NOT NULL, `permission` varchar(255) NOT NULL);' );
 	}
 	
 	/////////////////////////////////

@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.15.1
+ * @version 0.1.15.2
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -137,6 +137,7 @@ abstract class Model extends Acl
 
 	protected static $escapedProperties = array(); // specifies fields that should be escaped with htmlspecialchars()
 	protected static $tablename = false;
+	protected static $hasSchema = true;
 
 	/////////////////////////////
 	// Private class variables
@@ -553,6 +554,11 @@ abstract class Model extends Acl
 				'single' => true ) ) == 1;
 	}
 
+	static function hasSchema()
+	{
+		return static::$hasSchema;
+	}
+
 	/**
 	 * Looks up the current schema for the model
 	 *
@@ -560,6 +566,9 @@ abstract class Model extends Acl
 	 */
 	static function currentSchema()
 	{
+		if( !static::hasSchema() )
+			return false;
+
 		try
 		{
 			return Database::listColumns( static::tablename() );
@@ -579,6 +588,9 @@ abstract class Model extends Acl
 	 */
 	static function suggestSchema()
 	{
+		if( !static::hasSchema() )
+			return false;
+
 		// get the current schema
 		$currentSchema = static::currentSchema();
 
@@ -722,6 +734,9 @@ abstract class Model extends Acl
 	 */
 	static function updateSchema( $cleanup = false )
 	{
+		if( !static::hasSchema() )
+			return true;
+
 		$sql = '';
 
 		$suggested = static::suggestSchema();
