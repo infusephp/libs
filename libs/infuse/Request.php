@@ -594,7 +594,7 @@ class Request
 		if( !$this->isCli() )
 			return false;
 		
-		return ($index) ? Util::array_value( $this->session[ 'argv' ], $index ) : $this->session[ 'argv' ];
+		return ($index) ? Util::array_value( $this->server[ 'argv' ], $index ) : $this->server[ 'argv' ];
 	}
 	
 	////////////////////////////////////
