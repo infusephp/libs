@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.15.2
+ * @version 0.1.15.3
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -187,8 +187,8 @@ class Request
 	 */	
 	public function protocol()
 	{
-	
-		if( Util::array_value( $this->server, 'HTTPS' ) )
+		$https = Util::array_value( $this->server, 'HTTPS' );
+		if( $https && $https !== 'off' )
 			return 'https';
 		
 		return ($this->port() == 443) ? 'https' : 'http';
