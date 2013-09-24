@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.15.3
+ * @version 0.1.15.4
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -281,7 +281,7 @@ class Database
 	
 		$result = self::$DBH->query("show tables");
 		
-		return $result->fetchAll( \PDO::FETCH_COLUMN );
+		return ($result) ? $result->fetchAll( \PDO::FETCH_COLUMN ) : array();
 	}
 	
 	/**
@@ -296,7 +296,7 @@ class Database
 	
 		$result = self::$DBH->query("SHOW COLUMNS FROM `$table`");
 		
-		return $result->fetchAll( \PDO::FETCH_ASSOC );
+		return ($result) ? $result->fetchAll( \PDO::FETCH_ASSOC ) : array();
 	}
 		
 	/**
