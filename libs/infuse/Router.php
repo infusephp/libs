@@ -15,7 +15,8 @@ class Router
 {
 	private static $config = array(
 		'base_class' => '\\infuse\\controllers',
-		'use_modules' => false
+		'use_modules' => false,
+		'default' => array()
 	);
 	
 	/**
@@ -108,6 +109,10 @@ class Router
 	private static function performRoute( $route, $req, $res )
 	{
 		$controller = (isset($route['controller'])) ? $route[ 'controller' ] : $req->params( 'controller' );
+
+		// fallback to default controller
+		if( !$controller )
+			$controller = Util::array_value( self::$config[ 'default' ], 'controller' );
 		
 		$action = (isset($route['action'])) ? $route[ 'action' ] : 'index';
 	
@@ -124,6 +129,9 @@ class Router
 		{
 			$controller = self::$config[ 'base_class' ] . '\\' . $controller;
 			
+			if( !class_exists( $controller ) )
+				return false;
+
 			$controllerObj = new $controller();
 			
 			$controllerObj->$action( $req, $res );
