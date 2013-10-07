@@ -233,20 +233,6 @@ class Modules
 	}
 	
 	/**
-	 * Performs middleware on all loaded modules
-	 *
-	 * @param Request $request
-	 * @param Repsonse $response
-	 *
-	 * @return void
-	 */
-	static function middleware( $req, $res )
-	{
-		foreach( self::$loaded as $name )
-			self::$controllers[ $name ]->middleware( $req, $res );
-	}
-	
-	/**
 	 * Class autoloader
 	 *
 	 * @param string $class class
