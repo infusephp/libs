@@ -139,7 +139,7 @@ class Router
 			$result = $controllerObj->$action( $req, $res );
 		}
 		
-		return $result != -1;
+		return $result !== -1;
 	}
 	
 	/**
