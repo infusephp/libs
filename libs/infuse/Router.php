@@ -100,7 +100,7 @@ class Router
 	}
 	
 	/**
-	 * Executes a route
+	 * Executes a route. If the route returns -1 then failure is assumed.
 	 *
 	 * @param array $route
 	 * @param Request $req
@@ -118,12 +118,14 @@ class Router
 	
 		if( !is_array( $route ) )
 			$action = $route;
+
+		$result = false;
 		
 		if( self::$config[ 'use_modules' ] )
 		{
 			Modules::load( $controller );
 			
-			Modules::controller( $controller )->$action( $req, $res );
+			$result = Modules::controller( $controller )->$action( $req, $res );
 		}
 		else
 		{
@@ -134,10 +136,10 @@ class Router
 
 			$controllerObj = new $controller();
 			
-			$controllerObj->$action( $req, $res );
+			$result = $controllerObj->$action( $req, $res );
 		}
 		
-		return true;
+		return $result != -1;
 	}
 	
 	/**

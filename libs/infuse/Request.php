@@ -437,7 +437,7 @@ class Request
 	 */
 	public function isCli()
 	{
-		return defined('STDIN');
+		return defined( 'STDIN' );
 	}
 	
 	/**

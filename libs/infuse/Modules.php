@@ -113,7 +113,7 @@ class Modules
 		{
 			$info = self::info( $module );
 			
-			if( Util::array_value( $info, 'admin' ) )
+			if( Util::array_value( $info, 'scaffoldAdmin' ) || Util::array_value( $info, 'hasAdminView' ) )
 				$return[] = $info;
 		}
 		

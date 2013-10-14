@@ -162,7 +162,8 @@ class Response
 				{
 					$module = strtolower( str_replace( 'infuse\\controllers\\', '', $backtrace[ 1 ][ 'class' ] ) );
 					
-					$template = Modules::$moduleDirectory . '/' . $module . '/views/' . $template;
+					$params[ 'moduleViewsDir' ] = Modules::$moduleDirectory . '/' . $module . '/views';
+					$template = $params[ 'moduleViewsDir' ] . '/' . $template;
 				}
 			}
 		}
