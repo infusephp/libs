@@ -158,9 +158,10 @@ class Response
 			
 			if( isset( $backtrace[ 1 ] ) )
 			{
-				if( strpos( $backtrace[ 1 ][ 'class' ], 'infuse\\controllers\\' ) !== false )
+				$class = Util::array_value( $backtrace[ 1 ], 'class' );
+				if( strpos( $class, 'infuse\\controllers\\' ) !== false )
 				{
-					$module = strtolower( str_replace( 'infuse\\controllers\\', '', $backtrace[ 1 ][ 'class' ] ) );
+					$module = strtolower( str_replace( 'infuse\\controllers\\', '', $class ) );
 					
 					$params[ 'moduleViewsDir' ] = Modules::$moduleDirectory . '/' . $module . '/views';
 					$template = $params[ 'moduleViewsDir' ] . '/' . $template;
