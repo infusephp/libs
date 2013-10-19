@@ -158,7 +158,7 @@ abstract class Model extends Acl
 			$this->id = implode( ',', (array)$id );
 	}
 	
-	private function cache()
+	protected function cache()
 	{
 		if( !$this->cache )
 		{
