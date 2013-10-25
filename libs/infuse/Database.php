@@ -438,11 +438,16 @@ class Database
 	
 		try
 		{
+			// prepare and execute the statement
 			$STH = self::$DBH->prepare('INSERT INTO ' . $tableName . ' (' . self::implode_key( ',', (array)$data ) . ') VALUES (:' . self::implode_key( ',:', (array)$data ) . ')');
-			$STH->execute($data);
 			
-			// update the insert counter
-			self::$queryCount[ 'insert' ]++;
+			if( $STH->execute($data) )
+			{
+				// update the insert counter
+				self::$queryCount[ 'insert' ]++;
+
+				return true;
+			}
 		}
 		catch(PDOException $e)
 		{
@@ -450,8 +455,6 @@ class Database
 
 			return false;
 		}
-		
-		return true;
 	}
 	
 	/**
@@ -472,6 +475,8 @@ class Database
 	
 		if( count( $data ) == 0 )
 			return true;
+
+		$success = true;
 	
 		try
 		{
@@ -496,17 +501,21 @@ class Database
 			// generate the SQL
 			$sql = "INSERT INTO $tableName (" . implode( ",", $fields ) . ") VALUES " . implode( ',', $question_marks );
 			
-			// prepare the statement
+			// prepare and execute the statement
 			$stmt = self::$DBH->prepare( $sql );
 			
-			// execute!
 			$stmt->execute( $insert_values );
 			
 			// commit the transaction
-			self::$DBH->commit();	
-			
-			// increment the insert counter
-			self::$queryCount[ 'insert' ]++;		
+			if( self::$DBH->commit() )
+			{
+				// increment the insert counter
+				self::$queryCount[ 'insert' ]++;
+
+				return true;
+			}
+			else
+				return false;
 		}
 		catch(PDOException $e)
 		{
@@ -514,8 +523,6 @@ class Database
 
 			return false;
 		}
-		
-		return true;			
 	}
 	
 	/**
@@ -549,9 +556,15 @@ class Database
 			}
 				
 			$STH = self::$DBH->prepare($sql);
-			$STH->execute($data);
-			
-			self::$queryCount[ 'update' ]++;
+
+			if( $STH->execute($data) )
+			{
+				self::$queryCount[ 'update' ]++;
+
+				return true;
+			}
+			else
+				return false;
 		}
 		catch(PDOException $e)
 		{
@@ -559,8 +572,6 @@ class Database
 
 			return false;
 		}
-		
-		return true;
 	}
 	
 	/**
@@ -605,9 +616,14 @@ class Database
 			if( $showQuery )
 				echo $query;
 
-			self::$DBH->exec( $query );
-						
-			self::$queryCount[ 'delete' ]++;
+			if( self::$DBH->exec( $query ) )
+			{
+				self::$queryCount[ 'delete' ]++;
+
+				return true;
+			}
+			else
+				return false;
 		}
 		catch(PDOException $e)
 		{
@@ -615,8 +631,6 @@ class Database
 
 			return false;
 		}
-		
-		return true;
 	}
 	
 	////////////////////////////
