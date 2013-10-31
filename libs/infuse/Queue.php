@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * @package infuse\libs
+ * @author Jared King <j@jaredtking.com>
+ * @link http://jaredtking.com
+ * @version 0.1.16.0
+ * @copyright 2013 Jared King
+ * @license MIT
+ */
+
 namespace infuse;
 
 define( 'QUEUE_TYPE_IRON', 'iron' );
