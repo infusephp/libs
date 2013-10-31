@@ -3,5 +3,6 @@ Desktop.ini
 .DS_Store
 /composer.phar
 /vendor
-HEADER
-headers.sh
+/HEADER
+/headers.sh
+/composer.lock
