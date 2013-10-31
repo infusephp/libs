@@ -13,7 +13,6 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		Queue::configure( array(
 			'type' => QUEUE_TYPE_IRON,
-
 		) );
 
 		$this->assertEquals( Queue::type(), QUEUE_TYPE_IRON );
@@ -94,18 +93,16 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		Queue::configure( array(
 			'type' => QUEUE_TYPE_SYNCHRONOUS,
-			'queues' => array(
+			'listeners' => array(
 				'test1' => array(
-					'listeners' => array(
-						array( $this, 'receiveMessageListener1' ) ) ),
+					array( $this, 'receiveMessageListener1' ) ),
 				'test2' => array(
-					'listeners' => array(
-						array( $this, 'receiveMessageListener2' ) ) ) ) ) );
+					array( $this, 'receiveMessageListener2' ) ) ) ) );
 
 		Queue::enqueue( 'test1', 'test' );
 		$this->assertInstanceOf( 'stdClass', $this->test1Message );
 		$this->assertTrue( $this->test1Message->id > 0 );
-		$this->assertEquals( $this->test1Message->body, 'test' );		
+		$this->assertEquals( $this->test1Message->body, 'test' );
 
 		Queue::enqueue( 'test2', 1234 );
 		$this->assertInstanceOf( 'stdClass', $this->test2Message );

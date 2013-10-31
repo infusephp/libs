@@ -65,9 +65,9 @@ class Queue
 
 	        foreach( self::$config[ 'queues' ] as $q => $settings )
 	        {
-	        	// setup each subscriber url with an auth token (if used)
+	        	// setup each push subscriber url with an auth token (if used)
 	        	$subscribers = array();
-	            foreach( Util::array_value( $settings, 'subscribers' ) as $s )
+	            foreach( Util::array_value( $settings, 'push_subscribers' ) as $s )
 	            {
 	            	$url = $s . "?q=$q";
 
@@ -232,9 +232,9 @@ class Queue
 	{
 		$success = true;
 
-		if( isset( self::$config[ 'queues' ][ $queue ] ) )
+		if( isset( self::$config[ 'listeners' ] ) )
 		{
-			$listeners = (array)Util::array_value( self::$config[ 'queues' ][ $queue ], 'listeners' );
+			$listeners = (array)Util::array_value( self::$config[ 'listeners' ], $queue );
 
 			// notify all listeners that we have a new message
 			$success = array_reduce( $listeners, function( &$result, $function ) use ($message) {
