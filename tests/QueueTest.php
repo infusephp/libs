@@ -89,7 +89,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @depends testDeleteMessage
 	 */
-	public function testReceiveMessage()
+	public function testListeners()
 	{
 		Queue::configure( array(
 			'type' => QUEUE_TYPE_SYNCHRONOUS,
@@ -109,7 +109,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( $this->test2Message->id > 0 );
 		$this->assertEquals( $this->test2Message->body, 1234 );
 	}
-
+	
 	public function receiveMessageListener1( $message )
 	{
 		$this->test1Message = $message;

@@ -225,8 +225,6 @@ class Queue
 	 *
 	 * @param string $queue queue name
 	 * @param string $message message
-	 *
-	 * @return boolean result from listeners
 	 */
 	static function receiveMessage( $queue, $message )
 	{
@@ -237,22 +235,20 @@ class Queue
 			$listeners = (array)Util::array_value( self::$config[ 'listeners' ], $queue );
 
 			// notify all listeners that we have a new message
-			$success = array_reduce( $listeners, function( &$result, $function ) use ($message) {
-
+			foreach( $listeners as $function )
+			{
 				if( self::$config[ 'use_modules' ] )
 				{
 					list( $controller, $action ) = $function;
 
 					Modules::load( $controller );
 					
-					return Modules::controller( $controller )->$action( $message ) && $result;
+					Modules::controller( $controller )->$action( $message );
 				}
 				else
-					return call_user_func( $function, $message ) && $result;
-			} );
+					call_user_func( $function, $message );
+			}
 		}
-
-		return $success;
 	}
 
 	//////////////////////////
