@@ -241,8 +241,6 @@ class Queue
 				{
 					list( $controller, $action ) = $function;
 
-					Modules::load( $controller );
-					
 					Modules::controller( $controller )->$action( $message );
 				}
 				else

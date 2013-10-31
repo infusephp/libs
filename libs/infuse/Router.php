@@ -123,8 +123,6 @@ class Router
 		
 		if( self::$config[ 'use_modules' ] )
 		{
-			Modules::load( $controller );
-			
 			$result = Modules::controller( $controller )->$action( $req, $res );
 		}
 		else
