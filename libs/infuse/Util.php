@@ -221,4 +221,14 @@ class Util
 			. (!$Secure ? '' : '; secure')
 			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
 	}
+
+	/**
+	 * Useful for debugging
+	 *
+	 * @param mixed $element
+	 */
+	function print_pre( $element )
+	{
+		echo '<pre>' . print_r( $element, true ) . '</pre>';
+	}	
 }
