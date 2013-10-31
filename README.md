@@ -1,5 +1,4 @@
-infuse/libs
-[![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs)
+infuse/libs [![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs)
 ===========
 
 infuse/libs provide a jumping off point for web development, inspired by express.js (amongst others). The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been used in the battlefield in projects both small and large. There is even a framework built around these libraries.
@@ -10,7 +9,7 @@ An MVC framework, called Infuse Framework, has been built using these libraries.
 
 ## Tests
 
-Run this to execute the included tests (more tests coming later):
+Execute this command to run the included tests (more tests coming later):
 
 ```
 phpunit
