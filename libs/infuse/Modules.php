@@ -42,7 +42,7 @@ class Modules
 	{
 		$module = strtolower( $module );
 		
-		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . '/' . $module . '/controller.php' );
+		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . '/' . $module . '/Controller.php' );
 	}
 	
 	/**
@@ -165,7 +165,7 @@ class Modules
 			return true;
 		
 		// load module code
-		@include_once self::$moduleDirectory . '/' . $module . '/' . 'controller.php';
+		@include_once self::$moduleDirectory . '/' . $module . '/' . 'Controller.php';
 		
 		// check if controller exists
 		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
@@ -209,7 +209,7 @@ class Modules
 			return false;
 
 		// load module code
-		include_once self::$moduleDirectory . '/' . $module . '/' . 'controller.php';
+		include_once self::$moduleDirectory . '/' . $module . '/' . 'Controller.php';
 		
 		// add module to loaded modules list
 		self::$loaded[] = $module;
