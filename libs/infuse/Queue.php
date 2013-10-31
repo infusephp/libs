@@ -241,6 +241,8 @@ class Queue
 
 				if( self::$config[ 'use_modules' ] )
 				{
+					list( $controller, $action ) = $function;
+
 					Modules::load( $controller );
 					
 					return Modules::controller( $controller )->$action( $message ) && $result;
