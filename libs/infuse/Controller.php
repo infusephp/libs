@@ -23,8 +23,6 @@ abstract class Controller extends Acl
 			'website' => '' ),
 		'model' => false,
 		'models' => false,
-		'scaffoldAdmin' => false,
-		'hasAdminView' => false,
 		'routes' => array() );
 	
 	protected $models;
@@ -89,28 +87,4 @@ abstract class Controller extends Acl
 		
 		return $this->models;
 	}	
-	
-	/**
-	 * Allows the controller to perform middleware tasks before routing. Must be explicitly called.
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 */
-	function middleware( $req, $res )
-	{ }
-
-	/**
-	 * Executes a cron command
-	 *
-	 * @param string $command command
-	 *
-	 * @return boolean true if the command finished successfully
-	*/
-	function cron( $command )
-	{
-		$name = static::name();
-		echo "$name\-\>cron($command) does not exist\n";
-		return false;
-	}
 }
