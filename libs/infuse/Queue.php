@@ -128,10 +128,11 @@ class Queue
 			self::$idCounter++;
 
 			// add the serialized message wrapper to the queue
-			self::$queues[ $queue ][] = json_encode( $messageWrapper );
+			$json = json_encode( $messageWrapper );
+			self::$queues[ $queue ][] = $json;
 
 			// since this is synchronous mode, notify all listeners that we have a new message
-			self::receiveMessage( $queue, $messageWrapper );
+			self::receiveMessage( $queue, $json );
 
 			return true;
 		}
@@ -232,6 +233,9 @@ class Queue
 
 		if( isset( self::$config[ 'listeners' ] ) )
 		{
+			if( is_string( $message ) )
+				$message = json_decode( $message );
+
 			$listeners = (array)Util::array_value( self::$config[ 'listeners' ], $queue );
 
 			// notify all listeners that we have a new message
