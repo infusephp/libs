@@ -9,9 +9,9 @@
  * @license MIT
  */
 
-/**
- *
- * The following properties are available:
+/*
+
+The following properties (of model properties) are available:
  
  	Schema:
  	
@@ -81,36 +81,16 @@
   			Specifies whether the column is allowed to have null values
   			Boolean
   			Default: false
-  			Optional
-  			
-  	Admin Dashboard Settings:
-  		
-  		title:
+  			Optional  			
+
+	Meta:
+	
+	  	title:
   			Title of the property that shows up in admin panel
   			String
   			Default: Derived from property `name`
   			Optional
-  		filter:
-  			An HTML string that will have values from the model injected. Only used in the admin dashboard.
-  			String
-  			Example: <a href="/users/profile/{uid}">{username}</a>
-  			Optional
-  		no_sort:
-  			Prevents the column from being sortable in the admin dashboard
-  			Boolean
-  			Default: false
-  			Optional
-  		no_wrap:
-  			Prevents the column from wrapping in the admin dashboard
-  			Boolean
-  			Default: false
-  			Optional
-  		truncate:
-  			Prevents the column from truncating values in the admin dashboard
-  			Boolean
-  			Default: true
-  			Optional
-  	)
+
  *
  *
  * The model caching strategies are executed in this order:
