@@ -1,0 +1,7 @@
+<phpunit>
+  <testsuites>
+    <testsuite name="Infuse_Libs">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>
