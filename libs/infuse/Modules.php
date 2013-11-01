@@ -64,7 +64,7 @@ class Modules
 	{
 		self::initialize( $module );
 		
-		return self::$info[ strtolower( $module ) ];
+		return Util::array_value( self::$info, strtolower( $module ) );
 	}
 	
 	/**
