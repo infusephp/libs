@@ -14,7 +14,7 @@ namespace infuse;
 class Router
 {
 	private static $config = array(
-		'namespace' => '\\infuse',
+		'namespace' => '',
 		'default' => array()
 	);
 	

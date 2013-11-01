@@ -15,9 +15,6 @@ require_once 'vendor/autoload.php';
 
 class QueueTest extends \PHPUnit_Framework_TestCase
 {
-	var $test1Message;
-	var $test2Message;
-
 	public function testConfigure()
 	{
 		Queue::configure( array(
@@ -104,31 +101,37 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 			'type' => QUEUE_TYPE_SYNCHRONOUS,
 			'listeners' => array(
 				'test1' => array(
-					array( $this, 'receiveMessageListener1' ) ),
+					array( 'QueueMockController', 'receiveMessageListener1' ) ),
 				'test2' => array(
-					array( $this, 'receiveMessageListener2' ) ) ) ) );
+					array( 'QueueMockController', 'receiveMessageListener2' ) ) ) ) );
 
 		Queue::enqueue( 'test1', 'test' );
-		$this->assertInstanceOf( 'stdClass', $this->test1Message );
-		$this->assertTrue( $this->test1Message->id > 0 );
-		$this->assertEquals( $this->test1Message->body, 'test' );
+		$this->assertInstanceOf( 'stdClass', QueueMockController::$test1Message );
+		$this->assertTrue( QueueMockController::$test1Message->id > 0 );
+		$this->assertEquals( QueueMockController::$test1Message->body, 'test' );
 
 		Queue::enqueue( 'test2', 1234 );
-		$this->assertInstanceOf( 'stdClass', $this->test2Message );
-		$this->assertTrue( $this->test2Message->id > 0 );
-		$this->assertEquals( $this->test2Message->body, 1234 );
+		$this->assertInstanceOf( 'stdClass', QueueMockController::$test2Message );
+		$this->assertTrue( QueueMockController::$test2Message->id > 0 );
+		$this->assertEquals( QueueMockController::$test2Message->body, 1234 );
 	}
-	
+}
+
+class QueueMockController
+{
+	static $test1Message;
+	static $test2Message;
+
 	public function receiveMessageListener1( $message )
 	{
-		$this->test1Message = $message;
+		self::$test1Message = $message;
 
 		Queue::deleteMessage( 'test1', $message );
 	}
 
 	public function receiveMessageListener2( $message )
 	{
-		$this->test2Message = $message;
+		self::$test2Message = $message;
 
 		Queue::deleteMessage( 'test2', $message );
 	}

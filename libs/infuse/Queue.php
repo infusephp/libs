@@ -19,7 +19,7 @@ class Queue
 	private static $config = array(
 		'type' => QUEUE_TYPE_SYNCHRONOUS,
 		'queues' => array(),
-		'use_modules' => false
+		'namespace' => ''
 	);
 
 	// used for synchronous mode
@@ -248,16 +248,18 @@ class Queue
 			$listeners = (array)Util::array_value( self::$config[ 'listeners' ], $queue );
 
 			// notify all listeners that we have a new message
-			foreach( $listeners as $function )
+			foreach( $listeners as $route )
 			{
-				if( self::$config[ 'use_modules' ] )
-				{
-					list( $controller, $action ) = $function;
+				list( $controller, $method ) = $route;
 
-					Modules::controller( $controller )->$action( $message );
-				}
-				else
-					call_user_func( $function, $message );
+				$controller = self::$config[ 'namespace' ] . '\\' . $controller;
+				
+				if( !class_exists( $controller ) )
+					continue;
+
+				$controllerObj = new $controller();
+
+				$controllerObj->$method( $message );
 			}
 		}
 	}

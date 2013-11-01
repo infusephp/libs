@@ -151,7 +151,7 @@ class Response
 	{
 		// deal with relative paths when using modules
 		// TODO this is not ideal, kind of a hack
-		if( Router::setting( 'use_modules' ) && substr( $template, 0, 1 ) != '/' )
+		if( substr( $template, 0, 1 ) != '/' )
 		{
 			// check if called from a controller
 			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
@@ -159,9 +159,9 @@ class Response
 			if( isset( $backtrace[ 1 ] ) )
 			{
 				$class = Util::array_value( $backtrace[ 1 ], 'class' );
-				if( strpos( $class, 'infuse\\controllers\\' ) !== false )
+				if( strpos( $class, 'infuse\\app\\' ) !== false )
 				{
-					$module = strtolower( str_replace( 'infuse\\controllers\\', '', $class ) );
+					$module = strtolower( str_replace( 'infuse\\app\\', '', $class ) );
 					
 					$parameters[ 'moduleViewsDir' ] = Modules::$moduleDirectory . '/' . $module . '/views';
 					$template = $parameters[ 'moduleViewsDir' ] . '/' . $template;
