@@ -16,7 +16,22 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 	public function testStaticRoute()
 	{
+		$testRoutes = array(
+			'get /this/is/a' => 'nope',
+			'get /this/is/a/test/route' => 'nope',
+			'post /this/is/a/test/route/:test' => 'nope',
+			'post /this/is/a/test/route' => 'staticRoute',
+			'delete /this/is/a/test/route' => 'nope',
+			'get /this/is/a/test/route/' => 'nope',
+		);
 
+		$server = $_SERVER;
+		$server[ 'REQUEST_METHOD' ] = 'POST';
+
+		$req = new Request( null, null, null, null, $server );
+		$req->setPath( '/this/is/a/test/route' );
+
+		Router::route( $testRoutes, $req );
 	}
 
 	public function testDynamicRoute()
