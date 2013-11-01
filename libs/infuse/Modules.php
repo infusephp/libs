@@ -168,7 +168,7 @@ class Modules
 		@include_once self::$moduleDirectory . '/' . $module . '/' . 'Controller.php';
 		
 		// check if controller exists
-		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
+		$class = '\\app\\' . $module . '\\Controller';
 		if( !class_exists( $class ) )
 			return false;
 		
@@ -215,7 +215,7 @@ class Modules
 		self::$loaded[] = $module;
 		
 		// setup controller
-		$class = '\\infuse\\app\\' . $module . '\\Controller';
+		$class = '\\app\\' . $module . '\\Controller';
 		$controller = new $class();
 		self::$controllers[ $module ] = $controller;
 
