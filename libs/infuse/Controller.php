@@ -38,7 +38,8 @@ abstract class Controller extends Acl
 	*/
 	static function name()
 	{
-		return strtolower( str_replace( 'infuse\\controllers\\', '', get_called_class() ) );
+		$parts = explode( '\\', get_called_class() );
+		return $parts[ 1 ];
 	}
 	
 	/**

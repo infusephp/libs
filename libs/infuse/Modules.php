@@ -24,7 +24,6 @@ class Modules
 	////////////////////////////////
 	
 	private static $info = array();
-	private static $controllers = array();
 	private static $loaded = array();
 	
 	//////////////////////////////////
@@ -120,21 +119,6 @@ class Modules
 		return $return;
 	}
 	
-	/**
-	 * Gets the controller of a module
-	 *
-	 * @param string $module module
-	 *
-	 * @return Controller
-	 */
-	static function controller( $module )
-	{
-		if( !self::loaded( $module ) )
-			self::load( $module );
-
-		return self::$controllers[ strtolower( $module ) ];
-	}	
-	
 	//////////////////////////////
 	// UTILITIES
 	//////////////////////////////
@@ -172,85 +156,5 @@ class Modules
 		self::$info[ $module ] = $class::properties();
 		
 		return true;
-	}
-	
-	/**
-	 * Loads a module. This means that the module is initialized, the controller is instantiated,
-	 * and it is available for autoloading.
-	 * 
-	 * @param array|string module name(s)
-	 *
-	 * @return boolean
-	 */
-	static function load( $module )
-	{
-		// load several modules at once
-		if( is_array( $module ) )
-		{
-			$success = true;
-			
-			foreach( $module as $m )
-				$success = self::load( $m ) && $success;
-			
-			return $success;
-		}
-		
-		$module = strtolower( $module );
-
-		// check if module has already been loaded
-		if( self::loaded( $module ) )
-			return true;
-		
-		// load settings
-		if( !self::initialize( $module ) )
-			return false;
-		
-		// add module to loaded modules list
-		self::$loaded[] = $module;
-		
-		// setup controller
-		$class = '\\app\\' . $module . '\\Controller';
-		$controller = new $class();
-		self::$controllers[ $module ] = $controller;
-
-		// load dependencies
-		if( isset( self::$info[ $module ][ 'dependencies' ] ) )
-		{
-			foreach( (array)self::$info[ $module ][ 'dependencies' ] as $dependency )
-			{
-				if( !self::load( $dependency ) )
-					return false;
-			}
-		}
-		
-		return true;	
-	}
-	
-	/**
-	 * Class autoloader
-	 *
-	 * @param string $class class
-	 *
-	 * @return void
-	*/
-	public static function autoloader( $class )
-	{
-		foreach( self::$loaded as $module )
-		{
-			// look in modules/:module/:class.php
-			// i.e. /infuse/models/User -> modules/users/models/User.php
-
-			if( $module != 'Module' || $module != '' )
-			{
-				$name = str_replace( '\\', '/', str_replace( 'infuse\\', '', $class ) );
-				$path = self::$moduleDirectory . "/$module/$name.php";
-	
-				if (file_exists($path) && is_readable($path))
-				{
-					include_once $path;
-					return;
-				}
-			}
-		}
 	}
 }
