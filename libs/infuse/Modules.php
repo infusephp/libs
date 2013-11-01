@@ -55,18 +55,6 @@ class Modules
 	{
 		return isset( self::$info[ $module ] );
 	}	
-
-	/**
-	 * Checks if a module has been loaded
-	 *
-	 * @param string $module module
-	 *
-	 * @return boolean
-	 */
-	static function loaded( $module )
-	{
-		return isset( self::$loaded[ $module ] );
-	}
 	
 	/**
 	 * Gets information about a module from its properties
