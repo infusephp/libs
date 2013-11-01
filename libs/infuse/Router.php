@@ -90,8 +90,8 @@ class Router
 	/**
 	 * Executes a route. If the route returns -1 then failure is assumed.
 	 *
-	 * @param array|string $route array('controller','action') or array('controller')
-	 * or 'action'
+	 * @param array|string $route array('controller','method') or array('controller')
+	 * or 'method'
 	 * @param Request $req
 	 * @param Response $res
 	 *
@@ -104,14 +104,14 @@ class Router
 		if( $req->params( 'controller' ) )
 			$defaultController = $req->params( 'controller' );
 
-		// must be an action name
+		// must be an method name
 		if( is_string( $route ) )
 			$route = array( $defaultController, $route );
-		// fallback to the index() action
+		// fallback to the index() method
 		else if( count( $route ) == 1 )
 			$route[] = 'index';
-
-		list( $controller, $action ) = $route;
+		
+		list( $controller, $method ) = $route;
 
 		$result = false;
 		
@@ -122,7 +122,7 @@ class Router
 
 		$controllerObj = new $controller();
 		
-		$result = $controllerObj->$action( $req, $res );
+		$result = $controllerObj->$method( $req, $res );
 		
 		return $result !== -1;
 	}
