@@ -11,6 +11,8 @@
 
 namespace infuse;
 
+use app\users\models\User;
+
 define( 'ACL_RESULT_NOT_CACHED', -1 );
 define( 'ACL_NO_ID', -1 );
 
@@ -57,7 +59,7 @@ abstract class Acl
 	function can( $permission, $requestor = null )
 	{
 		if( $requestor === null )
-			$requestor = \infuse\models\User::currentUser();
+			$requestor = User::currentUser();
 		
 		// check cache
 		$cache = $this->cachedResult( $permission, $requestor );
