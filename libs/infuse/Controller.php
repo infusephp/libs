@@ -75,7 +75,7 @@ abstract class Controller extends Acl
 	
 			foreach( $modelNames as $model )
 			{
-				$modelClassName = '\\app\\ ' . $properties[ 'name' ] . '\\models\\' . $model;
+				$modelClassName = '\\app\\' . $properties[ 'name' ] . '\\models\\' . $model;
 			
 				$info = $modelClassName::info();
 	
