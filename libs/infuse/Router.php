@@ -99,15 +99,13 @@ class Router
 	 */
 	private static function performRoute( $route, $req, $res )
 	{
-		// determine the fallback options for the controller
-		$defaultController = Util::array_value( self::$config[ 'default' ], 'controller' );
-		if( $req->params( 'controller' ) )
-			$defaultController = $req->params( 'controller' );
-
-		// must be an method name
+		// method name and controller supplied
+		if( is_string( $route ) && $req->params( 'controller' ) )
+			$route = array( $req->params( 'controller' ), $route );
+		// method name supplied
 		if( is_string( $route ) )
-			$route = array( $defaultController, $route );
-		// fallback to the index() method
+			$route = array( Util::array_value( self::$config[ 'default' ], 'controller' ), $route );
+		// no method name? fallback to the index() method
 		else if( count( $route ) == 1 )
 			$route[] = 'index';
 		

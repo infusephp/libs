@@ -127,6 +127,28 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertFalse( Router::route( $testRoutes, $req ) );
 	}
+
+	public function testRouterControllerParam()
+	{
+		Router::configure( array( 'default' => array( 'controller' => 'BogusController' ) ) );
+
+		$testRoutes = array(
+			'post /this/is/a/test/route' => 'staticRoute',
+			'get /not/it' => 'fail'
+		);
+
+		$server = $_SERVER;
+		$server[ 'REQUEST_METHOD' ] = 'POST';
+
+		$req = new Request( null, null, null, null, $server );
+		$req->setPath( '/this/is/a/test/route' );
+
+		$req->setParams( array( 'controller' => 'MockController' ) );
+
+		$this->assertTrue( Router::route( $testRoutes, $req ) );
+
+		$this->assertTrue( MockController::$staticRouteCalled );
+	}
 }
 
 class MockController
