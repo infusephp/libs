@@ -41,8 +41,8 @@ class Modules
 	static function exists( $module )
 	{
 		$module = strtolower( $module );
-		
-		return strlen( $module ) > 0 && file_exists( self::$moduleDirectory . '/' . $module . '/Controller.php' );
+
+		return strlen( $module ) > 0 && class_exists( '\\app\\' . $module . '\\Controller' );
 	}
 	
 	/**
@@ -164,9 +164,6 @@ class Modules
 		if( isset( self::$info[ $module ] ) )
 			return true;
 		
-		// load module code
-		@include_once self::$moduleDirectory . '/' . $module . '/' . 'Controller.php';
-		
 		// check if controller exists
 		$class = '\\app\\' . $module . '\\Controller';
 		if( !class_exists( $class ) )
@@ -207,9 +204,6 @@ class Modules
 		// load settings
 		if( !self::initialize( $module ) )
 			return false;
-
-		// load module code
-		include_once self::$moduleDirectory . '/' . $module . '/' . 'Controller.php';
 		
 		// add module to loaded modules list
 		self::$loaded[] = $module;
