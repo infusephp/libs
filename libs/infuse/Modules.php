@@ -215,7 +215,7 @@ class Modules
 		self::$loaded[] = $module;
 		
 		// setup controller
-		$class = '\\infuse\\controllers\\' . Inflector::camelize( $module );
+		$class = '\\infuse\\app\\' . $module . '\\Controller';
 		$controller = new $class();
 		self::$controllers[ $module ] = $controller;
 
