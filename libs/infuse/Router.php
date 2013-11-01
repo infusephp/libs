@@ -14,19 +14,28 @@ namespace infuse;
 class Router
 {
 	private static $config = array(
-		'base_class' => '\\infuse\\controllers',
-		'use_modules' => false,
+		'namespace' => '\\infuse',
 		'default' => array()
 	);
 	
 	/**
-	 * Routes a request and resopnse to the appropriate controller. Sends a 404 if nothing was found.
+	 * Changes the router settings
+	 *
+	 * @param array $config
+	 */
+	static function configure( $config )
+	{
+		self::$config = array_replace( self::$config, (array)$config );
+	}
+
+	/**
+	 * Routes a request and resopnse to the appropriate controller.
 	 *
 	 * @param array $routes
 	 * @param Request $req
 	 * @param Response $res
 	 *
-	 * @return boolean a route match was made
+	 * @return boolean was a route match made?
 	 */
 	static function route( $routes, $req = null, $res = null )
 	{
@@ -38,11 +47,8 @@ class Router
 	
 		/*
 			Route Precedence:
-			1) global static routes (i.e. /about -> Controller::action())
+			1) global static routes (i.e. /about)
 			2) global dynamic routes (i.e. /browse/:category)
-			
-			Notes:
-			- No action supplied in route defaults to the 'index' action
 		*/
 		
 		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->basePath();
@@ -76,66 +82,47 @@ class Router
 		
 		return false;
 	}
-	
-	/**
-	 * Changes the router settings
-	 *
-	 * @param array $config
-	 */
-	static function configure( $config )
-	{
-		self::$config = array_replace( self::$config, (array)$config );
-	}
-	
-	/**
-	 * Gets a setting of the router
-	 *
-	 * @param string $key
-	 *
-	 * @return mixed
-	 */
-	static function setting( $key )
-	{
-		return Util::array_value( self::$config, $key );
-	}
+
+	//////////////////////////
+	// PRIVATE METHODS
+	//////////////////////////
 	
 	/**
 	 * Executes a route. If the route returns -1 then failure is assumed.
 	 *
-	 * @param array $route
+	 * @param array|string $route array('controller','action') or array('controller')
+	 * or 'action'
 	 * @param Request $req
 	 * @param Response $res
+	 *
+	 * @return boolean
 	 */
 	private static function performRoute( $route, $req, $res )
 	{
-		$controller = (isset($route['controller'])) ? $route[ 'controller' ] : $req->params( 'controller' );
+		// determine the fallback options for the controller
+		$defaultController = Util::array_value( self::$config[ 'default' ], 'controller' );
+		if( $req->params( 'controller' ) )
+			$defaultController = $req->params( 'controller' );
 
-		// fallback to default controller
-		if( !$controller )
-			$controller = Util::array_value( self::$config[ 'default' ], 'controller' );
-		
-		$action = (isset($route['action'])) ? $route[ 'action' ] : 'index';
-	
-		if( !is_array( $route ) )
-			$action = $route;
+		// must be an action name
+		if( is_string( $route ) )
+			$route = array( $defaultController, $route );
+		// fallback to the index() action
+		else if( count( $route ) == 1 )
+			$route[] = 'index';
+
+		list( $controller, $action ) = $route;
 
 		$result = false;
 		
-		if( self::$config[ 'use_modules' ] )
-		{
-			$result = Modules::controller( $controller )->$action( $req, $res );
-		}
-		else
-		{
-			$controller = self::$config[ 'base_class' ] . '\\' . $controller;
-			
-			if( !class_exists( $controller ) )
-				return false;
+		$controller = self::$config[ 'namespace' ] . '\\' . $controller;
+		
+		if( !class_exists( $controller ) )
+			return false;
 
-			$controllerObj = new $controller();
-			
-			$result = $controllerObj->$action( $req, $res );
-		}
+		$controllerObj = new $controller();
+		
+		$result = $controllerObj->$action( $req, $res );
 		
 		return $result !== -1;
 	}
@@ -145,6 +132,9 @@ class Router
 	 * be extracted and returned
 	 *
 	 * @param array|false
+	 * @param Request $req
+	 *
+	 * @return boolean
 	 */
 	private static function matchRouteToRequest( $route, $req )
 	{
