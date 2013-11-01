@@ -76,7 +76,7 @@ class Queue
 	        {
 	        	// setup each push subscriber url with an auth token (if used)
 	        	$subscribers = array();
-	            foreach( Util::array_value( $settings, 'push_subscribers' ) as $s )
+	            foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
 	            {
 	            	$url = $s . "?q=$q";
 
