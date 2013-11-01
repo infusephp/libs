@@ -206,6 +206,9 @@ class Queue
 	{
 		$type = self::type();
 
+		if( !$message->id )
+			return true;
+		
 		if( $type == QUEUE_TYPE_IRON )
 		{
 			$ironmq = self::iron();
