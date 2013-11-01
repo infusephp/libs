@@ -159,19 +159,20 @@ class Response
 			if( isset( $backtrace[ 1 ] ) )
 			{
 				$class = Util::array_value( $backtrace[ 1 ], 'class' );
-				if( strpos( $class, 'infuse\\app\\' ) !== false )
+				if( strpos( $class, 'app\\' ) !== false )
 				{
-					$module = strtolower( str_replace( 'infuse\\app\\', '', $class ) );
+					$parts = explode( '\\', $class );
+					$module = $parts[ 1 ];
 					
 					$parameters[ 'moduleViewsDir' ] = Modules::$moduleDirectory . '/' . $module . '/views';
 					$template = $parameters[ 'moduleViewsDir' ] . '/' . $template;
 				}
 			}
 		}
-		
+
 		// add some useful data to the template
-		if( class_exists( '\\infuse\\models\\User' ) )
-			$parameters[ 'currentUser' ] = \infuse\models\User::currentUser();
+		if( class_exists( '\\app\\users\\models\\User' ) )
+			$parameters[ 'currentUser' ] = \app\users\models\User::currentUser();
 		
 		$parameters[ 'baseUrl' ] = ((Config::get('site','ssl-enabled'))?'https':'http') . '://' . Config::get('site','host-name') . '/';
 		$parameters[ 'errorStack' ] = ErrorStack::stack();
