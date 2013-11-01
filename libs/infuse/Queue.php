@@ -70,33 +70,37 @@ class Queue
 		{
 			$ironmq = self::iron();
 
-			$authToken = Util::array_value( self::$config, 'auth_token' );
+			// setup push queues
+			if( isset( self::$config[ 'queues' ] ) && isset( self::$config[ 'push_subscribers' ] ) )
+			{
+				$authToken = Util::array_value( self::$config, 'auth_token' );
 
-	        foreach( self::$config[ 'queues' ] as $q => $settings )
-	        {
-	        	// setup each push subscriber url with an auth token (if used)
-	        	$subscribers = array();
-	            foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
-	            {
-	            	$url = $s . "?q=$q";
+		        foreach( self::$config[ 'queues' ] as $q )
+		        {
+		        	// setup each push subscriber url with an auth token (if used)
+		        	$subscribers = array();
+		            foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
+		            {
+		            	$url = $s . "?q=$q";
 
-	            	if( !empty( $authToken ) )
-	            		$url .= "&auth_token=$authToken";
+		            	if( !empty( $authToken ) )
+		            		$url .= "&auth_token=$authToken";
 
-					$subscribers[] = array( 'url' => $url );
-	            }
+						$subscribers[] = array( 'url' => $url );
+		            }
 
-	            $ironmq->updateQueue( $q, array(
-					'push_type' => 'unicast',
-					'subscribers' => $subscribers
-	            ) );
+		            $ironmq->updateQueue( $q, array(
+						'push_type' => 'unicast',
+						'subscribers' => $subscribers
+		            ) );
 
-	            if( $echoOutput )
-	            {
-	            	echo "Installed $q with subscribers:\n";
-	            	print_r( $subscribers );
-	            }
-	        }
+		            if( $echoOutput )
+		            {
+		            	echo "Installed $q with subscribers:\n";
+		            	print_r( $subscribers );
+		            }
+		        }
+			}
 		}
 	}
 
