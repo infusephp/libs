@@ -24,7 +24,6 @@ class Modules
 	////////////////////////////////
 	
 	private static $info = array();
-	private static $loaded = array();
 	
 	//////////////////////////////////
 	// GETTERS
