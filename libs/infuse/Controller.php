@@ -41,27 +41,18 @@ abstract class Controller extends Acl
 		$parts = explode( '\\', get_called_class() );
 		return $parts[ 1 ];
 	}
-	
-	/**
-	 * Gets the properties of the controller
-	 *
-	 * @return array
-	 */
-	static function properties()
-	{
-		return array_replace( self::$properties, array( 'name' => static::name() ), static::$properties );
-	}
-	
+
 	/**
 	 * Gets info about the models associated with this controller
 	 *
 	 * @return array models
 	 */
-	function models()
+	static function models()
 	{
 		if( !$this->models )
 		{
-			$properties = static::properties();
+			$properties = static::$properties;
+			$name = self::name();
 			
 			$modelParams = array();
 			
@@ -75,14 +66,14 @@ abstract class Controller extends Acl
 	
 			foreach( $modelNames as $model )
 			{
-				$modelClassName = '\\app\\' . $properties[ 'name' ] . '\\models\\' . $model;
+				$modelClassName = '\\app\\' . $name . '\\models\\' . $model;
 			
 				$info = $modelClassName::info();
 	
 				$this->models[ $model ] = array_replace( $info, array(
 					'api' => Util::array_value( $properties, 'api' ),
 					'admin' => Util::array_value( $properties, 'admin' ),
-					'route_base' => '/' . $properties[ 'name' ] . '/' . $info[ 'plural_key' ] ) );
+					'route_base' => '/' . $name . '/' . $info[ 'plural_key' ] ) );
 			}
 		}
 		
