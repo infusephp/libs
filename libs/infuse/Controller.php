@@ -13,18 +13,7 @@ namespace infuse;
 
 abstract class Controller extends Acl
 {
-	public static $properties = array(
-		'title' => '',
-		'version' => 0,
-		'description' => '',
-		'author' => array(
-			'name' => '',
-			'email' => '',
-			'website' => '' ),
-		'model' => false,
-		'models' => false,
-		'routes' => array() );
-	
+	public static $properties;
 	protected static $models;
 
 	/////////////////////////
@@ -52,28 +41,18 @@ abstract class Controller extends Acl
 		if( !self::$models )
 		{
 			$properties = static::$properties;
-			$name = self::name();
-			
-			$modelParams = array();
-			
-			$modelNames = array();
-			if( $models = Util::array_value( $properties, 'models' ) )
-				$modelNames = $models;
-			else if( $model = Util::array_value( $properties, 'model' ) )
-				$modelNames[] = $model;
+			$module = self::name();
 			
 			self::$models = array();
 	
-			foreach( $modelNames as $model )
+			foreach( (array)Util::array_value( $properties, 'models' ) as $model )
 			{
-				$modelClassName = '\\app\\' . $name . '\\models\\' . $model;
+				$modelClassName = '\\app\\' . $module . '\\models\\' . $model;
 			
 				$info = $modelClassName::info();
 	
 				self::$models[ $model ] = array_replace( $info, array(
-					'api' => Util::array_value( $properties, 'api' ),
-					'admin' => Util::array_value( $properties, 'admin' ),
-					'route_base' => '/' . $name . '/' . $info[ 'plural_key' ] ) );
+					'route_base' => '/' . $module . '/' . $info[ 'plural_key' ] ) );
 			}
 		}
 		
