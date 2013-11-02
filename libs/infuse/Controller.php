@@ -44,18 +44,18 @@ abstract class Controller extends Acl
 			$module = self::name();
 			
 			self::$models = array();
-	
+			
 			foreach( (array)Util::array_value( $properties, 'models' ) as $model )
 			{
 				$modelClassName = '\\app\\' . $module . '\\models\\' . $model;
-			
+				
 				$info = $modelClassName::info();
-	
+				
 				self::$models[ $model ] = array_replace( $info, array(
 					'route_base' => '/' . $module . '/' . $info[ 'plural_key' ] ) );
 			}
 		}
 		
 		return self::$models;
-	}	
+	}
 }
