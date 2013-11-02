@@ -53,10 +53,11 @@ class Modules
 		
 		foreach( self::all() as $module )
 		{
-			$info = self::info( $module );
+			$controller = '\\app\\' . $module . '\\Controller';
 			
-			if( Util::array_value( $info, 'scaffoldAdmin' ) || Util::array_value( $info, 'hasAdminView' ) )
-				$return[] = $info;
+			if( Util::array_value( $controller::$properties, 'scaffoldAdmin' ) ||
+				Util::array_value( $controller::$properties, 'hasAdminView' ) )
+				$return[] = $controller::$properties;
 		}
 		
 		return $return;
