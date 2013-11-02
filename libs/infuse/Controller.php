@@ -25,7 +25,7 @@ abstract class Controller extends Acl
 		'models' => false,
 		'routes' => array() );
 	
-	protected $models;
+	protected static $models;
 
 	/////////////////////////
 	// GETTERS
@@ -49,7 +49,7 @@ abstract class Controller extends Acl
 	 */
 	static function models()
 	{
-		if( !$this->models )
+		if( !self::$models )
 		{
 			$properties = static::$properties;
 			$name = self::name();
@@ -62,7 +62,7 @@ abstract class Controller extends Acl
 			else if( $model = Util::array_value( $properties, 'model' ) )
 				$modelNames[] = $model;
 			
-			$this->models = array();
+			self::$models = array();
 	
 			foreach( $modelNames as $model )
 			{
@@ -70,13 +70,13 @@ abstract class Controller extends Acl
 			
 				$info = $modelClassName::info();
 	
-				$this->models[ $model ] = array_replace( $info, array(
+				self::$models[ $model ] = array_replace( $info, array(
 					'api' => Util::array_value( $properties, 'api' ),
 					'admin' => Util::array_value( $properties, 'admin' ),
 					'route_base' => '/' . $name . '/' . $info[ 'plural_key' ] ) );
 			}
 		}
 		
-		return $this->models;
+		return self::$models;
 	}	
 }
