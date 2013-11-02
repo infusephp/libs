@@ -159,12 +159,12 @@ class Response
 			if( isset( $backtrace[ 1 ] ) )
 			{
 				$class = Util::array_value( $backtrace[ 1 ], 'class' );
-				if( strpos( $class, 'app\\' ) !== false )
+				if( strpos( $class, 'app\\' ) !== false && defined( 'INFUSE_APP_DIR' ) )
 				{
 					$parts = explode( '\\', $class );
 					$module = $parts[ 1 ];
 					
-					$parameters[ 'moduleViewsDir' ] = Modules::$moduleDirectory . '/' . $module . '/views';
+					$parameters[ 'moduleViewsDir' ] = INFUSE_APP_DIR . '/' . $module . '/views';
 					$template = $parameters[ 'moduleViewsDir' ] . '/' . $template;
 				}
 			}
