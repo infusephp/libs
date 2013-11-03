@@ -227,7 +227,7 @@ class Util
 	 *
 	 * @param mixed $element
 	 */
-	function print_pre( $element )
+	static function print_pre( $element )
 	{
 		echo '<pre>' . print_r( $element, true ) . '</pre>';
 	}	
