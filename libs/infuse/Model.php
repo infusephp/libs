@@ -35,10 +35,6 @@ The following properties (of model properties) are available:
 	  		The default value to be used when creating new models.
 	  		String
 	  		Optional
-  		enum:
-  			A key-value map of acceptable values if property type is `enum`
-  			Array
-  			Required if specifying `enum` type
 	  	db_type:
 	  		The type of field in the database, overrides the default type for a property, if a default exists
 	  		String
@@ -90,6 +86,14 @@ The following properties (of model properties) are available:
   			String
   			Default: Derived from property `name`
   			Optional
+  		enum:
+  			A key-value map of acceptable values if property type is `enum`
+  			Array
+  			Required if specifying `enum` type  		
+  		relation:
+			Model class name (including namespace) the property is related to
+  			String
+  			Optional
 
  *
  *
@@ -126,6 +130,8 @@ abstract class Model extends Acl
 	private static $excludePropertyTypes = array( 'custom', 'html' );
 	
 	private $cache;
+
+	private $relationModels;
 
 	/**
 	 * Creates a new model object
@@ -311,15 +317,28 @@ abstract class Model extends Acl
 
 		return ( count( $return ) == 1 ) ? reset( $return ) : $return;
 	}
-	
+
 	/**
-	 * @deprecated
+	 * Gets the model object corresponding to a relation
+	 * WARNING no check is used to see if the model returned actually exists
+	 *
+	 * @param string $property property
+	 *
+	 * @return Object|false model
 	 */
-	function getProperty( $whichProperties )
+	function relation( $property )
 	{
-		return $this->get( $whichProperties );
+		if( !static::hasProperty( $property ) || !isset( static::$properties[ $property ][ 'relation' ] ) )
+			return false;
+
+		$relationModelName = static::$properties[ $property ][ 'relation' ];
+
+		if( !isset( $this->relationModels[ $relationModelName ] ) )
+			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->get( $property ) );
+
+		return $this->relationModels[ $relationModelName ];
 	}
-	
+
 	/**
 	 * Checks if the model has a property.
 	 *
@@ -767,15 +786,7 @@ abstract class Model extends Acl
 		
 		$this->cacheProperties( (array)$info );
 	}
-	
-	/**
-	 * @deprecated see load()
-	 */
-	function loadProperties()
-	{
-		$this->load();
-	}
-	
+		
 	/**
 	 * Updates the cache with the new value for a property
 	 *
