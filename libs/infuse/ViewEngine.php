@@ -94,30 +94,37 @@ class ViewEngine
 	 * @param string $input LESS input filename
 	 * @param string $cacheFile cache file name
 	 * @param sting $output CSS output filename
+	 *
+	 * @return boolean result
 	 */
 	function compileLess( $input, $cacheFile, $output )
 	{
-		// load the cache
-		if( file_exists( $cacheFile ) ) {
-			$cache = unserialize( file_get_contents( $cacheFile ) );
-		} else {
-			$cache = $input;
-		}
-		
-		$less = new \lessc;
 		try
 		{
+			// load the cache
+			if( file_exists( $cacheFile ) ) {
+				$cache = unserialize( file_get_contents( $cacheFile ) );
+			} else {
+				$cache = $input;
+			}
+			
+			$less = new \lessc;
+
 			$newCache = $less->cachedCompile( $cache );
 			
 			if( !is_array( $cache ) || $newCache[ 'updated' ] > $cache[ 'updated' ] ) {
 				if( file_put_contents( $output, $newCache[ 'compiled' ] ) )
 					file_put_contents( $cacheFile, serialize( $newCache ) );
 			}
+
+			return true;
 		}
-		catch( \Exception $ex )
+		catch( \Exception $e )
 		{
-			Logger::error( "lessphp fatal error: " . $ex->getMessage() );
+			Logger::error( Logger::formatException( $e ) );
 		}
+
+		return false;
 	}
 	
 	/**
@@ -128,36 +135,49 @@ class ViewEngine
 	 * @param string $dir path containing javascript to compile
 	 * @param string $cacheFile path containing cache
 	 * @param sting $output output filename
+	 *
+	 * @return boolean result
 	 */
 	function compileJs( $dir, $cacheFile, $output )
 	{
-		// NOTE js files get appended in order by filename
-		// to change the order of js files, change the filename
-		$cache = false;
-		if( file_exists( $cacheFile ) )
-			$cache = unserialize( file_get_contents( $cacheFile ) );
-
-		$jsFiles = glob( $dir . '/*.js' );
-		
-		$newCache = array(
-			'md5' => $this->md5OfDir( $jsFiles ),
-			'production' => Config::get( 'site', 'production-level' ) );
-		
-		if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
+		try
 		{
-			// concatenate the js for every file
-			$js = '';
-			foreach( $jsFiles as $file )
-				$js .= file_get_contents( $file ) . "\n";
+			// NOTE js files get appended in order by filename
+			// to change the order of js files, change the filename
+			$cache = false;
+			if( file_exists( $cacheFile ) )
+				$cache = unserialize( file_get_contents( $cacheFile ) );
+
+			$jsFiles = glob( $dir . '/*.js' );
 			
-			// minify js in production mode
-			if( Config::get( 'site', 'production-level' ) )
-				$js = \JSMin::minify( $js );
+			$newCache = array(
+				'md5' => $this->md5OfDir( $jsFiles ),
+				'production' => Config::get( 'site', 'production-level' ) );
 			
-			// write the js and cache to the output file
-			if( file_put_contents( $output, $js ) )
-				file_put_contents( $cacheFile, serialize( $newCache ) );
+			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
+			{
+				// concatenate the js for every file
+				$js = '';
+				foreach( $jsFiles as $file )
+					$js .= file_get_contents( $file ) . "\n";
+				
+				// minify js in production mode
+				if( Config::get( 'site', 'production-level' ) )
+					$js = \JSMin::minify( $js );
+				
+				// write the js and cache to the output file
+				if( file_put_contents( $output, $js ) )
+					file_put_contents( $cacheFile, serialize( $newCache ) );
+			}
+
+			return true;
 		}
+		catch( \Exception $e )
+		{
+			Logger::error( Logger::formatException( $e ) );
+		}
+
+		return false;
 	}
 	
 	/**
