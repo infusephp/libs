@@ -34,14 +34,6 @@ class ErrorStack
 		return self::$stackInstance;
 	}
 	
-	/**
-	 * @deprecated
-	 */
-	public static function it()
-	{
-		return self::stack();
-	}
-	
 	////////////////////////////
 	// GETTERS
 	////////////////////////////
@@ -206,4 +198,12 @@ class ErrorStack
 		
 		return true;
 	}
+
+	/**
+	 * @deprecated
+	 */
+	public static function it()
+	{
+		return self::stack();
+	}	
 }
