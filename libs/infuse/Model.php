@@ -155,12 +155,12 @@ abstract class Model extends Acl
 			$strategies = array();
 			
 			// memcache strategy
-			if( Config::get( 'memcache', 'enabled' ) )
+			if( Config::get( 'memcache.enabled' ) )
 			{
 				$strategies[] = 'memcache';
 				$parameters[ 'memcache' ] = array_replace(
 					Config::get( 'memcache' ),
-					array( 'prefix' => Config::get( 'memcache', 'prefix' ) . '.' . $cachePrefix ) );
+					array( 'prefix' => Config::get( 'memcache.prefix' ) . '.' . $cachePrefix ) );
 			}
 			
 			// local strategy fallback

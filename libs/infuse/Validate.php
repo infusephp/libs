@@ -180,7 +180,7 @@ class Validate
 
 	/**
 	 * Validates that an array of values matches. The array will
-	 * be flattened to a single value.
+	 * be flattened to a single value if it matches.
 	 * 
 	 * @param $value
 	 * @param $parameters
@@ -200,7 +200,8 @@ class Validate
 			$cur = $v;
 		}
 
-		$value = $cur;
+		if( $matches )
+			$value = $cur;
 
 		return $matches;
 	}
@@ -238,7 +239,7 @@ class Validate
 		if( strlen( $value ) < $minimumPasswordLength )
 			return false;
 
-		$value = Util::encryptPassword( $value );
+		$value = Util::encrypt_password( $value, Config::get( 'site.salt' ) );
 
 		return true;
 	}

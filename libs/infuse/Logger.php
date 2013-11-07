@@ -126,7 +126,7 @@ class Logger
 	{
 		$formattedErrorString = Logger::formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext );
 		
-		if( !Config::get( 'site', 'production-level' ) )
+		if( !Config::get( 'site.production-level' ) )
 			echo "<pre>$formattedErrorString</pre>";
 	
 		switch( $errno )
@@ -231,7 +231,7 @@ class Logger
 	{
 		$formattedExceptionString = Logger::formatException( $exception );
 			
-		if( !Config::get( 'site', 'production-level' ) )
+		if( !Config::get( 'site.production-level' ) )
 			echo $formattedExceptionString;
 	
 		Logger::error( $formattedExceptionString );

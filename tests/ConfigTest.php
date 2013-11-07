@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-use \infuse\Config;
+use infuse\Config;
 
 error_reporting( E_ALL | E_STRICT );
 ini_set( 'display_errors', true );

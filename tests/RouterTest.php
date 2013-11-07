@@ -9,8 +9,8 @@
  * @license MIT
  */
 
-use \infuse\Request;
-use \infuse\Router;
+use infuse\Request;
+use infuse\Router;
 
 error_reporting( E_ALL | E_STRICT );
 ini_set( 'display_errors', true );

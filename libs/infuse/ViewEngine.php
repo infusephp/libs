@@ -152,7 +152,7 @@ class ViewEngine
 			
 			$newCache = array(
 				'md5' => $this->md5OfDir( $jsFiles ),
-				'production' => Config::get( 'site', 'production-level' ) );
+				'production' => Config::get( 'site.production-level' ) );
 			
 			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
 			{
@@ -162,7 +162,7 @@ class ViewEngine
 					$js .= file_get_contents( $file ) . "\n";
 				
 				// minify js in production mode
-				if( Config::get( 'site', 'production-level' ) )
+				if( Config::get( 'site.production-level' ) )
 					$js = \JSMin::minify( $js );
 				
 				// write the js and cache to the output file

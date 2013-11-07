@@ -174,7 +174,7 @@ class Response
 		if( class_exists( '\\app\\users\\models\\User' ) )
 			$parameters[ 'currentUser' ] = \app\users\models\User::currentUser();
 		
-		$parameters[ 'baseUrl' ] = ((Config::get('site','ssl-enabled'))?'https':'http') . '://' . Config::get('site','host-name') . '/';
+		$parameters[ 'baseUrl' ] = ((Config::get('site.ssl-enabled'))?'https':'http') . '://' . Config::get('site.host-name') . '/';
 		$parameters[ 'errorStack' ] = ErrorStack::stack();
 		
 		$engine = ViewEngine::engine();

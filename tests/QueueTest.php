@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-use \infuse\Queue;
+use infuse\Queue;
 
 require_once 'vendor/autoload.php';
 

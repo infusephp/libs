@@ -9,7 +9,7 @@ An MVC framework, called Infuse Framework, has been built using these libraries.
 
 ## Tests
 
-Execute this command to run the included tests (more tests coming later):
+Use phpunit to run the included tests (more tests coming later):
 
 ```
 phpunit

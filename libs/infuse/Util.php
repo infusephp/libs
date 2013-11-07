@@ -275,7 +275,7 @@ class Util
 	/**
 	 * @deprecated
 	 */
-	static function encryptPassword( $password, $nonce )
+	static function encryptPassword( $password, $nonce = '' )
 	{
 		return self::encrypt_password( $password, Config::get( 'site.salt' ), $nonce );
 	}
