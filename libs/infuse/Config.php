@@ -69,12 +69,4 @@ class Config
 	{
 		self::$values = $values;
 	}
-	
-	/**
-	 * @deprecated
-	 */
-	static function value( $section = false, $property = false )
-	{
-		return self::get( $section, $property );
-	}
 }
