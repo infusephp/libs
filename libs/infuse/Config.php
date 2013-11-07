@@ -73,7 +73,7 @@ class Config
 	/**
 	 * @deprecated
 	 */
-	static function value( $section, $property )
+	static function value( $section = false, $property = false )
 	{
 		return self::get( $section, $property );
 	}
