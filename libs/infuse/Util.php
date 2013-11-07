@@ -15,7 +15,7 @@ class Util
 {
 	/**
 	 * Looks up a key in an array. If the key follows dot-notation then a nested lookup will be performed.
-	 * i.e. users.jared.address.city -> ['users']['jared']['address']['city']
+	 * i.e. users.sherlock.address.lat -> ['users']['sherlock']['address']['lat']
 	 *
 	 * @param array $a array to be searched
 	 * @param string $k key to search for
@@ -60,7 +60,11 @@ class Util
 	    $pieces = explode('.', $key);
 	    
 	    foreach( $pieces as $k => $piece )
-	        $a = &$a[$piece];
+	    {
+	    	$a = &$a[$piece];
+	    	if( !is_array( $a ) )
+	    		$a = array();
+	    }
 	    
 	    return $a = $value;
 	}	

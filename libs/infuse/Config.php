@@ -18,52 +18,50 @@ class Config
 	/**
 	 * Gets a global configuration value, section, or all values
 	 *
-	 * @param string $section section
-	 * @param string $name configuration name
+	 * @param string $property dot value property name
+	 * @param string $deprecated when supplied looks up a key in a section (@deprecated)
 	 *
 	 * @return string|null value
 	 */
-	static function get( $section = false, $property = false )
+	static function get( $property = false, $deprecated = false )
 	{
-		if( !$section )
-			return self::$values;
-		
 		if( !$property )
+			return self::$values;
+
+		if( $deprecated )
 		{
-			if( isset( self::$values[ $section ] ) )
-				return self::$values[ $section ];
-			else
-				return null;
+			if( isset( self::$values[ $property ] ) &&
+				isset( self::$values[ $property ][ $deprecated ] ) )
+				return self::$values[ $property ][ $deprecated ];
 		}
 		
-		if( isset( self::$values[ $section ] ) &&
-			isset( self::$values[ $section ][ $property ] ) )
-			return self::$values[ $section ][ $property ];
+		return Util::array_value( self::$values, $property );		
 	}
 	
 	/** 
 	 * Sets a configuration value (only persists for the duration of the script)
 	 *
-	 * @param string $section
-	 * @param string $property
-	 * @param string $value
-	 *
-	 * @param return void
+	 * @param string $property dot value property name
+	 * @param string $value value to set
+	 * @param string $deprecated when used sets the value of a key in a section (@deprecated)
 	 */
-	static function set( $section, $property, $value )
+	static function set( $property, $value, $deprecated = false )
 	{
-		if( !isset( self::$values[ $section ] ) )
-			self::$values[ $section ] = array();
-			
-		self::$values[ $section ][ $property ] = $value;
+		if( $deprecated )
+		{
+			if( !isset( self::$values[ $property ][ $value ] ) && !is_array( self::$values[ $property ][ $value ] ) )
+				self::$values[ $property ][ $value ] = array();
+
+			return self::$values[ $property ][ $value ] = $deprecated;
+		}
+
+		Util::array_set( self::$values, $property, $value );
 	}
 	
 	/**
 	 * Loads the site configuration from an array
 	 *
 	 * @param array $value
-	 *
-	 * @return void
 	 */
 	static function load( $values )
 	{
@@ -76,5 +74,5 @@ class Config
 	static function value( $section, $property )
 	{
 		return self::get( $section, $property );
-	}	
+	}
 }
