@@ -20,19 +20,47 @@ require_once 'vendor/autoload.php';
 
 class ValidateTest extends \PHPUnit_Framework_TestCase
 {
-	public function testValidatePassword()
+	public function testAlpha()
 	{
-		Config::set( 'site.salt', 'saltvalue' );
 
-		$password = 'testpassword';
-		$this->assertTrue( Validate::is( $password, 'password:8' ) );
-		$this->assertEquals( Util::encrypt_password( 'testpassword' , Config::get( 'site.salt' ) ), $password );
-
-		$invalid = '...';
-		$this->assertFalse( Validate::is( $invalid, 'password:8' ) );
 	}
 
-	public function testValidateMatching()
+	public function testAlphaNumeric()
+	{
+		
+	}
+
+	public function testAlphaDash()
+	{
+		
+	}
+
+	public function testBoolean()
+	{
+		
+	}
+
+	public function testEmail()
+	{
+		
+	}
+
+	public function testEnum()
+	{
+		
+	}
+
+	public function testDate()
+	{
+		
+	}
+
+	public function testIp()
+	{
+		
+	}
+
+	public function testMatching()
 	{
 		$match = array( 'test', 'test' );
 		$this->assertTrue( Validate::is( $match, 'matching' ) );
@@ -45,5 +73,47 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 		$notmatching = array( 'test', 'nope' );
 		$this->assertFalse( Validate::is( $notmatching, 'matching' ) );
 		$this->assertEquals( array( 'test', 'nope' ), $notmatching );		
+	}
+
+	public function testNumeric()
+	{
+		
+	}
+
+	public function testPassword()
+	{
+		Config::set( 'site.salt', 'saltvalue' );
+
+		$password = 'testpassword';
+		$this->assertTrue( Validate::is( $password, 'password:8' ) );
+		$this->assertEquals( Util::encrypt_password( 'testpassword' , Config::get( 'site.salt' ) ), $password );
+
+		$invalid = '...';
+		$this->assertFalse( Validate::is( $invalid, 'password:8' ) );
+	}	
+
+	public function testRequired()
+	{
+		
+	}
+
+	public function testString()
+	{
+		
+	}	
+
+	public function testTimeZone()
+	{
+		
+	}
+
+	public function testTimestamp()
+	{
+		
+	}
+
+	public function testUrl()
+	{
+		
 	}
 }
