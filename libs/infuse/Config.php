@@ -49,7 +49,9 @@ class Config
 	{
 		if( $deprecated )
 		{
-			if( !isset( self::$values[ $property ][ $value ] ) && !is_array( self::$values[ $property ][ $value ] ) )
+			if( !isset( self::$values[ $property ] ) ||
+				!isset( self::$values[ $property ] ) ||
+				!is_array( self::$values[ $property ][ $value ] ) )
 				self::$values[ $property ][ $value ] = array();
 
 			return self::$values[ $property ][ $value ] = $deprecated;
