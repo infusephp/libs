@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.16.1
+ * @version 0.1.16.3
  * @copyright 2013 Jared King
  * @license MIT
  */
