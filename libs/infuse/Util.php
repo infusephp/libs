@@ -72,96 +72,122 @@ class Util
 	/**
 	 * Securely hashes a string, useful for passwords
 	 *
-	 * @param $string password
+	 * @param string $password
+	 * @param string $salt
 	 * @param int $nonce number used once
 	 *
 	 * @return string
 	 */
-	static function encryptPassword( $password, $nonce = '' )
+	static function encrypt_password( $password, $salt = '', $nonce = '' )
 	{
-		return hash_hmac( 'sha512', $password . $nonce, Config::get( 'site', 'salt' ) );
-	}	
+		return hash_hmac( 'sha512', $password . $nonce, $salt );
+	}
 	
 	/**
 	 * Generates a unique 32-digit GUID. i.e. 12345678-1234-5678-123456789012
 	 *
+	 * @param boolean $dashes whether or not to separate guid with dashes
+	 * 
 	 * @return string
 	 */
-	static function guid()
+	static function guid( $dashes = true )
 	{
 		if( function_exists( 'com_create_guid' ) )
 			return trim( '{}', com_create_guid() );
 		else
 		{
-			// mt_srand( (double)microtime() * 10000 ); optional for php 4.2.0+
 			$charid = strtoupper( md5( uniqid( rand( ), true ) ) );
-			// chr(45) = "-"
-			$uuid = //chr(123)// "{"
-					substr($charid, 0, 8).chr(45)
-					.substr($charid, 8, 4).chr(45)
-					.substr($charid,12, 4).chr(45)
-					.substr($charid,16, 4).chr(45)
-					.substr($charid,20,12);
-					//.chr(125);// "}"
+
+			$dash = $dashes ? '-' : '';
+
+			$uuid = substr( $charid, 0, 8 ) . $dash .
+					substr( $charid, 8, 4 ) . $dash .
+					substr( $charid, 12, 4 ) . $dash .
+					substr( $charid, 16, 4 ) . $dash .
+					substr( $charid, 20, 12 );
+
 			return $uuid;
 		}
 	}
 	
 	/**
-	 * Makes a string SEO compliant (numbers, digits, and dashes)
+	 * Makes a string SEO compliant (numbers, digits, and dashes only)
 	 *
 	 * @param string $string
-	 * @param string $id id to be appended to end
+	 * @param int $maxLength maximum length of result
+	 * @param array $commonWords common words to remove
+	 *
+	 * @return string
 	 */
-	static function seoUrl( $string, $id = null )
+	static function seoify( $string, $maxLength = 150, $commonWords = array() )
 	{
-		$string = strtolower(stripslashes($string));
-	 
-		$string = preg_replace('/&.+?;/', '', $string); // kill HTML entities
-		// kill anything that is not a letter, digit, space
-		$string = preg_replace ("/[^a-zA-Z0-9 ]/", "", $string);		
-		// Turn it to an array and strip common words by comparing against c.w. array
-		$seo_slug_array = array_diff (explode(' ', $string), array());
-		// Turn the sanitized array into a string
-		$return = substr( join("-", $seo_slug_array), 0, 150 ) . ( ($id) ? '-' . $id : '' );
+		$string = strtolower( stripslashes( $string ) );
+	 	// kill HTML entities
+		$string = preg_replace( '/&.+?;/', '', $string );
+		// kill anything that is not a letter, digit, space, dash
+		$string = preg_replace( "/[^a-zA-Z0-9 -]/", "", $string );
+		// turn it to an array and strip common words by comparing against c.w. array
+		$seo_slug_array = array_diff( explode( ' ', $string ), $commonWords );
+		// turn the sanitized array into a string of max length
+		$return = substr( join( "-", $seo_slug_array ), 0, $maxLength );
 		// allow only single runs of dashes
-		return strtolower(preg_replace('/--+/u', '-', $return));
+		$return = strtolower( preg_replace( '/--+/u', '-', $return ) );
+		// first character cannot be '-'
+		if( $return[ 0 ] == '-' )
+			$return = substr_replace( $return, '', 0, 1 );
+
+		return $return;
 	}
 	
 	/** 
-	 * Converts a human friendly string (i.e. 1GB) into bytes
+	 * Converts a human friendly metric string (i.e. 1G) into a number
 	 *
 	 * @param string $str
+	 * @param string $use1024 when true, increment by 1,024 instead of 1,000
 	 *
-	 * @return int
+	 * @return number
 	 */
-	static function toBytes( $str )
+	static function parse_metric_str( $str, $use1024 = false )
 	{
-		// normalize and strip off any b's
-		$str = str_replace( 'b', '', strtolower(trim($str)));
+		// normalize
+		$str = strtolower( trim( $str ) );
+
+		// strip off all letters and find suffix
+		$i = strlen( $str ) - 1;
+		while( $i >= 0 && !is_numeric( $str[ $i ] ) )
+			$i--;
+
 		// last letter
-		$last = $str[strlen($str)-1];
-		// get the value
-		$val = substr( $str, 0, strlen($str) - 1 );
-		switch($last) {
-			case 't': $val *= 1024;
-			case 'g': $val *= 1024;
-			case 'm': $val *= 1024;
-			case 'k': $val *= 1024;
+		$last = $str[ $i + 1 ];
+
+		// get the number
+		$val = substr( $str, 0, $i + 1 );
+
+		// compute the value
+		$thousand = ($use1024) ? 1024 : 1000;
+		$hundred = ($use1024) ? 102.4 : 100;
+		switch( $last )
+		{
+			case 't': $val *= $thousand;
+			case 'g': $val *= $thousand;
+			case 'm': $val *= $thousand;
+			case 'k': $val *= 10;
+			case 'h': $val *= $hundred;
 		}
+
 		return $val;
 	}
 	
 	/**
 	 * Formats a number with a set number of decimals and a metric suffix
-	 * i.e. formatNumberAbbreviation( 12345, 2 ) -> 12.35K
+	 * i.e. number_abbreviate( 12345, 2 ) -> 12.35K
 	 *
 	 * @param int $number
 	 * @param int $decimals number of places after decimal
 	 *
 	 * @return string
 	 */
-	static function formatNumberAbbreviation($number, $decimals = 1)
+	static function number_abbreviate( $number, $decimals = 1 )
 	{
 		if( $number == 0 )
 			return "0";
@@ -181,13 +207,13 @@ class Util
 	    	0 => ""
 	    );
 	
-	    foreach($abbrevs as $exponent => $abbrev)
+	    foreach( $abbrevs as $exponent => $abbrev )
 	    {
-	        if($number >= pow(10, $exponent))
+	        if( $number >= pow( 10, $exponent ) )
 	        {
-	        	$remainder = $number % pow(10, $exponent) . ' ';
-	        	$decimal = ($remainder > 0) ? round( round( $remainder, $decimals ) / pow(10, $exponent), $decimals ) : '';
-	            return intval($number / pow(10, $exponent)) + $decimal . $abbrev;
+	        	$remainder = $number % pow( 10, $exponent ) . ' ';
+	        	$decimal = ( $remainder > 0 ) ? round( round( $remainder, $decimals ) / pow( 10, $exponent ), $decimals ) : '';
+	            return intval( $number / pow( 10, $exponent ) ) + $decimal . $abbrev;
 	        }
 	    }
 	}
@@ -199,31 +225,41 @@ class Util
 	 * 
 	 * @param string $name
 	 * @param string $value
-	 * @param int $expires
+	 * @param int $expire
 	 * @param string $path
 	 * @param string $domain
 	 * @param boolean $secure
 	 * @param boolean $httponly
+	 * @param boolean $setHeader when true, sets the header, otherwise returns header string
+	 *
+	 * @return string when $setHeader = false
 	 */
-	static function set_cookie_fix_domain($Name, $Value = '', $Expires = 0, $Path = '', $Domain = '', $Secure = false, $HTTPOnly = false)
+	static function set_cookie_fix_domain( $name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true )
 	{
-		if (!empty($Domain))
+		if( !empty( $domain ) )
 		{
-		  // Fix the domain to accept domains with and without 'www.'.
-		  if (strtolower(substr($Domain, 0, 4)) == 'www.')  $Domain = substr($Domain, 4);
-		  $Domain = '.' . $Domain;
+		  // Fix the domain to accept domains with and without 'www.'
+		  if( strtolower( substr( $domain, 0, 4 ) ) == 'www.' )
+		  	$domain = substr( $domain, 4 );
+		  $domain = '.' . $domain;
 	 
-		  // Remove port information.
-		  $Port = strpos($Domain, ':');
-		  if ($Port !== false)  $Domain = substr($Domain, 0, $Port);
+		  // Remove port information
+		  $port = strpos( $domain, ':' );
+		  if ( $port !== false )
+		  	$domain = substr( $domain, 0, $port );
 		}
-	 
-		header('Set-Cookie: ' . rawurlencode($Name) . '=' . rawurlencode($Value)
-							  . (empty($Expires) ? '' : '; expires=' . gmdate('D, d-M-Y H:i:s', $Expires) . ' GMT')
-							  . (empty($Path) ? '' : '; path=' . $Path)
-			. (empty($Domain) ? '' : '; domain=' . $Domain)
-			. (!$Secure ? '' : '; secure')
-			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
+	 	
+		$cookieStr = 'Set-Cookie: ' . rawurlencode( $name ) . '=' . rawurlencode( $value ) .
+			( empty($expires) ? '' : '; expires=' . gmdate( 'D, d-M-Y H:i:s', $expires ) . ' GMT' ) .
+			( empty($path) ? '' : '; path=' . $path ) .
+			( empty($domain) ? '' : '; domain=' . $domain ) .
+			( !$secure ? '' : '; secure' ) .
+			( !$httponly ? '' : '; HttpOnly' );
+
+		if( $setHeader )
+			header( $cookieStr, false );
+		else
+			return $cookieStr;
 	}
 
 	/**
@@ -234,5 +270,37 @@ class Util
 	static function print_pre( $element )
 	{
 		echo '<pre>' . print_r( $element, true ) . '</pre>';
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function encryptPassword( $password, $nonce )
+	{
+		return self::encrypt_password( $password, Config::get( 'site.salt' ), $nonce );
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function seoURL( $string, $id = null )
+	{
+		return self::seoify( $string . (($id)?'-'.$id:''));
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function toBytes( $str )
+	{
+		return self::parse_metric_str( $str, true );
+	}
+	
+	/**
+	 * @deprecated
+	 */
+	static function formatNumberAbbreviation( $number, $decimals = 1 )
+	{
+		return self::number_abbreviate( $number, $decimals );
 	}	
 }
