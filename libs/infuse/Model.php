@@ -160,7 +160,7 @@ abstract class Model extends Acl
 			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
 			$cachePrefix = $class . '.' . $this->id . '.';
 			
-			$parameters = (array)static::$config[ 'strategies' ];
+			$parameters = (array)static::$config[ 'cache' ][ 'strategies' ];
 			$strategies = array_keys( $parameters );
 
 			foreach( $parameters as $strategy => $properties )
