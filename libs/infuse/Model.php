@@ -10,8 +10,7 @@
  */
 
 /*
-
-The following properties (of model properties) are available:
+	The following properties (of model properties) are available:
  
  	Schema:
  	
@@ -94,14 +93,6 @@ The following properties (of model properties) are available:
 			Model class name (including namespace) the property is related to
   			String
   			Optional
-
- *
- *
- * The model caching strategies are executed in this order:
- 	- Memcache (if enabled)
- 	- Local
- *
- *
  */
 
 namespace infuse;
@@ -147,7 +138,7 @@ abstract class Model extends Acl
 	 */
 	static function configure( $config )
 	{
-		self::$config = array_replace( self::$config, (array)$config );
+		static::$config = array_replace( static::$config, (array)$config );
 	}
 
 	/**
@@ -169,7 +160,7 @@ abstract class Model extends Acl
 			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
 			$cachePrefix = $class . '.' . $this->id . '.';
 			
-			$parameters = static::$config[ 'strategies' ];
+			$parameters = (array)static::$config[ 'strategies' ];
 			$strategies = array_keys( $parameters );
 
 			foreach( $parameters as $strategy => $properties )
