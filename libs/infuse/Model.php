@@ -175,7 +175,7 @@ abstract class Model extends Acl
 			foreach( $parameters as $strategy => $properties )
 			{
 				$prefix = Util::array_value( $properties, 'prefix' );
-				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') $cachePrefix;
+				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') . $cachePrefix;
 			}
 			
 			// setup our cache with the appropriate strategies

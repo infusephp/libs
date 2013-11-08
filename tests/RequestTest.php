@@ -14,10 +14,14 @@ ini_set( 'display_errors', true );
 
 require_once 'vendor/autoload.php';
 
+use infuse\Request;
+
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
 	public function testTodo()
 	{
+		$req = new Request();
+		
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );

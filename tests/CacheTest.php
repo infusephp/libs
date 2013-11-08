@@ -14,10 +14,14 @@ ini_set( 'display_errors', true );
 
 require_once 'vendor/autoload.php';
 
+use infuse\Cache;
+
 class CacheTest extends \PHPUnit_Framework_TestCase
 {
 	public function testTodo()
 	{
+		$cache = new Cache( array( 'local' ) );
+		
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );

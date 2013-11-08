@@ -14,13 +14,13 @@ ini_set( 'display_errors', true );
 
 require_once 'vendor/autoload.php';
 
-use infuse\ErrorStack;
+use infuse\Model;
 
-class ErrorStackTest extends \PHPUnit_Framework_TestCase
+class ModelTest extends \PHPUnit_Framework_TestCase
 {
 	public function testTodo()
 	{
-		$stack = ErrorStack::stack();
+		Model::configure(array());
 		
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
