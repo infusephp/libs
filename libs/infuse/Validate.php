@@ -149,7 +149,7 @@ class Validate
 	{
 		$enum = explode( ',', Util::array_value( $parameters, 0 ) );
 
-		return isset( $enum[ $value ] );
+		return in_array( $value, $enum );
 	}
 
 	/**
@@ -218,9 +218,8 @@ class Validate
 	private static function numeric( &$value, $parameters )
 	{
 		$check = 'is_' . Util::array_value( $parameters, 0 );
-		$value += 0;
-		
-		return ( !isset( $parameters[ 0 ] ) && is_numeric( $value ) ) || $check( $value );
+
+		return (!isset($parameters[0])) ? is_numeric( $value ) : $check( $value );
 	}
 
 	/**
@@ -286,11 +285,11 @@ class Validate
 		// thanks to http://stackoverflow.com/questions/5816960/how-to-check-is-timezone-identifier-valid-from-code
 		$valid = array();
 		$tza = timezone_abbreviations_list();
-		foreach ($tza as $zone)
-			foreach ($zone as $item)
-				$valid[$item['timezone_id']] = true;
-		unset($valid['']);
-		return !!$valid[$value];
+		foreach( $tza as $zone )
+			foreach( $zone as $item )
+				$valid[ $item[ 'timezone_id' ] ] = true;
+		unset( $valid[ '' ] );
+		return !!Util::array_value( $valid, $value );
 	}
 
 	/**
