@@ -169,20 +169,6 @@ abstract class Model extends Acl
 			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
 			$cachePrefix = $class . '.' . $this->id . '.';
 			
-			/*
-			TODO move this out
-			$strategies = array();
-			
-			// memcache strategy
-			if( Config::get( 'memcache.enabled' ) )
-			{
-				$strategies[] = 'memcache';
-				$parameters[ 'memcache' ] = array_replace(
-					Config::get( 'memcache' ),
-					array( 'prefix' => Config::get( 'memcache.prefix' ) . '.' . $cachePrefix ) );
-			}
-			*/
-
 			$parameters = static::$config[ 'strategies' ];
 			$strategies = array_keys( $parameters );
 

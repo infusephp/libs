@@ -148,11 +148,9 @@ class Response
 	 * @param array $parameters parameters to pass to the template
 	 */
 	public function render( $template, $parameters = array() )
-	{
-		/*
-		TODO this all needs to be moved out
-		$res->assignData()
-
+	{		
+		$engine = ViewEngine::engine();
+		
 		// deal with relative paths when using modules
 		// TODO this is not ideal, kind of a hack
 		if( substr( $template, 0, 1 ) != '/' )
@@ -173,17 +171,6 @@ class Response
 				}
 			}
 		}
-
-		// add some useful data to the template
-		if( class_exists( '\\app\\users\\models\\User' ) )
-			$parameters[ 'currentUser' ] = \app\users\models\User::currentUser();
-		
-		$parameters[ 'baseUrl' ] = ((Config::get('site.ssl-enabled'))?'https':'http') . '://' . Config::get('site.host-name') . '/';
-		$parameters[ 'errorStack' ] = ErrorStack::stack();
-
-		*/
-		
-		$engine = ViewEngine::engine();
 		
 		$engine->assignData( $parameters );
 		
