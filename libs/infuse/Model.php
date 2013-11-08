@@ -122,16 +122,33 @@ abstract class Model extends Acl
 	protected static $escapedProperties = array(); // specifies fields that should be escaped with htmlspecialchars()
 	protected static $tablename = false;
 	protected static $hasSchema = true;
+	protected static $config = array(
+		'cache' => array(
+			'strategies' => array(
+				'local' => array(
+					'prefix' => ''
+				)
+			),
+		)
+	);
 
 	/////////////////////////////
 	// Private class variables
 	/////////////////////////////
 
 	private static $excludePropertyTypes = array( 'custom', 'html' );
-	
 	private $cache;
-
 	private $relationModels;
+	
+	/**
+	 * Changes the default model settings
+	 *
+	 * @param array $config
+	 */
+	static function configure( $config )
+	{
+		self::$config = array_replace( self::$config, (array)$config );
+	}
 
 	/**
 	 * Creates a new model object
@@ -149,9 +166,11 @@ abstract class Model extends Acl
 		if( !$this->cache )
 		{
 			// generate caching prefix for this model
-			$class = strtolower( str_replace( '\\', '', get_class($this) ) );		
+			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
 			$cachePrefix = $class . '.' . $this->id . '.';
-	
+			
+			/*
+			TODO move this out
 			$strategies = array();
 			
 			// memcache strategy
@@ -162,10 +181,16 @@ abstract class Model extends Acl
 					Config::get( 'memcache' ),
 					array( 'prefix' => Config::get( 'memcache.prefix' ) . '.' . $cachePrefix ) );
 			}
-			
-			// local strategy fallback
-			$strategies[] = 'local';
-			$parameters[ 'local' ] = array( 'prefix' => $cachePrefix );
+			*/
+
+			$parameters = static::$config[ 'strategies' ];
+			$strategies = array_keys( $parameters );
+
+			foreach( $parameters as $strategy => $properties )
+			{
+				$prefix = Util::array_value( $properties, 'prefix' );
+				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') $cachePrefix;
+			}
 			
 			// setup our cache with the appropriate strategies
 			$this->cache = new Cache( $strategies, $parameters );

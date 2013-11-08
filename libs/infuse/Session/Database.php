@@ -9,9 +9,9 @@
  * @license MIT
  */
 
-namespace infuse;
+namespace infuse\Session;
 
-class DatabaseSession
+class Database
 {
 	private $tablename = 'Sessions';
 
@@ -74,8 +74,7 @@ class DatabaseSession
 					'id' => $id
 				),
 				'single' => true
-			),
-			0
+			)
 		);
 	}
 

@@ -13,6 +13,20 @@ namespace infuse;
 
 class Validate
 {
+	private static $config = array(
+		'salt' => ''
+	);
+
+	/**
+	 * Changes settings for the validator
+	 *
+	 * @param array $config
+	 */
+	static function configure( $config )
+	{
+		self::$config = array_replace( self::$config, (array)$config );
+	}
+
 	/**
 	 * Validates one or more fields based upon certain filters. Filters may be chained and will be executed in order
 	 * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' )
@@ -238,7 +252,7 @@ class Validate
 		if( strlen( $value ) < $minimumPasswordLength )
 			return false;
 
-		$value = Util::encrypt_password( $value, Config::get( 'site.salt' ) );
+		$value = Util::encrypt_password( $value, self::$config[ 'salt' ] );
 
 		return true;
 	}

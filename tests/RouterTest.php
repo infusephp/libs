@@ -23,8 +23,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 	{
 		Router::configure( array(
 			'namespace' => '',
-			'default' => array(
-				'controller' => 'MockController' ) ) );
+			'defaultController' => 'MockController' ) );
 
 		MockController::$staticRouteCalled = false;
 		MockController::$dynamicRouteCalled = false;
@@ -142,7 +141,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 	public function testRouterControllerParam()
 	{
-		Router::configure( array( 'default' => array( 'controller' => 'BogusController' ) ) );
+		Router::configure( array( 'defaultController' => 'BogusController' ) );
 
 		$testRoutes = array(
 			'post /this/is/a/test/route' => 'staticRoute',

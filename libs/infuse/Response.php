@@ -149,6 +149,10 @@ class Response
 	 */
 	public function render( $template, $parameters = array() )
 	{
+		/*
+		TODO this all needs to be moved out
+		$res->assignData()
+
 		// deal with relative paths when using modules
 		// TODO this is not ideal, kind of a hack
 		if( substr( $template, 0, 1 ) != '/' )
@@ -176,6 +180,8 @@ class Response
 		
 		$parameters[ 'baseUrl' ] = ((Config::get('site.ssl-enabled'))?'https':'http') . '://' . Config::get('site.host-name') . '/';
 		$parameters[ 'errorStack' ] = ErrorStack::stack();
+
+		*/
 		
 		$engine = ViewEngine::engine();
 		

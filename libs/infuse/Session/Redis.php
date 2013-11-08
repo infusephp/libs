@@ -9,9 +9,9 @@
  * @license MIT
  */
 
-namespace infuse;
+namespace infuse\Session;
 
-class RedisSession
+class Redis
 {
 	private $prefix;
 	

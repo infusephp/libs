@@ -15,18 +15,9 @@ class Logger
 {
 	private static $monolog;
 	
-	/**
-	 * Returns the monolog instance used
-	 *
-	 * @return \Monolog\Logger
-	 */
-	static function logger()
-	{
-		if( !self::$monolog )
-			self::$monolog = new \Monolog\Logger('infuse');
-		
-		return self::$monolog;
-	}
+	private static $config = array(
+		'productionLevel' => false
+	);
 	
 	/**
 	 * Sets up the handlers used by monolog
@@ -35,8 +26,23 @@ class Logger
 	 */
 	static function configure( $config )
 	{
-		foreach( (array)$config as $handler => $handlerSettings )
+		foreach( (array)$config[ 'handlers' ] as $handler => $handlerSettings )
 			self::addHandler( $handler, $handlerSettings );
+
+		self::$config = array_replace( self::$config, (array)$config );
+	}
+
+	/**
+	 * Returns the monolog instance used
+	 *
+	 * @return \Monolog\Logger
+	 */
+	static function logger()
+	{
+		if( !self::$monolog )
+			self::$monolog = new \Monolog\Logger( 'infuse' );
+		
+		return self::$monolog;
 	}
 
 	/**
@@ -126,7 +132,7 @@ class Logger
 	{
 		$formattedErrorString = Logger::formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext );
 		
-		if( !Config::get( 'site.production-level' ) )
+		if( !self::$config[ 'productionLevel' ] )
 			echo "<pre>$formattedErrorString</pre>";
 	
 		switch( $errno )
@@ -231,7 +237,7 @@ class Logger
 	{
 		$formattedExceptionString = Logger::formatException( $exception );
 			
-		if( !Config::get( 'site.production-level' ) )
+		if( !self::$config[ 'productionLevel' ] )
 			echo $formattedExceptionString;
 	
 		Logger::error( $formattedExceptionString );

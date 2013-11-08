@@ -9,7 +9,6 @@
  * @license MIT
  */
 
-use infuse\Config;
 use infuse\Util;
 use infuse\Validate;
 
@@ -132,11 +131,12 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
 	public function testPassword()
 	{
-		Config::set( 'site.salt', 'saltvalue' );
+		$salt = 'saltvalue';
+		Validate::configure( array( 'salt' => $salt ) );
 
 		$password = 'testpassword';
 		$this->assertTrue( Validate::is( $password, 'password:8' ) );
-		$this->assertEquals( Util::encrypt_password( 'testpassword' , Config::get( 'site.salt' ) ), $password );
+		$this->assertEquals( Util::encrypt_password( 'testpassword' , $salt ), $password );
 
 		$invalid = '...';
 		$this->assertFalse( Validate::is( $invalid, 'password:8' ) );

@@ -15,7 +15,8 @@ class Router
 {
 	private static $config = array(
 		'namespace' => '',
-		'default' => array()
+		'defaultController' => '',
+		'defaultAction' => 'index'
 	);
 	
 	/**
@@ -104,10 +105,10 @@ class Router
 			$route = array( $req->params( 'controller' ), $route );
 		// method name supplied
 		if( is_string( $route ) )
-			$route = array( Util::array_value( self::$config[ 'default' ], 'controller' ), $route );
+			$route = array( self::$config[ 'defaultController' ], $route );
 		// no method name? fallback to the index() method
 		else if( count( $route ) == 1 )
-			$route[] = 'index';
+			$route[] = self::$config[ 'defaultAction' ];
 		
 		list( $controller, $method ) = $route;
 

@@ -50,7 +50,7 @@ class Database
 		}
 		
 		// Set error level
-		if( \infuse\Config::get( 'site.production-level' ) )
+		if( Config::get( 'site.production-level' ) )
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
 		else
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );

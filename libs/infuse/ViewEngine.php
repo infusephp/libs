@@ -37,6 +37,16 @@ class ViewEngine
 	private $data;
 	
 	/**
+	 * Configures the engine to use the specified settings. This overwrites any previous instances of the engine.
+	 *
+	 * @param array $options
+	 */
+	static function configure( $options )
+	{
+		self::$engine = new self( $options );
+	}
+
+	/**
 	 * Creates a new instance
 	 *
 	 * @param array $options
@@ -135,10 +145,11 @@ class ViewEngine
 	 * @param string $dir path containing javascript to compile
 	 * @param string $cacheFile path containing cache
 	 * @param sting $output output filename
+	 * @param boolean $productionLevel performs extra minification
 	 *
 	 * @return boolean result
 	 */
-	function compileJs( $dir, $cacheFile, $output )
+	function compileJs( $dir, $cacheFile, $output, $productionLevel = false )
 	{
 		try
 		{
@@ -152,7 +163,7 @@ class ViewEngine
 			
 			$newCache = array(
 				'md5' => $this->md5OfDir( $jsFiles ),
-				'production' => Config::get( 'site.production-level' ) );
+				'production' => $productionLevel );
 			
 			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
 			{
@@ -162,7 +173,7 @@ class ViewEngine
 					$js .= file_get_contents( $file ) . "\n";
 				
 				// minify js in production mode
-				if( Config::get( 'site.production-level' ) )
+				if( $productionLevel )
 					$js = \JSMin::minify( $js );
 				
 				// write the js and cache to the output file
@@ -216,16 +227,6 @@ class ViewEngine
 			self::$engine = new self();
 		
 		return self::$engine;
-	}
-	
-	/**
-	 * Configures the engine to use the specified settings. This overwrites any previous instances of the engine.
-	 *
-	 * @param array $options
-	 */
-	static function configure( $options )
-	{
-		self::$engine = new self( $options );
 	}
 	
 	/**
