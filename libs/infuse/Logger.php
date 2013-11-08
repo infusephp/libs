@@ -33,12 +33,12 @@ class Logger
 	 *
 	 * @param array $config array of handlers and corresponding settings
 	 */
-	static function setConfig( $config )
+	static function configure( $config )
 	{
 		foreach( (array)$config as $handler => $handlerSettings )
 			self::addHandler( $handler, $handlerSettings );
 	}
-	
+
 	/**
 	 * Creates a log entry
 	 *
@@ -313,5 +313,13 @@ class Logger
 		}
 
 		$logger->pushHandler( $handlerObj );
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function setConfig( $config )
+	{
+		return self::configure( $config );
 	}
 }
