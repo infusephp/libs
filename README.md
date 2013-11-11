@@ -1,11 +1,11 @@
 infuse/libs [![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs)
 ===========
 
-infuse/libs provide a jumping off point for web development, inspired by express.js (amongst others). The libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries have been used in the battlefield in projects both small and large. There is even a framework built around these libraries.
+`infuse/libs` is a set of libraries designed to speed up PHP development, for single-page apps to huge monolithic apps. With simplified syntax inspired by express.js, the libraries are meant to be consumed à la carte. You will find few dependencies here, even amongst various classes. These libraries are unit-tested and battle-tested in projects both large and small. There is even a [https://github.com/jaredtking/infuse](framework) built around `infuse/libs`.
 
 ## Infuse Framework
 
-An MVC framework, called Infuse Framework, has been built using these libraries. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
+An MVC framework, called Infuse Framework, has been built using `infuse/libs`. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
 
 ## Tests
 
