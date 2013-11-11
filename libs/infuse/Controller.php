@@ -13,23 +13,7 @@ namespace infuse;
 
 abstract class Controller extends Acl
 {
-	public static $properties;
 	protected static $models;
-
-	/////////////////////////
-	// GETTERS
-	/////////////////////////
-	
-	/**
-	 * Gets the name of the controller
-	 *
-	 * @return string name
-	*/
-	static function name()
-	{
-		$parts = explode( '\\', get_called_class() );
-		return $parts[ 1 ];
-	}
 
 	/**
 	 * Gets info about the models associated with this controller
