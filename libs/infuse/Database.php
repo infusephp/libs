@@ -20,7 +20,7 @@ class Database
 	private static $config = array(
 		'type' => '',
 		'host' => '',
-		'dbname' => '',
+		'name' => '',
 		'user' => '',
 		'password' => '',
 		'productionLevel' => false
@@ -59,7 +59,7 @@ class Database
 		{
 			// Initialize database
 			if( self::$DBH == null )
-				self::$DBH = new \PDO( self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'dbname' ], self::$config[ 'user' ], self::$config[ 'password' ] );
+				self::$DBH = new \PDO( self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ], self::$config[ 'user' ], self::$config[ 'password' ] );
 		}
 		catch(PDOException $e)
 		{
