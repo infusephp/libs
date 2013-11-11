@@ -26,7 +26,7 @@ class Logger
 	 */
 	static function configure( $config )
 	{
-		foreach( (array)$config[ 'handlers' ] as $handler => $handlerSettings )
+		foreach( (array)Util::array_value( $config, 'handlers' ) as $handler => $handlerSettings )
 			self::addHandler( $handler, $handlerSettings );
 
 		self::$config = array_replace( self::$config, (array)$config );

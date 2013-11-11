@@ -17,6 +17,15 @@ class Database
 	// Private class variables
 	/////////////////////////////
 	
+	private static $config = array(
+		'type' => '',
+		'host' => '',
+		'dbname' => '',
+		'user' => '',
+		'password' => '',
+		'productionLevel' => false
+	);
+	
 	private static $DBH;
 	private static $numrows;
 	private static $queryCount;
@@ -24,6 +33,16 @@ class Database
 	private static $batchQueue;
 	private static $initializeAttempted;
 	
+	/**
+	 * Sets up the settings used to interact with database
+	 *
+	 * @param array $config
+	 */
+	static function configure( $config )
+	{
+		self::$config = array_replace( self::$config, (array)$config );
+	}
+
 	/**
 	* Initializes the connection with the database. Only needs to be called once.
 	*
@@ -40,7 +59,7 @@ class Database
 		{
 			// Initialize database
 			if( self::$DBH == null )
-				self::$DBH = new \PDO( Config::get( 'database.type' ) . ':host=' . Config::get( 'database.host' ) . ';dbname=' . Config::get( 'database.name' ), Config::get( 'database.user' ), Config::get( 'database.password' ) );
+				self::$DBH = new \PDO( self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'dbname' ], self::$config[ 'user' ], self::$config[ 'password' ] );
 		}
 		catch(PDOException $e)
 		{
@@ -50,7 +69,7 @@ class Database
 		}
 		
 		// Set error level
-		if( Config::get( 'site.production-level' ) )
+		if( self::$config[ 'productionLevel' ] )
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
 		else
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
