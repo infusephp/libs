@@ -635,14 +635,11 @@ class Database
 			if( $showQuery )
 				echo $query;
 
-			if( self::$DBH->exec( $query ) )
-			{
-				self::$queryCount[ 'delete' ]++;
+			self::$DBH->exec( $query );
 
-				return true;
-			}
-			else
-				return false;
+			self::$queryCount[ 'delete' ]++;
+
+			return true;
 		}
 		catch(PDOException $e)
 		{
