@@ -18,12 +18,40 @@ use infuse\ErrorStack;
 
 class ErrorStackTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
+	static $stack;
+
+	public static function setUpBeforeClass()
 	{
-		$stack = ErrorStack::stack();
+		self::$stack = ErrorStack::stack();
+	}
+
+	protected function assertPreConditions()
+	{
+		$this->assertInstanceOf( '\\infuse\\ErrorStack', self::$stack );
+	}
+
+	public function testAdd()
+	{
+
+	}
+
+	public function testErrors()
+	{
+
+	}
+
+	public function testMessages()
+	{
 		
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+	}
+
+	public function testSetContext()
+	{
+
+	}
+
+	public function testClearContext()
+	{
+
 	}
 }

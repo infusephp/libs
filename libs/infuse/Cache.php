@@ -66,7 +66,8 @@ class Cache
 	function get( $keys, $forceArray = false )
 	{
 		$keys = (array)$keys;
-		$prefixedKeys = array_map( function ($str) { return $this->cachePrefix . $str; }, $keys );
+		$cachePrefix = $this->cachePrefix;
+		$prefixedKeys = array_map( function ($str) use ($cachePrefix) { return $cachePrefix . $str; }, $keys );
 		
 		$return = array();
 		
