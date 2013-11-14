@@ -43,7 +43,9 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'message' => 'Username is invalid',
 			'context' => 'user.create',
 			'class' => 'User',
-			'function' => 'create' );
+			'function' => 'create',
+			'params' => array(
+				'field' => 'username' ) );
 
 		$this->assertTrue( self::$stack->push( $error2 ) );
 
@@ -71,12 +73,16 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'context' => 'user.create',
 			'class' => 'User',
 			'function' => 'create',
-			'params' => array() );
+			'params' => array(
+				'field' => 'username' ) );
 
 		$errors = self::$stack->errors();
-
 		$this->assertEquals( 2, count( $errors ) );
 		$this->assertEquals( array( $expected1, $expected2 ), $errors );
+
+		$errors = self::$stack->errors( 'user.create' );
+		$this->assertEquals( 1, count( $errors ) );
+		$this->assertEquals( array( $expected2 ), $errors );
 	}
 
 	/**
@@ -85,21 +91,18 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	public function testMessages()
 	{
 		$expected = array(
-			'Something is wrong.',
-			'Username is invalid.' );
+			'Something is wrong',
+			'Username is invalid' );
 
 		$messages = self::$stack->messages();
-
 		$this->assertEquals( 2, count( $messages ) );
 		$this->assertEquals( $expected, $messages );
-	}
 
-	/**
-	 * @depends testPush
-	 */
-	public function testHas()
-	{
+		$expected = array( 'Username is invalid' );
 
+		$messages = self::$stack->messages( 'user.create' );
+		$this->assertEquals( 1, count( $messages ) );
+		$this->assertEquals( $expected, $messages );
 	}
 
 	/**
@@ -107,7 +110,31 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testFind()
 	{
+		$expected = array(
+			'error' => 'username_invalid',
+			'message' => 'Username is invalid',
+			'context' => 'user.create',
+			'class' => 'User',
+			'function' => 'create',
+			'params' => array(
+				'field' => 'username' ) );
 
+		$this->assertEquals( $expected, self::$stack->find( 'username' ) );
+		$this->assertEquals( $expected, self::$stack->find( 'username', 'field' ) );
+
+		$this->assertFalse( self::$stack->find( 'non-existent' ) );
+	}
+
+	/**
+	 * @depends testPush
+	 */
+	public function testHas()
+	{
+		$this->assertTrue( self::$stack->has( 'username' ) );
+		$this->assertTrue( self::$stack->has( 'username', 'field' ) );
+
+		$this->assertFalse( self::$stack->has( 'non-existent' ) );
+		$this->assertFalse( self::$stack->has( 'username', 'something' ) );
 	}
 
 	/**
@@ -116,7 +143,15 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetCurrentContext()
 	{
+		self::$stack->setCurrentContext( 'test.context' );
 
+		self::$stack->push( array( 'error' => 'test_error' ) );
+
+		$expected = array(
+			'error' => 'test_error',
+			'context' => 'test.context',
+			'params' => array() );
+		$this->assertEquals( array( $expected ), self::$stack->errors( 'test.context' ) );
 	}
 
 	/**
@@ -125,7 +160,16 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testClearCurrentContext()
 	{
+		self::$stack->setCurrentContext();
 
+		self::$stack->push( array( 'error' => 'test_error' ) );
+
+		$expected = array(
+			'error' => 'test_error',
+			'context' => '',
+			'params' => array() );
+		$errors = self::$stack->errors( '' );
+		$this->assertTrue( in_array( $expected, $errors ) );
 	}
 
 	/**

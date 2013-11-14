@@ -56,7 +56,8 @@ class ErrorStack
 			$error[ 'params' ] = array();
 		
 		// TODO external dependency on `Messages` needs to be fixed
-		if( !isset( $error[ 'message' ] ) )
+		// should fold this into Locale::t()
+		if( !isset( $error[ 'message' ] ) && class_exists( 'Messages' ) )
 			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
 		
 		if( !Util::array_value( $error, 'error' ) )
@@ -130,37 +131,37 @@ class ErrorStack
 	}
 	
 	/**
-	 * Checks if an error exists with a specific property on the stack
+	 * Gets an error for a specific parameter on the stack
 	 *
 	 * @param string $value value we are searching for
-	 * @param string $parameter parameter name
-	 *
-	 * @return boolean
-	 */
-	function has( $value, $parameter = 'field' )
-	{
-		return (boolean)$this->find( $value, $parameter );
-	}
-	
-	/**
-	 * Gets an error for a specific property on the stack
-	 *
-	 * @param string $value value we are searching for
-	 * @param string $parameter parameter name
+	 * @param string $param parameter name
 	 *
 	 * @return array|false
 	 */	
-	function find( $value, $parameter = 'field' )
+	function find( $value, $param = 'field' )
 	{
 		foreach( $this->stack as $error )
 		{
-			if( Util::array_value( $error[ 'params' ], $parameter ) === $value )
+			if( Util::array_value( $error[ 'params' ], $param ) === $value )
 				return $error;
 		}
 		
 		return false;
 	}
 
+	/**
+	 * Checks if an error exists with a specific parameter on the stack
+	 *
+	 * @param string $value value we are searching for
+	 * @param string $param parameter name
+	 *
+	 * @return boolean
+	 */
+	function has( $value, $param = 'field' )
+	{
+		return $this->find( $value, $param ) !== false;
+	}
+	
 	/////////////////////////
 	// DEPRECATED
 	/////////////////////////
