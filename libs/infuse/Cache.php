@@ -31,13 +31,16 @@ class Cache
 	private static $local = array();	
 	
 	/**
-	 *
+	 * Creates a new instance of the cache
 	 *
 	 * @param array $strategies
 	 * @param array $parameters
 	 */
-	function __construct( $strategies, $parameters = array() )
+	function __construct( $strategies = array(), $parameters = array() )
 	{
+		if( count( $strategies ) == 0 )
+			$strategies = array( 'local' );
+
 		foreach( $strategies as $strategy )
 		{
 			$strategyFunc = "strategy_$strategy";
@@ -60,7 +63,7 @@ class Cache
 	 *
 	 * @return array|mixed values or value
 	 */
-	function get( $keys, $forceArray = true )
+	function get( $keys, $forceArray = false )
 	{
 		$keys = (array)$keys;
 		$prefixedKeys = array_map( function ($str) { return $this->cachePrefix . $str; }, $keys );
@@ -83,8 +86,16 @@ class Cache
 					$return[ $key ] = self::$local[ $prefixedKeys[ $i ] ];
 			}
 		}
-		
-		return ( !$forceArray && count( $keys ) == 1 ) ? reset( $return ) : $return;
+
+		if( !$forceArray && count( $return ) <= 1 )
+		{
+			if( count( $return ) == 0 )
+				return null;
+
+			return reset( $return );
+		}
+
+		return $return;
 	}
 	
 	/**
@@ -120,15 +131,20 @@ class Cache
 	 * @param string $key
 	 * @param mixed $value
 	 * @param int $expires expiration time (0 = never)
+	 *
+	 * @return boolean
 	 */
 	function set( $key, $value, $expires = 0 )
 	{
 		if( $this->strategy == 'memcache' )
-			self::$memcache->set( $this->cachePrefix . $key, $value, $expires );
+			return self::$memcache->set( $this->cachePrefix . $key, $value, $expires );
 
 		else if( $this->strategy == 'local' )
+		{
 			// NOTE expiration not implemented, this most likely is not a problem
 			self::$local[ $this->cachePrefix . $key ] = $value;
+			return true;
+		}
 	}
 	
 	/**
@@ -136,14 +152,24 @@ class Cache
 	 *
 	 * @param string $key
 	 * @param int $amount optional amount to increment
+	 *
+	 * @return number
 	 */
 	function increment( $key, $amount = 1 )
 	{
 		if( $this->strategy == 'memcache' )
-			self::$memcache->increment( $this->cachePrefix . $key, $amount );
+			return self::$memcache->increment( $this->cachePrefix . $key, $amount );
 			
 		else if( $this->strategy == 'local' )
-			self::$local[ $this->cachePrefix . $key ] += $amount;
+		{
+			if( isset( self::$local[ $this->cachePrefix . $key ] ) )
+			{
+				self::$local[ $this->cachePrefix . $key ] += $amount;
+				return self::$local[ $this->cachePrefix . $key ];
+			}
+
+			return false;
+		}
 	}
 	
 	/**
@@ -151,30 +177,47 @@ class Cache
 	 *
 	 * @param string $key
 	 * @param int $amount optional amount to decrement
+	 *
+	 * @return number
 	 */
 	function decrement( $key, $amount = 1 )
 	{
 		if( $this->strategy == 'memcache' )
-			self::$memcache->decrement( $this->cachePrefix . $key, $amount );
+			return self::$memcache->decrement( $this->cachePrefix . $key, $amount );
 			
 		else if( $this->strategy == 'local' )
-			self::$local[ $this->cachePrefix . $key ] -= $amount;
+		{
+			if( isset( self::$local[ $this->cachePrefix . $key ] ) )
+			{
+				self::$local[ $this->cachePrefix . $key ] -= $amount;
+				return self::$local[ $this->cachePrefix . $key ];
+			}
+
+			return false;
+		}
 	}
 	
 	/**
 	 * Deletes a value stored in the cache
 	 *
 	 * @param string $key
+	 *
+	 * @return boolean
 	 */
 	function delete( $key )
 	{
 		// use memcache
 		if( $this->strategy == 'memcache' )
-			self::$memcache->delete( $this->cachePrefix . $key );
+			return self::$memcache->delete( $this->cachePrefix . $key );
 		
 		// fallback to local cache
-		else if( $this->strategy == 'local ')
-			unset( self::$local[ $this->cachePrefix . $key ] );	
+		else if( $this->strategy == 'local' )
+		{
+			if( isset( self::$local[ $this->cachePrefix . $key ] ) )
+				unset( self::$local[ $this->cachePrefix . $key ] );	
+
+			return true;
+		}
 	}
 	
 	/////////////////////////
