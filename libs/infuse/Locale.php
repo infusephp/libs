@@ -14,6 +14,83 @@ namespace infuse;
 class Locale
 {
 	/**
+	 * Generates a select box for the currencies
+	 *
+	 * @return string html
+	 */
+	static function currency_options( $selectedCurrency )
+	{
+		$return = '<select name="currency">' . "\n";
+		foreach (self::$currencies as $code => $currency) {
+			$codeLower = strtolower($code);
+			$selected = ($selectedCurrency == $codeLower) ? 'selected="selected"' : '';
+			$return .= '<option value="' . $codeLower . '" ' . $selected . '>' . $code . ' - ' . $currency['name'] . '</option>' . "\n";
+		}
+		$return .= '</select>';
+		return $return;
+	}
+		
+	// lifted from php comments
+	static function timezone_options( $selectedzone, $name = 'time_zone' )
+	{
+		$return = '<select name="' . $name . '">';
+		function timezonechoice($selectedzone)
+		{
+			$all = timezone_identifiers_list();
+			
+			$i = 0;
+			foreach($all AS $zone)
+			{
+				$zone = explode('/',$zone);
+				$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
+				$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
+				$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
+				$i++;
+			}
+			
+			asort($zonen);
+			$structure = '';
+			foreach($zonen AS $zone)
+			{
+				extract($zone);
+				if($continent == 'Africa' || $continent == 'America' || $continent == 'Antarctica' || $continent == 'Arctic' || $continent == 'Asia' || $continent == 'Atlantic' || $continent == 'Australia' || $continent == 'Europe' || $continent == 'Indian' || $continent == 'Pacific')
+				{
+					if(!isset($selectcontinent))
+						$structure .= '<optgroup label="'.$continent.'">'; // continent
+					elseif($selectcontinent != $continent)
+						$structure .= '</optgroup><optgroup label="'.$continent.'">'; // continent
+				
+					if(isset($city) != '')
+					{
+						if (!empty($subcity) != '')
+							$city = $city . '/'. $subcity;
+							
+						$structure .= "<option ".((($continent.'/'.$city)==$selectedzone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
+					}
+					else
+					{
+						if (!empty($subcity) != '')
+						$city = $city . '/'. $subcity;
+						
+						$structure .= "<option ".(($continent==$selectedzone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
+					}
+					
+					$selectcontinent = $continent;
+				}
+			}
+			
+			$structure .= '</optgroup>';
+					
+			return $structure;
+		}
+				
+		$return .= timezonechoice($selectedzone);
+		$return .= '</select>';
+		
+		return $return;
+	}
+
+	/**
 	 * @staticvar $locales
 	 *
 	 * List of locale codes for PHP
@@ -888,81 +965,4 @@ class Locale
         'WV' => "West Virginia",
         'WI' => "Wisconsin", 
         'WY' => "Wyoming" );
-	
-	/**
-	 * Generates a select box for the currencies
-	 *
-	 * @return string html
-	 */
-	static function currency_options( $selectedCurrency )
-	{
-		$return = '<select name="currency">' . "\n";
-		foreach (self::$currencies as $code => $currency) {
-			$codeLower = strtolower($code);
-			$selected = ($selectedCurrency == $codeLower) ? 'selected="selected"' : '';
-			$return .= '<option value="' . $codeLower . '" ' . $selected . '>' . $code . ' - ' . $currency['name'] . '</option>' . "\n";
-		}
-		$return .= '</select>';
-		return $return;
-	}
-		
-	// lifted from php comments
-	static function timezone_options( $selectedzone, $name = 'time_zone' )
-	{
-		$return = '<select name="' . $name . '">';
-		function timezonechoice($selectedzone)
-		{
-			$all = timezone_identifiers_list();
-			
-			$i = 0;
-			foreach($all AS $zone)
-			{
-				$zone = explode('/',$zone);
-				$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
-				$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
-				$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
-				$i++;
-			}
-			
-			asort($zonen);
-			$structure = '';
-			foreach($zonen AS $zone)
-			{
-				extract($zone);
-				if($continent == 'Africa' || $continent == 'America' || $continent == 'Antarctica' || $continent == 'Arctic' || $continent == 'Asia' || $continent == 'Atlantic' || $continent == 'Australia' || $continent == 'Europe' || $continent == 'Indian' || $continent == 'Pacific')
-				{
-					if(!isset($selectcontinent))
-						$structure .= '<optgroup label="'.$continent.'">'; // continent
-					elseif($selectcontinent != $continent)
-						$structure .= '</optgroup><optgroup label="'.$continent.'">'; // continent
-				
-					if(isset($city) != '')
-					{
-						if (!empty($subcity) != '')
-							$city = $city . '/'. $subcity;
-							
-						$structure .= "<option ".((($continent.'/'.$city)==$selectedzone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
-					}
-					else
-					{
-						if (!empty($subcity) != '')
-						$city = $city . '/'. $subcity;
-						
-						$structure .= "<option ".(($continent==$selectedzone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
-					}
-					
-					$selectcontinent = $continent;
-				}
-			}
-			
-			$structure .= '</optgroup>';
-					
-			return $structure;
-		}
-				
-		$return .= timezonechoice($selectedzone);
-		$return .= '</select>';
-		
-		return $return;
-	}		
 }
