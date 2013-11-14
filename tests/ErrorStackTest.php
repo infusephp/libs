@@ -32,7 +32,26 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 
 	public function testPush()
 	{
+		$error1 = array(
+			'error' => 'some_error',
+			'message' => 'Something is wrong' );
 
+		$this->assertTrue( self::$stack->push( $error1 ) );
+
+		$error2 = array(
+			'error' => 'username_invalid',
+			'message' => 'Username is invalid',
+			'context' => 'user.create',
+			'class' => 'User',
+			'function' => 'create' );
+
+		$this->assertTrue( self::$stack->push( $error2 ) );
+
+		$this->assertFalse( self::$stack->push( array(
+			'message' => 'Username is invalid',
+			'context' => 'user.create',
+			'class' => 'User',
+			'function' => 'create' ) ) );
 	}
 
 	/**
@@ -40,7 +59,24 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testErrors()
 	{
+		$expected1 = array(
+			'error' => 'some_error',
+			'message' => 'Something is wrong',
+			'context' => '',
+			'params' => array() );
 
+		$expected2 = array(
+			'error' => 'username_invalid',
+			'message' => 'Username is invalid',
+			'context' => 'user.create',
+			'class' => 'User',
+			'function' => 'create',
+			'params' => array() );
+
+		$errors = self::$stack->errors();
+
+		$this->assertEquals( 2, count( $errors ) );
+		$this->assertEquals( array( $expected1, $expected2 ), $errors );
 	}
 
 	/**
@@ -48,7 +84,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testMessages()
 	{
-
+		
 	}
 
 	/**
@@ -68,7 +104,8 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testPush
+	 * @depends testErrors
+	 * @depends testMessages
 	 */
 	public function testSetCurrentContext()
 	{
@@ -76,7 +113,8 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testPush
+	 * @depends testErrors
+	 * @depends testMessages
 	 */
 	public function testClearCurrentContext()
 	{

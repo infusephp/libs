@@ -34,9 +34,56 @@ class ErrorStack
 		return self::$stackInstance;
 	}
 	
-	////////////////////////////
-	// GETTERS
-	////////////////////////////
+	/**
+	 * Adds an error message to the stack
+	 *
+	 * @param array $error
+	 * - error: error code
+	 * - params: array of parameters to be passed to message
+	 * - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
+	 * - context: (optional) the context which the error message occured in
+	 * - class: (optional) the class invoking the error
+	 * - function: (optional) the function invoking the error
+	 *
+	 * @return boolean was error valid?
+	 */
+	function push( array $error )
+	{
+		if( !isset( $error[ 'context' ] ) )
+			$error[ 'context' ] = $this->context;
+			
+		if( !isset( $error[ 'params' ] ) )
+			$error[ 'params' ] = array();
+		
+		// TODO external dependency on `Messages` needs to be fixed
+		if( !isset( $error[ 'message' ] ) )
+			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
+		
+		if( !Util::array_value( $error, 'error' ) )
+			return false;
+		
+		$this->stack[] = $error;
+		
+		return true;
+	}
+
+	/**
+	 * Sets the current default error context
+	 *
+	 * @param string $context
+	 */
+	function setCurrentContext( $context = '' )
+	{
+		$this->context = $context;
+	}
+	
+	/**
+	 * Clears the current default error context
+	 */
+	function clearCurrentContext( )
+	{
+		$this->context = '';
+	}
 	
 	/**
 	 * Gets all of the errors on the stack
@@ -111,77 +158,7 @@ class ErrorStack
 				return $error;
 		}
 		
-		return false;	
-	}
-
-	/////////////////////////////////////
-	// SETTERS
-	/////////////////////////////////////
-	
-	/**
-	 * Adds an error message to the stack
-	 *
-	 * @param array $message message
-	 * - error: error code
-	 * - params: array of parameters to be passed to message
-	 * - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
-	 * - context: (optional) the context which the error message occured in
-	 * - class: (optional) the class invoking the error
-	 * - function: (optional) the function invoking the error
-	 *
-	 * N.B.: the other arguments are here for compatibility, for now, aim to remove them eventually
-	 *
-	 * @return boolean true if successful
-	 */
-	function push( array $error )
-	{
-		if( !isset( $error[ 'context' ] ) )
-			$error[ 'context' ] = $this->context;
-			
-		if( !isset( $error[ 'params' ] ) )
-			$error[ 'params' ] = array();
-		
-		if( !isset( $error[ 'message' ] ) )
-			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
-		
-		if( !Util::array_value( $error, 'error' ) )
-			return false;
-	
-		if( !Util::array_value( $error, 'function' ) )
-		{
-			// try to look up the call history using debug_backtrace()
-			$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
-			if( isset( $trace[ 1 ] ) )
-			{
-				// $trace[0] is ourself
-				// $trace[1] is our caller
-				// and so on...
-				$error[ 'class' ] = $trace[1]['class'];
-				$error[ 'function' ] = $trace[1]['function'];
-			}
-		}
-		
-		$this->stack[] = $error;
-		
-		return true;
-	}
-
-	/**
-	 * Sets the current default error context
-	 *
-	 * @param string $context
-	 */
-	function setCurrentContext( $context = '' )
-	{
-		$this->context = $context;
-	}
-	
-	/**
-	 * Clears the current default error context
-	 */
-	function clearCurrentContext( )
-	{
-		$this->context = '';
+		return false;
 	}
 
 	/////////////////////////
@@ -193,17 +170,18 @@ class ErrorStack
 	 */
 	public static function add( $error, $class = null, $function = null, $params = array(), $context = null )
 	{
-		// all of the arguments will be deprecated soon...
 		if( !is_array( $error ) )
 		{
 			$error = array(
 				'error' => $error,
 				'params' => $params,
-				'context' => ($context) ? $context : self::$context,
 				'class' => $class,
 				'function' => $function,
 				'message' => Messages::get( $error, $params )
 			);
+
+			if( $context )
+				$error[ 'context' ] = $context;
 		}
 
 		return self::stack()->push( $error, $class, $function, $params, $context );
