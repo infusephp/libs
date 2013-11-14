@@ -30,27 +30,63 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\\infuse\\ErrorStack', self::$stack );
 	}
 
-	public function testAdd()
+	public function testPush()
 	{
 
 	}
 
+	/**
+	 * @depends testPush
+	 */
 	public function testErrors()
 	{
 
 	}
 
+	/**
+	 * @depends testPush
+	 */
 	public function testMessages()
 	{
-		
+
 	}
 
-	public function testSetContext()
+	/**
+	 * @depends testPush
+	 */
+	public function testHas()
 	{
 
 	}
 
-	public function testClearContext()
+	/**
+	 * @depends testPush
+	 */
+	public function testFind()
+	{
+
+	}
+
+	/**
+	 * @depends testPush
+	 */
+	public function testSetCurrentContext()
+	{
+
+	}
+
+	/**
+	 * @depends testPush
+	 */
+	public function testClearCurrentContext()
+	{
+
+	}
+
+	/**
+	 * @depends testErrors
+	 */
+	public function testDeprecated()
 	{
 
 	}

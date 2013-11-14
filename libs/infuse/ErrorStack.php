@@ -17,9 +17,9 @@ class ErrorStack
 	// Private Class Variables
 	/////////////////////////////
 	
-	private static $stack = array();
-	private static $context = '';
 	private static $stackInstance;
+	private $stack = array();
+	private $context = '';
 	
 	/**
 	 * Gets an instance of the stack
@@ -51,7 +51,7 @@ class ErrorStack
 		{
 			$errors = array();
 			
-			foreach( self::$stack as $error )
+			foreach( $this->stack as $error )
 			{
 				if( $error[ 'context' ] == $context )
 					$errors[] = $error;
@@ -60,12 +60,19 @@ class ErrorStack
 			return $errors;
 		}
 		else
-			return self::$stack;
+			return $this->stack;
 	}
 	
+	/**
+	 * Gets the messages of errors on the stack
+	 *
+	 * @param string $context optional context
+	 *
+	 * @return array errors
+	 */
 	function messages( $context = null )
 	{
-		$errors = self::errors( $context );
+		$errors = $this->errors( $context );
 		
 		$messages = array();
 		
@@ -98,7 +105,7 @@ class ErrorStack
 	 */	
 	function find( $value, $parameter = 'field' )
 	{
-		foreach( self::$stack as $error )
+		foreach( $this->stack as $error )
 		{
 			if( Util::array_value( $error[ 'params' ], $parameter ) === $value )
 				return $error;
@@ -112,70 +119,30 @@ class ErrorStack
 	/////////////////////////////////////
 	
 	/**
-	* Sets the context for all errors created.
-	*
-	* Unless explicitly overridden all errors will be created with the current context. Don't forget to clear
-	* the context when finished with it.
-	*
-	* @param string context
-	*
-	* @return null
-	*/
-	public static function setContext( $context )
+	 * Adds an error message to the stack
+	 *
+	 * @param array $message message
+	 * - error: error code
+	 * - params: array of parameters to be passed to message
+	 * - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
+	 * - context: (optional) the context which the error message occured in
+	 * - class: (optional) the class invoking the error
+	 * - function: (optional) the function invoking the error
+	 *
+	 * N.B.: the other arguments are here for compatibility, for now, aim to remove them eventually
+	 *
+	 * @return boolean true if successful
+	 */
+	function push( array $error )
 	{
-		self::$context = $context;
-	}
-	
-	/**
-	* Clears the error context
-	*
-	* @return null
-	*/
-	public static function clearContext( )
-	{
-		self::$context = '';
-	}	
-	
-	/**
-	* Adds an error message to the stack
-	*
-	* @param array $message message
-	* - error: error code
-	* - params: array of parameters to be passed to message
-	* - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
-	* - context: (optional) the context which the error message occured in
-	* - class: (optional) the class invoking the error
-	* - function: (optional) the function invoking the error
-	*
-	* N.B.: the other arguments are here for compatibility, for now, aim to remove them eventually
-	*
-	* @return boolean true if successful
-	*/
-	public static function add( $error, $class = null, $function = null, $params = array(), $context = null )
-	{
-		// all of the arguments will be deprecated soon...
-		if( !is_array( $error ) )
-		{
-			$error = array(
-				'error' => $error,
-				'params' => $params,
-				'context' => ($context) ? $context : self::$context,
-				'class' => $class,
-				'function' => $function,
-				'message' => Messages::get( $error, $params )
-			);
-		}
-		else
-		{
-			if( !isset( $error[ 'context' ] ) )
-				$error[ 'context' ] = self::$context;
-				
-			if( !isset( $error[ 'params' ] ) )
-				$error[ 'params' ] = array();
+		if( !isset( $error[ 'context' ] ) )
+			$error[ 'context' ] = $this->context;
 			
-			if( !isset( $error[ 'message' ] ) )
-				$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
-		}
+		if( !isset( $error[ 'params' ] ) )
+			$error[ 'params' ] = array();
+		
+		if( !isset( $error[ 'message' ] ) )
+			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
 		
 		if( !Util::array_value( $error, 'error' ) )
 			return false;
@@ -194,9 +161,68 @@ class ErrorStack
 			}
 		}
 		
-		self::$stack[] = $error;
+		$this->stack[] = $error;
 		
 		return true;
+	}
+
+	/**
+	 * Sets the current default error context
+	 *
+	 * @param string $context
+	 */
+	function setCurrentContext( $context = '' )
+	{
+		$this->context = $context;
+	}
+	
+	/**
+	 * Clears the current default error context
+	 */
+	function clearCurrentContext( )
+	{
+		$this->context = '';
+	}
+
+	/////////////////////////
+	// DEPRECATED
+	/////////////////////////
+	
+	/**
+	 * @deprecated
+	 */
+	public static function add( $error, $class = null, $function = null, $params = array(), $context = null )
+	{
+		// all of the arguments will be deprecated soon...
+		if( !is_array( $error ) )
+		{
+			$error = array(
+				'error' => $error,
+				'params' => $params,
+				'context' => ($context) ? $context : self::$context,
+				'class' => $class,
+				'function' => $function,
+				'message' => Messages::get( $error, $params )
+			);
+		}
+
+		return self::stack()->push( $error, $class, $function, $params, $context );
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public static function setContext( $context )
+	{
+		self::stack()->setCurrentContext( $context );
+	}
+	
+	/**
+	 * @deprecated
+	 */
+	public static function clearContext( )
+	{
+		self::stack()->clearCurrentContext();
 	}
 
 	/**
