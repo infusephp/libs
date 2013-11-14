@@ -57,7 +57,7 @@ class ErrorStack
 		
 		// TODO external dependency on `Messages` needs to be fixed
 		// should fold this into Locale::t()
-		if( !isset( $error[ 'message' ] ) && class_exists( 'Messages' ) )
+		if( !isset( $error[ 'message' ] ) && class_exists( '\\infuse\\Messages' ) )
 			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
 		
 		if( !Util::array_value( $error, 'error' ) )
