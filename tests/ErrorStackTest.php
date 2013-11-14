@@ -84,7 +84,14 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testMessages()
 	{
-		
+		$expected = array(
+			'Something is wrong.',
+			'Username is invalid.' );
+
+		$messages = self::$stack->messages();
+
+		$this->assertEquals( 2, count( $messages ) );
+		$this->assertEquals( $expected, $messages );
 	}
 
 	/**
