@@ -24,7 +24,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		self::$req = new Request(
 			// GET params
-			array(),
+			array(
+				'test' => 'test',
+				'blah' => 'blah' ),
 			// POST body
 			array(),
 			// cookies
@@ -43,6 +45,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 				'REMOTE_ADDR' => '1.2.3.4',
 				'SERVER_PORT' => '1234',
 				'REQUEST_METHOD' => 'PUT',
+				'REQUEST_URI' => '/users/comments/10',
+				'ARGV' => array(
+					'update',
+					'force',
+					'all'
+				),
 				'HTTP_HOST' => 'example.com',
 				'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 	            'HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
@@ -52,7 +60,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 				'HTTP_TEST_HEADER' => 'testing..123',
 				'CONTENT_TYPE' => 'application/json',
 				'PHP_AUTH_USER' => 'test_user',
-				'PHP_AUTH_PW' => 'test_pw'
+				'PHP_AUTH_PW' => 'test_pw',
 			),
 			// session
 			array()
@@ -129,12 +137,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testPaths()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertEquals( 'comments', self::$req->paths( 1 ) );
+
+		$expected = array( 'users', 'comments', '10' );
+		$this->assertEquals( $expected, self::$req->paths() );
 	}
 
 	public function testBasePath()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertEquals( '/users/comments/10', self::$req->basePath() );
 	}
 
 	public function testMethod()
@@ -267,22 +278,27 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testParams()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
-	}
+		$expected = array( 'test' => 1, 'test2' => 'meh' );
+		self::$req->setParams( $expected );
 
-	public function testSetParams()
-	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertEquals( 'meh', self::$req->params( 'test2' ) );
+		$this->assertEquals( $expected, self::$req->params() );
 	}
 
 	public function testQuery()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertEquals( 'test', self::$req->query( 'test' ) );
+
+		$expected = array(
+			'test' => 'test',
+			'blah' => 'blah' );
+		$this->assertEquals( $expected, self::$req->query() );
 	}
 
 	public function testRequest()
 	{
 		// request
+
 
 		// php://input
 
@@ -291,6 +307,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		// content-type: multipart/form-data
 
 		// content-type: text/plain
+
 		$this->markTestIncomplete( 'This test has not been implemented yet.' );
 	}
 
@@ -322,7 +339,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testSetSession()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		global $_SESSION;
+		$_SESSION = array();
+
+		self::$req->setSession( 'test', 'test' );
+		self::$req->setSession( 'test2', 2 );
 	}
 
 	/**
@@ -330,7 +351,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSession()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertEquals( 'test', self::$req->session( 'test' ) );
+
+		$expected = array( 'test' => 'test', 'test2' => 2 );
+		$this->assertEquals( $expected, self::$req->session() );		
 	}
 
 	/**
@@ -338,11 +362,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testDestroySession()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		self::$req->destroySession();
+
+		$this->assertNull( self::$req->session( 'test' ) );
+		$this->assertEquals( array(), self::$req->session() );
 	}
 
 	public function testCliArgs()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$expected = array( 'update', 'force', 'all' );
+
+		$this->assertEquals( 'force', self::$req->cliArgs( 1 ) );
+		$this->assertEquals( $expected, self::$req->cliArgs() );
 	}
 }

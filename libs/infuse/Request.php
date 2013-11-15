@@ -66,7 +66,7 @@ class Request
 		else
 			$this->session = array();
 		
-		$this->server = array_replace(array(
+		$this->server = array_replace( array(
             'SERVER_NAME' => 'localhost',
             'SERVER_PORT' => 80,
             'HTTP_HOST' => 'localhost',
@@ -80,10 +80,10 @@ class Request
             'SERVER_PROTOCOL' => 'HTTP/1.1',
             'REQUEST_METHOD' => 'GET',
             'REQUEST_TIME' => time()
-        ), $server);
+        ), $server );
 
 		// remove slash in front of requested url
-		$this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $_SERVER, 'REQUEST_URI' ), '', 0, 1 );
+		$this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $this->server, 'REQUEST_URI' ), '', 0, 1 );
 		
 		// strip the starting directory from the REQUEST_URI
 		if( isset( $this->server[ 'DOCUMENT_URI' ] ) )
@@ -110,7 +110,7 @@ class Request
 			$this->server[ 'REQUEST_URI' ] = implode( '/', $requestParts );
 		}
         
-		// sometimes the DELETE and PUT request method is set by forms via POST
+		// DELETE and PUT requests can come through POST
 		if( $this->server[ 'REQUEST_METHOD' ] == 'POST' && $requestMethod = Util::array_value( $request, 'method' )  && in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
 			$this->server[ 'REQUEST_METHOD' ] = $requestMethod;
         
@@ -155,7 +155,7 @@ class Request
 	/** 
 	 * Sets the path for the request and parses it.
 	 *
-	 * @param string $path i.e. /users/1/comments
+	 * @param string $path i.e. /users/10/comments
 	 */
 	function setPath( $path )
 	{
@@ -602,7 +602,7 @@ class Request
 		if( !$this->isCli() )
 			return false;
 		
-		return ($index) ? Util::array_value( $this->server[ 'argv' ], $index ) : $this->server[ 'argv' ];
+		return ($index) ? Util::array_value( $this->server, "ARGV.$index" ) : Util::array_value( $this->server, 'ARGV' );
 	}
 	
 	////////////////////////////////////
