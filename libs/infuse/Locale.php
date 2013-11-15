@@ -13,12 +13,138 @@ namespace infuse;
 
 class Locale
 {
+	private static $localeInstance;
+
+	private $locale = 'en';
+	private $localeDir = false;
+	private $localeData;
+
+	/**
+	 * Gets an instance of the locale
+	 *
+	 * @return Locale
+	 */
+	public static function locale()
+	{
+		if( !self::$localeInstance )
+			self::$localeInstance = new Locale();
+		
+		return self::$localeInstance;
+	}
+
+	function __construct( $locale = false )
+	{
+		if( $locale )
+			$this->locale = $locale;
+	}
+
+	/**
+	 * Sets the locale
+	 *
+	 * @param string $locale
+	 */
+	function setLocale( $locale )
+	{
+		$this->locale = $locale;
+	}
+
+	/**
+	 * Gets the locale
+	 *
+	 * @return string
+	 */
+	function getLocale()
+	{
+		return $this->locale;
+	}
+
+	/**
+	 * Sets the directory where locale data files can be loaded from.
+	 * Locale data files are expected to be have the same name as the 
+	 * locale with a .php extension. The locale data file should return
+	 * an array with locale information.
+	 *
+	 * @param string $dir
+	 */
+	function setLocaleDataDir( $dir )
+	{
+		$this->localeDir = $dir;
+		$this->localeData = array();
+	}
+
+	/**
+	 * Translates a phrase
+	 *
+	 * @param string $phrase
+	 * @param array $params parameters to inject into phrase
+	 * @param string $locale
+	 *
+	 * @return string
+	 */
+	function translate( $phrase, array $params = array(), $locale = false )
+	{
+		if( !$locale )
+			$locale = $this->locale;
+
+		// lazy load locale data
+		$this->loadLocaleData( $locale );
+
+		// look up the phrase
+		$translatedPhrase = Util::array_value( $this->localeData, "$locale.phrases.$phrase" );
+
+		if( $translatedPhrase != null )
+		{
+			// inject parameters into phrase
+			if( count( $params ) > 0 )
+			{
+				foreach( $params as $param => $paramValue )
+					$translatedPhrase = str_replace( '{{' . $param . '}}', $paramValue, $translatedPhrase );
+			}
+
+			return $translatedPhrase;
+		}
+
+		// if the phrase does not exist for this locale
+		// just return the phrase key
+		return $phrase;
+	}
+
+	/**
+	 * Alias for translate()
+	 */
+	function t( $phrase, array $params = array(), $locale = false )
+	{
+		return $this->translate( $phrase, $params, $locale );
+	}
+
+	/**
+	 * Pluralizes a string
+	 *
+	 * @param int $n number in question
+	 * @param string $singular singular string
+	 * @param string $plural plural string
+	 *
+	 * @return string
+	 */
+	function pluralize( $n, $singular, $plural )
+	{
+		return ($n == 1) ? $singular : $plural;
+	}
+
+	/**
+	 * Alias for pluaralize()
+	 */
+	function p( $n, $singular, $plural )
+	{
+		return $this->pluralize( $n, $singular, $plural );
+	}
+
 	/**
 	 * Generates a select box for the currencies
 	 *
 	 * @return string html
 	 */
-	static function currency_options( $selectedCurrency )
+	function currencyOptions( $selectedCurrency )
 	{
 		$return = '<select name="currency">' . "\n";
 		foreach (self::$currencies as $code => $currency) {
@@ -27,14 +153,16 @@ class Locale
 			$return .= '<option value="' . $codeLower . '" ' . $selected . '>' . $code . ' - ' . $currency['name'] . '</option>' . "\n";
 		}
 		$return .= '</select>';
+
 		return $return;
 	}
-		
-	// lifted from php comments
-	static function timezone_options( $selectedzone, $name = 'time_zone' )
+	
+	// lifted from php.net comments
+	function timezoneOptions( $selectedTimezone, $name = 'time_zone' )
 	{
 		$return = '<select name="' . $name . '">';
-		function timezonechoice($selectedzone)
+
+		function timezonechoice($selectedTimezone)
 		{
 			$all = timezone_identifiers_list();
 			
@@ -65,14 +193,14 @@ class Locale
 						if (!empty($subcity) != '')
 							$city = $city . '/'. $subcity;
 							
-						$structure .= "<option ".((($continent.'/'.$city)==$selectedzone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
+						$structure .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
 					}
 					else
 					{
 						if (!empty($subcity) != '')
 						$city = $city . '/'. $subcity;
 						
-						$structure .= "<option ".(($continent==$selectedzone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
+						$structure .= "<option ".(($continent==$selectedTimezone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
 					}
 					
 					$selectcontinent = $continent;
@@ -84,16 +212,34 @@ class Locale
 			return $structure;
 		}
 				
-		$return .= timezonechoice($selectedzone);
+		$return .= timezonechoice($selectedTimezone);
 		$return .= '</select>';
 		
 		return $return;
 	}
 
 	/**
+	 * Loads locale data for a supplied locale
+	 *
+	 * @param string $locale
+	 */
+	private function loadLocaleData( $locale )
+	{
+		if( isset( $this->localeData[ $locale ] ) )
+			return;
+		
+		$filename = str_replace( '//', '/', $this->localeDir . '/' ) . $locale . '.php';
+
+		if( $this->localeDir && file_exists( $filename ) )
+			$this->localeData[ $locale ] = include $filename;
+		else
+			$this->localeData[ $locale ] = array();
+	}
+
+	/**
 	 * @staticvar $locales
 	 *
-	 * List of locale codes for PHP
+	 * List of locale codes
 	 */
 	static $locales = array(
 		'af-ZA',

@@ -150,7 +150,8 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 		$expected = array(
 			'error' => 'test_error',
 			'context' => 'test.context',
-			'params' => array() );
+			'params' => array(),
+			'message' => 'test_error' );
 		$this->assertEquals( array( $expected ), self::$stack->errors( 'test.context' ) );
 	}
 
@@ -167,7 +168,8 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 		$expected = array(
 			'error' => 'test_error',
 			'context' => '',
-			'params' => array() );
+			'params' => array(),
+			'message' => 'test_error' );
 		$errors = self::$stack->errors( '' );
 		$this->assertTrue( in_array( $expected, $errors ) );
 	}

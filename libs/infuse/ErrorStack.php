@@ -40,7 +40,6 @@ class ErrorStack
 	 * @param array $error
 	 * - error: error code
 	 * - params: array of parameters to be passed to message
-	 * - message: (optional) the error message, this is typically generated automatically from the \infuse\Messages class
 	 * - context: (optional) the context which the error message occured in
 	 * - class: (optional) the class invoking the error
 	 * - function: (optional) the function invoking the error
@@ -54,11 +53,6 @@ class ErrorStack
 			
 		if( !isset( $error[ 'params' ] ) )
 			$error[ 'params' ] = array();
-		
-		// TODO external dependency on `Messages` needs to be fixed
-		// should fold this into Locale::t()
-		if( !isset( $error[ 'message' ] ) && class_exists( '\\infuse\\Messages' ) )
-			$error[ 'message' ] = Messages::get( $error[ 'error' ], $error[ 'params' ] );
 		
 		if( !Util::array_value( $error, 'error' ) )
 			return false;
@@ -87,38 +81,42 @@ class ErrorStack
 	}
 	
 	/**
-	 * Gets all of the errors on the stack
+	 * Gets all of the errors on the stack and also attempts
+	 * translation using the Locale class
 	 *
 	 * @param string $context optional context
+	 * @param string $locale optional locale
 	 *
 	 * @return array errors
 	 */
-	function errors( $context = null )
+	function errors( $context = false, $locale = false )
 	{
-		if( $context )
+		$errors = array();
+		
+		foreach( $this->stack as $error )
 		{
-			$errors = array();
-			
-			foreach( $this->stack as $error )
+			if( !$context || $error[ 'context' ] == $context )
 			{
-				if( $error[ 'context' ] == $context )
-					$errors[] = $error;
+				// attempt to translate error into a message
+				if( !isset( $error[ 'message' ] ) )
+					$error[ 'message' ] = Locale::locale()->t( $error[ 'error' ], $error[ 'params' ], $locale );
+
+				$errors[] = $error;
 			}
-			
-			return $errors;
 		}
-		else
-			return $this->stack;
+		
+		return $errors;
 	}
 	
 	/**
 	 * Gets the messages of errors on the stack
 	 *
 	 * @param string $context optional context
+	 * @param string $locale optional locale
 	 *
 	 * @return array errors
 	 */
-	function messages( $context = null )
+	function messages( $context = null, $locale = false )
 	{
 		$errors = $this->errors( $context );
 		
@@ -177,8 +175,7 @@ class ErrorStack
 				'error' => $error,
 				'params' => $params,
 				'class' => $class,
-				'function' => $function,
-				'message' => Messages::get( $error, $params )
+				'function' => $function
 			);
 
 			if( $context )
