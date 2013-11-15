@@ -31,18 +31,16 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\\infuse\\Locale', self::$locale );
 	}
 
-	public function testSetLocale()
+	public function testGetAndSetLocale()
 	{
-
-	}
-
-	public function testGetLocale()
-	{
-
+		self::$locale->setLocale( 'pirate' );
+		$this->assertEquals( 'pirate', self::$locale->getLocale() );
 	}
 
 	public function testTranslate()
 	{
+		self::$locale->setLocale( 'en' );
+
 		// test phrase
 		$this->assertEquals( 'This is a test', self::$locale->translate( 'test_phrase' ) );
 
@@ -55,6 +53,8 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 
 	public function testTranslateParameterInjection()
 	{
+		self::$locale->setLocale( 'en' );
+
 		$parameters = array(
 			'parameter_1' => 1,
 			'test' => 'testing',
