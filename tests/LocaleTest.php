@@ -67,6 +67,8 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 
 	public function testPluralize()
 	{
+		$this->assertEquals( 'points', self::$locale->pluralize( 100, 'point', 'points' ) );
 
+		$this->assertEquals( 'hour', self::$locale->p( 1, 'hour', 'hours' ) );
 	}
 }
