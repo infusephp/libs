@@ -23,7 +23,7 @@
 	"require": {
 		"php": ">=5.3.0"
 	},
-    "suggests": {
+    "suggest": {
     	"smarty/smarty": "Templating engine supported by infuse/libs",
     	"leafo/lessphp": "Can compile LESS stylesheets",
     	"linkorb/jsmin-php": "Required for JS minification",
