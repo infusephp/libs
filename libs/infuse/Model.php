@@ -103,8 +103,8 @@ abstract class Model extends Acl
 	// Model properties
 	/////////////////////////////
 
-	public static $properties = array();
-	public static $idProperty = 'id';
+	static $properties = array();
+	static $idProperty = 'id';
 
 	/////////////////////////////
 	// Protected class variables
@@ -146,7 +146,7 @@ abstract class Model extends Acl
 	 *
 	 * @param array|string $id ordered array of ids or comma-separated id string
 	 */
-	public function __construct( $id = false )
+	function __construct( $id = false )
 	{
 		if( $id )
 			$this->id = implode( ',', (array)$id );

@@ -24,7 +24,7 @@ class Locale
 	 *
 	 * @return Locale
 	 */
-	public static function locale()
+	static function locale()
 	{
 		if( !self::$localeInstance )
 			self::$localeInstance = new Locale();
@@ -591,7 +591,7 @@ class Locale
 			'name' => 'Cape Verde Escudo'
 		),
 		'CZK' => array(
-			'name' => 'Czech Republic Koruna',
+			'name' => 'Czech ReKoruna',
 			'symbol' => 'Kč'
 		),
 		'DJF' => array(
@@ -603,7 +603,7 @@ class Locale
 			'symbol' => 'kr'
 		),
 		'DOP' => array(
-			'name' => 'Dominican Republic Peso',
+			'name' => 'Dominican RePeso',
 			'symbol' => 'RD$'
 		),
 		'DZD' => array(

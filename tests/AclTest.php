@@ -22,9 +22,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
 	{
 		$acl = new AclObject();
 		
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->markTestIncomplete( 'This test has not been implemented yet.' );
 	}
 }
 

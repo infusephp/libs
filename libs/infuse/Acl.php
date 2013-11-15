@@ -43,7 +43,7 @@ abstract class Acl
 	 *
 	 * @return object|false
 	 */
-	public function owner()
+	function owner()
 	{
 		return false;
 	}

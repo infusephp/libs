@@ -37,7 +37,7 @@ class Request
 	 * @param array $server defaults to $_SERVER
 	 * @param array $session defaults to $_SESSION
 	 */
-	public function __construct( $query = null, $request = null, $cookies = null, $files = null, $server = null, $session = null )
+	function __construct( $query = null, $request = null, $cookies = null, $files = null, $server = null, $session = null )
 	{
 		$this->params = array();
 		
@@ -157,7 +157,7 @@ class Request
 	 *
 	 * @param string $path i.e. /users/1/comments
 	 */
-	public function setPath( $path )
+	function setPath( $path )
 	{
 		// get the base path
 		$this->basePath = current(explode('?', $path));
@@ -175,7 +175,7 @@ class Request
 	 *
 	 * @return string ip address
 	 */
-	public function ip()
+	function ip()
 	{
 		return Util::array_value( $this->server, 'REMOTE_ADDR' );
 	}
@@ -185,7 +185,7 @@ class Request
 	 *
 	 * @return string https or http
 	 */	
-	public function protocol()
+	function protocol()
 	{
 		$https = Util::array_value( $this->server, 'HTTPS' );
 		if( $https && $https !== 'off' )
@@ -199,7 +199,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isSecure()
+	function isSecure()
 	{
 		return $this->protocol() == 'https';
 	}
@@ -209,7 +209,7 @@ class Request
 	 *
 	 * @param int port number
 	 */
-	public function port()
+	function port()
 	{
 		return Util::array_value( $this->server, 'SERVER_PORT' );
 	}
@@ -221,9 +221,17 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function header( $index = false )
+	function headers( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->headers, strtoupper( $index ) ) : $this->headers;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	function header( $index = false )
+	{
+		return $this->headers( $index );
 	}
 	
 	/**
@@ -231,7 +239,7 @@ class Request
 	 *
 	 * @return string username
 	 */
-	public function user()
+	function user()
 	{
 		return Util::array_value( $this->headers, 'PHP_AUTH_USER' );
 	}
@@ -241,7 +249,7 @@ class Request
 	 *
 	 * @return string password
 	 */
-	public function password()
+	function password()
 	{
 		return Util::array_value( $this->headers, 'PHP_AUTH_PW' );
 	}
@@ -251,7 +259,7 @@ class Request
 	 *
 	 * @return string host
 	 */
-	public function host()
+	function host()
 	{
 		if( !$host = Util::array_value( $this->headers, 'HOST' ) )
 		{
@@ -271,7 +279,7 @@ class Request
 	 *
 	 * @param string url
 	 */
-	public function url()
+	function url()
 	{
 		$port = $this->port();
 		if( !in_array( $port, array( 80, 443 ) ) )
@@ -287,7 +295,7 @@ class Request
 	 *
 	 * @return array paths
 	 */
-	public function paths( $index = false )
+	function paths( $index = false )
 	{
 		return (is_numeric($index)) ? Util::array_value( $this->paths, $index ) : $this->paths;
 	}
@@ -297,7 +305,7 @@ class Request
 	 *
 	 * @param string base path
 	 */
-	public function basePath()
+	function basePath()
 	{
 		return $this->basePath;
 	}
@@ -307,7 +315,7 @@ class Request
 	 *
 	 * @param string method (i.e. GET, POST, DELETE, PUT, PATCH)
 	 */
-	public function method()
+	function method()
 	{
 		return Util::array_value( $this->server, 'REQUEST_METHOD' );
 	}
@@ -317,7 +325,7 @@ class Request
 	 *
 	 * @param string content type
 	 */
-	public function contentType()
+	function contentType()
 	{
 		return Util::array_value( $this->server, 'CONTENT_TYPE' );
 	}
@@ -327,7 +335,7 @@ class Request
 	 *
 	 * @return array accept formats
 	 */
-	public function accepts()
+	function accepts()
 	{
 		return $this->accept;
 	}
@@ -337,7 +345,7 @@ class Request
 	 *
 	 * @return array charsets
 	 */
-	public function charsets()
+	function charsets()
 	{
 		return $this->charsets;
 	}
@@ -347,7 +355,7 @@ class Request
 	 *
 	 * @return array langauges
 	 */
-	public function languages()
+	function languages()
 	{
 		return $this->languages;
 	}
@@ -357,7 +365,7 @@ class Request
 	 *
 	 * @return string user agent string
 	 */
-	public function agent()
+	function agent()
 	{
 		return Util::array_value( $this->server, 'HTTP_USER_AGENT' );
 	}
@@ -367,7 +375,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isHtml()
+	function isHtml()
 	{
 		foreach( $this->accept as $type )
 		{
@@ -383,7 +391,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isJson()
+	function isJson()
 	{
 		foreach( $this->accept as $type )
 		{
@@ -399,7 +407,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isXml()
+	function isXml()
 	{
 		foreach( $this->accept as $type )
 		{
@@ -415,7 +423,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isXhr()
+	function isXhr()
 	{
 		return Util::array_value( $this->headers, 'X-Requested-With' ) == 'XMLHttpRequest';
 	}
@@ -425,7 +433,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isApi()
+	function isApi()
 	{
 		return isset( $this->headers[ 'AUTHORIZATION' ] );
 	}
@@ -435,7 +443,7 @@ class Request
 	 *
 	 * @return boolean
 	 */
-	public function isCli()
+	function isCli()
 	{
 		return defined( 'STDIN' );
 	}
@@ -450,7 +458,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function params( $index = false )
+	function params( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->params, $index ) : $this->params;
 	}
@@ -460,7 +468,7 @@ class Request
 	 *
 	 * @param array $params parameters to add
 	 */
-	public function setParams( $params = array() )
+	function setParams( $params = array() )
 	{
 		$this->params = array_replace( $this->params, (array)$params );
 	}
@@ -472,7 +480,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function query( $index = false )
+	function query( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->query, $index ) : $this->query;
 	}
@@ -484,7 +492,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function request( $index = false )
+	function request( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->request, $index ) : $this->request;
 	}
@@ -496,7 +504,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function cookies( $index = false )
+	function cookies( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->cookies, $index ) : $this->cookies;
 	}
@@ -514,7 +522,7 @@ class Request
 	 *
 	 * @return boolean success
 	 */
-	public function setCookie( $name, $value, $expire, $path, $domain, $secure, $httponly )
+	function setCookie( $name, $value, $expire, $path, $domain, $secure, $httponly )
 	{
 		if( setcookie( $name, $value, $expire, $path, $domain, $secure, $httponly ) )
 		{
@@ -533,7 +541,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function files( $index = false )
+	function files( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->files, $index ) : $this->files;
 	}
@@ -545,7 +553,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function session( $index = false )
+	function session( $index = false )
 	{
 		return ($index) ? Util::array_value( $this->session, $index ) : $this->session;
 	}
@@ -556,7 +564,7 @@ class Request
 	 * @param array|string $key key-value or just a key
 	 * @param mixed $value value to set if not supplying key-value map in first argument
 	 */
-	public function setSession( $key, $value = null )
+	function setSession( $key, $value = null )
 	{
 		if( is_array( $key ) )
 		{
@@ -576,7 +584,7 @@ class Request
 	/**
 	 * Destroys the session for the request
 	 */
-	public function destroySession()
+	function destroySession()
 	{
 		$_SESSION = array();
 		$this->session = array();
@@ -589,7 +597,7 @@ class Request
 	 *
 	 * @return mixed
 	 */
-	public function cliArgs( $index = false )
+	function cliArgs( $index = false )
 	{
 		if( !$this->isCli() )
 			return false;
@@ -604,20 +612,22 @@ class Request
 	private function parseHeaders( $parameters )
 	{
         $headers = array();
-        foreach ($parameters as $key => $value) {
-            if (0 === strpos($key, 'HTTP_')) {
-                $headers[substr($key, 5)] = $value;
-            }
+        foreach( $parameters as $key => $value )
+        {
+            if( 0 === strpos( $key, 'HTTP_' ) )
+                $headers[ substr( $key, 5 ) ] = $value;
             // CONTENT_* are not prefixed with HTTP_
-            elseif (in_array($key, array('CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'))) {
-                $headers[$key] = $value;
-            }
+            elseif( in_array( $key, array( 'CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE' ) ) )
+                $headers[ $key ] = $value;
         }
 
-        if (isset($parameters['PHP_AUTH_USER'])) {
-            $headers['PHP_AUTH_USER'] = $parameters['PHP_AUTH_USER'];
-            $headers['PHP_AUTH_PW'] = isset($parameters['PHP_AUTH_PW']) ? $parameters['PHP_AUTH_PW'] : '';
-        } else {
+        if( isset( $parameters[ 'PHP_AUTH_USER' ] ) )
+        {
+            $headers[ 'PHP_AUTH_USER' ] = $parameters[ 'PHP_AUTH_USER' ];
+            $headers[ 'PHP_AUTH_PW' ] = isset($parameters['PHP_AUTH_PW']) ? $parameters[ 'PHP_AUTH_PW' ] : '';
+        }
+        else
+        {
             /*
 			* php-cgi under Apache does not pass HTTP Basic user/pass to PHP by default
 			* For this workaround to work, add these lines to your .htaccess file:
@@ -633,24 +643,25 @@ class Request
 			*/
 
             $authorizationHeader = null;
-            if (isset($parameters['HTTP_AUTHORIZATION'])) {
-                $authorizationHeader = $parameters['HTTP_AUTHORIZATION'];
-            } elseif (isset($parameters['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authorizationHeader = $parameters['REDIRECT_HTTP_AUTHORIZATION'];
-            }
+            if( isset( $parameters[ 'HTTP_AUTHORIZATION' ] ) )
+                $authorizationHeader = $parameters[ 'HTTP_AUTHORIZATION' ];
+            elseif( isset( $parameters[ 'REDIRECT_HTTP_AUTHORIZATION' ] ) )
+                $authorizationHeader = $parameters[ 'REDIRECT_HTTP_AUTHORIZATION' ];
 
             // Decode AUTHORIZATION header into PHP_AUTH_USER and PHP_AUTH_PW when authorization header is basic
-            if ((null !== $authorizationHeader) && (0 === stripos($authorizationHeader, 'basic'))) {
-                $exploded = explode(':', base64_decode(substr($authorizationHeader, 6)));
-                if (count($exploded) == 2) {
-                    list($headers['PHP_AUTH_USER'], $headers['PHP_AUTH_PW']) = $exploded;
-                }
+            if( ( null !== $authorizationHeader ) && ( 0 === stripos( $authorizationHeader, 'basic' ) ) )
+            {
+                $exploded = explode( ':', base64_decode( substr( $authorizationHeader, 6 ) ) );
+                if( count( $exploded ) == 2 )
+                    list( $headers[ 'PHP_AUTH_USER' ], $headers[ 'PHP_AUTH_PW' ] ) = $exploded;
             }
         }
 
         // PHP_AUTH_USER/PHP_AUTH_PW
-        if (isset($headers['PHP_AUTH_USER'])) {
-            $headers['AUTHORIZATION'] = 'Basic '.base64_encode($headers['PHP_AUTH_USER'].':'.$headers['PHP_AUTH_PW']);
+        if( isset( $headers[ 'PHP_AUTH_USER' ] ) )
+        {
+        	$userPassStr = $headers[ 'PHP_AUTH_USER' ] . ':' . $headers[  'PHP_AUTH_PW' ];
+        	$headers[ 'AUTHORIZATION' ] = 'Basic ' . base64_encode( $userPassStr );
         }
 
         return $headers;
@@ -680,7 +691,7 @@ class Request
 			}
 		}
 		
-		usort($return, array($this, 'compare_media_ranges'));
+		usort($return, array($this, 'compareMediaRanges'));
 		
 		return $return;
 	}
@@ -706,7 +717,7 @@ class Request
 		return array($precedence, $tokens);
 	}
 	
-	private function compare_media_ranges( $one, $two )
+	private function compareMediaRanges( $one, $two )
 	{
 		if ($one['main_type'] != '*' && $two['main_type'] != '*') {
 			if ($one['sub_type'] != '*' && $two['sub_type'] != '*') {
@@ -733,64 +744,5 @@ class Request
 		} else {
 			return -1;
 		}
-	}
-	
-	/**
-	 * Credit to http://www.chlab.ch/blog/archives/php/manually-parse-raw-http-data-php
-	 * Parse raw HTTP request data
-	 *
-	 * Pass in $a_data as an array. This is done by reference to avoid copying
-	 * the data around too much.
-	 *
-	 * Any files found in the request will be added by their field name to the
-	 * $data['files'] array.
-	 *
-	 * @param	string	Input request
-	 * @param	string	Content type
-	 * @param   array	Empty array to fill with data
-	 * @return  array	Associative array of request data
-	 */
-	private function parse_raw_http_request($input, $contentType, array &$a_data)
-	{
-	  // grab multipart boundary from content type header
-	  preg_match('/boundary=(.*)$/', $contentType, $matches);
-	   
-	  // content type is probably regular form-encoded
-	  if (!count($matches))
-	  {
-	    // we expect regular puts to containt a query string containing data
-	    parse_str(urldecode($input), $a_data);
-	    return $a_data;
-	  }
-	   
-	  $boundary = $matches[1];
-	 
-	  // split content by boundary and get rid of last -- element
-	  $a_blocks = preg_split("/-+$boundary/", $input);
-	  array_pop($a_blocks);
-	       
-	  // loop data blocks
-	  foreach ($a_blocks as $id => $block)
-	  {
-	    if (empty($block))
-	      continue;
-	     
-	    // you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
-	     
-	    // parse uploaded files
-	    if (strpos($block, 'application/octet-stream') !== FALSE)
-	    {
-	      // match "name", then everything after "stream" (optional) except for prepending newlines
-	      preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
-	      $a_data['files'][$matches[1]] = $matches[2];
-	    }
-	    // parse all other fields
-	    else
-	    {
-	      // match "name" and optional value in between newline sequences
-	      preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
-	      $a_data[$matches[1]] = $matches[2];
-	    }
-	  }
 	}
 }

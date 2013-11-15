@@ -26,7 +26,7 @@ class ErrorStack
 	 *
 	 * @return ErrorStack
 	 */
-	public static function stack()
+	static function stack()
 	{
 		if( !self::$stackInstance )
 			self::$stackInstance = new ErrorStack();
@@ -167,7 +167,7 @@ class ErrorStack
 	/**
 	 * @deprecated
 	 */
-	public static function add( $error, $class = null, $function = null, $params = array(), $context = null )
+	static function add( $error, $class = null, $function = null, $params = array(), $context = null )
 	{
 		if( !is_array( $error ) )
 		{
@@ -188,7 +188,7 @@ class ErrorStack
 	/**
 	 * @deprecated
 	 */
-	public static function setContext( $context )
+	static function setContext( $context )
 	{
 		self::stack()->setCurrentContext( $context );
 	}
@@ -196,7 +196,7 @@ class ErrorStack
 	/**
 	 * @deprecated
 	 */
-	public static function clearContext( )
+	static function clearContext( )
 	{
 		self::stack()->clearCurrentContext();
 	}
@@ -204,7 +204,7 @@ class ErrorStack
 	/**
 	 * @deprecated
 	 */
-	public static function it()
+	static function it()
 	{
 		return self::stack();
 	}	
