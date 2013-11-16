@@ -23,12 +23,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	public static function setUpBeforeClass()
 	{
 		self::$req = new Request(
-			// GET params
+			// query parameters
 			array(
 				'test' => 'test',
 				'blah' => 'blah' ),
-			// POST body
-			array(),
+			// request body
+			array(
+				'testParam' => 'test',
+				'meh' => 1,
+				'does' => 'this-work' ),
 			// cookies
 			array(),
 			 // files
@@ -118,6 +121,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 			'AUTHORIZATION' => 'Basic dGVzdF91c2VyOnRlc3RfcHc=',
 			'CONTENT_TYPE' => 'application/json' );
 		$this->assertEquals( $expected, self::$req->headers() );
+
+		$this->assertNull( self::$req->headers( 'non-existent' ) );
 	}
 
 	public function testUser()
@@ -141,6 +146,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 		$expected = array( 'users', 'comments', '10' );
 		$this->assertEquals( $expected, self::$req->paths() );
+
+		$this->assertNull( self::$req->paths( 100 ) );
 	}
 
 	public function testBasePath()
@@ -283,6 +290,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals( 'meh', self::$req->params( 'test2' ) );
 		$this->assertEquals( $expected, self::$req->params() );
+
+		$this->assertNull( self::$req->params( 'non-existent' ) );
 	}
 
 	public function testQuery()
@@ -293,32 +302,44 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 			'test' => 'test',
 			'blah' => 'blah' );
 		$this->assertEquals( $expected, self::$req->query() );
+
+		$this->assertNull( self::$req->query( 'non-existent' ) );
 	}
 
 	public function testRequest()
 	{
-		// request
+		$this->assertEquals( 'test', self::$req->request( 'testParam' ) );
 
+		$expected = array(
+			'testParam' => 'test',
+			'meh' => 1,
+			'does' => 'this-work' );
+		$this->assertEquals( $expected, self::$req->request() );
 
-		// php://input
-
-		// content-type: json
-
-		// content-type: multipart/form-data
-
-		// content-type: text/plain
-
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
-	}
-
-	public function testCookies()
-	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertNull( self::$req->request( 'non-existent' ) );
 	}
 
 	public function testSetCookie()
 	{
-		$this->markTestIncomplete( 'This test has not been implemented yet.' );
+		$this->assertTrue( self::$req->setCookie( 'test', 'testValue', time() + 3600, '/', 'example.com', true, true, true ) );
+		$this->assertTrue( self::$req->setCookie( 'test2', 'testValue2', time() + 3600, '/', 'example.com', true, true, true ) );
+	}
+
+	/**
+	 * @depends testSetCookie
+	 */
+	public function testCookies()
+	{
+		$this->assertEquals( 'testValue', self::$req->cookies( 'test' ) );
+
+		$expected = array(
+			'test' => 'testValue',
+			'test2' => 'testValue2'
+		);
+
+		$this->assertEquals( $expected, self::$req->cookies() );
+
+		$this->assertNull( self::$req->cookies( 'non-existent' ) );
 	}
 
 	public function testFiles()
@@ -335,6 +356,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$this->assertEquals( $expected, self::$req->files() );
+
+		$this->assertNull( self::$req->files( 'non-existent' ) );
 	}
 
 	public function testSetSession()
@@ -354,7 +377,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'test', self::$req->session( 'test' ) );
 
 		$expected = array( 'test' => 'test', 'test2' => 2 );
-		$this->assertEquals( $expected, self::$req->session() );		
+		$this->assertEquals( $expected, self::$req->session() );
+
+		$this->assertNull( self::$req->session( 'non-existent' ) );		
 	}
 
 	/**
@@ -374,5 +399,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals( 'force', self::$req->cliArgs( 1 ) );
 		$this->assertEquals( $expected, self::$req->cliArgs() );
+
+		$this->assertNull( self::$req->cliArgs( 100 ) );
 	}
 }

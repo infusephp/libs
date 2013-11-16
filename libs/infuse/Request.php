@@ -109,46 +109,54 @@ class Request
 			
 			$this->server[ 'REQUEST_URI' ] = implode( '/', $requestParts );
 		}
+
+		// parse url
+		$this->setPath( Util::array_value( $this->server, 'REQUEST_URI' ) );
         
 		// DELETE and PUT requests can come through POST
-		if( $this->server[ 'REQUEST_METHOD' ] == 'POST' && $requestMethod = Util::array_value( $request, 'method' )  && in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
+		if( $this->method() == 'POST' &&
+			$requestMethod = Util::array_value( (array)$request, 'method' ) &&
+			in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
+		{
 			$this->server[ 'REQUEST_METHOD' ] = $requestMethod;
+		}
         
+        // parse headers
         $this->headers = $this->parseHeaders( $this->server );
         
         // accept header
 		$this->accept = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT' ) );
 		
-		// accept Charsets header
+		// accept charsets header
 		$this->charsets = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_CHARSET' ) );
 		
-		// accept Language header
+		// accept language header
 		$this->languages = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_LANGUAGE' ) );
-		
-		$this->setPath( Util::array_value( $this->server, 'REQUEST_URI' ) );
-			
-		$this->request = array();
-		
-		if( $request )
-			$this->request = $request;
-		// decode request body for POST and PUT
-		else if( in_array( $this->method(), array( 'POST', 'PUT' ) ) )
+				
+		// parse request body
+		$this->request = $request;
+
+		if( !$request && in_array( $this->method(), array( 'POST', 'PUT' ) ) )
 		{
-			$body = file_get_contents( 'php://input' );
 			$contentType = $this->contentType();
 
-			// parse json
-			if( strpos( $contentType, 'application/json') !== false )
-				$this->request = json_decode( $body, true );
-			// parse multipart form data
-			else if( strpos( $contentType, 'multipart/form-data' ) !== false )
+			// content-type: multipart/form-data
+			if( strpos( $contentType, 'multipart/form-data' ) !== false )
 				$this->request = $_REQUEST;
-			// plain text
-			else if( strpos( $contentType, 'text/plain' ) !== false )
-				$this->request = $body;
-			// parse query string
 			else
-				parse_str( $body, $this->request );
+			{
+				$body = file_get_contents( 'php://input' );
+
+				// content-type: application/json
+				if( strpos( $contentType, 'application/json') !== false )
+					$this->request = json_decode( $body, true );
+				// content-type: text/plain
+				else if( strpos( $contentType, 'text/plain' ) !== false )
+					$this->request = $body;
+				// otherwise, query string
+				else
+					parse_str( $body, $this->request );
+			}
 		}
 	}
 	
@@ -519,19 +527,29 @@ class Request
 	 * @param string $domain
 	 * @param boolean $secure
 	 * @param boolean $httponly
+	 * @param boolean $mock
 	 *
 	 * @return boolean success
 	 */
-	function setCookie( $name, $value, $expire, $path, $domain, $secure, $httponly )
+	function setCookie( $name, $value, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = false, $mock = false )
 	{
-		if( setcookie( $name, $value, $expire, $path, $domain, $secure, $httponly ) )
+		if( !$mock )
+		{
+			if( setcookie( $name, $value, $expire, $path, $domain, $secure, $httponly ) )
+			{
+				$this->cookies[ $name ] = $value;
+				
+				return true;
+			}
+			
+			return false;
+		}
+		else
 		{
 			$this->cookies[ $name ] = $value;
 			
 			return true;
 		}
-		
-		return false;
 	}
 	
 	/**
