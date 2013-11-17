@@ -159,7 +159,17 @@ class ViewEngine
 			if( file_exists( $cacheFile ) )
 				$cache = unserialize( file_get_contents( $cacheFile ) );
 
+			// collect all js files in sub directories
 			$jsFiles = glob( $dir . '/*.js' );
+
+			while( $dirs = glob( $dir . '/*', GLOB_ONLYDIR ) )
+			{
+				$dir .= '/*';
+				$jsFiles = array_merge( $jsFiles, glob( $dir . '/*.js' ) );
+			}
+
+			// sort js files by name
+			sort( $jsFiles );
 			
 			$newCache = array(
 				'md5' => $this->md5OfDir( $jsFiles ),
