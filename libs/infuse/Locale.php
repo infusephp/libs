@@ -160,7 +160,7 @@ class Locale
 	// lifted from php.net comments
 	function timezoneOptions( $selectedTimezone, $name = 'time_zone' )
 	{
-		$return = ';'
+		$return = '';
 
 		function timezonechoice($selectedTimezone)
 		{
