@@ -620,7 +620,7 @@ class Request
 		if( !$this->isCli() )
 			return false;
 		
-		return ($index) ? Util::array_value( $this->server, "ARGV.$index" ) : Util::array_value( $this->server, 'ARGV' );
+		return ($index) ? Util::array_value( $this->server, "argv.$index" ) : Util::array_value( $this->server, 'argv' );
 	}
 	
 	////////////////////////////////////

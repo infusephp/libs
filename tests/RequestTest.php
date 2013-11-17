@@ -49,7 +49,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 				'SERVER_PORT' => '1234',
 				'REQUEST_METHOD' => 'PUT',
 				'REQUEST_URI' => '/users/comments/10',
-				'ARGV' => array(
+				'argv' => array(
 					'update',
 					'force',
 					'all'
