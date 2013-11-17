@@ -146,13 +146,13 @@ class Locale
 	 */
 	function currencyOptions( $selectedCurrency )
 	{
-		$return = '<select name="currency">' . "\n";
+		$return ='';
+
 		foreach (self::$currencies as $code => $currency) {
 			$codeLower = strtolower($code);
 			$selected = ($selectedCurrency == $codeLower) ? 'selected="selected"' : '';
 			$return .= '<option value="' . $codeLower . '" ' . $selected . '>' . $code . ' - ' . $currency['name'] . '</option>' . "\n";
 		}
-		$return .= '</select>';
 
 		return $return;
 	}
@@ -160,7 +160,7 @@ class Locale
 	// lifted from php.net comments
 	function timezoneOptions( $selectedTimezone, $name = 'time_zone' )
 	{
-		$return = '<select name="' . $name . '">';
+		$return = ';'
 
 		function timezonechoice($selectedTimezone)
 		{
@@ -213,7 +213,6 @@ class Locale
 		}
 				
 		$return .= timezonechoice($selectedTimezone);
-		$return .= '</select>';
 		
 		return $return;
 	}
