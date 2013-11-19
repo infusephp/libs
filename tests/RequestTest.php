@@ -140,6 +140,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'example.com', self::$req->host() );
 	}
 
+	public function testUrl()
+	{
+		$this->assertEquals( 'http://example.com:1234/users/comments/10', self::$req->url() );
+	}
+
 	public function testPaths()
 	{
 		$this->assertEquals( 'comments', self::$req->paths( 1 ) );
