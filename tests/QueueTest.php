@@ -11,8 +11,6 @@
 
 use infuse\Queue;
 
-require_once 'vendor/autoload.php';
-
 class QueueTest extends \PHPUnit_Framework_TestCase
 {
 	public function testConfigure()

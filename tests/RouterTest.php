@@ -12,11 +12,6 @@
 use infuse\Request;
 use infuse\Router;
 
-error_reporting( E_ALL | E_STRICT );
-ini_set( 'display_errors', true );
-
-require_once 'vendor/autoload.php';
-
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
 	public function setUp()

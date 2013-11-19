@@ -11,11 +11,6 @@
 
 use infuse\Util;
 
-error_reporting( E_ALL | E_STRICT );
-ini_set( 'display_errors', true );
-
-require_once 'vendor/autoload.php';
-
 class UtilTest extends \PHPUnit_Framework_TestCase
 {
 	public function testArrayValue()

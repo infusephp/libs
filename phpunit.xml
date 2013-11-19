@@ -1,5 +1,5 @@
-<phpunit>
-  <testsuites bootstrap="tests/bootstrap.php" colors="true">
+<phpunit bootstrap="tests/bootstrap.php" colors="true">
+  <testsuites>
     <testsuite name="Infuse_Libs">
       <directory>tests</directory>
     </testsuite>

@@ -9,11 +9,6 @@
  * @license MIT
  */
 
-error_reporting( E_ALL | E_STRICT );
-ini_set( 'display_errors', true );
-
-require_once 'vendor/autoload.php';
-
 use infuse\Database;
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase

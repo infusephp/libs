@@ -12,11 +12,6 @@
 use infuse\Util;
 use infuse\Validate;
 
-error_reporting( E_ALL | E_STRICT );
-ini_set( 'display_errors', true );
-
-require_once 'vendor/autoload.php';
-
 class ValidateTest extends \PHPUnit_Framework_TestCase
 {
 	public function testAlpha()
