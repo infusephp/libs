@@ -1,15 +1,15 @@
 language: php
-
 php:
 - 5.5
 - 5.4
 - 5.3
 
-before_install:
+before_script:
 - composer install
 
 script:
 - mkdir -p build/logs
+- phpunit
 
 after_script:
-- php vendor/bin/coveralls
+- vendor/bin/coveralls
