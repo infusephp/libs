@@ -18,6 +18,16 @@ class Logger
 	private static $config = array(
 		'productionLevel' => false
 	);
+
+	private static $monologLevels = array(
+		'debug' => \Monolog\Logger::DEBUG,
+		'info' => \Monolog\Logger::INFO,
+		'notice' => \Monolog\Logger::NOTICE,
+		'warning' => \Monolog\Logger::WARNING,
+		'error' => \Monolog\Logger::ERROR,
+		'critical' => \Monolog\Logger::CRITICAL,
+		'alert' => \Monolog\Logger::ALERT,
+		'emergency' => \Monolog\Logger::EMERGENCY );
 	
 	/**
 	 * Sets up the handlers used by monolog
@@ -272,40 +282,16 @@ class Logger
 		
 		$handlerObj = null;
 		
-		$level = \Monolog\Logger::INFO;
-		
-		switch( strtolower( $settings[ 'level' ] ) )
-		{
-		case 'debug':
-			$level = \Monolog\Logger::DEBUG;
-		break;
-		case 'info':
-			$level = \Monolog\Logger::INFO;
-		break;
-		case 'notice':
-			$level = \Monolog\Logger::NOTICE;
-		break;
-		case 'warning':
-			$level = \Monolog\Logger::WARNING;
-		break;
-		case 'error':
-			$level = \Monolog\Logger::ERROR;
-		break;
-		case 'critical':
-			$level = \Monolog\Logger::CRITICAL;
-		break;
-		case 'alert':
-			$level = \Monolog\Logger::ALERT;
-		break;
-		case 'emergency':
-			$level = \Monolog\Logger::EMERGENCY;
-		break;
-		}
-		
+		$l = strtolower( $settings[ 'level' ] );
+		$level = (isset(self::$monologLevels[$l])) ? self::$monologLevels[ $l ] : \Monolog\Logger::INFO;
+
 		switch( $handler )
 		{
 		case 'FirePHPHandler':
 			$handlerObj = new \Monolog\Handler\FirePHPHandler( $level );
+		break;
+		case 'ErrorLogHandler':
+			$handlerObj = new \Monolog\Handler\ErrorLogHandler( \Monolog\Handler\ErrorLogHandler::OPERATING_SYSTEM, $level );
 		break;
 		case 'SyslogHandler':
 			$handlerObj = new \Monolog\Handler\SyslogHandler( $settings[ 'ident' ], $settings[ 'facility' ], $level );
@@ -319,13 +305,5 @@ class Logger
 		}
 
 		$logger->pushHandler( $handlerObj );
-	}
-
-	/**
-	 * @deprecated
-	 */
-	static function setConfig( $config )
-	{
-		return self::configure( $config );
 	}
 }
