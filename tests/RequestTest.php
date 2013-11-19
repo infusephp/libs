@@ -155,6 +155,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( '/users/comments/10', self::$req->basePath() );
 	}
 
+	public function testRemovingStartPath()
+	{
+		$req = new Request( null, null, null, null, array( 'REQUEST_URI' => '/some/start/path/test', 'DOCUMENT_URI' => '/some/start/path'  ) );
+
+		$expected = array( 'test' );
+		$this->assertEquals( $expected, $req->paths() );
+	}
+
 	public function testMethod()
 	{
 		$this->assertEquals( 'PUT', self::$req->method() );
