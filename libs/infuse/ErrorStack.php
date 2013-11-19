@@ -64,6 +64,7 @@ class ErrorStack
 
 	/**
 	 * Adds an error message to the stack statically
+	 * NOTE this may be deprecated in the future
 	 *
 	 * @param array $error
 	 * - error: error code
@@ -209,12 +210,4 @@ class ErrorStack
 	{
 		self::stack()->clearCurrentContext();
 	}
-
-	/**
-	 * @deprecated
-	 */
-	static function it()
-	{
-		return self::stack();
-	}	
 }
