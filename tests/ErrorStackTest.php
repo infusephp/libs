@@ -59,6 +59,8 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'context' => 'user.create',
 			'class' => 'User',
 			'function' => 'create' ) ) );
+
+		$this->assertTrue( ErrorStack::add( 'some_error' ) );
 	}
 
 	/**
@@ -81,9 +83,17 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'params' => array(
 				'field' => 'username' ) );
 
+		$expected3 = array(
+			'error' => 'some_error',
+			'message' => 'some_error',
+			'context' => '',
+			'params' => array(),
+			'class' => null,
+			'function' => null );
+
 		$errors = self::$stack->errors();
-		$this->assertEquals( 2, count( $errors ) );
-		$this->assertEquals( array( $expected1, $expected2 ), $errors );
+		$this->assertEquals( 3, count( $errors ) );
+		$this->assertEquals( array( $expected1, $expected2, $expected3 ), $errors );
 
 		$errors = self::$stack->errors( 'user.create' );
 		$this->assertEquals( 1, count( $errors ) );
@@ -97,10 +107,11 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = array(
 			'Something is wrong',
-			'Username is invalid' );
+			'Username is invalid',
+			'some_error' );
 
 		$messages = self::$stack->messages();
-		$this->assertEquals( 2, count( $messages ) );
+		$this->assertEquals( 3, count( $messages ) );
 		$this->assertEquals( $expected, $messages );
 
 		$expected = array( 'Username is invalid' );
