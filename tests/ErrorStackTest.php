@@ -30,6 +30,11 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\\infuse\\ErrorStack', self::$stack );
 	}
 
+	public function testStack()
+	{
+		$this->assertInstanceOf( '\\infuse\\ErrorStack', ErrorStack::stack() );
+	}
+
 	public function testPush()
 	{
 		$error1 = array(
@@ -47,7 +52,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'params' => array(
 				'field' => 'username' ) );
 
-		$this->assertTrue( self::$stack->push( $error2 ) );
+		$this->assertTrue( ErrorStack::add( $error2 ) );
 
 		$this->assertFalse( self::$stack->push( array(
 			'message' => 'Username is invalid',
@@ -161,7 +166,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testClearCurrentContext()
 	{
-		self::$stack->setCurrentContext();
+		self::$stack->clearCurrentContext();
 
 		self::$stack->push( array( 'error' => 'test_error' ) );
 

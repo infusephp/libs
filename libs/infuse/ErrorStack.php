@@ -63,6 +63,36 @@ class ErrorStack
 	}
 
 	/**
+	 * Adds an error message to the stack statically
+	 *
+	 * @param array $error
+	 * - error: error code
+	 * - params: array of parameters to be passed to message
+	 * - context: (optional) the context which the error message occured in
+	 * - class: (optional) the class invoking the error
+	 * - function: (optional) the function invoking the error
+	 *
+	 * @return boolean was error valid?
+	 */
+	static function add( $error, $class = null, $function = null, $params = array(), $context = null )
+	{
+		if( !is_array( $error ) )
+		{
+			$error = array(
+				'error' => $error,
+				'params' => $params,
+				'class' => $class,
+				'function' => $function
+			);
+
+			if( $context )
+				$error[ 'context' ] = $context;
+		}
+
+		return self::stack()->push( $error, $class, $function, $params, $context );
+	}
+
+	/**
 	 * Sets the current default error context
 	 *
 	 * @param string $context
@@ -163,27 +193,6 @@ class ErrorStack
 	/////////////////////////
 	// DEPRECATED
 	/////////////////////////
-	
-	/**
-	 * @deprecated
-	 */
-	static function add( $error, $class = null, $function = null, $params = array(), $context = null )
-	{
-		if( !is_array( $error ) )
-		{
-			$error = array(
-				'error' => $error,
-				'params' => $params,
-				'class' => $class,
-				'function' => $function
-			);
-
-			if( $context )
-				$error[ 'context' ] = $context;
-		}
-
-		return self::stack()->push( $error, $class, $function, $params, $context );
-	}
 
 	/**
 	 * @deprecated
