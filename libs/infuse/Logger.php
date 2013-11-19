@@ -251,13 +251,21 @@ class Logger
 		
 		$handlerObj = null;
 		
-		$l = strtolower( $settings[ 'level' ] );
+		$l = strtolower( Util::array_value( $settings, 'level' ) );
 		$level = (isset(self::$monologLevels[$l])) ? self::$monologLevels[ $l ] : \Monolog\Logger::INFO;
 
 		switch( $handler )
 		{
+		// these handlers require only 1 argument
+		case 'NullHandler':
 		case 'FirePHPHandler':
-			$handlerObj = new \Monolog\Handler\FirePHPHandler( $level );
+		case 'TestHandler':
+			$handlerClass = "\\Monolog\\Handler\\$handler";
+			$handlerObj = new $handlerClass( $level );
+		break;
+		// these handlers require custom arguments
+		case 'StreamHandler':
+			$handlerObj = new \Monolog\Handler\StreamHandler( $settings[ 'stream' ], $level );
 		break;
 		case 'ErrorLogHandler':
 			$handlerObj = new \Monolog\Handler\ErrorLogHandler( \Monolog\Handler\ErrorLogHandler::OPERATING_SYSTEM, $level );

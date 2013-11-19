@@ -9,22 +9,38 @@
  * @license MIT
  */
 
-error_reporting( E_ALL | E_STRICT );
-ini_set( 'display_errors', true );
-
-require_once 'vendor/autoload.php';
-
 use infuse\Logger;
 
 class LoggerTest extends \PHPUnit_Framework_TestCase
 {
+	public static function setupBeforeClass()
+	{
+		date_default_timezone_set( 'America/Chicago' );
+	}
+
+	public function testMonolog()
+	{
+		$this->assertInstanceOf( '\Monolog\Logger', Logger::logger() );
+	}
+
+	/**
+	 * @depends testMonolog
+	 */
 	public function testConfigureHandlers()
 	{
+		// stream
+		Logger::configure( array(
+			'handlers' => array(
+				'StreamHandler' => array(
+					'stream' => 'php://stderr' ) ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\StreamHandler', Logger::logger()->popHandler() );
+
 		// firephp
 		Logger::configure( array(
 			'handlers' => array(
 				'FirePHPHandler' => array(
 					'level' => 'debug' ) ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\FirePHPHandler', Logger::logger()->popHandler() );
 
 		// syslog
 		Logger::configure( array(
@@ -33,25 +49,66 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 					'level' => 'warning',
 					'ident' => 'test',
 					'facility' => 'syslog' ) ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\SyslogHandler', Logger::logger()->popHandler() );
 
 		// error log
 		Logger::configure( array(
 			'handlers' => array(
 				'ErrorLogHandler' => array(
 					'level' => 'error' ) ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\ErrorLogHandler', Logger::logger()->popHandler() );
 
 		// native mail
 		Logger::configure( array(
 			'handlers' => array(
-				'ErrorLogHandler' => array(
+				'NativeMailerHandler' => array(
 					'level' => 'notice',
 					'to' => 'test@example.com',
 					'from' => 'error@example.com' ) ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\NativeMailerHandler', Logger::logger()->popHandler() );
+
+		// null
+		Logger::configure( array(
+			'handlers' => array(
+				'NullHandler' => array() ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\NullHandler', Logger::logger()->popHandler() );
+
+		// test
+		Logger::configure( array(
+			'handlers' => array(
+				'TestHandler' => array() ) ) );
+		$this->assertInstanceOf( '\Monolog\Handler\TestHandler', Logger::logger()->popHandler() );
 	}
 
-	public function testMonolog()
+	public function testLoggerMethods()
 	{
-		$this->assertInstanceOf( '\Monolog\Logger', Logger::logger() );
+		$handler = new \Monolog\Handler\TestHandler();
+		$logger = Logger::logger();
+		$logger->pushHandler( $handler );
+
+		Logger::debug( 'debug' );
+		$this->assertTrue( $handler->hasDebug( 'debug' ) );
+
+		Logger::info( 'info' );
+		$this->assertTrue( $handler->hasInfo( 'info' ) );
+
+		Logger::notice( 'notice' );
+		$this->assertTrue( $handler->hasNotice( 'notice' ) );
+
+		Logger::warning( 'warning' );
+		$this->assertTrue( $handler->hasWarning( 'warning' ) );
+
+		Logger::error( 'error' );
+		$this->assertTrue( $handler->hasError( 'error' ) );
+
+		Logger::critical( 'critical' );
+		$this->assertTrue( $handler->hasCritical( 'critical' ) );
+
+		Logger::alert( 'alert' );
+		$this->assertTrue( $handler->hasAlert( 'alert' ) );
+
+		Logger::emergency( 'emergency' );
+		$this->assertTrue( $handler->hasEmergency( 'emergency' ) );
 	}
 
 	public function testFormatPhpError()
