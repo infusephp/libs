@@ -183,4 +183,11 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 		$s = 'notaurl';
 		$this->assertFalse( Validate::is( $s, 'url' ) );
 	}
+
+	public function testMultipleRequirements()
+	{
+		$t = array( 'test', 'test' );
+		$this->assertTrue( Validate::is( $t, 'matching|string:2' ) );
+		$this->assertEquals( 'test', $t );
+	}
 }
