@@ -30,6 +30,12 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\\infuse\\Cache', self::$cache );
 	}
 
+	public function testConstruct()
+	{
+		$cache = new Cache( array( 'local' ), array( 'local' => array( 'prefix' => 'test' ) ) );
+		$this->assertInstanceOf( '\\infuse\\Cache', $cache );
+	}
+
 	public function testSet()
 	{
 		$this->assertTrue( self::$cache->set( 'test.key', 100 ) );
