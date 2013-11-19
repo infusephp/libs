@@ -190,4 +190,20 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( Validate::is( $t, 'matching|string:2' ) );
 		$this->assertEquals( 'test', $t );
 	}
+
+	public function testKeyValueRequirements()
+	{
+		$test = array(
+			'test' => array( 'test', 'test' ),
+			'test2' => 'alphanumer1c'
+		);
+
+		$requirements = array(
+			'test' => 'matching|string:2',
+			'test2' => 'alpha_numeric'
+		);
+
+		$this->assertTrue( Validate::is( $test, $requirements ) );
+		$this->assertEquals( 'test', $test[ 'test' ] );
+	}
 }

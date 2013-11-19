@@ -45,7 +45,10 @@ class Validate
 			$validated = true;
 
 			foreach( $requirements as $key => $requirement )
-				$validated = $validated && self::processRequirement( Util::array_value( $data, $key ), $requirement );
+			{
+				$result = self::processRequirement( $data[ $key ], $requirement );
+				$validated = $validated && $result;
+			}
 
 			return $validated;
 		}
