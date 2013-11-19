@@ -28,6 +28,23 @@ class Logger
 		'critical' => \Monolog\Logger::CRITICAL,
 		'alert' => \Monolog\Logger::ALERT,
 		'emergency' => \Monolog\Logger::EMERGENCY );
+
+	private static $phpErrorLevels = array(
+		E_ERROR => 'E_ERROR',
+		E_CORE_ERROR => 'E_CORE_ERROR',
+		E_COMPILE_ERROR => 'E_COMPILE_ERROR',
+		E_PARSE => 'E_PARSE',
+		E_USER_ERROR => 'E_USER_ERROR',
+		E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
+		E_WARNING => 'E_WARNING',
+		E_CORE_WARNING => 'E_CORE_WARNING',
+		E_COMPILE_WARNING => 'E_COMPILE_WARNING',
+		E_USER_WARNING => 'E_USER_WARNING',
+		E_NOTICE => 'E_NOTICE',
+		E_USER_NOTICE => 'E_USER_NOTICE',
+		E_DEPRECATED => 'E_DEPRECATED',
+		E_USER_DEPRECATED => 'E_USER_DEPRECATED',
+		E_STRICT => 'E_STRICT' );
 	
 	/**
 	 * Sets up the handlers used by monolog
@@ -187,55 +204,7 @@ class Logger
 	 */
 	static function formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext )
 	{
-		$errtype = '';
-		switch( $errno )
-		{
-		case E_ERROR:
-			$errtype = 'E_ERROR';
-		break;
-		case E_CORE_ERROR:
-			$errtype = 'E_CORE_ERROR';
-		break;
-		case E_COMPILE_ERROR:
-			$errtype = 'E_COMPILE_ERROR';
-		break;
-		case E_PARSE:
-			$errtype = 'E_PARSE';
-		break;
-		case E_USER_ERROR:
-			$errtype = 'E_USER_ERROR';
-		break;
-		case E_RECOVERABLE_ERROR:
-			$errtype = 'E_RECOVERABLE_ERROR';
-		break;
-		case E_WARNING:
-			$errtype = 'E_WARNING';
-		break;
-		case E_CORE_WARNING:
-			$errtype = 'E_CORE_WARNING';
-		break;
-		case E_COMPILE_WARNING:
-			$errtype = 'E_COMPILE_WARNING';
-		break;
-		case E_USER_WARNING:
-			$errtype = 'E_USER_WARNING';
-		break;
-		case E_NOTICE:
-			$errtype = 'E_NOTICE';
-		break;
-		case E_USER_NOTICE:
-			$errtype = 'E_USER_NOTICE';
-		break;
-		case E_DEPRECATED:
-			$errtype = 'E_DEPRECATED';
-		break;
-		case E_USER_DEPRECATED:
-			$errtype = 'E_USER_DEPRECATED';
-		break;
-		case E_STRICT:
-			$errtype = 'E_STRICT';
-		break;		
-		}
+		$errtype = (isset(self::$phpErrorLevels[$errno])) ? self::$phpErrorLevels[ $errno ] : '';
 	
 		return  "$errfile ($errline): $errstr - $errtype";
 	}
