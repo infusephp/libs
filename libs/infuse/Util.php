@@ -232,7 +232,7 @@ class Util
 	 * @param boolean $httponly
 	 * @param boolean $setHeader when true, sets the header, otherwise returns header string
 	 *
-	 * @return string when $setHeader = false
+	 * @return string
 	 */
 	static function set_cookie_fix_domain( $name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true )
 	{
@@ -258,8 +258,8 @@ class Util
 
 		if( $setHeader )
 			header( $cookieStr, false );
-		else
-			return $cookieStr;
+
+		return $cookieStr;
 	}
 
 	/**
@@ -271,36 +271,4 @@ class Util
 	{
 		echo '<pre>' . print_r( $element, true ) . '</pre>';
 	}
-
-	/**
-	 * @deprecated
-	 */
-	static function encryptPassword( $password, $nonce = '' )
-	{
-		return self::encrypt_password( $password, Config::get( 'site.salt' ), $nonce );
-	}
-
-	/**
-	 * @deprecated
-	 */
-	static function seoURL( $string, $id = null )
-	{
-		return self::seoify( $string . (($id)?'-'.$id:''));
-	}
-
-	/**
-	 * @deprecated
-	 */
-	static function toBytes( $str )
-	{
-		return self::parse_metric_str( $str, true );
-	}
-	
-	/**
-	 * @deprecated
-	 */
-	static function formatNumberAbbreviation( $number, $decimals = 1 )
-	{
-		return self::number_abbreviate( $number, $decimals );
-	}	
 }
