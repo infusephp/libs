@@ -31,6 +31,11 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\\infuse\\Locale', self::$locale );
 	}
 
+	public function testSetLocaleDataDir()
+	{
+		self::$locale->setLocaleDataDir( 'tests/locales' );
+	}
+
 	public function testGetAndSetLocale()
 	{
 		self::$locale->setLocale( 'pirate' );
@@ -70,5 +75,15 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'points', self::$locale->pluralize( 100, 'point', 'points' ) );
 
 		$this->assertEquals( 'hour', self::$locale->p( 1, 'hour', 'hours' ) );
+	}
+
+	public function testCurrencyOptions()
+	{
+		$optionsStr = self::$locale->currencyOptions();
+		$this->assertGreaterThan( 1, str_len( $optionsStr ) );
+
+		$optionsStr2 = self::$locale->currencyOptions( 'USD' );
+		$this->assertGreaterThan( 1, str_len( $optionsStr2 ) );
+		$this->assertNotEquals( $optionsStr, $optionsStr2 );
 	}
 }

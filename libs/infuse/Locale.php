@@ -142,9 +142,11 @@ class Locale
 	/**
 	 * Generates a select box for the currencies
 	 *
+	 * @param string $selectedCurrency
+	 *
 	 * @return string html
 	 */
-	function currencyOptions( $selectedCurrency )
+	function currencyOptions( $selectedCurrency = '' )
 	{
 		$return ='';
 
@@ -157,8 +159,15 @@ class Locale
 		return $return;
 	}
 	
-	// lifted from php.net comments
-	function timezoneOptions( $selectedTimezone )
+	/**
+	 * Generates a select box for the time zones
+	 * - lifted from php.net comments
+	 *
+	 * @param string $selectedTimezone
+	 *
+	 * @return string html
+	 */
+	function timezoneOptions( $selectedTimezone = '' )
 	{
 		$return = '';
 
