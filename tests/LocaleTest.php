@@ -86,4 +86,14 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 		$this->assertGreaterThan( 1, strlen( $optionsStr2 ) );
 		$this->assertNotEquals( $optionsStr, $optionsStr2 );
 	}
+
+	public function testTimezoneOptions()
+	{
+		$optionsStr = self::$locale->timezoneOptions();
+		$this->assertGreaterThan( 1, strlen( $optionsStr ) );
+
+		$optionsStr2 = self::$locale->timezoneOptions( 'America/Chicago' );
+		$this->assertGreaterThan( 1, strlen( $optionsStr2 ) );
+		$this->assertNotEquals( $optionsStr, $optionsStr2 );
+	}
 }

@@ -171,60 +171,51 @@ class Locale
 	 */
 	function timezoneOptions( $selectedTimezone = '' )
 	{
-		$return = '';
-
-		function timezonechoice($selectedTimezone)
+		$all = timezone_identifiers_list();
+		
+		$i = 0;
+		foreach($all AS $zone)
 		{
-			$all = timezone_identifiers_list();
-			
-			$i = 0;
-			foreach($all AS $zone)
+			$zone = explode('/',$zone);
+			$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
+			$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
+			$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
+			$i++;
+		}
+		
+		asort($zonen);
+		$return = '';
+		foreach($zonen AS $zone)
+		{
+			extract($zone);
+			if($continent == 'Africa' || $continent == 'America' || $continent == 'Antarctica' || $continent == 'Arctic' || $continent == 'Asia' || $continent == 'Atlantic' || $continent == 'Australia' || $continent == 'Europe' || $continent == 'Indian' || $continent == 'Pacific')
 			{
-				$zone = explode('/',$zone);
-				$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
-				$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
-				$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
-				$i++;
-			}
+				if(!isset($selectcontinent))
+					$return .= '<optgroup label="'.$continent.'">'; // continent
+				elseif($selectcontinent != $continent)
+					$return .= '</optgroup><optgroup label="'.$continent.'">'; // continent
 			
-			asort($zonen);
-			$structure = '';
-			foreach($zonen AS $zone)
-			{
-				extract($zone);
-				if($continent == 'Africa' || $continent == 'America' || $continent == 'Antarctica' || $continent == 'Arctic' || $continent == 'Asia' || $continent == 'Atlantic' || $continent == 'Australia' || $continent == 'Europe' || $continent == 'Indian' || $continent == 'Pacific')
+				if(isset($city) != '')
 				{
-					if(!isset($selectcontinent))
-						$structure .= '<optgroup label="'.$continent.'">'; // continent
-					elseif($selectcontinent != $continent)
-						$structure .= '</optgroup><optgroup label="'.$continent.'">'; // continent
-				
-					if(isset($city) != '')
-					{
-						if (!empty($subcity) != '')
-							$city = $city . '/'. $subcity;
-							
-						$structure .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
-					}
-					else
-					{
-						if (!empty($subcity) != '')
+					if (!empty($subcity) != '')
 						$city = $city . '/'. $subcity;
 						
-						$structure .= "<option ".(($continent==$selectedTimezone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
-					}
-					
-					$selectcontinent = $continent;
+					$return .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
 				}
-			}
-			
-			$structure .= '</optgroup>';
+				else
+				{
+					if (!empty($subcity) != '')
+					$city = $city . '/'. $subcity;
 					
-			return $structure;
-		}
+					$return .= "<option ".(($continent==$selectedTimezone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
+				}
 				
-		$return .= timezonechoice($selectedTimezone);
+				$selectcontinent = $continent;
+			}
+		}
 		
+		$return .= '</optgroup>';
+
 		return $return;
 	}
 
