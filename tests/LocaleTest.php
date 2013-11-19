@@ -80,10 +80,10 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 	public function testCurrencyOptions()
 	{
 		$optionsStr = self::$locale->currencyOptions();
-		$this->assertGreaterThan( 1, str_len( $optionsStr ) );
+		$this->assertGreaterThan( 1, strlen( $optionsStr ) );
 
 		$optionsStr2 = self::$locale->currencyOptions( 'USD' );
-		$this->assertGreaterThan( 1, str_len( $optionsStr2 ) );
+		$this->assertGreaterThan( 1, strlen( $optionsStr2 ) );
 		$this->assertNotEquals( $optionsStr, $optionsStr2 );
 	}
 }

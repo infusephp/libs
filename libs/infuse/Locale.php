@@ -148,6 +148,8 @@ class Locale
 	 */
 	function currencyOptions( $selectedCurrency = '' )
 	{
+		$selectedCurrency = strtolower( $selectedCurrency );
+		
 		$return ='';
 
 		foreach (self::$currencies as $code => $currency) {
