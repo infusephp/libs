@@ -18,12 +18,19 @@ use infuse\Logger;
 
 class LoggerTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
+	public function testFormatPhpError()
 	{
-		Logger::configure( array() );
-		
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$errorStr = Logger::formatPhpError( E_USER_ERROR, 'This is an error.', 'index.php', 103, false );
+
+		$this->assertGreaterThan( 1, strlen( $errorStr ) );
+	}
+
+	public function testFormatException()
+	{
+		$exception = new \Exception( 'Some exception' );
+
+		$errorStr = Logger::formatException( $exception );
+
+		$this->assertGreaterThan( 1, strlen( $errorStr ) );
 	}
 }

@@ -24,7 +24,7 @@ class Logger
 	 *
 	 * @param array $config array of handlers and corresponding settings
 	 */
-	static function configure( $config )
+	static function configure( array $config )
 	{
 		foreach( (array)Util::array_value( $config, 'handlers' ) as $handler => $handlerSettings )
 			self::addHandler( $handler, $handlerSettings );
@@ -252,7 +252,7 @@ class Logger
 	 *
 	 * @return string
 	 */
-	static function formatException( $exception )
+	static function formatException( \Exception $exception )
 	{
 		return $exception->getMessage();
 	}
@@ -263,7 +263,7 @@ class Logger
 	 * @param string $handler monolog handler name
 	 * @param array $settings settings
 	 */
-	private static function addHandler( $handler, $settings )
+	private static function addHandler( $handler, array $settings )
 	{
 		if( empty( $handler ) )
 			return;
