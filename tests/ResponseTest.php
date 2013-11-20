@@ -96,6 +96,18 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', null, false ) );
 	}
 
+	public function testRedirectNonStandardPort()
+	{
+		$req = new Request( null, null, null, null, array(
+			'HTTP_HOST' => 'example.com',
+			'DOCUMENT_URI' => '/some/start',
+			'REQUEST_URI' => '/some/start/test/index.php',
+			'SERVER_PORT' => 1234 ) );
+
+		$this->assertEquals( 'Location: //example.com:1234/some/start/', self::$res->redirect( '/', $req, false ) );
+		$this->assertEquals( 'Location: //example.com:1234/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
+	}
+
 	public function testSend()
 	{
 		$req = new Request( null, null, null, null, array() );

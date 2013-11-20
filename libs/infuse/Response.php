@@ -194,9 +194,15 @@ class Response
 		if( !$req )
 			$req = new Request();
 
-		if( substr( $url, 0, 7 ) != 'http://' && substr( $url, 0, 8 ) != 'https://' )
+		// handle relative urls
+		if( substr( $url, 0, 7 ) != 'http://' && substr( $url, 0, 8 ) != 'https://' && substr( $url, 0, 2 ) != '//' )
 		{
-			$url = $req->host() . '/' . $req->basePath() . '/' . urldecode( $url );
+			// non-standard port
+			$port = (!in_array($req->port(), array(80,443))) ? ':' . $req->port() : '';
+
+			$url = $req->host() . $port . '/' . $req->basePath() . '/' . urldecode( $url );
+
+			// protocol-agnostic
 			$url = '//' . preg_replace( '/\/{2,}/', '/', $url );
 		}
 
