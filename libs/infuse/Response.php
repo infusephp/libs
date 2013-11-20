@@ -197,6 +197,8 @@ class Response
 		// handle relative urls
 		if( substr( $url, 0, 7 ) != 'http://' && substr( $url, 0, 8 ) != 'https://' && substr( $url, 0, 2 ) != '//' )
 		{
+			// redirect relative to the requested host name
+			// and not the host name php thinks we are (HTTP_HOST vs SERVER_NAME)
 			$url = $req->headers( 'host' ) . '/' . $req->basePath() . '/' . urldecode( $url );
 
 			// protocol-agnostic
