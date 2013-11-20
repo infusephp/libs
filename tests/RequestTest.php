@@ -152,7 +152,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testBasePath()
 	{
-		$this->assertEquals( '/users/comments/10', self::$req->basePath() );
+		$this->assertEquals( '/', self::$req->basePath() );
+	}
+
+	public function testPath()
+	{
+		$this->assertEquals( '/users/comments/10', self::$req->path() );
 	}
 
 	public function testRemovingStartPath()
@@ -161,6 +166,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 		$expected = array( 'test' );
 		$this->assertEquals( $expected, $req->paths() );
+
+		$this->assertEquals( '/some/start/path', $req->basePath() );
+
+		$this->assertEquals( '/test', $req->path() );
 	}
 
 	public function testMethod()

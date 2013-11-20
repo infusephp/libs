@@ -222,7 +222,7 @@ class Logger
 		Logger::error( $formattedExceptionString );
 		
 		die();
-	}	
+	}
 	
 	/** 
 	 * Formats an exception into a log message

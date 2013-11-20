@@ -10,15 +10,90 @@
  */
 
 use infuse\Response;
+use infuse\Request;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
+	static $res;
+
+	public static function setUpBeforeClass()
 	{
-		$res = new Response();
-		
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		self::$res = new Response();
+	}
+
+	public function assertPreConditions()
+	{
+		$this->assertInstanceOf( '\\infuse\\Response', self::$res );
+	}
+
+	public function testSetCode()
+	{
+		self::$res->setCode( 502 );
+	}
+
+	/**
+	 * @depends testSetCode
+	 */
+	public function testGetCode()
+	{
+		$this->assertEquals( 502, self::$res->getCode() );
+	}
+
+	public function testSetBody()
+	{
+		self::$res->setBody( 'test' );
+	}
+
+	/**
+	 * @depends testSetBody
+	 */
+	public function testGetBody()
+	{
+		$this->assertEquals( 'test', self::$res->getBody() );
+	}
+
+	public function testSetContentType()
+	{
+		self::$res->setContentType( 'application/pdf' );
+	}
+
+	/**
+	 * @depends testSetContentType
+	 */
+	public function testGetContentType()
+	{
+		$this->assertEquals( 'application/pdf', self::$res->getContentType() );
+	}
+
+	/**
+	 * @depends testGetBody
+	 * @depends testGetContentType
+	 */
+	public function testSetBodyJson()
+	{
+		$body = array(
+			'test' => array(
+				'meh',
+				'blah' ) );
+
+		self::$res->setBodyJson( $body );
+
+		$this->assertEquals( json_encode( $body ), self::$res->getBody() );
+		$this->assertEquals( 'application/json', self::$res->getContentType() );
+	}
+
+	public function testRedirect()
+	{
+		$req = new Request( null, null, null, null, array(
+			'HTTP_HOST' => 'example.com',
+			'DOCUMENT_URI' => '/some/start',
+			'REQUEST_URI' => '/some/start/test/index.php'
+			) );
+
+		$this->assertEquals( 'Location: //example.com/some/start/', self::$res->redirect( '/', $req, true ) );
+		$this->assertEquals( 'Location: //example.com/some/start/test/url', self::$res->redirect( '/test/url', $req, true ) );
+
+		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', $req, true ) );
+		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', null, true ) );
 	}
 }

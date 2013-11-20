@@ -180,20 +180,33 @@ class Response
 	}
 	
 	/**
-	 * Performs a 302 redirect to a given URL. NOTE: this will exit the script.
+	 * Performs a 302 redirect to a given URL.
+	 * NOTE: this will exit the script unless the doNotExit flag is set
 	 *
 	 * @param string $url URL we redirect to
+	 * @param Request $req
+	 * @param boolean $doNotExit dont actually set the header and exit
+	 *
+	 * @return string location header (if doNotExit is set)
 	 */
-	public function redirect( $url )
+	public function redirect( $url, Request $req = null, $doNotExit = false )
 	{
+		if( !$req )
+			$req = new Request();
+
 		if( substr( $url, 0, 7 ) != 'http://' && substr( $url, 0, 8 ) != 'https://' )
 		{
-			$url = $_SERVER['HTTP_HOST'] . dirname ($_SERVER['PHP_SELF']) . '/' . urldecode( $url );
-			$url = '//' . preg_replace('/\/{2,}/','/', $url);
+			$url = $req->host() . '/' . $req->basePath() . '/' . urldecode( $url );
+			$url = '//' . preg_replace( '/\/{2,}/', '/', $url );
 		}
+
+		$loc = 'Location: ' . $url;
 		
-		header('X-Powered-By: infuse');
-		header ("Location: " . $url);
+		if( $doNotExit )
+			return $loc;
+
+		header( 'X-Powered-By: infuse' );
+		header( $loc );
 
 		exit;
 	}

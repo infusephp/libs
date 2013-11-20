@@ -25,6 +25,7 @@ class Request
 	private $charsets;
 	private $languages;
 	private $basePath;
+	private $path;
 	private $paths;
 	
 	/**
@@ -85,29 +86,40 @@ class Request
 		// remove slash in front of requested url
 		$this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $this->server, 'REQUEST_URI' ), '', 0, 1 );
 		
-		// strip the starting directory from the REQUEST_URI
+		// figure out the base path and REQUEST_URI
+		$this->basePath = '/';
+
 		if( isset( $this->server[ 'DOCUMENT_URI' ] ) )
 		{
 			$docParts = explode( '/', substr_replace( $this->server[ 'DOCUMENT_URI' ], '', 0, 1 ) );
+			$uriParts = explode( '/', $this->server[ 'REQUEST_URI' ] );
 			
-			$requestParts = explode( '/', $this->server[ 'REQUEST_URI' ] );
-			
-			foreach( $requestParts as $key => $part )
+			$basePaths = array();
+
+			// uriParts = uriParts - $docParts
+			// basePaths = docParts - uriParts
+			foreach( $uriParts as $key => $part )
 			{
 				if( isset( $docParts[ $key ] ) && $docParts[ $key ] == $part )
-					unset( $requestParts[ $key ] );
-			
+				{
+					$basePaths[] = $uriParts[ $key ];
+					unset( $uriParts[ $key ] );
+				}
+				
 				if( strpos( $part, '.php' ) !== false )
 					break;
 			}
 			
 			// ignore a trailing "/"
-			end( $requestParts );
-			$key = key( $requestParts );
-			if( empty( $requestParts[ $key ] ) )
-				unset( $requestParts[ $key ] );
+			end( $uriParts );
+			$key = key( $uriParts );
+			if( empty( $uriParts[ $key ] ) )
+				unset( $uriParts[ $key ] );
 			
-			$this->server[ 'REQUEST_URI' ] = implode( '/', $requestParts );
+			// strip base path from REQUEST_URI
+			$this->server[ 'REQUEST_URI' ] = implode( '/', $uriParts );
+
+			$this->basePath .= implode( '/', $basePaths );
 		}
 
 		// parse url
@@ -168,12 +180,12 @@ class Request
 	function setPath( $path )
 	{
 		// get the base path
-		$this->basePath = current(explode('?', $path));
-		if( substr( $this->basePath, 0, 1 ) != '/' )
-			$this->basePath = '/' . $this->basePath;
+		$this->path = current(explode('?', $path));
+		if( substr( $this->path, 0, 1 ) != '/' )
+			$this->path = '/' . $this->path;
 		
 		// break the URL into paths
-		$this->paths = explode( '/', $this->basePath );
+		$this->paths = explode( '/', $this->path );
 		if( $this->paths[ 0 ] == '' )
 			array_splice( $this->paths, 0, 1 );	
 	}
@@ -294,8 +306,10 @@ class Request
 			$port = ':' . $port;
 		else
 			$port = '';
+
+		$path = str_replace( '//', '/', $this->basePath() . $this->path() );
 				
-		return $this->protocol() . '://' . $this->host() . $port . $this->basePath();
+		return $this->protocol() . '://' . $this->host() . $port . $path;
 	}
 	
 	/**
@@ -307,9 +321,21 @@ class Request
 	{
 		return (is_numeric($index)) ? Util::array_value( $this->paths, $index ) : $this->paths;
 	}
+
+	/**
+	 * Gets the path associated with the request minus the bse path
+	 *
+	 */
+	function path()
+	{
+		return $this->path;
+	}
+
 	
 	/**
 	 * Gets the base path associated with the request. i.e. /comments/10
+	 * Useful if the entry point to the request was not located in the root directory
+	 * i.e. /blog/index.php returns /blog or /index.php returns an empty string
 	 *
 	 * @param string base path
 	 */

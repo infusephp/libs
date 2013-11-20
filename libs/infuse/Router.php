@@ -52,8 +52,8 @@ class Router
 			2) global dynamic routes (i.e. /browse/:category)
 		*/
 		
-		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->basePath();
-		$routeGenericStr = $req->basePath();
+		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->path();
+		$routeGenericStr = $req->path();
 
 		$staticRoutes = array();
 		$dynamicRoutes = array();
