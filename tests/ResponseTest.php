@@ -87,13 +87,28 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, array(
 			'HTTP_HOST' => 'example.com',
 			'DOCUMENT_URI' => '/some/start',
-			'REQUEST_URI' => '/some/start/test/index.php'
-			) );
+			'REQUEST_URI' => '/some/start/test/index.php' ) );
 
-		$this->assertEquals( 'Location: //example.com/some/start/', self::$res->redirect( '/', $req, true ) );
-		$this->assertEquals( 'Location: //example.com/some/start/test/url', self::$res->redirect( '/test/url', $req, true ) );
+		$this->assertEquals( 'Location: //example.com/some/start/', self::$res->redirect( '/', $req, false ) );
+		$this->assertEquals( 'Location: //example.com/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
 
-		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', $req, true ) );
-		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', null, true ) );
+		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', $req, false ) );
+		$this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', null, false ) );
+	}
+
+	public function testSend()
+	{
+		$req = new Request( null, null, null, null, array() );
+
+		self::$res->setBody( 'test' );
+
+		ob_start();
+
+		self::$res->send( $req, false, false );
+
+		$output = ob_get_contents();
+		ob_end_clean();
+
+		$this->assertEquals( 'test', $output );
 	}
 }

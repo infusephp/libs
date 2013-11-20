@@ -181,15 +181,15 @@ class Response
 	
 	/**
 	 * Performs a 302 redirect to a given URL.
-	 * NOTE: this will exit the script unless the doNotExit flag is set
+	 * NOTE: this will exit the script if the exitAndSetHeaders flag is set
 	 *
 	 * @param string $url URL we redirect to
 	 * @param Request $req
-	 * @param boolean $doNotExit dont actually set the header and exit
+	 * @param boolean $exitAndSetHeaders set the header and exit?
 	 *
-	 * @return string location header (if doNotExit is set)
+	 * @return string location header (if exitAndSetHeaders is false)
 	 */
-	public function redirect( $url, Request $req = null, $doNotExit = false )
+	public function redirect( $url, Request $req = null, $exitAndSetHeaders = true )
 	{
 		if( !$req )
 			$req = new Request();
@@ -202,7 +202,7 @@ class Response
 
 		$loc = 'Location: ' . $url;
 		
-		if( $doNotExit )
+		if( !$exitAndSetHeaders )
 			return $loc;
 
 		header( 'X-Powered-By: infuse' );
@@ -213,10 +213,13 @@ class Response
 
 	/**
 	 * Sends the response using the given information.
+	 * NOTE: this will exit the script if the exit flag is set
 	 *
 	 * @param Request $req request object associated with the response
+	 * @param boolean $exit
+	 * @param boolean $setHeaders
 	 */
-	public function send( $req = null )
+	public function send( $req = null, $exit = true, $setHeaders = true )
 	{
 		if( !$req )
 			$req = new Request();
@@ -224,7 +227,11 @@ class Response
 		if( $req->isCli() )
 		{
 			echo $this->body;
-			exit;
+
+			if( $exit )
+				exit;
+
+			return;
 		}
 	
 		$contentType = $this->contentType;
@@ -242,13 +249,17 @@ class Response
 			else if( $req->isXml() )
 				$contentType = 'application/xml';			
 		}
-		
-		// set the status
-		header('HTTP/1.1 ' . $this->code . ' ' . self::$codes[$this->code]);
-		// set the content type
-		header('Content-type: ' . $contentType . '; charset=utf-8');
-		// set the powered by
-		header('X-Powered-By: infuse');
+	
+		$headers = array(
+			'HTTP/1.1 ' . $this->code . ' ' . self::$codes[$this->code],
+			'Content-type: ' . $contentType . '; charset=utf-8',
+			'X-Powered-By: infuse' );
+
+		if( $setHeaders )
+		{
+			foreach( $headers as $header )
+				header( $header );
+		}
 		
 		if( !empty( $this->body ) )
 		{
@@ -279,7 +290,7 @@ class Response
 					$message = 'The requested method is not implemented.';
 				break;
 				default:
-					$message = self::$codes[$this->code];
+					$message = self::$codes[ $this->code ];
 				break;
 			}
 			
@@ -295,6 +306,7 @@ class Response
 			}
 		}
 		
-		exit;
+		if( $exit )
+			exit;
 	}
 }
