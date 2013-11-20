@@ -293,6 +293,18 @@ class Request
 	
 		return $host;
 	}
+
+	/**
+	 * Gets the host name as requested by the client
+	 * NOTE this is not guaranteed to be the same as the host name
+	 * Also, this may include the port number
+	 *
+	 * @return string
+	 */
+	function requestedHost()
+	{
+		return Util::array_value( $this->server, 'HTTP_HOST' );
+	}
 	
 	/**
 	 * Gets the complete url associated with the request.

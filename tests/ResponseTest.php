@@ -99,10 +99,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 	public function testRedirectNonStandardPort()
 	{
 		$req = new Request( null, null, null, null, array(
-			'HTTP_HOST' => 'example.com',
+			'HTTP_HOST' => 'example.com:1234',
 			'DOCUMENT_URI' => '/some/start',
 			'REQUEST_URI' => '/some/start/test/index.php',
-			'SERVER_PORT' => 1234 ) );
+			'SERVER_PORT' => 5000 ) );
 
 		$this->assertEquals( 'Location: //example.com:1234/some/start/', self::$res->redirect( '/', $req, false ) );
 		$this->assertEquals( 'Location: //example.com:1234/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );

@@ -49,7 +49,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 					'force',
 					'all'
 				),
-				'HTTP_HOST' => 'example.com',
+				'HTTP_HOST' => 'example.com:1234',
 				'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 	            'HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
 	            'HTTP_ACCEPT_CHARSET' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
@@ -105,7 +105,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'testing..123', self::$req->headers( 'test_header' ) );
 
 		$expected = array(
-			'HOST' => 'example.com',
+			'HOST' => 'example.com:1234',
 			'USER_AGENT' => 'infuse/libs test',
 			'ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
@@ -133,6 +133,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	public function testHost()
 	{
 		$this->assertEquals( 'example.com', self::$req->host() );
+	}
+
+	public function testRequestedHost()
+	{
+		$this->assertEquals( 'example.com:1234', self::$req->requestedHost() );
 	}
 
 	public function testUrl()
