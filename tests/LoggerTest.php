@@ -28,6 +28,18 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testConfigureHandlers()
 	{
+		// false
+		try
+		{
+			Logger::configure( array(
+				'handlers' => array() ) );
+			Logger::logger()->popHandler();
+		}
+		catch( \Exception $e )
+		{
+			$this->assertInstanceOf( '\Exception', $e );
+		}
+
 		// stream
 		Logger::configure( array(
 			'handlers' => array(
