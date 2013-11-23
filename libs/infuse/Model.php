@@ -638,9 +638,11 @@ abstract class Model extends Acl
 			break;
 			case 'number':
 				if( !$type ) $type = 'int';
-				if( !$length ) $length = 11;
 				
-				$column[ 'Type' ] = "$type($length)";
+				if ($length)
+					$column[ 'Type' ] = "$type($length)";
+				else
+					$column[ 'Type' ] = "$type";
 			break;
 			case 'enum':
 				if( !$type ) $type = 'varchar';
