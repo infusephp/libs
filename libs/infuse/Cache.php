@@ -44,7 +44,7 @@ class Cache
 		foreach( $strategies as $strategy )
 		{
 			$strategyFunc = "strategy_$strategy";
-			if( $this->$strategyFunc( (array)Util::array_value( $parameters, $strategy ) ) )
+			if( method_exists( $this, $strategyFunc ) && $this->$strategyFunc( (array)Util::array_value( $parameters, $strategy ) ) )
 				return true;
 		}
 		
@@ -121,9 +121,10 @@ class Cache
 			
 			return false;
 		}
-			
 		else if( $this->strategy == 'local' )
 			return isset( self::$local[ $this->cachePrefix . $key ] );
+
+		return false;
 	}
 	
 	/**
@@ -146,6 +147,8 @@ class Cache
 			self::$local[ $this->cachePrefix . $key ] = $value;
 			return true;
 		}
+
+		return false;
 	}
 	
 	/**
@@ -168,9 +171,9 @@ class Cache
 				self::$local[ $this->cachePrefix . $key ] += $amount;
 				return self::$local[ $this->cachePrefix . $key ];
 			}
-
-			return false;
 		}
+
+		return false;
 	}
 	
 	/**
@@ -193,9 +196,9 @@ class Cache
 				self::$local[ $this->cachePrefix . $key ] -= $amount;
 				return self::$local[ $this->cachePrefix . $key ];
 			}
-
-			return false;
 		}
+
+		return false;
 	}
 	
 	/**
@@ -219,6 +222,8 @@ class Cache
 
 			return true;
 		}
+
+		return false;
 	}
 	
 	/////////////////////////

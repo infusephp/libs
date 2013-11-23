@@ -124,6 +124,19 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 8, self::$cache->get( 'fib.5' ) );
 		$this->assertEquals( 13, self::$cache->get( 'fib.6' ) );
 	}
+
+	/**
+	 * @depends testGet
+	 */
+	public function testBogusStrategy()
+	{
+		$cache = new Cache( array( 'non_existent_strategy' ) );
+		$this->assertInstanceOf( '\\infuse\\Cache', $cache );
+
+		$this->assertFalse( $cache->set( 'test', 123 ) );
+		$this->assertFalse( $cache->has( 'test' ) );
+		$this->assertNull( $cache->get( 'test' ) );
+	}
 }
 
 function fibonacci( $n, Cache $cache )
