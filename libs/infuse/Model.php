@@ -370,6 +370,9 @@ abstract class Model extends Acl
 			if( !empty( $name ) && !in_array( $name, $exclude ) && !in_array( $property[ 'type' ], self::$excludePropertyTypes ) )
 				$properties[] = $name;
 		}
+
+		// make sure each property key at least has a null value
+		$base = array_fill_keys( $properties, null );
 				
 		// get the values of all the properties
 		return array_replace( (array)$this->get( $properties ), $this->id( true ) );
