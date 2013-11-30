@@ -373,9 +373,9 @@ abstract class Model extends Acl
 
 		// make sure each property key at least has a null value
 		$base = array_fill_keys( $properties, null );
-				
+		
 		// get the values of all the properties
-		return array_replace( (array)$this->get( $properties ), $this->id( true ) );
+		return array_replace( $base, (array)$this->get( $properties ), $this->id( true ) );
 	}
 	
 	/**
