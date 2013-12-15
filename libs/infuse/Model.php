@@ -136,9 +136,9 @@ abstract class Model extends Acl
 	 *
 	 * @param array $config
 	 */
-	static function configure( $config )
+	static function configure( array $config )
 	{
-		static::$config = array_replace( static::$config, (array)$config );
+		static::$config = array_replace( static::$config, $config );
 	}
 
 	/**
@@ -280,7 +280,7 @@ abstract class Model extends Acl
 	 */
 	function get( $properties )
 	{
-		$properties = (is_string( $properties )) ? explode(',', $properties) : (array)$properties;
+		$properties = (is_string($properties)) ? explode(',', $properties) : (array)$properties;
 
 		$return = array();
 
@@ -360,7 +360,7 @@ abstract class Model extends Acl
 	 *
 	 * @return array properties
 	 */
-	function toArray( $exclude = array() )
+	function toArray( array $exclude = array() )
 	{
 		$properties = array();
 		
@@ -385,7 +385,7 @@ abstract class Model extends Acl
 	 *
 	 * @return string json
 	 */
-	function toJson( $exclude = array() )
+	function toJson( array $exclude = array() )
 	{
 		return json_encode( $this->toArray( $exclude ) );
 	}
@@ -395,53 +395,50 @@ abstract class Model extends Acl
 	 *
 	 * @param array key-value parameters
 	 *
-	 * @param int $start record number to start at
-	 * @param int $limit max results to return
-	 * @param string $sort sort (i.e. name asc, year asc)
-	 * @param string $search search query
-	 * @param array $where criteria
+	 * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
 	 *
 	 * @return array array( 'models' => models, 'count' => 'total found' )
 	 */ 
-	static function find( $start = 0, $limit = 100, $sort = '', $search = '', $where = array() )
+	static function find( array $params = array() )
 	{
-		// unpack parameters
-		if( is_array( $start ) )
-		{
-			$where = (array)Util::array_value( $start, 'where' );
-			$search = Util::array_value( $start, 'search' );
-			$sort = Util::array_value( $start, 'sort' );
-			$limit = Util::array_value( $start, 'limit' );
-			$start = Util::array_value( $start, 'start' ); // must be last
-		}
+		// default parameters
+		$default = array(
+			'where' => array(),
+			'start' => 0,
+			'limit' => 100,
+			'search' => '',
+			'sort' => '' );
+
+		$params = array_replace( $default, $params );
 	
-		if( empty( $start ) || !is_numeric( $start ) || $start < 0 )
-			$start = 0;
-		if( empty( $limit ) || !is_numeric( $limit ) || $limit > 1000 )
-			$limit = 100;
+		if( !is_numeric( $params[ 'start' ] ) || $params[ 'start' ] < 0 )
+			$params[ 'start' ] = 0;
+		if( !is_numeric( $params[ 'limit' ] ) || $params[ 'limit' ] > 1000 )
+			$params[ 'limit' ] = 100;
 
 		$modelName = get_called_class();
 		
-		$return = array('models'=>array());
+		$return = array( 'models' => array() );
 		
 		// WARNING: using MYSQL LIKE for search, this is very inefficient
 		
-		if( !empty( $search ) )
+		if( !empty( $params[ 'search' ] ) )
 		{
 			$w = array();
+			$search = $params[ 'search' ];
 			foreach( static::$properties as $name => $property )
 			{
 				if( !in_array( Util::array_value( $property, 'type' ), self::$excludePropertyTypes ) )
 					$w[] = "$name LIKE '%$search%'";
 			}
 			
-			$where[] = '(' . implode( ' OR ', $w ) . ')';
+			$params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
 		}
 
-		// verify sort		
+		// verify sort
 		$sortParams = array();
 
-		$columns = explode( ',', $sort );
+		$columns = explode( ',', $params[ 'sort' ] );
 		foreach( $columns as $column )
 		{
 			$c = explode( ' ', trim( $column ) );
@@ -463,18 +460,16 @@ abstract class Model extends Acl
 			$sortParams[] = "$propertyName $direction";
 		}
 		
-		$count = (int)Database::select(
+		$return[ 'count' ] = (int)Database::select(
 			static::tablename(),
 			'count(*)',
 			array(
-				'where' => $where,
+				'where' => $params[ 'where' ],
 				'single' => true ) );
 		
-		$return['count'] = $count;
-		
 		$filter = array(
-			'where' => $where,
-			'limit' => "$start,$limit" );
+			'where' => $params[ 'where' ],
+			'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] );
 		
 		$sortStr = implode( ',', $sortParams );
 		if( $sortStr )
@@ -505,7 +500,7 @@ abstract class Model extends Acl
 				
 				$model = new $modelName( $id );
 				$model->cacheProperties( $info );
-				$return['models'][] = $model;
+				$return[ 'models' ][] = $model;
 			}
 		}
 		
@@ -519,7 +514,7 @@ abstract class Model extends Acl
 	 *
 	 * @return Model|false
 	 */
-	static function findOne( $params = array() )
+	static function findOne( array $params )
 	{
 		$models = static::find( $params );
 		
@@ -533,7 +528,7 @@ abstract class Model extends Acl
 	 *
 	 * @return int total
 	 */
-	static function totalRecords( $where = array() )
+	static function totalRecords( array $where = array() )
 	{
 		return (int)Database::select(
 			static::tablename(),
@@ -814,9 +809,9 @@ abstract class Model extends Acl
 	 *
 	 * @return null
 	 */
-	function cacheProperties( $data )
+	function cacheProperties( array $data )
 	{
-		foreach( (array)$data as $property => $value )
+		foreach( $data as $property => $value )
 			$this->cacheProperty( $property, $value );
 	}
 	
@@ -850,7 +845,7 @@ abstract class Model extends Acl
 	 *
 	 * @return boolean
 	 */
-	static function create( $data )
+	static function create( array $data )
 	{
 		$modelName = get_called_class();
 		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
