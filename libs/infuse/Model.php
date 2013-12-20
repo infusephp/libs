@@ -978,9 +978,22 @@ abstract class Model extends Acl
 			static::tablename(),
 			$insertArray ) )
 		{
+			$ids = array();
+
+			// derive the id for every property that is not auto_increment
+			// NOTE this does not handle the case where there is > 1 auto_increment primary key
+			$idProperties = (array)static::$idProperty;
+			foreach( $idProperties as $property )
+			{
+				if( Util::array_value( static::$properties[ $property ], 'mutable' ) )
+					$ids[] = Util::array_value( $data, $property );
+				else
+					$ids[] = Database::lastInsertID();
+			}
+
 			// create new model
-			$newModel = new $modelName(Database::lastInsertID());
-			
+			$newModel = new $modelName( implode( ',', $ids ) );
+						
 			// cache
 			$newModel->cacheProperties( $insertArray );
 			
