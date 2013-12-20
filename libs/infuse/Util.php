@@ -189,12 +189,6 @@ class Util
 	 */
 	static function number_abbreviate( $number, $decimals = 1 )
 	{
-		if( $number == 0 )
-			return "0";
-			
-		if( $number < 0 )
-			return $number;
-			
 	    $abbrevs = array(
 	    	24 => "Y",
 	    	21 => "Z",
@@ -216,6 +210,8 @@ class Util
 	            return intval( $number / pow( 10, $exponent ) ) + $decimal . $abbrev;
 	        }
 	    }
+
+	    return $number;
 	}
 	
 	/** 

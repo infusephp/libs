@@ -109,6 +109,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( '12.3K', Util::number_abbreviate( 12345 ) );
 		$this->assertEquals( '1M', Util::number_abbreviate( 1000000, 2 ) );
 
+		$this->assertEquals( '-1234', Util::number_abbreviate( -1234, 2 ) );
 		$this->assertEquals( '123', Util::number_abbreviate( 123, 3 ) );
 		$this->assertEquals( '12.345K', Util::number_abbreviate( 12345, 3 ) );
 		$this->assertEquals( '12.345M', Util::number_abbreviate( 12345000, 3 ) );
