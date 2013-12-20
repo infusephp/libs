@@ -92,6 +92,13 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf( '\Monolog\Handler\TestHandler', Logger::logger()->popHandler() );
 	}
 
+	public function testClearHandlers()
+	{
+		Logger::clearHandlers();
+
+		// TODO verify
+	}
+
 	public function testLoggerMethods()
 	{
 		$handler = new \Monolog\Handler\TestHandler();
@@ -121,21 +128,5 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 
 		Logger::emergency( 'emergency' );
 		$this->assertTrue( $handler->hasEmergency( 'emergency' ) );
-	}
-
-	public function testFormatPhpError()
-	{
-		$errorStr = Logger::formatPhpError( E_USER_ERROR, 'This is an error.', 'index.php', 103, false );
-
-		$this->assertGreaterThan( 1, strlen( $errorStr ) );
-	}
-
-	public function testFormatException()
-	{
-		$exception = new \Exception( 'Some exception' );
-
-		$errorStr = Logger::formatException( $exception );
-
-		$this->assertGreaterThan( 1, strlen( $errorStr ) );
 	}
 }

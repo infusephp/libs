@@ -28,23 +28,6 @@ class Logger
 		'critical' => \Monolog\Logger::CRITICAL,
 		'alert' => \Monolog\Logger::ALERT,
 		'emergency' => \Monolog\Logger::EMERGENCY );
-
-	private static $phpErrorLevels = array(
-		E_ERROR => 'E_ERROR',
-		E_CORE_ERROR => 'E_CORE_ERROR',
-		E_COMPILE_ERROR => 'E_COMPILE_ERROR',
-		E_PARSE => 'E_PARSE',
-		E_USER_ERROR => 'E_USER_ERROR',
-		E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
-		E_WARNING => 'E_WARNING',
-		E_CORE_WARNING => 'E_CORE_WARNING',
-		E_COMPILE_WARNING => 'E_COMPILE_WARNING',
-		E_USER_WARNING => 'E_USER_WARNING',
-		E_NOTICE => 'E_NOTICE',
-		E_USER_NOTICE => 'E_USER_NOTICE',
-		E_DEPRECATED => 'E_DEPRECATED',
-		E_USER_DEPRECATED => 'E_USER_DEPRECATED',
-		E_STRICT => 'E_STRICT' );
 	
 	/**
 	 * Sets up the handlers used by monolog
@@ -57,6 +40,17 @@ class Logger
 			self::addHandler( $handler, $handlerSettings );
 
 		self::$config = array_replace( self::$config, (array)$config );
+	}
+
+	static function clearHandlers()
+	{
+		try
+		{
+			while( 1 )
+				self::logger()->popHandler();
+		}
+		catch( \LogicException $e )
+		{ }
 	}
 
 	/**
@@ -150,90 +144,6 @@ class Logger
 	static function debug( $str )
 	{
 		self::logger()->addDebug( $str );
-	}
-	
-	/**
-	 * Handles a PHP error
-	 */
-	static function phpErrorHandler( $errno, $errstr, $errfile, $errline, $errcontext )
-	{
-		$formattedErrorString = Logger::formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext );
-		
-		if( !self::$config[ 'productionLevel' ] )
-			echo "<pre>$formattedErrorString</pre>";
-	
-		switch( $errno )
-		{
-		case E_CORE_ERROR:
-		case E_COMPILE_ERROR:
-		case E_ERROR:
-		case E_PARSE:
-			Logger::error( $formattedErrorString );
-			die();
-		break;
-		case E_USER_ERROR:
-		case E_RECOVERABLE_ERROR:
-			Logger::error( $formattedErrorString );
-		break;
-		case E_WARNING:
-		case E_CORE_WARNING:
-		case E_COMPILE_WARNING:
-		case E_USER_WARNING:
-		case E_NOTICE:
-		case E_USER_NOTICE:
-		case E_DEPRECATED:
-		case E_USER_DEPRECATED:
-		case E_STRICT:
-			Logger::warning( $formattedErrorString );
-		break;
-		}
-		
-		return true;
-	}
-	
-	
-	/**
-	 * Formats a PHP error into a log message
-	 *
-	 * @param ing $errno error type
-	 * @param string $errstr error message
-	 * @param int $errline line the error occurred on
-	 * @param array $errcontext currently not used
-	 *
-	 * @return string
-	 */
-	static function formatPhpError( $errno, $errstr, $errfile, $errline, $errcontext )
-	{
-		$errtype = (isset(self::$phpErrorLevels[$errno])) ? self::$phpErrorLevels[ $errno ] : '';
-	
-		return  "$errfile ($errline): $errstr - $errtype";
-	}
-	
-	/**
-	 * Handles an exception
-	 */
-	static function exceptionHandler( $exception )
-	{
-		$formattedExceptionString = Logger::formatException( $exception );
-			
-		if( !self::$config[ 'productionLevel' ] )
-			echo $formattedExceptionString;
-	
-		Logger::error( $formattedExceptionString );
-		
-		die();
-	}
-	
-	/** 
-	 * Formats an exception into a log message
-	 *
-	 * @param Exception $exception
-	 *
-	 * @return string
-	 */
-	static function formatException( \Exception $exception )
-	{
-		return $exception->getMessage();
 	}
 	
 	/**
