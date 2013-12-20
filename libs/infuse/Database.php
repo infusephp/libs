@@ -41,6 +41,9 @@ class Database
 	static function configure( $config )
 	{
 		self::$config = array_replace( self::$config, (array)$config );
+
+		self::$initializeAttempted = false;
+		self::$DBH = null;
 	}
 
 	/**
@@ -59,7 +62,18 @@ class Database
 		{
 			// Initialize database
 			if( self::$DBH == null )
-				self::$DBH = new \PDO( self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ], self::$config[ 'user' ], self::$config[ 'password' ] );
+			{
+				$dsn = '';
+
+				if( strpos( self::$config[ 'type' ], 'sqlite' ) === 0 )
+					// i.e. sqlite:memory:
+					$dsn = self::$config[ 'type' ] . ':' . self::$config[ 'host' ];
+				else
+					// i.e. mysql:host=localhost;dbname=test
+					$dsn = self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ];
+
+				self::$DBH = new \PDO( $dsn, Util::array_value( self::$config, 'user' ), Util::array_value( self::$config, 'password' ) );
+			}
 		}
 		catch(PDOException $e)
 		{
@@ -84,6 +98,16 @@ class Database
 		);
 				
 		return true;
+	}
+
+	/**
+	 * Gets the type of database we are connecting to
+	 *
+	 * @return string
+	 */
+	static function type()
+	{
+		return Util::array_value( self::$config, 'type' );
 	}
 	
 	/**
