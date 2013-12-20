@@ -131,7 +131,7 @@ class ViewEngine
 		}
 		catch( \Exception $e )
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 		}
 
 		return false;
@@ -195,7 +195,7 @@ class ViewEngine
 		}
 		catch( \Exception $e )
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 		}
 
 		return false;
