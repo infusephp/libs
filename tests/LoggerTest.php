@@ -90,6 +90,11 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 			'handlers' => array(
 				'TestHandler' => array() ) ) );
 		$this->assertInstanceOf( '\Monolog\Handler\TestHandler', Logger::logger()->popHandler() );
+
+		// test
+		Logger::configure( array(
+			'handlers' => array(
+				'bogus' => array() ) ) );
 	}
 
 	public function testClearHandlers()
