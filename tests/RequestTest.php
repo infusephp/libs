@@ -177,6 +177,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'PUT', self::$req->method() );
 	}
 
+	public function testMethodFromPost()
+	{
+		$req = new Request( null, array( 'method' => 'DELETE' ), null, null, array( 'REQUEST_METHOD' => 'POST' ) );
+		$this->assertEquals( 'DELETE', $req->method() );
+
+		$req = new Request( null, array( 'method' => 'PUT' ), null, null, array( 'REQUEST_METHOD' => 'POST' ) );
+		$this->assertEquals( 'PUT', $req->method() );
+	}
+
 	public function testContentType()
 	{
 		$this->assertEquals( 'application/json', self::$req->contentType() );

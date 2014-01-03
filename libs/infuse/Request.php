@@ -124,15 +124,7 @@ class Request
 
 		// parse url
 		$this->setPath( Util::array_value( $this->server, 'REQUEST_URI' ) );
-        
-		// DELETE and PUT requests can come through POST
-		if( $this->method() == 'POST' &&
-			$requestMethod = Util::array_value( (array)$request, 'method' ) &&
-			in_array( $requestMethod, array( 'PUT', 'DELETE' ) ) )
-		{
-			$this->server[ 'REQUEST_METHOD' ] = $requestMethod;
-		}
-        
+                
         // parse headers
         $this->headers = $this->parseHeaders( $this->server );
         
@@ -169,6 +161,14 @@ class Request
 				else
 					parse_str( $body, $this->request );
 			}
+		}
+
+		// DELETE and PUT requests can come through POST
+		$requestMethodFromPost = Util::array_value( (array)$this->request, 'method' );
+		if( $this->method() == 'POST' &&
+			in_array( $requestMethodFromPost, array( 'PUT', 'DELETE' ) ) )
+		{
+			$this->server[ 'REQUEST_METHOD' ] = $requestMethodFromPost;
 		}
 	}
 	
