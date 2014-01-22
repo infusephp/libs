@@ -985,7 +985,7 @@ abstract class Model extends Acl
 			$idProperties = (array)static::$idProperty;
 			foreach( $idProperties as $property )
 			{
-				if( Util::array_value( static::$properties[ $property ], 'mutable' ) )
+				if( Util::array_value( static::$properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
 					$ids[] = Util::array_value( $data, $property );
 				else
 					$ids[] = Database::lastInsertID();
