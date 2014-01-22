@@ -300,10 +300,11 @@ class ViewEngine
 	 * @param array $cacheExts caching extensions
 	 * @param string $output output filename for resulting JSON
 	 * @param string $base base of resulting key for each path
+	 * @param string $stripPrefix prefix to strip from file keys
 	 * 
 	 * @return boolean success
 	 */
-	function computeVersionNumbers( array $dirs, array $cacheExts, $output, $base )
+	function computeVersionNumbers( array $dirs, array $cacheExts, $output, $base = '', $stripPrefix = '' )
 	{
 		try
 		{
@@ -317,7 +318,7 @@ class ViewEngine
 				foreach( $iterator as $file )
 				{
 					if( $file->isFile() && in_array( $file->getExtension(), $cacheExts ) )
-						$versionNums[ $base . $file->getPathname() ] = md5( file_get_contents( $file->getRealPath() ) );
+						$versionNums[ $base . str_replace( $stripPrefix, '', $file->getPathname() ) ] = md5( file_get_contents( $file->getRealPath() ) );
 				}
 			}
 
