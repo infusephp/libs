@@ -202,6 +202,109 @@ class ViewEngine
 	}
 	
 	/**
+	 * Inlines all of the angularJS templates in a directory in order by name.
+	 * NOTE: this function employs caching of file modified timesteamps to do as little work as possible
+	 *
+	 * @param string $dir path containing angular html templates to compile
+	 * @param string $cacheFile path containing cache
+	 * @param sting $output output filename
+	 *
+	 * @return boolean result
+	 */
+	function compileAngularTemplates( $dir, $cacheFile, $output )
+	{
+		try
+		{
+			// NOTE js files get appended in order by filename
+			// to change the order of js files, change the filename
+			$cache = false;
+			if( file_exists( $cacheFile ) )
+				$cache = unserialize( file_get_contents( $cacheFile ) );
+
+			// collect all angular template file names in sub directories
+			$angFiles = glob( $dir . '/*.html' );
+
+			while( $dirs = glob( $dir . '/*', GLOB_ONLYDIR ) )
+			{
+				$dir .= '/*';
+				$angFiles = array_merge( $angFiles, glob( $dir . '/*.html' ) );
+			}
+
+			// sort js files by name
+			sort( $angFiles );
+			
+			$newCache = array(
+				'md5' => $this->md5OfDir( $angFiles ) );
+			
+			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || !file_exists( $output ) )
+			{
+				// concatenate the html for every file
+				$templates = '';
+				foreach( $angFiles as $file )
+				{
+					$templates .= '<script type="text/ng-template" id="' . $file . '">';
+					$templates .= file_get_contents( $file ) . "\n";
+					$templates .= '</script>';			
+				}
+				
+				// write the inlined templates and cache to the output file
+				if( file_put_contents( $output, $templates ) )
+					file_put_contents( $cacheFile, serialize( $newCache ) );
+			}
+
+			return true;
+		}
+		catch( \Exception $e )
+		{
+			Logger::error( $e );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Creates a map of version numbers for each file in a directory.
+	 * The output is stored as JSON in a given file. This is useful
+	 * for versioning static assets for use with CDNs
+	 *
+	 * @param array $dirs collection of directories to version
+	 * @param array $cacheExts caching extensions
+	 * @param string $output output filename for resulting JSON
+	 * @param string $base base of resulting key for each path
+	 * 
+	 * @return boolean success
+	 */
+	function computeVersionNumbers( array $dirs, array $cacheExts, $output, $base )
+	{
+		try
+		{
+			$versionNums = array();
+
+			foreach( $dirs as $startDir )
+			{
+				$dir_iterator = new \RecursiveDirectoryIterator( $startDir );
+				$iterator = new \RecursiveIteratorIterator( $dir_iterator, \RecursiveIteratorIterator::CHILD_FIRST );
+
+				foreach( $iterator as $file )
+				{
+					if( $file->isFile() && in_array( $file->getExtension(), $cacheExts ) )
+						$versionNums[ $base . $file->getPathname() ] = $file->getMTime();
+				}
+			}
+
+			file_put_contents( $output, json_encode( $versionNums ) );
+
+			return true;
+		}
+		catch( \Exception $e )
+		{
+			Logger::error( $e );
+		}
+
+		return false;
+	}
+	
+	/**
 	 * Passes a key-value map of variables to the template
 	 *
 	 * @param array $data key-value array
