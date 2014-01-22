@@ -17,7 +17,8 @@ class ViewEngine
 		'engine' => 'smarty',
 		'viewsDir' => 'views',
 		'compileDir' => 'temp/smarty',
-		'cacheDir' => 'temp/smarty/cache'
+		'cacheDir' => 'temp/smarty/cache',
+		'assetVersionsFile' => 'temp/asset_version_numbers.json'
 	);
 	
 	private static $extensionMap = array(
@@ -31,6 +32,8 @@ class ViewEngine
 	private $viewsDir;
 	private $compileDir;
 	private $cacheDir;
+	private $assetVersionsFile;
+	private $assetVersionNumbers;
 	
 	private $smarty;
 
