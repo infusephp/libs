@@ -62,6 +62,30 @@ class ViewEngine
 	}
 	
 	/**
+	 * Generates the complete URL for a given asset with a version number
+	 * if available. Requires config assets.base_url to be set.
+	 * i.e. asset_url( '/img/logo.png' ) -> http://cdn.example.com/img/logo.png?v=2d82lf9sd8f
+	 *
+	 * @param string $location path portion of url (everything after host name beginning with /)
+	 *
+	 * @return string
+	 */
+	function asset_url( $location )
+	{
+		// load asset version numbers (if they exist)
+		if( !$this->assetVersionNumbers )
+		{
+			$versionNumbers = array();
+			if( file_exists( $this->assetVersionsFile ) )
+				$versionNumbers = json_decode( file_get_contents( $this->assetVersionsFile ), true );
+			$this->assetVersionNumbers = $versionNumbers;
+		}
+		
+		$v = Util::array_value( $this->assetVersionNumbers, $location );
+		return Config::get( 'assets.base_url' ) . $location . (($v)?'?v=' . $v : '') ;
+	}
+
+	/**
 	 * Renders a template with optional parameters
 	 *
 	 * @param string $template
@@ -304,7 +328,7 @@ class ViewEngine
 
 		return false;
 	}
-	
+
 	/**
 	 * Passes a key-value map of variables to the template
 	 *
