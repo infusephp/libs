@@ -976,7 +976,8 @@ class Locale
 			'name' => 'Turkmenistan Manat'
 		),
 		'TND' => array(
-			'name' => 'Tunisia Dinar'
+			'name' => 'Tunisia Dinar',
+			'symbol' => 'DT'
 		),
 		'TOP' => array(
 			'name' => "Tonga Paanga"
