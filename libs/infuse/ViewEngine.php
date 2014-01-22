@@ -265,7 +265,8 @@ class ViewEngine
 	/**
 	 * Creates a map of version numbers for each file in a directory.
 	 * The output is stored as JSON in a given file. This is useful
-	 * for versioning static assets for use with CDNs
+	 * for versioning static assets for use with CDNs. Version numbers
+	 * are computed as the md5 of the file contents.
 	 *
 	 * @param array $dirs collection of directories to version
 	 * @param array $cacheExts caching extensions
@@ -288,7 +289,7 @@ class ViewEngine
 				foreach( $iterator as $file )
 				{
 					if( $file->isFile() && in_array( $file->getExtension(), $cacheExts ) )
-						$versionNums[ $base . $file->getPathname() ] = $file->getMTime();
+						$versionNums[ $base . $file->getPathname() ] = md5( file_get_contents( $file->getRealPath() ) );
 				}
 			}
 
