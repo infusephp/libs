@@ -62,6 +62,7 @@ class ViewEngine
 		$this->viewsDir = $options[ 'viewsDir' ];
 		$this->compileDir = $options[ 'compileDir' ];
 		$this->cacheDir = $options[ 'cacheDir' ];
+		$this->assetVersionsFile = $options[ 'assetVersionsFile' ];
 	}
 	
 	/**
