@@ -425,7 +425,7 @@ abstract class Model extends Acl
 		if( !empty( $params[ 'search' ] ) )
 		{
 			$w = array();
-			$search = $params[ 'search' ];
+			$search = addslashes( $params[ 'search' ] );
 			foreach( static::$properties as $name => $property )
 			{
 				if( !in_array( Util::array_value( $property, 'type' ), self::$excludePropertyTypes ) )
