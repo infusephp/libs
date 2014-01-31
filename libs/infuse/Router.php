@@ -67,18 +67,21 @@ class Router
 		}
 		
 		/* global static routes */						
-		if( isset( $staticRoutes[ $routeMethodStr ] ) )
-			return self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res );
+		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
+			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res ) )
+			return true;
 		
-		if( isset( $staticRoutes[ $routeGenericStr ] ) )
-			return self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res );
+		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
+			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res ) )
+			return true;
 		
 		/* global dynamic routes */
 		
 		foreach( $dynamicRoutes as $routeStr => $route )
 		{
-			if( self::matchRouteToRequest( $routeStr, $req ) )
-				return self::performRoute( $route, $req, $res );
+			if( self::matchRouteToRequest( $routeStr, $req ) &&
+				self::performRoute( $route, $req, $res ) )
+				return true;
 		}
 		
 		return false;
