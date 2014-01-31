@@ -68,11 +68,11 @@ class Router
 		
 		/* global static routes */						
 		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res ) )
+			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res ) !== -1 )
 			return true;
 		
 		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res ) )
+			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res ) !== -1 )
 			return true;
 		
 		/* global dynamic routes */
@@ -80,7 +80,7 @@ class Router
 		foreach( $dynamicRoutes as $routeStr => $route )
 		{
 			if( self::matchRouteToRequest( $routeStr, $req ) &&
-				self::performRoute( $route, $req, $res ) )
+				self::performRoute( $route, $req, $res ) !== -1 )
 				return true;
 		}
 		
@@ -120,13 +120,16 @@ class Router
 		$controller = self::$config[ 'namespace' ] . '\\' . $controller;
 		
 		if( !class_exists( $controller ) )
-			return false;
+			return -1;
 
 		$controllerObj = new $controller();
 		
 		$result = $controllerObj->$method( $req, $res );
 		
-		return $result !== -1;
+		if( $result === -1 )
+			return -1;
+
+		return true;
 	}
 	
 	/**
