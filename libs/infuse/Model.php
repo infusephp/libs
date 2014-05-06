@@ -128,7 +128,8 @@ abstract class Model extends Acl
 	/////////////////////////////
 
 	private static $excludePropertyTypes = array( 'custom', 'html' );
-	private $cache;
+	private $localCache = array();
+	private $sharedCache;
 	private $relationModels;
 
 
@@ -169,7 +170,6 @@ abstract class Model extends Acl
 
 	/**
 	 * Gets an inaccessible property by looking it up via get().
-	 * WARNING: Cached properties not in the schema will throw an error
 	 *
 	 * @param string $name
 	 *
@@ -177,31 +177,24 @@ abstract class Model extends Acl
 	 */
 	function __get( $name )
 	{
-		if( !$this->hasProperty( $name ) )
-		{
-			trigger_error( 'Undefined property via __get(): ' . $name, E_USER_NOTICE );
-			return null;
-		}
-
 		return $this->get( $name );
 	}
 
 	/**
-	 * Sets an inaccessible property by changing the cached value. 
-	 * This method does not update the database
+	 * Sets an inaccessible property by changing the locally cached value. 
+	 * This method does not update the database or shared cache
 	 *
 	 * @param string $name
 	 * @param mixed $value
 	 */
 	function __set( $name, $value )
 	{
-		$this->cacheProperty( $name, $value );
+		$this->localCache[ $name ] = $value;
 	}
 
 	/**
-	 * Checks if an inaccessible property exists. Only properties that
-	 * are in the model schema can be checked here.
-	 * WARNING: Cached properties not in the schema will return false even if set.
+	 * Checks if an inaccessible property exists. Any property that is
+	 * in the schema or locally cached is considered to be set
 	 *
 	 * @param string $name
 	 *
@@ -209,17 +202,18 @@ abstract class Model extends Acl
 	 */
 	function __isset( $name )
 	{
-		return $this->hasProperty( $name );
+		return isset( $this->localCache[ $name ] ) || $this->hasProperty( $name );
 	}
 
 	/**
-	 * Unsets an inaccessible property by invalidating it in the cache.
+	 * Unsets an inaccessible property by invalidating it in the local cache.
 	 *
 	 * @param string $name
 	 */
 	function __unset( $name )
 	{
-		$this->invalidateCachedProperty( $name );
+		if( isset( $this->localCache[ $name ] ) )
+			unset( $this->localCache[ $name ] );
 	}
 		
 	/////////////////////////////
@@ -303,7 +297,7 @@ abstract class Model extends Acl
 	 */
 	function hasNoId()
 	{
-		return $this->id !== ACL_NO_ID;
+		return $this->id === ACL_NO_ID;
 	}
 	
 	/**
@@ -324,26 +318,45 @@ abstract class Model extends Acl
 	 *
 	 * @return array|string|null requested info or not found
 	 */
-	function get( $properties )
+	function get( $properties, $skipLocalCache = false )
 	{
 		$properties = (is_string($properties)) ? explode(',', $properties) : (array)$properties;
 
 		$return = array();
 
-		// look up values in cache
-		$cached = $this->cache()->get( $properties, true );
-		
-		foreach( $cached as $property => $value )
+		/* Local Cache - Start by looking up values in local cache (unless should skip) */
+		if( !$skipLocalCache )
 		{
-			// do not hit the database for cached values by removing key from search
-			$index = array_search( $property, $properties );
-			unset( $properties[ $index ] );
-			
-			$return[ $property ] = $value;
+			foreach( $properties as $property )
+			{
+				if( isset( $this->localCache[ $property ] ) )
+				{
+					$return[ $property ] = $this->localCache[ $property ];
+
+					// remove property from list of remaining
+					$index = array_search( $property, $properties );
+					unset( $properties[ $index ] );
+				}
+			}
 		}
 
-		// find remaining values in database
-		if( count( $return ) < count( $properties ) )
+		/* Shared Cache - Look up remaining values from shared cache */
+		if( count( $properties ) > 0 )
+		{
+			$cached = $this->cache()->get( $properties, true );
+			
+			foreach( $cached as $property => $value )
+			{
+				$return[ $property ] = $value;
+
+				// remove property from list of remaining
+				$index = array_search( $property, $properties );
+				unset( $properties[ $index ] );
+			}
+		}
+
+		/* Database - Look up remaining values in database */
+		if( count( $properties ) > 0 )
 		{
  			$values = Database::select(
 				static::tablename(),
@@ -360,8 +373,30 @@ abstract class Model extends Acl
 				
 				$return[ $property ] = $value;
 				$this->cacheProperty( $property, $value );
+
+				// remove property from list of remaining
+				$index = array_search( $property, $properties );
+				unset( $properties[ $index ] );
 			}
 		}
+
+		/* Default Values - Use default values from model properties */
+		if( count( $properties ) > 0 )
+		{
+			foreach( $properties as $property )
+			{
+				if( isset( static::$properties[ $property ] ) && isset( static::$properties[ $property ][ 'default' ] ) )
+				{
+					$return[ $property ] = static::$properties[ $property ][ 'default' ];
+
+					// remove property from list of remaining
+					$index = array_search( $property, $properties );
+					unset( $properties[ $index ] );
+				}
+			}
+		}
+
+		// TODO should we throw a notice if properties are remaining?
 
 		return ( count( $return ) == 1 ) ? reset( $return ) : $return;
 	}
@@ -817,6 +852,8 @@ abstract class Model extends Acl
 	
 	/**
 	 * Loads and caches all of the properties from the model inside of the database table
+	 * IMPORTANT: this should be called before getting properties
+	 * any time a model *might* have been updated from an outside source
 	 *
 	 * @return null
 	 */
@@ -824,7 +861,7 @@ abstract class Model extends Acl
 	{
 		if( $this->hasNoId() )
 			return;
-				
+		
 		$info = Database::select(
 			static::tablename(),
 			'*',
@@ -845,6 +882,10 @@ abstract class Model extends Acl
 	 */
 	function cacheProperty( $property, $value )
 	{
+		/* Local Cache */
+		$this->localCache[ $property ] = $value;
+
+		/* Shared Cache */
 		$this->cache()->set( $property, $value );
 	}
 	
@@ -870,6 +911,10 @@ abstract class Model extends Acl
 	 */
 	function invalidateCachedProperty( $property )
 	{
+		/* Local Cache */
+		unset( $this->localCache[ $property ] );
+
+		/* Shared Cache */
 		$this->cache()->delete( $property );
 	}
 	
@@ -1254,7 +1299,7 @@ abstract class Model extends Acl
 
 	protected function cache()
 	{
-		if( !$this->cache )
+		if( !$this->sharedCache )
 		{
 			// generate caching prefix for this model
 			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
@@ -1270,9 +1315,9 @@ abstract class Model extends Acl
 			}
 			
 			// setup our cache with the appropriate strategies
-			$this->cache = new Cache( $strategies, $parameters );
+			$this->sharedCache = new Cache( $strategies, $parameters );
 		}
 
-		return $this->cache;
+		return $this->sharedCache;
 	}
 }
