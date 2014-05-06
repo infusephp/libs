@@ -4,7 +4,7 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.18
+ * @version 0.1.18.1
  * @copyright 2013 Jared King
  * @license MIT
  */
@@ -130,7 +130,8 @@ abstract class Model extends Acl
 	private static $excludePropertyTypes = array( 'custom', 'html' );
 	private $cache;
 	private $relationModels;
-	
+
+
 	/**
 	 * Changes the default model settings
 	 *
@@ -140,6 +141,10 @@ abstract class Model extends Acl
 	{
 		static::$config = array_replace( static::$config, $config );
 	}
+
+	/////////////////////////////
+	// MAGIC METHODS
+	/////////////////////////////
 
 	/**
 	 * Creates a new model object
@@ -151,29 +156,70 @@ abstract class Model extends Acl
 		if( $id )
 			$this->id = implode( ',', (array)$id );
 	}
-	
-	protected function cache()
-	{
-		if( !$this->cache )
-		{
-			// generate caching prefix for this model
-			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
-			$cachePrefix = $class . '.' . $this->id . '.';
-			
-			$parameters = (array)static::$config[ 'cache' ][ 'strategies' ];
-			$strategies = array_keys( $parameters );
 
-			foreach( $parameters as $strategy => $properties )
-			{
-				$prefix = Util::array_value( $properties, 'prefix' );
-				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') . $cachePrefix;
-			}
-			
-			// setup our cache with the appropriate strategies
-			$this->cache = new Cache( $strategies, $parameters );
+	/**
+	 * Converts the model into a string
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return get_called_class() . '(' . $this->id() . ')';
+	}
+
+	/**
+	 * Gets an inaccessible property by looking it up via get().
+	 * WARNING: Cached properties not in the schema will throw an error
+	 *
+	 * @param string $name
+	 *
+	 * @return mixed
+	 */
+	function __get( $name )
+	{
+		if( !$this->hasProperty( $name ) )
+		{
+			trigger_error( 'Undefined property via __get(): ' . $name, E_USER_NOTICE );
+			return null;
 		}
 
-		return $this->cache;
+		return $this->get( $name );
+	}
+
+	/**
+	 * Sets an inaccessible property by changing the cached value. 
+	 * This method does not update the database
+	 *
+	 * @param string $name
+	 * @param mixed $value
+	 */
+	function __set( $name, $value )
+	{
+		$this->cacheProperty( $name, $value );
+	}
+
+	/**
+	 * Checks if an inaccessible property exists. Only properties that
+	 * are in the model schema can be checked here.
+	 * WARNING: Cached properties not in the schema will return false even if set.
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	function __isset( $name )
+	{
+		return $this->hasProperty( $name );
+	}
+
+	/**
+	 * Unsets an inaccessible property by invalidating it in the cache.
+	 *
+	 * @param string $name
+	 */
+	function __unset( $name )
+	{
+		$this->invalidateCachedProperty( $name );
 	}
 		
 	/////////////////////////////
@@ -770,7 +816,7 @@ abstract class Model extends Acl
 	/////////////////////////////
 	
 	/**
-	 * Loads and cahces all of the properties from the model inside of the database table
+	 * Loads and caches all of the properties from the model inside of the database table
 	 *
 	 * @return null
 	 */
@@ -1201,4 +1247,32 @@ abstract class Model extends Acl
 	
 	protected function postDeleteHook()
 	{ }
+
+	/////////////////////////////
+	// PROTECTED METHODS
+	/////////////////////////////
+
+	protected function cache()
+	{
+		if( !$this->cache )
+		{
+			// generate caching prefix for this model
+			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
+			$cachePrefix = $class . '.' . $this->id . '.';
+			
+			$parameters = (array)static::$config[ 'cache' ][ 'strategies' ];
+			$strategies = array_keys( $parameters );
+
+			foreach( $parameters as $strategy => $properties )
+			{
+				$prefix = Util::array_value( $properties, 'prefix' );
+				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') . $cachePrefix;
+			}
+			
+			// setup our cache with the appropriate strategies
+			$this->cache = new Cache( $strategies, $parameters );
+		}
+
+		return $this->cache;
+	}
 }
