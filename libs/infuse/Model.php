@@ -117,11 +117,13 @@ abstract class Model extends Acl
 		'cache' => array(
 			'strategies' => array(
 				'local' => array(
-					'prefix' => ''
-				)
-			),
-		)
-	);
+					'prefix' => '' ) ) ) );
+	protected static $defaultFindParameters = array(
+		'where' => array(),
+		'start' => 0,
+		'limit' => 100,
+		'search' => '',
+		'sort' => '' );
 
 	/////////////////////////////
 	// Private class variables
@@ -131,7 +133,6 @@ abstract class Model extends Acl
 	private $localCache = array();
 	private $sharedCache;
 	private $relationModels;
-
 
 	/**
 	 * Changes the default model settings
@@ -154,7 +155,7 @@ abstract class Model extends Acl
 	 */
 	function __construct( $id = false )
 	{
-		if( $id )
+		if( $id !== false )
 			$this->id = implode( ',', (array)$id );
 	}
 
@@ -482,15 +483,7 @@ abstract class Model extends Acl
 	 */ 
 	static function find( array $params = array() )
 	{
-		// default parameters
-		$default = array(
-			'where' => array(),
-			'start' => 0,
-			'limit' => 100,
-			'search' => '',
-			'sort' => '' );
-
-		$params = array_replace( $default, $params );
+		$params = array_replace( static::$defaultFindParameters, $params );
 	
 		if( !is_numeric( $params[ 'start' ] ) || $params[ 'start' ] < 0 )
 			$params[ 'start' ] = 0;
@@ -541,12 +534,7 @@ abstract class Model extends Acl
 			$sortParams[] = "$propertyName $direction";
 		}
 		
-		$return[ 'count' ] = (int)Database::select(
-			static::tablename(),
-			'count(*)',
-			array(
-				'where' => $params[ 'where' ],
-				'single' => true ) );
+		$return[ 'count' ] = static::totalRecords( $params[ 'where' ] );
 		
 		$filter = array(
 			'where' => $params[ 'where' ],
@@ -556,6 +544,7 @@ abstract class Model extends Acl
 		if( $sortStr )
 			$filter[ 'orderBy' ] = $sortStr;
 
+		// load models
 		$models = Database::select(
 			static::tablename(),
 			'*',
@@ -586,6 +575,11 @@ abstract class Model extends Acl
 		}
 		
 		return $return;
+	}
+
+	static function findAll( array $params = array() )
+	{
+		return new ModelIterator( get_called_class(), $params );
 	}
 	
 	/**
