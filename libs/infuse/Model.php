@@ -884,7 +884,10 @@ abstract class Model extends Acl
 	function emptyCache()
 	{
 		foreach( static::$properties as $property => $info )
-			$this->invalidateCachedProperty( $property );
+		{
+			if( !static::isIdProperty( $property ) )
+				$this->invalidateCachedProperty( $property );
+		}
 	}
 	
 	/**
@@ -911,7 +914,7 @@ abstract class Model extends Acl
 		}
 
 		// pre-hook
-		if( !$model->preCreateHook( $data ) )
+		if( method_exists( $model, 'preCreateHook' ) && !$model->preCreateHook( $data ) )
 			return false;
 
 		$validated = true;
@@ -1047,7 +1050,8 @@ abstract class Model extends Acl
 			$newModel->cacheProperties( $insertArray );
 			
 			// post-hook
-			$newModel->postCreateHook();
+			if( method_exists( $newModel, 'postCreateHook' ) )
+				$newModel->postCreateHook();
 			
 			return $newModel;
 		}
@@ -1085,7 +1089,7 @@ abstract class Model extends Acl
 			return true;
 			
 		// pre-hook
-		if( !$this->preSetHook( $data ) )
+		if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
 			return false;
 
 		$validated = true;
@@ -1184,7 +1188,8 @@ abstract class Model extends Acl
 			$this->cacheProperties( $updateArray );
 				
 			// post-hook
-			$this->postSetHook();
+			if( method_exists( $this, 'postSetHook' ) )
+				$this->postSetHook();
 			
 			return true;
 		}
@@ -1212,7 +1217,7 @@ abstract class Model extends Acl
 		}
 		
 		// pre-hook
-		if( !$this->preDeleteHook() )
+		if( method_exists( $this, 'preDeleteHook' ) && !$this->preDeleteHook() )
 			return false;
 		
 		// delete the model
@@ -1221,35 +1226,14 @@ abstract class Model extends Acl
 			$this->id( true ) ) )
 		{
 			// post-hook
-			$this->postDeleteHook();
+			if( method_exists( $this, 'postDeleteHook' ) )
+				$this->postDeleteHook();
 			
 			return true;
 		}
 		else
 			return false;
 	}
-	
-	/////////////////////////////
-	// HOOKS
-	/////////////////////////////
-	
-	protected function preCreateHook( &$data )
-	{ return true; }
-	
-	protected function postCreateHook()
-	{ }
-	
-	protected function preSetHook( &$data )
-	{ return true; }
-	
-	protected function postSetHook()
-	{ }
-	
-	protected function preDeleteHook()
-	{ return true; }
-	
-	protected function postDeleteHook()
-	{ }
 
 	/////////////////////////////
 	// PROTECTED METHODS

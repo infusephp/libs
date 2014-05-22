@@ -119,6 +119,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( TestModel2::isIdProperty( 'id2' ) );
 	}
 
+	function testGet()
+	{
+
+	}
+
+	function testGetMultipleProperties()
+	{
+
+	}
+
 	function testRelation()
 	{
 		$model = new TestModel;
@@ -171,6 +181,29 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertTrue( TestModel::hasSchema() );
 		$this->assertFalse( TestModel2::hasSchema() );
+	}
+
+	function testCache()
+	{
+		$model = new TestModel( 3 );
+
+		$model->cacheProperties( array(
+			'test' => 123,
+			'test2' => 'hello' ) );
+		$this->assertEquals( 123, $model->test );
+		$this->assertEquals( 'hello', $model->test2 );
+
+		$model2 = new TestModel( 3 );
+		$this->assertEquals( 123, $model2->test );
+		$this->assertEquals( 'hello', $model2->test2 );
+	}
+
+	function testInvalidateCache()
+	{
+		$model = new testModel( 4 );
+		// TODO
+		$model->emptyCache();
+		// TODO
 	}
 }
 
