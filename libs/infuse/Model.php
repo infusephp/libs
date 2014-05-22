@@ -620,7 +620,7 @@ abstract class Model extends Acl
 	/**
 	 * Suggests a schema based on the model's properties
 	 *
-	 * The output of this follows the same format as Database::listColumns( 'tablename' )
+	 * The output of this follows the same format as `SHOW COLUMNS FROM tablename`
 	 *
 	 * @return array (current, suggested)
 	 */
@@ -984,13 +984,7 @@ abstract class Model extends Acl
 				// check for uniqueness
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
 				{
-					if( Database::select(
-						static::tablename(),
-						'count(*)',
-						array(
-							'where' => array(
-								$field => $value ),
-							'single' => true ) ) > 0 )
+					if( static::totalRecords( array( $field => $value ) ) > 0 )
 					{
 						ErrorStack::add( array(
 							'error' => VALIDATION_NOT_UNIQUE,
@@ -1152,13 +1146,7 @@ abstract class Model extends Acl
 				// check for uniqueness
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
 				{
-					if( Database::select(
-						static::tablename(),
-						'count(*)',
-						array(
-							'where' => array(
-								$field => $value ),
-							'single' => true ) ) > 0 )
+					if( static::totalRecords( array( $field => $value ) ) > 0 )
 					{
 						ErrorStack::add( array(
 							'error' => VALIDATION_NOT_UNIQUE,
