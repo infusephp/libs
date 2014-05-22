@@ -48,8 +48,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testIdKeyValue()
 	{
-		$model = new TestModel2( array( 5, 2 ) );
+		$model = new TestModel( 3 );
+		$this->assertEquals( array( 'id' => 3 ), $model->id( true ) );
 
+		$model = new TestModel2( array( 5, 2 ) );
 		$this->assertEquals( array( 'id' => 5, 'id2' => 2 ), $model->id( true ) );
 	}
 
@@ -106,11 +108,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testHasNoId()
 	{
-		$model = new TestModel( 1 );
-		$this->assertFalse( $model->hasNoId() );
-
 		$model = new TestModel;
-		$this->assertTrue( $model->hasNoId() );
+		$this->assertFalse( $model->id() );
 	}
 
 	function testIsIdProperty()
@@ -119,6 +118,60 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( TestModel::isIdProperty( 'id' ) );
 		$this->assertTrue( TestModel2::isIdProperty( 'id2' ) );
 	}
+
+	function testRelation()
+	{
+		$model = new TestModel;
+		$model->relation = 2;
+
+		$relation = $model->relation( 'relation' );
+		$this->assertInstanceOf( 'TestModel2', $relation );
+		$this->assertEquals( 2, $relation->id() );
+
+		// test if relation model is cached
+		$relation->test = 'hello';
+		$relation2 = $model->relation( 'relation' );
+		$this->assertEquals( 'hello', $relation2->test );
+	}
+
+	function testToArray()
+	{
+		$model = new TestModel( 5 );
+		$model->relation = 'test';
+
+		$expected = array(
+			'id' => 5,
+			'relation' => 'test'
+		);
+
+		$this->assertEquals( $expected, $model->toArray() );
+	}
+
+	function testToArrayExcluded()
+	{
+		$model = new TestModel( 5 );
+		$model->relation = 'test';
+
+		$expected = array(
+			'id' => 5
+		);
+
+		$this->assertEquals( $expected, $model->toArray( array( 'relation' ) ) );
+	}
+
+	function testToJson()
+	{
+		$model = new TestModel( 5 );
+		$model->relation = 'test';
+
+		$this->assertEquals( '{"id":5,"relation":"test"}', $model->toJson() );
+	}
+
+	function testHasSchema()
+	{
+		$this->assertTrue( TestModel::hasSchema() );
+		$this->assertFalse( TestModel2::hasSchema() );
+	}
 }
 
 class TestModel extends Model
@@ -126,6 +179,10 @@ class TestModel extends Model
 	static $properties = array(
 		'id' => array(
 			'type' => 'id'
+		),
+		'relation' => array(
+			'type' => 'id',
+			'relation' => 'TestModel2'
 		)
 	);
 }
@@ -141,4 +198,5 @@ class TestModel2 extends Model
 			'type' => 'id'
 		)
 	);
+	static $hasSchema = false;
 }

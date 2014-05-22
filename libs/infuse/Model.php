@@ -97,9 +97,6 @@
 
 namespace infuse;
 
-if( !defined( 'INFUSE_MODEL_NO_ID' ) )
-	define( 'INFUSE_MODEL_NO_ID', '{{no_id}}' );
-
 abstract class Model extends Acl
 {
 	/////////////////////////////
@@ -137,6 +134,10 @@ abstract class Model extends Acl
 	private $sharedCache;
 	private $relationModels;
 
+	/////////////////////////////
+	// GLOBAL MODEL CONFIGURATION
+	/////////////////////////////
+
 	/**
 	 * Changes the default model settings
 	 *
@@ -168,10 +169,10 @@ abstract class Model extends Acl
 	 */
 	function __construct( $id = false )
 	{
-		if( $id !== false )
-			$this->id = implode( ',', (array)$id );
-		else
-			$this->id = INFUSE_MODEL_NO_ID;
+		if( is_array( $id ) )
+			$id = implode( ',', $id );
+
+		$this->id = $id;
 	}
 
 	/**
@@ -307,16 +308,6 @@ abstract class Model extends Acl
 	}
 	
 	/**
-	 * Checks if the model has not been supplied with an id
-	 *
-	 * @return boolean
-	 */
-	function hasNoId()
-	{
-		return $this->id === INFUSE_MODEL_NO_ID;
-	}
-	
-	/**
 	 * Checks if a property name is an id property
 	 *
 	 * @return boolean
@@ -327,94 +318,53 @@ abstract class Model extends Acl
 	}
 	
 	/**
-	 * Fetches properties from the model. If caching is enabled, then look there first. When
-	 * properties are not found in the cache then it will fall through to the Database layer.
+	 * Fetches property values from the model.
 	 *
-	 * @param string|array $properties
+	 * This method utilizes a local and shared caching layer (i.e. redis), a database layer,
+	 * and finally resorts to the default property value for the model.
 	 *
-	 * @return array|string|null requested info or not found
+	 * @param string|array $properties list of properties to fetch values for
+	 * @param boolean $skipLocalCache skips local cache when true
+	 * @param boolean $forceReturnArray always return an array when true
+	 *
+	 * @return mixed Returns value when only 1 found or an array when multiple values found
 	 */
-	function get( $properties, $skipLocalCache = false )
+	function get( $properties, $skipLocalCache = false, $forceReturnArray = false )
 	{
-		$properties = (is_string($properties)) ? explode(',', $properties) : (array)$properties;
+		if( is_string( $properties ) )
+			$properties = explode( ',', $properties );
+		else
+			$properties = (array)$properties;
 
-		$return = array();
+		$onlyOneProperty = count( $properties ) == 1;
 
-		/* Local Cache - Start by looking up values in local cache (unless should skip) */
-		if( !$skipLocalCache )
+		/*
+			Look up values in this order from these places:
+			i) Local Cache (unless skipped)
+			ii) Shared Cache
+			iii) Database
+			iv) Default Model Property Values
+		*/
+
+		$i = 1;
+		$values = array();
+		while( $i <= 4 && count( $properties ) > 0 )
 		{
-			foreach( $properties as $property )
-			{
-				if( isset( $this->localCache[ $property ] ) )
-				{
-					$return[ $property ] = $this->localCache[ $property ];
+			if( $i == 1 && !$skipLocalCache )
+				$this->getFromLocalCache( $properties, $values );
+			else if( $i == 2 )
+				$this->getFromSharedCache( $properties, $values );
+			else if( $i == 3 )
+				$this->getFromDatabase( $properties, $values );
+			else if( $i == 4 )
+				$this->getFromDefaultValues( $properties, $values );
 
-					// remove property from list of remaining
-					$index = array_search( $property, $properties );
-					unset( $properties[ $index ] );
-				}
-			}
-		}
-
-		/* Shared Cache - Look up remaining values from shared cache */
-		if( count( $properties ) > 0 )
-		{
-			$cached = $this->cache()->get( $properties, true );
-			
-			foreach( $cached as $property => $value )
-			{
-				$return[ $property ] = $value;
-
-				// remove property from list of remaining
-				$index = array_search( $property, $properties );
-				unset( $properties[ $index ] );
-			}
-		}
-
-		/* Database - Look up remaining values in database */
-		if( count( $properties ) > 0 )
-		{
- 			$values = Database::select(
-				static::tablename(),
-				implode(',', $properties),
-				array(
-					'where' => $this->id( true ),
-					'singleRow' => true ) );
-
-			foreach( (array)$values as $property => $value )
-			{
-				// escape certain fields
-				if( in_array( $property, static::$escapedProperties ) )
-					$values[ $property ] = htmlspecialchars( $value );
-				
-				$return[ $property ] = $value;
-				$this->cacheProperty( $property, $value );
-
-				// remove property from list of remaining
-				$index = array_search( $property, $properties );
-				unset( $properties[ $index ] );
-			}
-		}
-
-		/* Default Values - Use default values from model properties */
-		if( count( $properties ) > 0 )
-		{
-			foreach( $properties as $property )
-			{
-				if( isset( static::$properties[ $property ] ) && isset( static::$properties[ $property ][ 'default' ] ) )
-				{
-					$return[ $property ] = static::$properties[ $property ][ 'default' ];
-
-					// remove property from list of remaining
-					$index = array_search( $property, $properties );
-					unset( $properties[ $index ] );
-				}
-			}
+			$i++;
 		}
 
 		// TODO should we throw a notice if properties are remaining?
 
-		return ( count( $return ) == 1 ) ? reset( $return ) : $return;
+		return ( !$forceReturnArray && count( $values ) == 1 ) ? reset( $values ) : $values;
 	}
 
 	/**
@@ -433,7 +383,7 @@ abstract class Model extends Acl
 		$relationModelName = static::$properties[ $property ][ 'relation' ];
 
 		if( !isset( $this->relationModels[ $relationModelName ] ) )
-			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->get( $property ) );
+			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->$property );
 
 		return $this->relationModels[ $relationModelName ];
 	}
@@ -469,10 +419,10 @@ abstract class Model extends Acl
 		}
 
 		// make sure each property key at least has a null value
-		$base = array_fill_keys( $properties, null );
-		
-		// get the values of all the properties
-		return array_replace( $base, (array)$this->get( $properties ), $this->id( true ) );
+		// and then get the value for each property
+		return array_replace(
+			array_fill_keys( $properties, null ),
+			(array)$this->get( $properties, false, true ) );
 	}
 	
 	/**
@@ -635,13 +585,12 @@ abstract class Model extends Acl
 	 */
 	function exists()
 	{
-		return Database::select(
-			static::tablename(),
-			'count(*)',
-			array(
-				'where' => $this->id( true ),
-				'single' => true ) ) == 1;
+		return static::totalRecords( $this->id( true ) ) == 1;
 	}
+
+	/////////////////////////////
+	// DATABASE SCHEMA
+	/////////////////////////////
 
 	static function hasSchema()
 	{
@@ -868,7 +817,7 @@ abstract class Model extends Acl
 	 */
 	function load()
 	{
-		if( $this->hasNoId() )
+		if( $this->id === false )
 			return;
 		
 		$info = Database::select(
@@ -882,7 +831,7 @@ abstract class Model extends Acl
 	}
 		
 	/**
-	 * Updates the cache with the new value for a property
+	 * Updates the local and shared cache with the new value for a property
 	 *
 	 * @param string $property property name
 	 * @param string $value new value
@@ -899,7 +848,7 @@ abstract class Model extends Acl
 	}
 	
 	/**
-	 * Cache data inside of the model cache
+	 * Cache data inside of the local and shared cache
 	 *
 	 * @param array $data data to be cached
 	 *
@@ -912,7 +861,7 @@ abstract class Model extends Acl
 	}
 	
 	/**
-	 * Invalidates a single property in the cache
+	 * Invalidates a single property in the local and shared caches
 	 *
 	 * @param string $property property name
 	 *
@@ -952,7 +901,7 @@ abstract class Model extends Acl
 
 		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
 
-		$model = new $modelName();
+		$model = new $modelName;
 		
 		// permission?
 		if( !$model->can( 'create' ) )
@@ -1197,7 +1146,7 @@ abstract class Model extends Acl
 				}
 				
 				// check for uniqueness
-				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->get( $field ) )
+				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
 				{
 					if( Database::select(
 						static::tablename(),
@@ -1328,5 +1277,77 @@ abstract class Model extends Acl
 		}
 
 		return $this->sharedCache;
+	}
+
+	/////////////////////////////
+	// PROTECTED METHODS
+	/////////////////////////////
+
+	private function getFromLocalCache( &$properties, &$values )
+	{
+		foreach( $properties as $property )
+		{
+			if( isset( $this->localCache[ $property ] ) )
+			{
+				$values[ $property ] = $this->localCache[ $property ];
+
+				// remove property from list of remaining
+				$index = array_search( $property, $properties );
+				unset( $properties[ $index ] );
+			}
+		}
+	}
+
+	private function getFromSharedCache( &$properties, &$values )
+	{
+		$cached = $this->cache()->get( $properties, true );
+		
+		foreach( $cached as $property => $value )
+		{
+			$values[ $property ] = $value;
+
+			// remove property from list of remaining
+			$index = array_search( $property, $properties );
+			unset( $properties[ $index ] );
+		}
+	}
+
+	private function getFromDatabase( &$properties, &$values )
+	{
+		$values = Database::select(
+			static::tablename(),
+			implode(',', $properties),
+			array(
+				'where' => $this->id( true ),
+				'singleRow' => true ) );
+
+		foreach( (array)$values as $property => $value )
+		{
+			// escape certain fields
+			if( in_array( $property, static::$escapedProperties ) )
+				$values[ $property ] = htmlspecialchars( $value );
+			
+			$values[ $property ] = $value;
+			$this->cacheProperty( $property, $value );
+
+			// remove property from list of remaining
+			$index = array_search( $property, $properties );
+			unset( $properties[ $index ] );
+		}
+	}
+
+	private function getFromDefaultValues( &$properties, &$values )
+	{
+		foreach( $properties as $property )
+		{
+			if( isset( static::$properties[ $property ] ) && isset( static::$properties[ $property ][ 'default' ] ) )
+			{
+				$values[ $property ] = static::$properties[ $property ][ 'default' ];
+
+				// remove property from list of remaining
+				$index = array_search( $property, $properties );
+				unset( $properties[ $index ] );
+			}
+		}
 	}
 }
