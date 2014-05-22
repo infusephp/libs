@@ -16,6 +16,10 @@ use app\users\models\User;
 define( 'ACL_RESULT_NOT_CACHED', -1 );
 define( 'ACL_NO_ID', -1 );
 
+// TODO should not be here
+if( !defined( 'INFUSE_MODEL_NO_ID' ) )
+	define( 'INFUSE_MODEL_NO_ID', '{{no_id}}' );
+
 abstract class Acl
 {
 	///////////////////////////////
@@ -32,7 +36,7 @@ abstract class Acl
 	private $acl = array();
 	private $aclLoaded = false;
 	private $aclCache = array();
-	protected $id = ACL_NO_ID;
+	protected $id = INFUSE_MODEL_NO_ID;
 
 	//////////////////////////////
 	// GETTERS
@@ -111,7 +115,7 @@ abstract class Acl
 		$where = array( 'model' => get_class( $this ) );
 		
 		// are we talking about a specific model or any model?
-		if( $this->id !== ACL_NO_ID )
+		if( $this->id !== INFUSE_MODEL_NO_ID )
 			$where[ 'model_id' ] = $this->id;
 		
 		// setup objects ACL

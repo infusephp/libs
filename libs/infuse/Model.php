@@ -97,6 +97,9 @@
 
 namespace infuse;
 
+if( !defined( 'INFUSE_MODEL_NO_ID' ) )
+	define( 'INFUSE_MODEL_NO_ID', '{{no_id}}' );
+
 abstract class Model extends Acl
 {
 	/////////////////////////////
@@ -144,6 +147,16 @@ abstract class Model extends Acl
 		static::$config = array_replace( static::$config, $config );
 	}
 
+	/**
+	 * Gets a config parameter
+	 *
+	 * @return mixed
+	 */
+	static function getConfigValue( $key )
+	{
+		return Util::array_value( static::$config, $key );
+	}
+
 	/////////////////////////////
 	// MAGIC METHODS
 	/////////////////////////////
@@ -157,6 +170,8 @@ abstract class Model extends Acl
 	{
 		if( $id !== false )
 			$this->id = implode( ',', (array)$id );
+		else
+			$this->id = INFUSE_MODEL_NO_ID;
 	}
 
 	/**
@@ -298,7 +313,7 @@ abstract class Model extends Acl
 	 */
 	function hasNoId()
 	{
-		return $this->id === ACL_NO_ID;
+		return $this->id === INFUSE_MODEL_NO_ID;
 	}
 	
 	/**
