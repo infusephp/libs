@@ -97,6 +97,9 @@
 
 namespace infuse;
 
+if( !defined( 'ERROR_NO_PERMISSION' ) )
+	define( 'ERROR_NO_PERMISSION', 'no_permission' );
+
 abstract class Model extends Acl
 {
 	/////////////////////////////
@@ -110,14 +113,20 @@ abstract class Model extends Acl
 	// Protected class variables
 	/////////////////////////////
 
-	protected static $escapedProperties = array(); // specifies fields that should be escaped with htmlspecialchars()
+	// specifies fields that should be escaped with htmlspecialchars()
+	protected static $escapedProperties = array();
 	protected static $tablename = false;
 	protected static $hasSchema = true;
+
 	protected static $config = array(
 		'cache' => array(
 			'strategies' => array(
 				'local' => array(
-					'prefix' => '' ) ) ) );
+					'prefix' => '' ) ) ),
+		'database' => array(
+			'enabled' => true ),
+		'requester' => false );
+
 	protected static $defaultFindParameters = array(
 		'where' => array(),
 		'start' => 0,
@@ -234,7 +243,87 @@ abstract class Model extends Acl
 	}
 		
 	/////////////////////////////
-	// GETTERS
+	// META METHODS
+	/////////////////////////////
+
+	/**
+	 * Gets the name of the model without namespacing
+	 *
+	 * @return string
+	 */
+	static function modelName()
+	{
+		$class_name = get_called_class();
+		
+		// strip namespacing
+		$paths = explode( '\\', $class_name );
+		return end( $paths );
+	}
+	
+	/**
+	 * Generates metadata about the model
+	 *
+	 * @return array
+	 */
+	static function metadata()
+	{
+		$class_name = get_called_class();
+		$modelName = static::modelName();
+				
+		$singularKey = Inflector::underscore( $modelName );
+		$pluralKey = Inflector::pluralize( $singularKey );
+
+		return array(
+			'model' => $modelName,
+			'class_name' => $class_name,
+			'singular_key' => $singularKey,
+			'plural_key' => $pluralKey,
+			'proper_name' => Inflector::humanize( $singularKey ),
+			'proper_name_plural' => Inflector::humanize( $pluralKey ) );
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function info()
+	{
+		return static::metadata();
+	}
+
+	/**
+	 * Generates the tablename for the model
+	 *
+	 * @return string
+	 */
+	static function tablename()
+	{
+		return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
+	}
+	
+	/**
+	 * Checks if a property name is an id property
+	 *
+	 * @return boolean
+	 */
+	static function isIdProperty( $propertyName )
+	{
+		return ( is_array( static::$idProperty ) && in_array( $propertyName, static::$idProperty ) ) || $propertyName == static::$idProperty;
+	}
+
+	/**
+	 * Checks if the model has a property
+	 *
+	 * @param string $property property
+	 *
+	 * @return boolean has property
+	 */
+	static function hasProperty( $property )
+	{
+		return isset( static::$properties[ $property ] );
+	}
+
+	/////////////////////////////
+	// MODEL METHODS
 	/////////////////////////////
 
 	/**
@@ -263,60 +352,203 @@ abstract class Model extends Acl
 		
 		return $return;
 	}
-	
-	/**
-	 * Gets some basic info about the model
-	 *
-	 * @return array
-	 */
-	static function info()
-	{
-		$class_name = get_called_class();
-		
-		// strip namespacing
-		$paths = explode( '\\', $class_name );
-		$modelName = end( $paths );
-				
-		$singularKey = Inflector::underscore( $modelName );
-		$pluralKey = Inflector::pluralize( $singularKey );
-
-		return array(
-			'model' => $modelName,
-			'class_name' => $class_name,
-			'singular_key' => $singularKey,
-			'plural_key' => $pluralKey,
-			'proper_name' => Inflector::humanize( $singularKey ),
-			'proper_name_plural' => Inflector::humanize( $pluralKey ) );
-	}	
 
 	/**
-	 * Gets the tablename for the model
-	 *
-	 * @return string
-	 */
-	static function tablename()
-	{
-		// get model name
-		$modelClassName = get_called_class();
-		
-		// strip namespacing
-		$paths = explode( '\\', $modelClassName );
-		$modelName = end( $paths );
-		
-		// pluralize and camelize model name
-		return Inflector::camelize( Inflector::pluralize( $modelName ) );
-	}
-	
-	/**
-	 * Checks if a property name is an id property
+	 * Checks if the model exists in the database
 	 *
 	 * @return boolean
 	 */
-	static function isIdProperty( $propertyName )
+	function exists()
 	{
-		return ( is_array( static::$idProperty ) && in_array( $propertyName, static::$idProperty ) ) || $propertyName == static::$idProperty;
+		return static::totalRecords( $this->id( true ) ) == 1;
 	}
+
+	/**
+	 * Gets the model object corresponding to a relation
+	 * WARNING no check is used to see if the model returned actually exists
+	 *
+	 * @param string $property property
+	 *
+	 * @return Object|false model
+	 */
+	function relation( $property )
+	{
+		if( !static::hasProperty( $property ) || !isset( static::$properties[ $property ][ 'relation' ] ) )
+			return false;
+
+		$relationModelName = static::$properties[ $property ][ 'relation' ];
+
+		if( !isset( $this->relationModels[ $relationModelName ] ) )
+			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->$property );
+
+		return $this->relationModels[ $relationModelName ];
+	}
+
+	/////////////////////////////
+	// CRUD OPERATIONS
+	/////////////////////////////
 	
+	/**
+	 * Creates a new model
+	 *
+	 * @param array $data key-value properties
+	 *
+	 * @return boolean
+	 */
+	static function create( array $data )
+	{
+		$modelName = get_called_class();
+
+		ErrorStack::setContext( static::modelName() . '.create' );
+
+		$model = new $modelName;
+		
+		// permission?
+		if( !$model->can( 'create', static::$config[ 'requester' ] ) )
+		{
+			ErrorStack::add( ERROR_NO_PERMISSION );
+			return false;
+		}
+
+		// pre-hook
+		if( method_exists( $model, 'preCreateHook' ) && !$model->preCreateHook( $data ) )
+			return false;
+
+		$validated = true;
+		
+		// get the property names, and required properties
+		$propertyNames = array();
+		$requiredProperties = array();
+		foreach( static::$properties as $name => $property )
+		{
+			$propertyNames[] = $name;
+			if( Util::array_value( $property, 'required' ) )
+				$requiredProperties[] = $name;
+		}
+		
+		// add in default values
+		foreach( static::$properties as $name => $fieldInfo )
+		{
+			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
+				$data[ $name ] = $fieldInfo[ 'default' ];
+		}
+				
+		// loop through each supplied field and validate
+		$insertArray = array();
+		foreach( $data as $field => $field_info )
+		{
+			if( in_array( $field, $propertyNames ) )
+				$value = $data[ $field ];
+			else
+				continue;
+
+			$property = static::$properties[ $field ];
+
+			// cannot insert keys, unless explicitly allowed
+			if( self::isIdProperty( $field ) && !Util::array_value( $property, 'mutable' ) )
+				continue;
+			
+			if( is_array( $property ) )
+			{
+				// null value
+				if( Util::array_value( $property, 'null' ) && empty( $value ) )
+				{
+					$updateArray[ $field ] = null;
+					continue;
+				}
+				
+				$thisIsValid = true;
+				
+				// validate
+				if( isset( $property[ 'validate' ] ) )
+				{
+					if( is_callable( $property[ 'validate' ] ) )
+					{
+						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
+							$thisIsValid = false;
+					}
+					else if( !Validate::is( $value, $property[ 'validate' ] ) )
+						$thisIsValid = false;
+					
+					if( !$thisIsValid )
+						ErrorStack::add( array(
+							'error' => VALIDATION_FAILED,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+				}
+				
+				// check for uniqueness
+				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
+				{
+					if( static::totalRecords( array( $field => $value ) ) > 0 )
+					{
+						ErrorStack::add( array(
+							'error' => VALIDATION_NOT_UNIQUE,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
+					
+						$thisIsValid = false;
+					}
+				}
+				
+				$validated = $validated && $thisIsValid;
+				
+				$insertArray[ $field ] = $value;
+			}
+		}
+				
+		// check for required fields
+		foreach( $requiredProperties as $name )
+		{
+			if( !isset( $insertArray[ $name ] ) )
+			{
+				ErrorStack::add( array(
+					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
+					'params' => array(
+						'field' => $name,
+						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::humanize( $name ) ) ) );
+
+				$validated = false;
+			}
+		}
+		
+		if( !$validated )
+			return false;
+
+		if( !static::$config[ 'database' ][ 'enabled' ] ||
+			Database::insert( static::tablename(), $insertArray ) )
+		{
+			$ids = array();
+
+			// derive the id for every property that is not auto_increment
+			// NOTE this does not handle the case where there is > 1 auto_increment primary key
+			$idProperties = (array)static::$idProperty;
+			foreach( $idProperties as $property )
+			{
+				if( Util::array_value( static::$properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
+					$ids[] = Util::array_value( $data, $property );
+				else
+					$ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
+			}
+
+			// create new model
+			$newModel = new $modelName( implode( ',', $ids ) );
+			
+			// cache
+			$newModel->cacheProperties( $insertArray );
+			
+			// post-hook
+			if( method_exists( $newModel, 'postCreateHook' ) )
+				$newModel->postCreateHook();
+			
+			return $newModel;
+		}
+		
+		return false;
+	}
+
 	/**
 	 * Fetches property values from the model.
 	 *
@@ -354,7 +586,7 @@ abstract class Model extends Acl
 				$this->getFromLocalCache( $properties, $values );
 			else if( $i == 2 )
 				$this->getFromSharedCache( $properties, $values );
-			else if( $i == 3 )
+			else if( $i == 3 && static::$config[ 'database' ][ 'enabled' ] )
 				$this->getFromDatabase( $properties, $values );
 			else if( $i == 4 )
 				$this->getFromDefaultValues( $properties, $values );
@@ -366,38 +598,173 @@ abstract class Model extends Acl
 
 		return ( !$forceReturnArray && count( $values ) == 1 ) ? reset( $values ) : $values;
 	}
-
+	
 	/**
-	 * Gets the model object corresponding to a relation
-	 * WARNING no check is used to see if the model returned actually exists
+	 * Updates the model
 	 *
-	 * @param string $property property
+	 * @param array|string $data key-value properties or name of property
+	 * @param string new $value value to set if name supplied
 	 *
-	 * @return Object|false model
+	 * @return boolean
 	 */
-	function relation( $property )
+	function set( $data, $value = false )
 	{
-		if( !static::hasProperty( $property ) || !isset( static::$properties[ $property ][ 'relation' ] ) )
+		$modelName = get_called_class();
+
+		ErrorStack::setContext( static::modelName() . '.set' );
+	
+		// permission?
+		if( !$this->can( 'edit', static::$config[ 'requester' ] ) )
+		{
+			ErrorStack::add( ERROR_NO_PERMISSION );
+			return false;
+		}
+		
+		if( !is_array( $data ) )
+			$data = array( $data => $value );
+		
+		// not updating anything?
+		if( count( $data ) == 0 )
+			return true;
+			
+		// pre-hook
+		if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
 			return false;
 
-		$relationModelName = static::$properties[ $property ][ 'relation' ];
+		$validated = true;
+		$updateArray = $this->id( true );
+		$updateKeys = array_keys( $updateArray );
+		
+		// get the property names
+		$propertyNames = array();
+		foreach( static::$properties as $name => $property )
+		{
+			if( empty( $name ) )
+				continue;
+			$propertyNames[] = $name;
+		}
+		
+		// loop through each supplied field and validate, if setup
+		foreach ($data as $field => $field_info)
+		{
+			// cannot change keys
+			if( in_array( $field, $updateKeys ) )
+				continue;
+		
+			if( in_array( $field, $propertyNames ) )
+				$value = $data[ $field ];
+			else
+				continue;
 
-		if( !isset( $this->relationModels[ $relationModelName ] ) )
-			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->$property );
+			$property = static::$properties[ $field ];
 
-		return $this->relationModels[ $relationModelName ];
+			if( is_array( $property ) )
+			{
+				// null values
+				if( Util::array_value( $property, 'null' ) && empty( $value ) )
+				{
+					$updateArray[ $field ] = null;
+					continue;
+				}
+
+				$thisIsValid = true;
+				
+				// validate
+				if( isset( $property[ 'validate' ] ) )
+				{
+					if( is_callable( $property[ 'validate' ] ) )
+					{
+						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
+							$thisIsValid = false;
+					}
+					else if( !Validate::is( $value, $property[ 'validate' ] ) )
+						$thisIsValid = false;
+					
+					if( !$thisIsValid )
+						ErrorStack::add( array(
+							'error' => VALIDATION_FAILED,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+				}
+				
+				// check for uniqueness
+				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
+				{
+					if( static::totalRecords( array( $field => $value ) ) > 0 )
+					{
+						ErrorStack::add( array(
+							'error' => VALIDATION_NOT_UNIQUE,
+							'params' => array(
+								'field' => $field,
+								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
+					
+						$thisIsValid = false;
+					}
+				}
+				
+				$validated = $validated && $thisIsValid;
+				
+				$updateArray[ $field ] = $value;
+			}
+		}
+
+		if( !$validated )
+			return false;
+
+		if( !static::$config[ 'database' ][ 'enabled' ] ||
+			Database::update( static::tablename(), $updateArray, $updateKeys ) )
+		{
+			// update the cache with our new values
+			$this->cacheProperties( $updateArray );
+			
+			// post-hook
+			if( method_exists( $this, 'postSetHook' ) )
+				$this->postSetHook();
+			
+			return true;
+		}
+		
+		return false;
 	}
-
+	
 	/**
-	 * Checks if the model has a property.
+	 * Delete the model
 	 *
-	 * @param string $property property
-	 *
-	 * @return boolean has property
+	 * @return boolean success
 	 */
-	static function hasProperty( $property )
+	function delete()
 	{
-		return isset( static::$properties[ $property ] );
+		$modelName = get_called_class();
+
+		ErrorStack::setContext( static::modelName() . '.delete' );
+
+		// permission?
+		if( !$this->can( 'delete', static::$config[ 'requester' ] ) )
+		{
+			ErrorStack::add( ERROR_NO_PERMISSION );
+			return false;
+		}
+		
+		// pre-hook
+		if( method_exists( $this, 'preDeleteHook' ) && !$this->preDeleteHook() )
+			return false;
+		
+		// delete the model
+		if( !static::$config[ 'database' ][ 'enabled' ] ||
+			Database::delete( static::tablename(), $this->id( true ) ) )
+		{
+			// clear the cache
+			$this->emptyCache();
+
+			// post-hook
+			if( method_exists( $this, 'postDeleteHook' ) )
+				$this->postDeleteHook();
+			
+			return true;
+		}
+		else
+			return false;
 	}
 	
 	/**
@@ -437,6 +804,10 @@ abstract class Model extends Acl
 		return json_encode( $this->toArray( $exclude ) );
 	}
 	
+	/////////////////////////////
+	// MODEL LOOKUP METHODS
+	/////////////////////////////
+
 	/**
 	 * Fetches models with pagination support
 	 *
@@ -450,14 +821,10 @@ abstract class Model extends Acl
 	{
 		$params = array_replace( static::$defaultFindParameters, $params );
 	
-		if( !is_numeric( $params[ 'start' ] ) || $params[ 'start' ] < 0 )
-			$params[ 'start' ] = 0;
-		if( !is_numeric( $params[ 'limit' ] ) || $params[ 'limit' ] > 1000 )
-			$params[ 'limit' ] = 100;
+		$params[ 'start' ] = max( $params[ 'start' ], 0 );
+		$params[ 'limit' ] = min( $params[ 'limit' ], 1000 );
 
 		$modelName = get_called_class();
-		
-		$return = array( 'models' => array() );
 		
 		// WARNING: using MYSQL LIKE for search, this is very inefficient
 		
@@ -499,7 +866,9 @@ abstract class Model extends Acl
 			$sortParams[] = "$propertyName $direction";
 		}
 		
-		$return[ 'count' ] = static::totalRecords( $params[ 'where' ] );
+		$return = array(
+			'count' => static::totalRecords( $params[ 'where' ] ),
+			'models' => array() );
 		
 		$filter = array(
 			'where' => $params[ 'where' ],
@@ -577,16 +946,6 @@ abstract class Model extends Acl
 				'where' => $where,
 				'single' => true ) );
 	}
-	
-	/**
-	 * Checks if the model exists in the database
-	 *
-	 * @return boolean
-	 */
-	function exists()
-	{
-		return static::totalRecords( $this->id( true ) ) == 1;
-	}
 
 	/////////////////////////////
 	// DATABASE SCHEMA
@@ -604,7 +963,7 @@ abstract class Model extends Acl
 	 */
 	static function currentSchema()
 	{
-		if( !static::hasSchema() )
+		if( !static::hasSchema() || !static::$config[ 'database' ][ 'enabled' ] )
 			return false;
 
 		try
@@ -796,7 +1155,8 @@ abstract class Model extends Acl
 
 		try
 		{
-			return Database::sql( $sql );
+			if( static::$config[ 'database' ][ 'enabled' ] )
+				return Database::sql( $sql );
 		}
 		catch( \Exception $e )
 		{
@@ -805,19 +1165,19 @@ abstract class Model extends Acl
 	}
 	
 	/////////////////////////////
-	// SETTERS
+	// CACHE
 	/////////////////////////////
 	
 	/**
-	 * Loads and caches all of the properties from the model inside of the database table
+	 * Loads and caches all of the properties from the database layer
 	 * IMPORTANT: this should be called before getting properties
 	 * any time a model *might* have been updated from an outside source
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function load()
 	{
-		if( $this->id === false )
+		if( $this->id === false || !static::$config[ 'database' ][ 'enabled' ] )
 			return;
 		
 		$info = Database::select(
@@ -836,7 +1196,7 @@ abstract class Model extends Acl
 	 * @param string $property property name
 	 * @param string $value new value
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function cacheProperty( $property, $value )
 	{
@@ -852,7 +1212,7 @@ abstract class Model extends Acl
 	 *
 	 * @param array $data data to be cached
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function cacheProperties( array $data )
 	{
@@ -865,7 +1225,7 @@ abstract class Model extends Acl
 	 *
 	 * @param string $property property name
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function invalidateCachedProperty( $property )
 	{
@@ -879,7 +1239,7 @@ abstract class Model extends Acl
 	/**
 	 * Invalidates all cached properties for this model
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function emptyCache()
 	{
@@ -888,339 +1248,6 @@ abstract class Model extends Acl
 			if( !static::isIdProperty( $property ) )
 				$this->invalidateCachedProperty( $property );
 		}
-	}
-	
-	/**
-	 * Creates a new model
-	 *
-	 * @param array $data key-value properties
-	 *
-	 * @return boolean
-	 */
-	static function create( array $data )
-	{
-		$modelName = get_called_class();
-		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
-
-		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.create' );
-
-		$model = new $modelName;
-		
-		// permission?
-		if( !$model->can( 'create' ) )
-		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
-			return false;
-		}
-
-		// pre-hook
-		if( method_exists( $model, 'preCreateHook' ) && !$model->preCreateHook( $data ) )
-			return false;
-
-		$validated = true;
-		
-		// get the property names, and required properties
-		$propertyNames = array();
-		$requiredProperties = array();
-		foreach( static::$properties as $name => $property )
-		{
-			$propertyNames[] = $name;
-			if( Util::array_value( $property, 'required' ) )
-				$requiredProperties[] = $name;
-		}
-		
-		// add in default values
-		foreach( static::$properties as $name => $fieldInfo )
-		{
-			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
-				$data[ $name ] = $fieldInfo[ 'default' ];
-		}
-				
-		// loop through each supplied field and validate
-		$insertArray = array();
-		foreach( $data as $field => $field_info )
-		{
-			if( in_array( $field, $propertyNames ) )
-				$value = $data[ $field ];
-			else
-				continue;
-
-			$property = static::$properties[ $field ];
-
-			// cannot insert keys, unless explicitly allowed
-			if( self::isIdProperty( $field ) && !Util::array_value( $property, 'mutable' ) )
-				continue;
-			
-			if( is_array( $property ) )
-			{
-				// null value
-				if( Util::array_value( $property, 'null' ) && empty( $value ) )
-				{
-					$updateArray[ $field ] = null;
-					continue;
-				}
-				
-				$thisIsValid = true;
-				
-				// validate
-				if( isset( $property[ 'validate' ] ) )
-				{
-					if( is_callable( $property[ 'validate' ] ) )
-					{
-						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$thisIsValid = false;
-					}
-					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$thisIsValid = false;
-					
-					if( !$thisIsValid )
-						ErrorStack::add( array(
-							'error' => VALIDATION_FAILED,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
-				}
-				
-				// check for uniqueness
-				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
-				{
-					if( static::totalRecords( array( $field => $value ) ) > 0 )
-					{
-						ErrorStack::add( array(
-							'error' => VALIDATION_NOT_UNIQUE,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
-					
-						$thisIsValid = false;
-					}
-				}
-				
-				$validated = $validated && $thisIsValid;
-				
-				$insertArray[ $field ] = $value;
-			}
-		}
-				
-		// check for required fields
-		foreach( $requiredProperties as $name )
-		{
-			if( !isset( $insertArray[ $name ] ) )
-			{
-				ErrorStack::add( array(
-					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
-					'params' => array(
-						'field' => $name,
-						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::humanize( $name ) ) ) );
-
-				$validated = false;
-			}
-		}
-		
-		if( !$validated )
-			return false;
-
-		if( Database::insert(
-			static::tablename(),
-			$insertArray ) )
-		{
-			$ids = array();
-
-			// derive the id for every property that is not auto_increment
-			// NOTE this does not handle the case where there is > 1 auto_increment primary key
-			$idProperties = (array)static::$idProperty;
-			foreach( $idProperties as $property )
-			{
-				if( Util::array_value( static::$properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
-					$ids[] = Util::array_value( $data, $property );
-				else
-					$ids[] = Database::lastInsertID();
-			}
-
-			// create new model
-			$newModel = new $modelName( implode( ',', $ids ) );
-						
-			// cache
-			$newModel->cacheProperties( $insertArray );
-			
-			// post-hook
-			if( method_exists( $newModel, 'postCreateHook' ) )
-				$newModel->postCreateHook();
-			
-			return $newModel;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Updates the model
-	 *
-	 * @param array|string $data key-value properties or name of property
-	 * @param string new $value value to set if name supplied
-	 *
-	 * @return boolean
-	 */
-	function set( $data, $value = false )
-	{
-		$modelName = get_called_class();
-		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
-
-		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.set' );
-	
-		// permission?
-		if( !$this->can( 'edit' ) )
-		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
-			return false;
-		}
-		
-		if( !is_array( $data ) )
-			$data = array( $data => $value );
-		
-		// not updating anything?
-		if( count( $data ) == 0 )
-			return true;
-			
-		// pre-hook
-		if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
-			return false;
-
-		$validated = true;
-		$updateArray = $this->id( true );
-		$updateKeys = array_keys( $updateArray );
-		
-		// get the property names
-		$propertyNames = array();
-		foreach( static::$properties as $name => $property )
-		{
-			if( empty( $name ) )
-				continue;
-			$propertyNames[] = $name;
-		}
-		
-		// loop through each supplied field and validate, if setup
-		foreach ($data as $field => $field_info)
-		{
-			// cannot change keys
-			if( in_array( $field, $updateKeys ) )
-				continue;
-		
-			if( in_array( $field, $propertyNames ) )
-				$value = $data[ $field ];
-			else
-				continue;
-
-			$property = static::$properties[ $field ];
-
-			if( is_array( $property ) )
-			{
-				// null values
-				if( Util::array_value( $property, 'null' ) && empty( $value ) )
-				{
-					$updateArray[ $field ] = null;
-					continue;
-				}
-
-				$thisIsValid = true;
-				
-				// validate
-				if( isset( $property[ 'validate' ] ) )
-				{
-					if( is_callable( $property[ 'validate' ] ) )
-					{
-						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$thisIsValid = false;
-					}
-					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$thisIsValid = false;
-					
-					if( !$thisIsValid )
-						ErrorStack::add( array(
-							'error' => VALIDATION_FAILED,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
-				}
-				
-				// check for uniqueness
-				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
-				{
-					if( static::totalRecords( array( $field => $value ) ) > 0 )
-					{
-						ErrorStack::add( array(
-							'error' => VALIDATION_NOT_UNIQUE,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
-					
-						$thisIsValid = false;
-					}
-				}
-				
-				$validated = $validated && $thisIsValid;
-				
-				$updateArray[ $field ] = $value;
-			}
-		}
-
-		if( !$validated )
-			return false;
-
-		if( Database::update(
-			static::tablename(),
-			$updateArray,
-			$updateKeys ) )
-		{
-			// update the cache with our new values
-			$this->cacheProperties( $updateArray );
-				
-			// post-hook
-			if( method_exists( $this, 'postSetHook' ) )
-				$this->postSetHook();
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Delete the model
-	 *
-	 * @return boolean success
-	 */
-	function delete()
-	{
-		$modelName = get_called_class();
-		$modelNameLocal = str_replace( 'infuse\\models\\', '', $modelName );
-
-		ErrorStack::setContext( strtolower( $modelNameLocal ) . '.delete' );
-
-		// permission?
-		if( !$this->can( 'delete' ) )
-		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
-			return false;
-		}
-		
-		// pre-hook
-		if( method_exists( $this, 'preDeleteHook' ) && !$this->preDeleteHook() )
-			return false;
-		
-		// delete the model
-		if( Database::delete(
-			static::tablename(),
-			$this->id( true ) ) )
-		{
-			// post-hook
-			if( method_exists( $this, 'postDeleteHook' ) )
-				$this->postDeleteHook();
-			
-			return true;
-		}
-		else
-			return false;
 	}
 
 	/////////////////////////////
@@ -1252,7 +1279,7 @@ abstract class Model extends Acl
 	}
 
 	/////////////////////////////
-	// PROTECTED METHODS
+	// PRIVATE METHODS
 	/////////////////////////////
 
 	private function getFromLocalCache( &$properties, &$values )

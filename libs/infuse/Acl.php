@@ -11,10 +11,7 @@
 
 namespace infuse;
 
-use app\users\models\User;
-
-define( 'ACL_RESULT_NOT_CACHED', -1 );
-define( 'ACL_NO_ID', -1 );
+define( 'INFUSE_ACL_NOT_CACHED', -1 );
 
 abstract class Acl
 {
@@ -24,7 +21,7 @@ abstract class Acl
 	
 	/*
 	ACL:
-	[ users: {
+	[ individuals: {
 		uid: permission },
 	  groups: {
 	  	id: permission } ]
@@ -36,7 +33,7 @@ abstract class Acl
 	/**
 	 * Gets the owner of the ACL
 	 *
-	 * @return object|false
+	 * @return Model|false
 	 */
 	function owner()
 	{
@@ -44,47 +41,44 @@ abstract class Acl
 	}
 
 	/**
-	 * Checks if a requestor has permission to perform an action
+	 * Checks if a requester has permission to perform an action
 	 *
 	 * @param string $permission permission
-	 * @param User $requestor requester
+	 * @param AclRequester $requester requester
 	 *
 	 * @param boolean
 	 */
-	function can( $permission, $requestor = null )
+	function can( $permission, AclRequester $requester )
 	{
-		if( $requestor === null )
-			$requestor = User::currentUser();
-		
 		// check cache
-		$cache = $this->cachedResult( $permission, $requestor );
-		if( $cache !== ACL_RESULT_NOT_CACHED )
+		$cache = $this->cachedResult( $permission, $requester );
+		if( $cache !== INFUSE_ACL_NOT_CACHED )
 			return $cache;
 		
 		// check if owner - owner's always have permission
 		$owner = $this->owner();
-		if( $owner instanceof $requestor && $owner->id() == $requestor->id() )
-			return $this->cacheResult( $permission, $requestor, true );
+		if( $owner instanceof $requester && $owner->id() == $requester->id() )
+			return $this->cacheResult( $permission, $requester, true );
 		
 		// load ACL from database for model
 		$this->loadACL();
 		
 		// check requester permissions
-		if( Util::array_value( $this->acl, 'users.' . $requestor->id() . '.' . $permission ) )
-			return $this->cacheResult( $permission, $requestor, true );
+		if( Util::array_value( $this->acl, 'individuals.' . $requester->id() . '.' . $permission ) )
+			return $this->cacheResult( $permission, $requester, true );
 
 		// check requester's group permissions in relation to owner
-		foreach( $requestor->groups( $owner ) as $group )
+		foreach( $requester->groups( $owner ) as $group )
 		{
 			// admins always get permission
 			if( $group->id() == ADMIN )
-				return $this->cacheResult( $permission, $requestor, true );
+				return $this->cacheResult( $permission, $requester, true );
 			
 			if( Util::array_value( $this->acl, 'groups.' . $group->id() . '.' . $permission ) )
-				return $this->cacheResult( $permission, $requestor, true );
+				return $this->cacheResult( $permission, $requester, true );
 		}
 		
-		return $this->cacheResult( $permission, $requestor, false );
+		return $this->cacheResult( $permission, $requester, false );
 	}
 		
 	/**
@@ -98,7 +92,7 @@ abstract class Acl
 			return;
 		
 		$this->acl = array(
-			'users' => array(),
+			'individuals' => array(),
 			'groups' => array() );
 		
 		$this->aclCache = array();
@@ -119,7 +113,7 @@ abstract class Acl
 		foreach( $acl_db as $acl )
 		{
 			if( !empty( $acl[ 'uid' ] ) )
-				Util::array_set( $this->acl, "users.{$acl['uid']}.{$acl['permission']}", true );
+				Util::array_set( $this->acl, "individuals.{$acl['uid']}.{$acl['permission']}", true );
 			
 			if( !empty( $acl[ 'gid' ] ) )
 				Util::array_set( $this->acl, "groups.{$acl['gid']}.{$acl['permission']}", true );
@@ -142,19 +136,19 @@ abstract class Acl
 	// PRIVATE FUNCTIONS
 	/////////////////////////////////
 
-	private function cachedResult( $permission, $requestor )
+	private function cachedResult( $permission, $requester )
 	{
-		$key = strtolower( str_replace( '\\', '', get_class( $requestor ) ) ) . '.' . $requestor->id();
+		$key = strtolower( str_replace( '\\', '', get_class( $requester ) ) ) . '.' . $requester->id();
 		
 		if( $value = Util::array_value( $this->aclCache, "$key.$permission" ) )
 			return $value;
 
-		return ACL_RESULT_NOT_CACHED;
+		return INFUSE_ACL_NOT_CACHED;
 	}
 	
-	private function cacheResult( $permission, $requestor, $result )
+	private function cacheResult( $permission, $requester, $result )
 	{
-		$key = strtolower( str_replace( '\\', '', get_class( $requestor ) ) ) . '.' . $requestor->id();
+		$key = strtolower( str_replace( '\\', '', get_class( $requester ) ) ) . '.' . $requester->id();
 		
 		Util::array_set( $this->aclCache, "$key.$permission", $result );
 	

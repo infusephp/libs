@@ -9,17 +9,27 @@
  * @license MIT
  */
 
+use infuse\AclRequester;
+use infuse\ErrorStack;
 use infuse\Model;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
+	static $requester;
+
+	static function setUpBeforeClass()
 	{
-		Model::configure(array());
-		
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		self::$requester = new Person( 1 );
+
+		TestModel::configure( array(
+			'database' => array(
+				'enabled' => false ),
+			'requester' => self::$requester ) );
+
+		TestModel2::configure( array(
+			'database' => array(
+				'enabled' => false ),
+			'requester' => self::$requester ) );
 	}
 
 	function testConfigure()
@@ -129,6 +139,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	}
 
+	function testGetDefaultValue()
+	{
+		$model = new TestModel2( 12 );
+		$this->assertEquals( 'some default value', $model->get( 'default' ) );
+	}
+
 	function testRelation()
 	{
 		$model = new TestModel;
@@ -205,6 +221,68 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model->emptyCache();
 		// TODO
 	}
+
+	function testCreate()
+	{
+
+	}
+
+	function testCreateNoPermission()
+	{
+		$this->assertFalse( TestModelNoPermission::create( array() ) );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.create' ) );
+	}
+
+	function testCreateHookFail()
+	{
+		$this->assertFalse( TestModelHookFail::create( array() ) );
+	}
+
+	function testSet()
+	{
+
+	}
+
+	function testSetNoPermission()
+	{
+		$model = new TestModelNoPermission( 5 );
+		$this->assertFalse( $model->set( 'answer', 42 ) );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.set' ) );
+	}
+
+	function testSetHookFail()
+	{
+		$model = new TestModelHookFail( 5 );
+		$this->assertFalse( $model->set( 'answer', 42 ) );
+	}
+
+	function testDelete()
+	{
+		$model = new TestModel2( 1 );
+		$this->assertTrue( $model->delete() );
+	}
+
+	function testDeleteWithHook()
+	{
+		$model = new TestModel( 100 );
+
+		$this->assertTrue( $model->delete() );
+		$this->assertTrue( $model->preDelete );
+		$this->assertTrue( $model->postDelete );
+	}
+
+	function testDeleteNoPermission()
+	{
+		$model = new TestModelNoPermission( 5 );
+		$this->assertFalse( $model->delete() );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.delete' ) );
+	}
+
+	function testDeleteHookFail()
+	{
+		$model = new TestModelHookFail( 5 );
+		$this->assertFalse( $model->delete() );
+	}
 }
 
 class TestModel extends Model
@@ -218,6 +296,44 @@ class TestModel extends Model
 			'relation' => 'TestModel2'
 		)
 	);
+
+	function can( $permission, AclRequester $requester )
+	{
+		return true;
+	}
+
+	function preCreateHook()
+	{
+		$this->preCreate = true;
+		return true;
+	}
+
+	function postCreateHook()
+	{
+		$this->postCreate = true;
+	}
+
+	function preSetHook()
+	{
+		$this->preSet = true;
+		return true;
+	}
+
+	function postSetHook()
+	{
+		$this->postSet = true;
+	}
+
+	function preDeleteHook()
+	{
+		$this->preDelete = true;
+		return true;
+	}
+
+	function postDeleteHook()
+	{
+		$this->postDelete = true;
+	}
 }
 
 class TestModel2 extends Model
@@ -229,7 +345,55 @@ class TestModel2 extends Model
 		),
 		'id2' => array(
 			'type' => 'id'
+		),
+		'default' => array(
+			'type' => 'text',
+			'default' => 'some default value'
 		)
 	);
 	static $hasSchema = false;
+
+	function can( $permission, AclRequester $requester )
+	{
+		return true;
+	}
+}
+
+class TestModelNoPermission extends Model
+{
+	function can( $permission, AclRequester $requester )
+	{
+		return false;
+	}
+}
+
+class TestModelHookFail extends Model
+{
+	function can( $permission, AclRequester $requester )
+	{
+		return true;
+	}
+
+	function preCreateHook()
+	{
+		return false;
+	}
+
+	function preSetHook()
+	{
+		return false;
+	}
+
+	function preDeleteHook()
+	{
+		return false;
+	}
+}
+
+class Person extends Model implements AclRequester
+{
+	public function groups( $owner )
+	{
+		return array();
+	}
 }
