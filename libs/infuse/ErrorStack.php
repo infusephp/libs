@@ -190,6 +190,14 @@ class ErrorStack
 	{
 		return $this->find( $value, $param ) !== false;
 	}
+
+	/**
+	 * Clears the error stack
+	 */
+	function clear()
+	{
+		$this->stack = array();
+	}
 	
 	/////////////////////////
 	// DEPRECATED

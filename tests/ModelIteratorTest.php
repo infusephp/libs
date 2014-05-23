@@ -151,6 +151,11 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 
 class IteratorTestModel extends Model
 {
+	protected function hasPermission( $permission, Model $requester )
+	{
+		return true;
+	}
+
 	static function totalRecords( array $where = array() )
 	{
 		return 1234;

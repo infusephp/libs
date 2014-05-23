@@ -99,25 +99,33 @@ namespace infuse;
 
 if( !defined( 'ERROR_NO_PERMISSION' ) )
 	define( 'ERROR_NO_PERMISSION', 'no_permission' );
+if( !defined( 'VALIDATION_REQUIRED_FIELD_MISSING' ) )
+	define( 'VALIDATION_REQUIRED_FIELD_MISSING', 'required_field_missing' );
+if( !defined( 'VALIDATION_FAILED' ) )
+	define( 'VALIDATION_FAILED', 'validation_failed' );
+if( !defined( 'VALIDATION_NOT_UNIQUE' ) )
+	define( 'VALIDATION_NOT_UNIQUE', 'not_unique' );
 
 abstract class Model extends Acl
 {
 	/////////////////////////////
-	// Model properties
+	// Public variables
 	/////////////////////////////
 
-	static $properties = array();
-	static $idProperty = 'id';
+	public static $properties = array(
+		'id' => array(
+			'type' => 'id' ) );
 
 	/////////////////////////////
-	// Protected class variables
+	// Protected variables
 	/////////////////////////////
 
-	// specifies fields that should be escaped with htmlspecialchars()
-	protected static $escapedProperties = array();
-	protected static $tablename = false;
-	protected static $hasSchema = true;
+	protected $_id;
 
+	/* Property names that are excluded from the database */
+	protected static $propertiesNotInDatabase = array();
+
+	/* Default model configuration */
 	protected static $config = array(
 		'cache' => array(
 			'strategies' => array(
@@ -127,6 +135,7 @@ abstract class Model extends Acl
 			'enabled' => true ),
 		'requester' => false );
 
+	/* Default parameters for Model::find() queries */
 	protected static $defaultFindParameters = array(
 		'where' => array(),
 		'start' => 0,
@@ -135,16 +144,15 @@ abstract class Model extends Acl
 		'sort' => '' );
 
 	/////////////////////////////
-	// Private class variables
+	// Private variables
 	/////////////////////////////
 
-	private static $excludePropertyTypes = array( 'custom', 'html' );
 	private $localCache = array();
 	private $sharedCache;
 	private $relationModels;
 
 	/////////////////////////////
-	// GLOBAL MODEL CONFIGURATION
+	// GLOBAL CONFIGURATION
 	/////////////////////////////
 
 	/**
@@ -181,7 +189,7 @@ abstract class Model extends Acl
 		if( is_array( $id ) )
 			$id = implode( ',', $id );
 
-		$this->id = $id;
+		$this->_id = $id;
 	}
 
 	/**
@@ -191,7 +199,7 @@ abstract class Model extends Acl
 	 */
 	function __toString()
 	{
-		return get_called_class() . '(' . $this->id() . ')';
+		return get_called_class() . '(' . $this->_id . ')';
 	}
 
 	/**
@@ -241,89 +249,9 @@ abstract class Model extends Acl
 		if( array_key_exists( $name, $this->localCache ) )
 			unset( $this->localCache[ $name ] );
 	}
-		
-	/////////////////////////////
-	// META METHODS
-	/////////////////////////////
-
-	/**
-	 * Gets the name of the model without namespacing
-	 *
-	 * @return string
-	 */
-	static function modelName()
-	{
-		$class_name = get_called_class();
-		
-		// strip namespacing
-		$paths = explode( '\\', $class_name );
-		return end( $paths );
-	}
-	
-	/**
-	 * Generates metadata about the model
-	 *
-	 * @return array
-	 */
-	static function metadata()
-	{
-		$class_name = get_called_class();
-		$modelName = static::modelName();
-				
-		$singularKey = Inflector::underscore( $modelName );
-		$pluralKey = Inflector::pluralize( $singularKey );
-
-		return array(
-			'model' => $modelName,
-			'class_name' => $class_name,
-			'singular_key' => $singularKey,
-			'plural_key' => $pluralKey,
-			'proper_name' => Inflector::titleize( $singularKey ),
-			'proper_name_plural' => Inflector::titleize( $pluralKey ) );
-	}
-
-	/**
-	 * @deprecated
-	 */
-	static function info()
-	{
-		return static::metadata();
-	}
-
-	/**
-	 * Generates the tablename for the model
-	 *
-	 * @return string
-	 */
-	static function tablename()
-	{
-		return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
-	}
-	
-	/**
-	 * Checks if a property name is an id property
-	 *
-	 * @return boolean
-	 */
-	static function isIdProperty( $propertyName )
-	{
-		return ( is_array( static::$idProperty ) && in_array( $propertyName, static::$idProperty ) ) || $propertyName == static::$idProperty;
-	}
-
-	/**
-	 * Checks if the model has a property
-	 *
-	 * @param string $property property
-	 *
-	 * @return boolean has property
-	 */
-	static function hasProperty( $property )
-	{
-		return isset( static::$properties[ $property ] );
-	}
 
 	/////////////////////////////
-	// MODEL METHODS
+	// MODEL PROPERTIES
 	/////////////////////////////
 
 	/**
@@ -336,18 +264,18 @@ abstract class Model extends Acl
 	function id( $keyValue = false )
 	{
 		if( !$keyValue )
-			return $this->id;
+			return $this->_id;
 	
-		$idProperties = (array)static::$idProperty;
+		$idProperty = (array)static::idProperty();
 		
 		// get id(s) into key-value format
 		$return = array();
 		
 		// match up id values from comma-separated id string with property names
-		$ids = explode( ',', $this->id );
+		$ids = explode( ',', $this->_id );
 		$ids = array_reverse( $ids );
 		
-		foreach( $idProperties as $f )
+		foreach( $idProperty as $f )
 			$return[ $f ] = (count($ids)>0) ? array_pop( $ids ) : false;
 		
 		return $return;
@@ -385,33 +313,127 @@ abstract class Model extends Acl
 	}
 
 	/////////////////////////////
+	// STATIC MODEL PROPERTIES
+	/////////////////////////////
+
+	/**
+	 * Returns the id propert(ies) for the model
+	 *
+	 * @return array|string
+	 */
+	static function idProperty()
+	{
+		return 'id';
+	}
+
+	/**
+	 * Gets the name of the model without namespacing
+	 *
+	 * @return string
+	 */
+	static function modelName()
+	{
+		$class_name = get_called_class();
+		
+		// strip namespacing
+		$paths = explode( '\\', $class_name );
+		return end( $paths );
+	}
+	
+	/**
+	 * Generates metadata about the model
+	 *
+	 * @return array
+	 */
+	static function metadata()
+	{
+		$class_name = get_called_class();
+		$modelName = static::modelName();
+		
+		$singularKey = Inflector::underscore( $modelName );
+		$pluralKey = Inflector::pluralize( $singularKey );
+
+		return array(
+			'model' => $modelName,
+			'class_name' => $class_name,
+			'singular_key' => $singularKey,
+			'plural_key' => $pluralKey,
+			'proper_name' => Inflector::titleize( $singularKey ),
+			'proper_name_plural' => Inflector::titleize( $pluralKey ) );
+	}
+
+	/**
+	 * @deprecated
+	 */
+	static function info()
+	{
+		return static::metadata();
+	}
+
+	/**
+	 * Generates the tablename for the model
+	 *
+	 * @return string
+	 */
+	static function tablename()
+	{
+		return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
+	}
+
+	/**
+	 * Checks if the model has a property
+	 *
+	 * @param string $property property
+	 *
+	 * @return boolean has property
+	 */
+	static function hasProperty( $property )
+	{
+		return isset( static::$properties[ $property ] );
+	}
+
+	/**
+	 * Checks if a property name is an id property
+	 *
+	 * @return boolean
+	 */
+	static function isIdProperty( $property )
+	{
+		$idProperty = static::idProperty();
+		return ( is_array( $idProperty ) && in_array( $property, $idProperty ) ) ||
+			   $property == $idProperty;
+	}
+
+	static function hasSchema()
+	{
+		return true;
+	}
+
+	/////////////////////////////
 	// CRUD OPERATIONS
 	/////////////////////////////
 	
 	/**
 	 * Creates a new model
+	 * WARNING: requires 'create' permission from the requester
 	 *
 	 * @param array $data key-value properties
 	 *
 	 * @return boolean
 	 */
-	static function create( array $data )
+	function create( array $data )
 	{
-		$modelName = get_called_class();
-
 		ErrorStack::setContext( static::modelName() . '.create' );
 
-		$model = new $modelName;
-		
 		// permission?
-		if( !$model->can( 'create', static::$config[ 'requester' ] ) )
+		if( !$this->can( 'create', static::$config[ 'requester' ] ) )
 		{
 			ErrorStack::add( ERROR_NO_PERMISSION );
 			return false;
 		}
 
 		// pre-hook
-		if( method_exists( $model, 'preCreateHook' ) && !$model->preCreateHook( $data ) )
+		if( method_exists( $this, 'preCreateHook' ) && !$this->preCreateHook( $data ) )
 			return false;
 
 		$validated = true;
@@ -456,15 +478,12 @@ abstract class Model extends Acl
 					continue;
 				}
 				
-				$thisIsValid = true;
-				
 				// validate
-				if( isset( $property[ 'validate' ] ) )
-					$thisIsValid = $this->validate( $property, $field, $value );
-
+				$thisIsValid = self::validate( $property, $field, $value );
+				
 				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
-					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
+					$thisIsValid = self::checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -481,7 +500,7 @@ abstract class Model extends Acl
 					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
 					'params' => array(
 						'field' => $name,
-						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::humanize( $name ) ) ) );
+						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::titleize( $name ) ) ) );
 
 				$validated = false;
 			}
@@ -493,30 +512,27 @@ abstract class Model extends Acl
 		if( !static::$config[ 'database' ][ 'enabled' ] ||
 			Database::insert( static::tablename(), $insertArray ) )
 		{
-			$ids = array();
-
 			// derive the id for every property that is not auto_increment
 			// NOTE this does not handle the case where there is > 1 auto_increment primary key
-			$idProperties = (array)static::$idProperty;
-			foreach( $idProperties as $property )
+			$ids = array();
+			$idProperty = (array)static::idProperty();
+			foreach( $idProperty as $property )
 			{
 				if( Util::array_value( static::$properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
-					$ids[] = Util::array_value( $data, $property );
+					$ids[] = $data[ $property ];
 				else
 					$ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
 			}
 
-			// create new model
-			$newModel = new $modelName( implode( ',', $ids ) );
-			
-			// cache
-			$newModel->cacheProperties( $insertArray );
+			// set id and cache properties
+			$this->_id = implode( ',', $ids );
+			$this->cacheProperties( $insertArray );
 			
 			// post-hook
-			if( method_exists( $newModel, 'postCreateHook' ) )
-				$newModel->postCreateHook();
+			if( method_exists( $this, 'postCreateHook' ) )
+				$this->postCreateHook();
 			
-			return $newModel;
+			return true;
 		}
 		
 		return false;
@@ -571,9 +587,48 @@ abstract class Model extends Acl
 		// TODO should we throw a notice if properties are remaining?
 		return ( !$forceReturnArray && count( $values ) == 1 ) ? reset( $values ) : $values;
 	}
+
+	/**
+	 * Converts the model to an array
+	 *
+	 * @param array $exclude properties to exclude
+	 *
+	 * @return array properties
+	 */
+	function toArray( array $exclude = array() )
+	{
+		$properties = array();
+		
+		// get the names of all the properties
+		foreach( static::$properties as $name => $property )
+		{
+			if( !empty( $name ) && !in_array( $name, $exclude ) && !in_array( $name, static::$propertiesNotInDatabase ) )
+				$properties[] = $name;
+		}
+
+		// make sure each property key at least has a null value
+		// and then get the value for each property
+		return array_replace(
+			array_fill_keys( $properties, null ),
+			(array)$this->get( $properties, false, true ),
+			$this->id( true ) );
+	}
+	
+	/**
+	 * Converts the object to JSON format
+	 *
+	 * @param array $exclude properties to exclude
+	 *
+	 * @return string json
+	 */
+	function toJson( array $exclude = array() )
+	{
+		return json_encode( $this->toArray( $exclude ) );
+	}
 	
 	/**
 	 * Updates the model
+	 * WARNING: requires 'edit' permission from the requester
 	 *
 	 * @param array|string $data key-value properties or name of property
 	 * @param string new $value value to set if name supplied
@@ -582,8 +637,6 @@ abstract class Model extends Acl
 	 */
 	function set( $data, $value = false )
 	{
-		$modelName = get_called_class();
-
 		ErrorStack::setContext( static::modelName() . '.set' );
 	
 		// permission?
@@ -634,15 +687,12 @@ abstract class Model extends Acl
 					continue;
 				}
 
-				$thisIsValid = true;
-				
 				// validate
-				if( isset( $property[ 'validate' ] ) )
-					$thisIsValid = $this->validate( $property, $field, $value );
+				$thisIsValid = self::validate( $property, $field, $value );
 
 				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
-					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
+					$thisIsValid = self::checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -670,13 +720,12 @@ abstract class Model extends Acl
 	
 	/**
 	 * Delete the model
+	 * WARNING: requires 'delete' permission from the requester
 	 *
 	 * @return boolean success
 	 */
 	function delete()
 	{
-		$modelName = get_called_class();
-
 		ErrorStack::setContext( static::modelName() . '.delete' );
 
 		// permission?
@@ -707,45 +756,8 @@ abstract class Model extends Acl
 			return false;
 	}
 	
-	/**
-	 * Converts the modelt to an array
-	 *
-	 * @param array $exclude properties to exclude
-	 *
-	 * @return array properties
-	 */
-	function toArray( array $exclude = array() )
-	{
-		$properties = array();
-		
-		// get the names of all the properties
-		foreach( static::$properties as $name => $property )
-		{
-			if( !empty( $name ) && !in_array( $name, $exclude ) && !in_array( $property[ 'type' ], self::$excludePropertyTypes ) )
-				$properties[] = $name;
-		}
-
-		// make sure each property key at least has a null value
-		// and then get the value for each property
-		return array_replace(
-			array_fill_keys( $properties, null ),
-			(array)$this->get( $properties, false, true ) );
-	}
-	
-	/**
-	 * Converts the object to JSON format
-	 *
-	 * @param array $exclude properties to exclude
-	 *
-	 * @return string json
-	 */
-	function toJson( array $exclude = array() )
-	{
-		return json_encode( $this->toArray( $exclude ) );
-	}
-	
 	/////////////////////////////
-	// MODEL LOOKUP METHODS
+	// MODEL LOOKUPS
 	/////////////////////////////
 
 	/**
@@ -774,7 +786,7 @@ abstract class Model extends Acl
 			$search = addslashes( $params[ 'search' ] );
 			foreach( static::$properties as $name => $property )
 			{
-				if( !in_array( Util::array_value( $property, 'type' ), self::$excludePropertyTypes ) )
+				if( !in_array( $name, static::$propertiesNotInDatabase ) )
 					$w[] = "$name LIKE '%$search%'";
 			}
 			
@@ -830,16 +842,17 @@ abstract class Model extends Acl
 			{
 				$id = false;
 				
-				if( is_array( static::$idProperty ) )
+				$idProperty = static::idProperty();
+				if( is_array( $idProperty ) )
 				{
 					$id = array();
 					
-					foreach( static::$idProperty as $f )
+					foreach( $idProperty as $f )
 						$id[] = $info[ $f ];
 				}
 				else
 				{
-					$id = $info[ static::$idProperty ];
+					$id = $info[ $idProperty ];
 				}
 				
 				$model = new $modelName( $id );
@@ -890,11 +903,6 @@ abstract class Model extends Acl
 	/////////////////////////////
 	// DATABASE SCHEMA
 	/////////////////////////////
-
-	static function hasSchema()
-	{
-		return static::$hasSchema;
-	}
 
 	/**
 	 * Looks up the current schema for the model
@@ -1117,7 +1125,7 @@ abstract class Model extends Acl
 	 */
 	function load()
 	{
-		if( $this->id === false || !static::$config[ 'database' ][ 'enabled' ] )
+		if( $this->_id === false || !static::$config[ 'database' ][ 'enabled' ] )
 			return;
 		
 		$info = Database::select(
@@ -1169,9 +1177,6 @@ abstract class Model extends Acl
 	 */
 	function invalidateCachedProperty( $property )
 	{
-		if( $property == 'id' )
-			return;
-		
 		/* Local Cache */
 		unset( $this->localCache[ $property ] );
 
@@ -1205,7 +1210,7 @@ abstract class Model extends Acl
 		{
 			// generate caching prefix for this model
 			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
-			$cachePrefix = $class . '.' . $this->id . '.';
+			$cachePrefix = $class . '.' . $this->_id . '.';
 			
 			$parameters = (array)static::$config[ 'cache' ][ 'strategies' ];
 			$strategies = array_keys( $parameters );
@@ -1267,10 +1272,6 @@ abstract class Model extends Acl
 
 		foreach( (array)$values as $property => $value )
 		{
-			// escape certain fields
-			if( in_array( $property, static::$escapedProperties ) )
-				$values[ $property ] = htmlspecialchars( $value );
-			
 			$values[ $property ] = $value;
 			$this->cacheProperty( $property, $value );
 
@@ -1295,29 +1296,26 @@ abstract class Model extends Acl
 		}
 	}
 
-	private function validate( $property, $field, $value )
+	private static function validate( $property, $field, $value )
 	{
 		$valid = true;
 
-		if( is_callable( $property[ 'validate' ] ) )
-		{
-			if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-				$valid = false;
-		}
-		else if( !Validate::is( $value, $property[ 'validate' ] ) )
-			$valid = false;
+		if( isset( $property[ 'validate' ] ) && is_callable( $property[ 'validate' ] ) )
+			$valid = call_user_func_array( $property[ 'validate' ], array( &$value ) );
+		else if( isset( $property[ 'validate' ] ) )
+			$valid = Validate::is( $value, $property[ 'validate' ] );
 		
 		if( !$valid )
 			ErrorStack::add( array(
 				'error' => VALIDATION_FAILED,
 				'params' => array(
 					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ) ) );
 
 		return $valid;
 	}
 
-	private function checkUniqueness( $property, $field, $value )
+	private static function checkUniqueness( $property, $field, $value )
 	{
 		if( static::totalRecords( array( $field => $value ) ) > 0 )
 		{
@@ -1325,7 +1323,7 @@ abstract class Model extends Acl
 				'error' => VALIDATION_NOT_UNIQUE,
 				'params' => array(
 					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ) ) );
 			
 			return false;
 		}

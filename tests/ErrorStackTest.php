@@ -184,4 +184,13 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 		$errors = self::$stack->errors( '' );
 		$this->assertTrue( in_array( $expected, $errors ) );
 	}
+
+	/**
+	 * @depends testErrors
+	 */
+	function testClear()
+	{
+		self::$stack->clear();
+		$this->assertCount( 0, self::$stack->errors() );
+	}
 }

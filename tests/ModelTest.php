@@ -21,12 +21,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		self::$requester = new Person( 1 );
 
-		TestModel::configure( array(
-			'database' => array(
-				'enabled' => false ),
-			'requester' => self::$requester ) );
-
-		TestModel2::configure( array(
+		Model::configure( array(
 			'database' => array(
 				'enabled' => false ),
 			'requester' => self::$requester ) );
@@ -135,14 +130,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( TestModel2::isIdProperty( 'id2' ) );
 	}
 
-	function testGet()
-	{
-
-	}
-
 	function testGetMultipleProperties()
 	{
-
+		// TODO
 	}
 
 	function testGetDefaultValue()
@@ -197,7 +187,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson() );
+		$this->assertEquals( '{"id":"5","relation":"test","answer":null}', $model->toJson() );
 	}
 
 	function testHasSchema()
@@ -238,24 +228,33 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreate()
 	{
-		$newModel = TestModel::create( array( 'relation' => '', 'answer' => 42 ) );
-		
-		$this->assertInstanceOf( 'TestModel', $newModel );
+		$newModel = new TestModel;
+		$this->assertTrue( $newModel->create( array( 'relation' => '', 'answer' => 42 ) ) );
 		$id = $newModel->id();
 		$this->assertTrue( !empty( $id ) );
 		$this->assertEquals( null, $newModel->relation );
 		$this->assertEquals( 42, $newModel->answer );
 	}
 
+	function testCreateMutable()
+	{
+		$newModel = new TestModel2;
+		$this->assertTrue( $newModel->create( array( 'id' => 1, 'id2' => 2, 'required' => 'yes' ) ) );
+		$this->assertEquals( '1,2', $newModel->id() );
+	}
+
 	function testCreateNoPermission()
 	{
-		$this->assertFalse( TestModelNoPermission::create( array() ) );
+		ErrorStack::stack()->clear();
+		$newModel = new TestModelNoPermission;
+		$this->assertFalse( $newModel->create( array() ) );
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.create' ) );
 	}
 
 	function testCreateHookFail()
 	{
-		$this->assertFalse( TestModelHookFail::create( array() ) );
+		$newModel = new TestModelHookFail;
+		$this->assertFalse( $newModel->create( array() ) );
 	}
 
 	function testCreateNotUnique()
@@ -265,12 +264,18 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreateInvalid()
 	{
-		// TODO
+		ErrorStack::stack()->clear();
+		$newModel = new TestModel2;
+		$this->assertFalse( $newModel->create( array( 'id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true ) ) );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
 	}
 
 	function testCreateMissingRequired()
 	{
-		
+		ErrorStack::stack()->clear();
+		$newModel = new TestModel2;
+		$this->assertFalse( $newModel->create( array( 'id' => 10, 'id2' => 1 ) ) );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
 	}
 
 	function testSet()
@@ -363,7 +368,7 @@ class TestModel extends Model
 	var $preDelete;
 	var $postDelete;
 
-	function can( $permission, AclRequester $requester )
+	protected function hasPermission( $permission, Model $requester )
 	{
 		return true;
 	}
@@ -404,30 +409,53 @@ class TestModel extends Model
 
 class TestModel2 extends Model
 {
-	static $idProperty = array( 'id', 'id2' );
 	static $properties = array(
 		'id' => array(
-			'type' => 'id'
+			'type' => 'id',
+			'mutable' => true
 		),
 		'id2' => array(
-			'type' => 'id'
+			'type' => 'id',
+			'mutable' => true
 		),
 		'default' => array(
 			'type' => 'text',
 			'default' => 'some default value'
+		),
+		'validate' => array(
+			'type' => 'text',
+			'validate' => 'email',
+			'null' => true
+		),
+		'unique' => array(
+			'type' => 'text',
+			'unique' => true
+		),
+		'required' => array(
+			'type' => 'text',
+			'required' => true
 		)
 	);
-	static $hasSchema = false;
 
-	function can( $permission, AclRequester $requester )
+	protected function hasPermission( $permission, Model $requester )
 	{
 		return true;
+	}
+
+	static function idProperty()
+	{
+		return array( 'id', 'id2' );
+	}
+
+	static function hasSchema()
+	{
+		return false;
 	}
 }
 
 class TestModelNoPermission extends Model
 {
-	function can( $permission, AclRequester $requester )
+	protected function hasPermission( $permission, Model $requester )
 	{
 		return false;
 	}
@@ -435,7 +463,7 @@ class TestModelNoPermission extends Model
 
 class TestModelHookFail extends Model
 {
-	function can( $permission, AclRequester $requester )
+	protected function hasPermission( $permission, Model $requester )
 	{
 		return true;
 	}
@@ -456,10 +484,10 @@ class TestModelHookFail extends Model
 	}
 }
 
-class Person extends Model implements AclRequester
+class Person extends Model
 {
-	public function groups( $owner )
+	protected function hasPermission( $permission, Model $requester )
 	{
-		return array();
+		return false;
 	}
 }
