@@ -11,32 +11,24 @@
 
 namespace infuse\Session;
 
-class Redis
+class Redis implements \SessionHandlerInterface
 {
 	private $prefix;
 	
-	static function start( $redis_conf = array(), $prefix = '' )
+	static function start( array $redisConf = array(), $prefix = '' )
 	{
-		$obj = new self( $redis_conf, $prefix );
+		$obj = new self( $redisConf, $prefix );
 
-		session_set_save_handler(
-			array( $obj, 'open' ),
-			array( $obj, 'close' ),
-			array( $obj, 'read' ),
-			array( $obj, 'write' ),
-			array( $obj, 'destroy' ),
-			array( $obj, 'gc' ) );
-
+		session_set_save_handler( $obj, true );
 		session_start();
 
 		return $obj;
 	}
 	
-	function __construct( $redis_conf, $prefix )
+	function __construct( array $redisConf, $prefix )
 	{
 		$this->prefix = 'php.session.' . $prefix . '.';
-
-		$this->redis = new \Predis\Client( $redis_conf );
+		$this->redis = new \Predis\Client( $redisConf );
 	}
 	
 	/**
@@ -81,9 +73,9 @@ class Redis
 	 * open() and close() have no practical meaning in terms of non-shared Redis connections
 	 * Garbage collection is handled by Redis with ttls.
 	 */
-	function open( $path, $name ) {}
-	function close() {}
-	function gc( $age ) {}
+	function open( $path, $name ) { return true; }
+	function close() { return true; }
+	function gc( $age ) { return true; }
 }
 
 // the following prevents unexpected effects when using objects as save handlers

@@ -27,7 +27,8 @@
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
 		"monolog/monolog": "1.7.0",
-		"smarty/smarty": "v3.1.18"
+		"smarty/smarty": "v3.1.18",
+		"predis/predis": "v0.8.4"
 	},
     "suggest": {
     	"leafo/lessphp": "Can compile LESS stylesheets",

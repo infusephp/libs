@@ -11,9 +11,19 @@
 
 namespace infuse\Session;
 
-class Database
+class Database implements \SessionHandlerInterface
 {
 	private $tablename = 'Sessions';
+
+	/**
+	 * Installs schema for handling sessions in a database
+	 *
+	 * @return boolean success
+	 */
+	static function install()
+	{
+		return \infuse\Database::sql( 'CREATE TABLE IF NOT EXISTS `Sessions` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
+	}
 
 	/**
 	 * Starts the session using this handler
@@ -24,37 +34,11 @@ class Database
 	{
 		$obj = new self();
 
-		session_set_save_handler(
-			array( $obj, 'open' ),
-			array( $obj, 'close' ),
-			array( $obj, 'read' ),
-			array( $obj, 'write' ),
-			array( $obj, 'destroy' ),
-			array( $obj, 'gc' ) );
+		session_set_save_handler( $obj, true );
 
 		session_start();
 
 		return $obj;
-	}
-
-	/**
-	 * Opens a session
-	 *
-	 * @return boolean success
-	 */
-	function open()
-	{
-		return true;
-	}
-
-	/**
-	 * Closes a session
-	 *
-	 * @return boolean success
-	 */
-	function close()
-	{
-		return true;
 	}
 
 	/**
@@ -126,15 +110,9 @@ class Database
 	}
 
 	/**
-	 * Installs schema for handling sessions in a database
-	 *
-	 * @return boolean success
+	 * These functions are all noops for various reasons...
+	 * open() and close() have no practical meaning in terms of database connections
 	 */
-	static function install()
-	{
-		return \infuse\Database::sql( 'CREATE TABLE IF NOT EXISTS `Sessions` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
-	}
+	function open( $path, $name ) { return true; }
+	function close() { return true; }
 }
-
-// the following prevents unexpected effects when using objects as save handlers
-register_shutdown_function( 'session_write_close' );
