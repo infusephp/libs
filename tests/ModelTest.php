@@ -167,7 +167,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$expected = array(
 			'id' => 5,
-			'relation' => 'test'
+			'relation' => 'test',
+			'answer' => null
 		);
 
 		$this->assertEquals( $expected, $model->toArray() );
@@ -182,7 +183,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 			'id' => 5
 		);
 
-		$this->assertEquals( $expected, $model->toArray( array( 'relation' ) ) );
+		$this->assertEquals( $expected, $model->toArray( array( 'relation', 'answer' ) ) );
 	}
 
 	function testToJson()
@@ -190,7 +191,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$this->assertEquals( '{"id":5,"relation":"test"}', $model->toJson() );
+		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson() );
 	}
 
 	function testHasSchema()
@@ -240,7 +241,22 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testSet()
 	{
+		$model = new TestModel( 10 );
 
+		$this->assertTrue( $model->set( 'answer', 42 ) );
+		$this->assertEquals( 42, $model->answer );
+	}
+
+	function testSetMultiple()
+	{
+		$model = new TestModel( 11 );
+
+		$this->assertTrue( $model->set( array(
+			'answer' => 'hello',
+			'relation' => 'anyone there?',
+			'nonexistent property' => 'whatever' ) ) );
+		$this->assertEquals( 'hello', $model->answer );
+		$this->assertEquals( 'anyone there?', $model->relation );
 	}
 
 	function testSetNoPermission()
@@ -294,6 +310,9 @@ class TestModel extends Model
 		'relation' => array(
 			'type' => 'id',
 			'relation' => 'TestModel2'
+		),
+		'answer' => array(
+			'type' => 'string'
 		)
 	);
 

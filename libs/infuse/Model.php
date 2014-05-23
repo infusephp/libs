@@ -461,37 +461,11 @@ abstract class Model extends Acl
 				
 				// validate
 				if( isset( $property[ 'validate' ] ) )
-				{
-					if( is_callable( $property[ 'validate' ] ) )
-					{
-						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$thisIsValid = false;
-					}
-					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$thisIsValid = false;
-					
-					if( !$thisIsValid )
-						ErrorStack::add( array(
-							'error' => VALIDATION_FAILED,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
-				}
-				
-				// check for uniqueness
+					$thisIsValid = $this->validate( $property, $field, $value );
+
+				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
-				{
-					if( static::totalRecords( array( $field => $value ) ) > 0 )
-					{
-						ErrorStack::add( array(
-							'error' => VALIDATION_NOT_UNIQUE,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
-					
-						$thisIsValid = false;
-					}
-				}
+					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -671,37 +645,11 @@ abstract class Model extends Acl
 				
 				// validate
 				if( isset( $property[ 'validate' ] ) )
-				{
-					if( is_callable( $property[ 'validate' ] ) )
-					{
-						if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
-							$thisIsValid = false;
-					}
-					else if( !Validate::is( $value, $property[ 'validate' ] ) )
-						$thisIsValid = false;
-					
-					if( !$thisIsValid )
-						ErrorStack::add( array(
-							'error' => VALIDATION_FAILED,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
-				}
+					$thisIsValid = $this->validate( $property, $field, $value );
 				
-				// check for uniqueness
+				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
-				{
-					if( static::totalRecords( array( $field => $value ) ) > 0 )
-					{
-						ErrorStack::add( array(
-							'error' => VALIDATION_NOT_UNIQUE,
-							'params' => array(
-								'field' => $field,
-								'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );					
-					
-						$thisIsValid = false;
-					}
-				}
+					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -1348,5 +1296,43 @@ abstract class Model extends Acl
 				unset( $properties[ $index ] );
 			}
 		}
+	}
+
+	private function validate( $property, $field, $value )
+	{
+		$valid = true;
+
+		if( is_callable( $property[ 'validate' ] ) )
+		{
+			if( !call_user_func_array( $property[ 'validate' ], array( &$value ) ) )
+				$valid = false;
+		}
+		else if( !Validate::is( $value, $property[ 'validate' ] ) )
+			$valid = false;
+		
+		if( !$valid )
+			ErrorStack::add( array(
+				'error' => VALIDATION_FAILED,
+				'params' => array(
+					'field' => $field,
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+
+		return $valid;
+	}
+
+	private function checkUniqueness( $property, $field, $value )
+	{
+		if( static::totalRecords( array( $field => $value ) ) > 0 )
+		{
+			ErrorStack::add( array(
+				'error' => VALIDATION_NOT_UNIQUE,
+				'params' => array(
+					'field' => $field,
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::humanize( $field ) ) ) );
+			
+			return false;
+		}
+
+		return true;
 	}
 }
