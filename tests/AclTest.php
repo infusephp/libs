@@ -5,7 +5,7 @@
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
  * @version 0.1.20
- * @copyright 2013 Jared King
+ * @copyright 2014 Jared King
  * @license MIT
  */
 
