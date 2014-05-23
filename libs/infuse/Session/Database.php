@@ -11,9 +11,11 @@
 
 namespace infuse\Session;
 
+use infuse\Database as Db;
+
 class Database implements \SessionHandlerInterface
 {
-	private $tablename = 'Sessions';
+	private static $tablename = 'Sessions';
 
 	/**
 	 * Installs schema for handling sessions in a database
@@ -22,7 +24,7 @@ class Database implements \SessionHandlerInterface
 	 */
 	static function install()
 	{
-		return \infuse\Database::sql( 'CREATE TABLE IF NOT EXISTS `Sessions` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
+		return Db::sql( 'CREATE TABLE IF NOT EXISTS `' . self::$tablename . '` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
 	}
 
 	/**
@@ -50,8 +52,8 @@ class Database implements \SessionHandlerInterface
 	 */
 	function read( $id )
 	{
-		return Database::select(
-			$this->tablename,
+		return Db::select(
+			self::$tablename,
 			'session_data',
 			array(
 				'where' => array(
@@ -72,10 +74,10 @@ class Database implements \SessionHandlerInterface
 	 */
 	function write( $id, $data )
 	{
-		Database::delete( 'Sessions', array( 'id' => $id ) );
+		Db::delete( 'Sessions', array( 'id' => $id ) );
 
-		return Database::insert(
-			$this->tablename,
+		return Db::insert(
+			self::$tablename,
 			array(
 				'id' => $id,
 				'access' => time(),
@@ -91,7 +93,7 @@ class Database implements \SessionHandlerInterface
 	 */
 	function destroy( $id )
 	{
-		return Database::delete( $this->tablename, array( 'id' => $id ) );
+		return Db::delete( self::$tablename, array( 'id' => $id ) );
 	}
 
 	/**
@@ -104,7 +106,7 @@ class Database implements \SessionHandlerInterface
 	function gc( $max )
 	{
 		// delete sessions older than max TTL
-		Database::delete( $this->tablename, array( 'access < ' . (time() - $max) ) );
+		Db::delete( self::$tablename, array( 'access < ' . (time() - $max) ) );
 		
 		return true;
 	}
