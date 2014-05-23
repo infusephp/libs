@@ -342,9 +342,9 @@ class ViewEngine
 	 *
 	 * @param array $data key-value array
 	 */
-	function assignData( $data )
+	function assignData( array $data )
 	{
-		foreach( (array)$data as $key => $value )
+		foreach( $data as $key => $value )
 			$this->assign( $key, $value );	
 	}
 	
