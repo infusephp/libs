@@ -45,9 +45,7 @@ class ViewEngineTest extends \PHPUnit_Framework_TestCase
 		self::$engine = ViewEngine::engine();
 		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
 
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        // TODO
 	}
 
 	function testRenderPhp()
@@ -56,9 +54,7 @@ class ViewEngineTest extends \PHPUnit_Framework_TestCase
 		self::$engine = ViewEngine::engine();
 		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
 
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        // TODO
 	}
 
 	function testCompileLess()
