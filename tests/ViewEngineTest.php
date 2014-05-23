@@ -13,10 +13,70 @@ use infuse\ViewEngine;
 
 class ViewEngineTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
+	static $engine;
+
+	static function setUpBeforeClass()
+	{
+		self::$engine = ViewEngine::engine();
+	}
+
+	function testEngine()
 	{
 		$engine = ViewEngine::engine();
-		
+		$this->assertInstanceOf( '\\infuse\\ViewEngine', $engine );
+	}
+
+	function testSmarty()
+	{
+		$this->assertInstanceOf( 'Smarty', self::$engine->smarty() );
+	}
+
+	function testAssetUrl()
+	{
+		ViewEngine::configure( array(
+			'assetsBaseUrl' => 'http://localhost' ) );
+		self::$engine = ViewEngine::engine();
+		$this->assertEquals( 'http://localhost/test', self::$engine->asset_url( '/test' ) );
+	}
+
+	function testRenderSmarty()
+	{
+		ViewEngine::configure( array( 'engine' => 'smarty' ) );
+		self::$engine = ViewEngine::engine();
+		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
+
+        $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+        );
+	}
+
+	function testRenderPhp()
+	{
+		ViewEngine::configure( array( 'engine' => 'php' ) );
+		self::$engine = ViewEngine::engine();
+		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
+
+        $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+        );
+	}
+
+	function testCompileLess()
+	{
+        $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+        );
+	}
+
+	function testCompileJs()
+	{
+        $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+        );
+	}
+
+	function testCompileAngularTemplates()
+	{
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );

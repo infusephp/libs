@@ -25,10 +25,10 @@
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
-		"monolog/monolog": "1.7.0"
+		"monolog/monolog": "1.7.0",
+		"smarty/smarty": "v3.1.18"
 	},
     "suggest": {
-    	"smarty/smarty": "Templating engine supported by infuse/libs",
     	"leafo/lessphp": "Can compile LESS stylesheets",
     	"linkorb/jsmin-php": "Required for JS minification",
     	"monolog/monolog": "Awesome logging library",

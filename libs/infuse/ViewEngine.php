@@ -18,7 +18,8 @@ class ViewEngine
 		'viewsDir' => 'views',
 		'compileDir' => 'temp/smarty',
 		'cacheDir' => 'temp/smarty/cache',
-		'assetVersionsFile' => 'temp/asset_version_numbers.json'
+		'assetVersionsFile' => 'temp/asset_version_numbers.json',
+		'assetsBaseUrl' => ''
 	);
 	
 	private static $extensionMap = array(
@@ -34,6 +35,7 @@ class ViewEngine
 	private $cacheDir;
 	private $assetVersionsFile;
 	private $assetVersionNumbers;
+	private $assetsBaseUrl;
 	
 	private $smarty;
 
@@ -44,7 +46,7 @@ class ViewEngine
 	 *
 	 * @param array $options
 	 */
-	static function configure( $options )
+	static function configure( array $options )
 	{
 		self::$engine = new self( $options );
 	}
@@ -54,7 +56,7 @@ class ViewEngine
 	 *
 	 * @param array $options
 	 */
-	function __construct( $options = array() )
+	function __construct( array $options = array() )
 	{
 		$options = array_replace( static::$defaultOptions, $options );
 		
@@ -63,6 +65,7 @@ class ViewEngine
 		$this->compileDir = $options[ 'compileDir' ];
 		$this->cacheDir = $options[ 'cacheDir' ];
 		$this->assetVersionsFile = $options[ 'assetVersionsFile' ];
+		$this->assetsBaseUrl = $options[ 'assetsBaseUrl' ];
 	}
 	
 	/**
@@ -86,7 +89,7 @@ class ViewEngine
 		}
 		
 		$v = Util::array_value( $this->assetVersionNumbers, $location );
-		return Config::get( 'assets.base_url' ) . $location . (($v)?'?v=' . $v : '') ;
+		return $this->assetsBaseUrl . $location . (($v)?'?v=' . $v : '') ;
 	}
 
 	/**
