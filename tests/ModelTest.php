@@ -241,7 +241,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$newModel = TestModel::create( array( 'relation' => '', 'answer' => 42 ) );
 		
 		$this->assertInstanceOf( 'TestModel', $newModel );
-		$this->assertTrue( !empty( $newModel->id() ) );
+		$id = $newModel->id();
+		$this->assertTrue( !empty( $id ) );
 		$this->assertEquals( null, $newModel->relation );
 		$this->assertEquals( 42, $newModel->answer );
 	}
