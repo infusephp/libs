@@ -22,6 +22,10 @@ Use phpunit to run the included tests (more tests coming later):
 phpunit
 ```
 
+## Requirements
+
+- PHP 5.4+
+
 ## Contributing
 
 Please feel free to contribute by participating in the issues or by submitting a pull request. :-)
