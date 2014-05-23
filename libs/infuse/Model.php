@@ -278,8 +278,8 @@ abstract class Model extends Acl
 			'class_name' => $class_name,
 			'singular_key' => $singularKey,
 			'plural_key' => $pluralKey,
-			'proper_name' => Inflector::humanize( $singularKey ),
-			'proper_name_plural' => Inflector::humanize( $pluralKey ) );
+			'proper_name' => Inflector::titleize( $singularKey ),
+			'proper_name_plural' => Inflector::titleize( $pluralKey ) );
 	}
 
 	/**

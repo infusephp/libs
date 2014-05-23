@@ -21,7 +21,8 @@
         "psr-0": {"infuse\\": "libs/"}
     },
 	"require": {
-		"php": ">=5.3.0"
+		"php": ">=5.3.0",
+		"icanboogie/inflector": "v1.2"
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
