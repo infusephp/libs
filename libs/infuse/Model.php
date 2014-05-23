@@ -1169,6 +1169,9 @@ abstract class Model extends Acl
 	 */
 	function invalidateCachedProperty( $property )
 	{
+		if( $property == 'id' )
+			return;
+		
 		/* Local Cache */
 		unset( $this->localCache[ $property ] );
 
@@ -1183,11 +1186,13 @@ abstract class Model extends Acl
 	 */
 	function emptyCache()
 	{
-		foreach( static::$properties as $property => $info )
-		{
-			if( !static::isIdProperty( $property ) )
-				$this->invalidateCachedProperty( $property );
-		}
+		// explicitly clear all properties and any other values in cache
+		$properties = array_unique( array_merge(
+			array_keys( static::$properties ),
+			array_keys( $this->localCache ) ) );
+
+		foreach( $properties as $property )
+			$this->invalidateCachedProperty( $property );
 	}
 
 	/////////////////////////////

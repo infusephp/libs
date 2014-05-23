@@ -77,6 +77,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$model->test = 12345;
 		$this->assertEquals( 12345, $model->test );
+
+		$model->null = null;
+		$this->assertEquals( null, $model->null );
 	}
 
 	function testIsset()
@@ -221,14 +224,26 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testInvalidateCache()
 	{
 		$model = new testModel( 4 );
-		// TODO
+
+		$model->answer = 42;
+		$model->test = 1234;
+		$this->assertTrue( isset( $model->answer ) );
+		$this->assertTrue( isset( $model->test ) );
+
 		$model->emptyCache();
-		// TODO
+
+		$this->assertNotEquals( 42, $model->answer );
+		$this->assertFalse( isset( $model->test ) );
 	}
 
 	function testCreate()
 	{
-		// TODO
+		$newModel = TestModel::create( array( 'relation' => '', 'answer' => 42 ) );
+		
+		$this->assertInstanceOf( 'TestModel', $newModel );
+		$this->assertTrue( !empty( $newModel->id() ) );
+		$this->assertEquals( null, $newModel->relation );
+		$this->assertEquals( 42, $newModel->answer );
 	}
 
 	function testCreateNoPermission()
@@ -250,6 +265,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testCreateInvalid()
 	{
 		// TODO
+	}
+
+	function testCreateMissingRequired()
+	{
+		
 	}
 
 	function testSet()
@@ -339,6 +359,8 @@ class TestModel extends Model
 			'type' => 'string'
 		)
 	);
+	var $preDelete;
+	var $postDelete;
 
 	function can( $permission, AclRequester $requester )
 	{
