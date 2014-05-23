@@ -225,7 +225,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreate()
 	{
-
+		// TODO
 	}
 
 	function testCreateNoPermission()
@@ -237,6 +237,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testCreateHookFail()
 	{
 		$this->assertFalse( TestModelHookFail::create( array() ) );
+	}
+
+	function testCreateNotUnique()
+	{
+		// TODO
+	}
+
+	function testCreateInvalid()
+	{
+		// TODO
 	}
 
 	function testSet()
@@ -253,10 +263,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue( $model->set( array(
 			'answer' => 'hello',
-			'relation' => 'anyone there?',
+			'relation' => '',
 			'nonexistent_property' => 'whatever' ) ) );
 		$this->assertEquals( 'hello', $model->answer );
-		$this->assertEquals( 'anyone there?', $model->relation );
+		$this->assertEquals( null, $model->relation );
 	}
 
 	function testSetNoPermission()
@@ -270,6 +280,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$model = new TestModelHookFail( 5 );
 		$this->assertFalse( $model->set( 'answer', 42 ) );
+	}
+
+	function testSetNotUnique()
+	{
+		// TODO
+	}
+
+	function testSetInvalid()
+	{
+		// TODO
 	}
 
 	function testDelete()
@@ -309,7 +329,8 @@ class TestModel extends Model
 		),
 		'relation' => array(
 			'type' => 'id',
-			'relation' => 'TestModel2'
+			'relation' => 'TestModel2',
+			'null' => true
 		),
 		'answer' => array(
 			'type' => 'string'
