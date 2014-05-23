@@ -1,22 +1,22 @@
 language: php
 
 php:
-	- 5.6
-	- 5.5
-	- 5.4
-	- hhvm
+    - 5.6
+    - 5.5
+    - 5.4
+    - hhvm
 
 matrix:
-	allow_failures:
-		- php: hhvm
+    allow_failures:
+        - php: hhvm
 
 before_script:
-	- composer self-update
-	- composer install
+    - composer self-update
+    - composer install
 
 script:
-	- mkdir -p build/logs
-	- phpunit
+    - mkdir -p build/logs
+    - phpunit
 
 after_script:
-	- vendor/bin/coveralls
+    - vendor/bin/coveralls
