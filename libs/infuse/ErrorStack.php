@@ -198,24 +198,4 @@ class ErrorStack
 	{
 		$this->stack = array();
 	}
-	
-	/////////////////////////
-	// DEPRECATED
-	/////////////////////////
-
-	/**
-	 * @deprecated
-	 */
-	static function setContext( $context )
-	{
-		self::stack()->setCurrentContext( $context );
-	}
-	
-	/**
-	 * @deprecated
-	 */
-	static function clearContext( )
-	{
-		self::stack()->clearCurrentContext();
-	}
 }

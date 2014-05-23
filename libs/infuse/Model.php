@@ -423,7 +423,7 @@ abstract class Model extends Acl
 	 */
 	function create( array $data )
 	{
-		ErrorStack::setContext( static::modelName() . '.create' );
+		ErrorStack::stack()->setCurrentContext( static::modelName() . '.create' );
 
 		// permission?
 		if( !$this->can( 'create', static::$config[ 'requester' ] ) )
@@ -637,7 +637,7 @@ abstract class Model extends Acl
 	 */
 	function set( $data, $value = false )
 	{
-		ErrorStack::setContext( static::modelName() . '.set' );
+		ErrorStack::stack()->setCurrentContext( static::modelName() . '.set' );
 	
 		// permission?
 		if( !$this->can( 'edit', static::$config[ 'requester' ] ) )
@@ -726,7 +726,7 @@ abstract class Model extends Acl
 	 */
 	function delete()
 	{
-		ErrorStack::setContext( static::modelName() . '.delete' );
+		ErrorStack::stack()->setCurrentContext( static::modelName() . '.delete' );
 
 		// permission?
 		if( !$this->can( 'delete', static::$config[ 'requester' ] ) )
