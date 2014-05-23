@@ -87,6 +87,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$model->test = 12345;
 		$this->assertTrue( isset( $model->test ) );
+
+		$model->null = null;
+		$this->assertTrue( isset( $model->null ) );
 	}
 
 	function testUnset()

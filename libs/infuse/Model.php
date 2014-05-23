@@ -228,7 +228,7 @@ abstract class Model extends Acl
 	 */
 	function __isset( $name )
 	{
-		return isset( $this->localCache[ $name ] ) || $this->hasProperty( $name );
+		return array_key_exists( $name, $this->localCache ) || $this->hasProperty( $name );
 	}
 
 	/**
@@ -238,7 +238,7 @@ abstract class Model extends Acl
 	 */
 	function __unset( $name )
 	{
-		if( isset( $this->localCache[ $name ] ) )
+		if( array_key_exists( $name, $this->localCache ) )
 			unset( $this->localCache[ $name ] );
 	}
 		
@@ -536,6 +536,7 @@ abstract class Model extends Acl
 	 */
 	function get( $properties, $skipLocalCache = false, $forceReturnArray = false )
 	{
+		$show = $properties == 'relation';
 		if( is_string( $properties ) )
 			$properties = explode( ',', $properties );
 		else
@@ -568,7 +569,6 @@ abstract class Model extends Acl
 		}
 
 		// TODO should we throw a notice if properties are remaining?
-
 		return ( !$forceReturnArray && count( $values ) == 1 ) ? reset( $values ) : $values;
 	}
 	
@@ -658,11 +658,10 @@ abstract class Model extends Acl
 		{
 			// update the cache with our new values
 			$this->cacheProperties( $updateArray );
-			
 			// post-hook
 			if( method_exists( $this, 'postSetHook' ) )
 				$this->postSetHook();
-			
+
 			return true;
 		}
 		
@@ -1227,7 +1226,7 @@ abstract class Model extends Acl
 	{
 		foreach( $properties as $property )
 		{
-			if( isset( $this->localCache[ $property ] ) )
+			if( array_key_exists( $property, $this->localCache ) )
 			{
 				$values[ $property ] = $this->localCache[ $property ];
 
