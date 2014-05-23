@@ -58,7 +58,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
 		$test = [
 			$password,
-			Util::encrypt_password( $password ),
+			Util::encrypt_password( $password, 'salt should not be empty' ),
 			Util::encrypt_password( $password, 'this is our salt' ),
 			Util::encrypt_password( $password, 'this is our salt', 123456 ) ];
 
