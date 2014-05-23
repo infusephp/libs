@@ -9,9 +9,9 @@
  * @license MIT
  */
 
-return array(
-	'phrases' => array(
+return [
+	'phrases' => [
 		'test_phrase' => 'This is a test',
 		'parameter_injection' => 'Testing parameter injection: {{parameter_1}} {{blah}} {{test}}',
-	)
-);
+	]
+];

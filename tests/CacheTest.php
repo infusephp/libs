@@ -17,7 +17,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		self::$cache = new Cache( array( 'local' ), array( 'local' => array( 'prefix' => 'test' ) ) );
+		self::$cache = new Cache( [ 'local' ], [ 'local' => [ 'prefix' => 'test' ] ] );
 	}
 
 	protected function assertPreConditions()
@@ -27,7 +27,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
 	public function testConstruct()
 	{
-		$cache = new Cache( array( 'local' ), array( 'local' => array( 'prefix' => 'test' ) ) );
+		$cache = new Cache( [ 'local' ], [ 'local' => [ 'prefix' => 'test' ] ] );
 		$this->assertInstanceOf( '\\infuse\\Cache', $cache );
 
 		$cache = new Cache();
@@ -47,11 +47,11 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 100, self::$cache->get( 'test.key' ) );
 
-		$expected = array( 'test.key' => 100, 'test.key.2' => 101 );
-		$this->assertEquals( $expected, self::$cache->get( array( 'test.key', 'test.key.2' ) ) );
+		$expected = [ 'test.key' => 100, 'test.key.2' => 101 ];
+		$this->assertEquals( $expected, self::$cache->get( [ 'test.key', 'test.key.2' ] ) );
 
-		$expected = array( 'test.key.2' => 101 );
-		$this->assertEquals( $expected, self::$cache->get( array( 'test.key.2' ), true ) );
+		$expected = [ 'test.key.2' => 101 ];
+		$this->assertEquals( $expected, self::$cache->get( [ 'test.key.2' ], true ) );
 
 		$this->assertNull( self::$cache->get( 'does.not.exist' ) );
 	}
@@ -130,7 +130,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testBogusStrategy()
 	{
-		$cache = new Cache( array( 'non_existent_strategy' ) );
+		$cache = new Cache( [ 'non_existent_strategy' ] );
 		$this->assertInstanceOf( '\\infuse\\Cache', $cache );
 
 		$this->assertFalse( $cache->set( 'test', 123 ) );

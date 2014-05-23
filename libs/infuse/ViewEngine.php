@@ -13,19 +13,19 @@ namespace infuse;
 
 class ViewEngine
 {		
-	private static $defaultOptions = array(
+	private static $defaultOptions = [
 		'engine' => 'smarty',
 		'viewsDir' => 'views',
 		'compileDir' => 'temp/smarty',
 		'cacheDir' => 'temp/smarty/cache',
 		'assetVersionsFile' => 'temp/asset_version_numbers.json',
 		'assetsBaseUrl' => ''
-	);
+	];
 	
-	private static $extensionMap = array(
+	private static $extensionMap = [
 		'smarty' => '.tpl',
 		'php' => '.php'
-	);
+	];
 	
 	private static $engine;
 	
@@ -56,7 +56,7 @@ class ViewEngine
 	 *
 	 * @param array $options
 	 */
-	function __construct( array $options = array() )
+	function __construct( array $options = [] )
 	{
 		$options = array_replace( static::$defaultOptions, $options );
 		
@@ -82,7 +82,7 @@ class ViewEngine
 		// load asset version numbers (if they exist)
 		if( !$this->assetVersionNumbers )
 		{
-			$versionNumbers = array();
+			$versionNumbers = [];
 			if( file_exists( $this->assetVersionsFile ) )
 				$versionNumbers = json_decode( file_get_contents( $this->assetVersionsFile ), true );
 			$this->assetVersionNumbers = $versionNumbers;
@@ -100,7 +100,7 @@ class ViewEngine
 	 *
 	 * @return string rendered template
 	 */
-	function render( $template, $parameters = array() )
+	function render( $template, $parameters = [] )
 	{
 		$extension = self::$extensionMap[ $this->type ];
 		
@@ -202,9 +202,9 @@ class ViewEngine
 			// sort js files by name
 			sort( $jsFiles );
 			
-			$newCache = array(
+			$newCache = [
 				'md5' => $this->md5OfDir( $jsFiles ),
-				'production' => $productionLevel );
+				'production' => $productionLevel ];
 			
 			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || $newCache[ 'production' ] != $cache[ 'production' ] || !file_exists( $output ) )
 			{
@@ -264,8 +264,8 @@ class ViewEngine
 			// sort js files by name
 			sort( $angFiles );
 			
-			$newCache = array(
-				'md5' => $this->md5OfDir( $angFiles ) );
+			$newCache = [
+				'md5' => $this->md5OfDir( $angFiles ) ];
 			
 			if( !is_array( $cache ) || $newCache[ 'md5' ] != $cache[ 'md5' ] || !file_exists( $output ) )
 			{
@@ -311,7 +311,7 @@ class ViewEngine
 	{
 		try
 		{
-			$versionNums = array();
+			$versionNums = [];
 
 			foreach( $dirs as $startDir )
 			{

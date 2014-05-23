@@ -15,20 +15,20 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 {
 	public function testArrayValue()
 	{
-		$a = array(
+		$a = [
 			'test' => 2,
-			'test2' => array(
-				'3' => array(
-					'4' => array(
+			'test2' => [
+				'3' => [
+					'4' => [
 						'asldfj'
-					),
-				),
+					],
+				],
 				'5' => 1234
-			)
-		);
+			]
+		];
 
 		$this->assertEquals( Util::array_value( $a, 'test' ), 2 );
-		$this->assertEquals( Util::array_value( $a, 'test2.3.4' ), array( 'asldfj' ) );
+		$this->assertEquals( Util::array_value( $a, 'test2.3.4' ), [ 'asldfj' ] );
 		$this->assertEquals( Util::array_value( $a, 'test2.5' ), 1234 );
 
 		$this->assertNull( Util::array_value( $a, 'nonexistent' ) );
@@ -37,10 +37,10 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
 	public function testArraySet()
 	{
-		$a = array();
+		$a = [];
 
 		Util::array_set( $a, '1.2.3.4.5', 'test' );
-		$expected = array( '1' => array( '2' => array( '3' => array( '4' => array( '5' => 'test' ) ) ) ) );
+		$expected = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
 		$this->assertEquals( $expected, $a );
 
 		Util::array_set( $a, 'test', 'ok?' );
@@ -56,11 +56,11 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 	{
 		$password = 'most-secure-p4ssw0rd ever';
 
-		$test = array(
+		$test = [
 			$password,
 			Util::encrypt_password( $password ),
 			Util::encrypt_password( $password, 'this is our salt' ),
-			Util::encrypt_password( $password, 'this is our salt', 123456 ) );
+			Util::encrypt_password( $password, 'this is our salt', 123456 ) ];
 
 		// test each combination once to ensure they are not equal
 		for( $i = 0; $i < count( $test ); $i++ )
@@ -144,7 +144,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
 	public function testPrintPre()
 	{
-		$test = array( 'test' => array( 'who' => 'dat' ) );
+		$test = [ 'test' => [ 'who' => 'dat' ] ];
 
 		ob_start();
 		Util::print_pre( $test );

@@ -40,7 +40,7 @@ class Request
 	 */
 	function __construct( $query = null, $request = null, $cookies = null, $files = null, $server = null, $session = null )
 	{
-		$this->params = array();
+		$this->params = [];
 		
 		if( $query )
 			$this->query = $query;
@@ -65,9 +65,9 @@ class Request
 		else if( isset( $_SESSION ) )
 			$this->session = $_SESSION;
 		else
-			$this->session = array();
+			$this->session = [];
 		
-		$this->server = array_replace( array(
+		$this->server = array_replace( [
             'SERVER_NAME' => 'localhost',
             'SERVER_PORT' => 80,
             'HTTP_HOST' => 'localhost',
@@ -81,7 +81,7 @@ class Request
             'SERVER_PROTOCOL' => 'HTTP/1.1',
             'REQUEST_METHOD' => 'GET',
             'REQUEST_TIME' => time()
-        ), $server );
+        ], $server );
 
 		// remove slash in front of requested url
 		$this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $this->server, 'REQUEST_URI' ), '', 0, 1 );
@@ -94,7 +94,7 @@ class Request
 			$docParts = explode( '/', substr_replace( $this->server[ 'DOCUMENT_URI' ], '', 0, 1 ) );
 			$uriParts = explode( '/', $this->server[ 'REQUEST_URI' ] );
 			
-			$basePaths = array();
+			$basePaths = [];
 
 			// uriParts = uriParts - $docParts
 			// basePaths = docParts - uriParts
@@ -140,7 +140,7 @@ class Request
 		// parse request body
 		$this->request = $request;
 
-		if( !$request && in_array( $this->method(), array( 'POST', 'PUT' ) ) )
+		if( !$request && in_array( $this->method(), [ 'POST', 'PUT' ] ) )
 		{
 			$contentType = $this->contentType();
 
@@ -166,7 +166,7 @@ class Request
 		// DELETE and PUT requests can come through POST
 		$requestMethodFromPost = Util::array_value( (array)$this->request, 'method' );
 		if( $this->method() == 'POST' &&
-			in_array( $requestMethodFromPost, array( 'PUT', 'DELETE' ) ) )
+			in_array( $requestMethodFromPost, [ 'PUT', 'DELETE' ] ) )
 		{
 			$this->server[ 'REQUEST_METHOD' ] = $requestMethodFromPost;
 		}
@@ -302,7 +302,7 @@ class Request
 	function url()
 	{
 		$port = $this->port();
-		if( !in_array( $port, array( 80, 443 ) ) )
+		if( !in_array( $port, [ 80, 443 ] ) )
 			$port = ':' . $port;
 		else
 			$port = '';
@@ -502,7 +502,7 @@ class Request
 	 *
 	 * @param array $params parameters to add
 	 */
-	function setParams( $params = array() )
+	function setParams( $params = [] )
 	{
 		$this->params = array_replace( $this->params, (array)$params );
 	}
@@ -630,8 +630,8 @@ class Request
 	 */
 	function destroySession()
 	{
-		$_SESSION = array();
-		$this->session = array();
+		$_SESSION = [];
+		$this->session = [];
 	}
 
 	/**
@@ -655,13 +655,13 @@ class Request
 	
 	private function parseHeaders( $parameters )
 	{
-        $headers = array();
+        $headers = [];
         foreach( $parameters as $key => $value )
         {
             if( 0 === strpos( $key, 'HTTP_' ) )
                 $headers[ substr( $key, 5 ) ] = $value;
             // CONTENT_* are not prefixed with HTTP_
-            elseif( in_array( $key, array( 'CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE' ) ) )
+            elseif( in_array( $key, [ 'CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE' ] ) )
                 $headers[ $key ] = $value;
         }
 
@@ -727,15 +727,15 @@ class Request
 				if( !isset( $typeArr[ 1 ] ) )
 					$typeArr[ 1 ] = '';
 				list($main_type, $sub_type) = array_map('trim', $typeArr);				
-				$return[] = array(
+				$return[] = [
 					'main_type' => $main_type,
 					'sub_type' => $sub_type,
 					'precedence' => (float)$precedence,
-					'tokens' => $tokens);
+					'tokens' => $tokens];
 			}
 		}
 		
-		usort($return, array($this, 'compareMediaRanges'));
+		usort($return, [$this, 'compareMediaRanges']);
 		
 		return $return;
 	}
@@ -743,7 +743,7 @@ class Request
 	private function parseAcceptHeaderOptions( $type_options )
 	{
 		$precedence = 1;
-		$tokens = array();
+		$tokens = [];
 		if (is_string($type_options)) {
 			$type_options = explode(';', $type_options);
 		}
@@ -758,7 +758,7 @@ class Request
 			}
 		}
 		$tokens = count ($tokens) ? $tokens : false;
-		return array($precedence, $tokens);
+		return [$precedence, $tokens];
 	}
 	
 	private function compareMediaRanges( $one, $two )

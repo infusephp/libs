@@ -13,7 +13,7 @@ namespace infuse;
 
 abstract class Acl
 {
-	private $permissionsCache = array();
+	private $permissionsCache = [];
 	private $permissionsDisabled = false;
 
 	abstract protected function hasPermission( $permission, Model $requester );

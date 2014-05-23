@@ -21,7 +21,7 @@ class ModelIterator implements \Iterator
 	private $search;
 	private $sort;
 	private $loadedStart = false;
-	private $models = array();
+	private $models = [];
 	private $count = false;
 
 	function __construct( $modelClass, array $parameters )
@@ -32,7 +32,7 @@ class ModelIterator implements \Iterator
 		$this->start = (isset($parameters['start'])) ? $parameters[ 'start' ] : 0;
 		$this->pointer = $this->start;
 		$this->limit = (isset($parameters['limit'])) ? $parameters[ 'limit' ] : 100;
-		$this->where = (isset($parameters['where'])) ? $parameters[ 'where' ] : array();
+		$this->where = (isset($parameters['where'])) ? $parameters[ 'where' ] : [];
 		$this->search = (isset($parameters['search'])) ? $parameters[ 'search' ] : '';
 		$this->sort = (isset($parameters['sort'])) ? $parameters[ 'sort' ] : '';
 	}
@@ -44,7 +44,7 @@ class ModelIterator implements \Iterator
 	{
 		$this->pointer = $this->start;
 		$this->loadedStart = false;
-		$this->models = array();
+		$this->models = [];
 		$this->count = false;
 	}
 
@@ -114,12 +114,12 @@ class ModelIterator implements \Iterator
 		if( $this->loadedStart !== $expectedStart )
 		{
 			$model = $this->modelClass;
-			$result = $model::find( array(
+			$result = $model::find( [
 				'start' => $expectedStart,
 				'limit' => $this->limit,
 				'where' => $this->where,
 				'search' => $this->search,
-				'sort' => $this->sort ) );
+				'sort' => $this->sort ] );
 
 			$this->count = $result[ 'count' ];
 			$this->models = $result[ 'models' ];

@@ -15,17 +15,17 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 {
 	public function testLoad()
 	{
-		$testConfig = array(
+		$testConfig = [
 			'test' => 1,
-			'test2' => array(
+			'test2' => [
 				2,
 				3
-			),
-			'test3' => array(
+			],
+			'test3' => [
 				'does' => 'this',
 				'thing' => 'work?'
-			)
-		);
+			]
+		];
 
 		Config::load( $testConfig );
 

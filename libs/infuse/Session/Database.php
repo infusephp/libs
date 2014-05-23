@@ -55,12 +55,12 @@ class Database implements \SessionHandlerInterface
 		return Db::select(
 			self::$tablename,
 			'session_data',
-			array(
-				'where' => array(
+			[
+				'where' => [
 					'id' => $id
-				),
+				],
 				'single' => true
-			)
+			]
 		);
 	}
 
@@ -74,14 +74,14 @@ class Database implements \SessionHandlerInterface
 	 */
 	function write( $id, $data )
 	{
-		Db::delete( 'Sessions', array( 'id' => $id ) );
+		Db::delete( 'Sessions', [ 'id' => $id ] );
 
 		return Db::insert(
 			self::$tablename,
-			array(
+			[
 				'id' => $id,
 				'access' => time(),
-				'session_data' => $data ) );
+				'session_data' => $data ] );
 	}
 
 	/**
@@ -93,7 +93,7 @@ class Database implements \SessionHandlerInterface
 	 */
 	function destroy( $id )
 	{
-		return Db::delete( self::$tablename, array( 'id' => $id ) );
+		return Db::delete( self::$tablename, [ 'id' => $id ] );
 	}
 
 	/**
@@ -106,7 +106,7 @@ class Database implements \SessionHandlerInterface
 	function gc( $max )
 	{
 		// delete sessions older than max TTL
-		Db::delete( self::$tablename, array( 'access < ' . (time() - $max) ) );
+		Db::delete( self::$tablename, [ 'access < ' . (time() - $max) ] );
 		
 		return true;
 	}

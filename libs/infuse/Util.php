@@ -22,7 +22,7 @@ class Util
 	 *
 	 * @return mixed|null
 	 */
-	static function array_value( $a = array(), $k = '' )
+	static function array_value( $a = [], $k = '' )
 	{
 		$a = (array)$a;
 		if( array_key_exists( $k, $a ) )
@@ -63,7 +63,7 @@ class Util
 	    {
 	    	$a = &$a[$piece];
 	    	if( !is_array( $a ) )
-	    		$a = array();
+	    		$a = [];
 	    }
 	    
 	    return $a = $value;
@@ -119,7 +119,7 @@ class Util
 	 *
 	 * @return string
 	 */
-	static function seoify( $string, $maxLength = 150, $commonWords = array() )
+	static function seoify( $string, $maxLength = 150, $commonWords = [] )
 	{
 		$string = strtolower( stripslashes( $string ) );
 	 	// kill HTML entities
@@ -189,7 +189,7 @@ class Util
 	 */
 	static function number_abbreviate( $number, $decimals = 1 )
 	{
-	    $abbrevs = array(
+	    $abbrevs = [
 	    	24 => "Y",
 	    	21 => "Z",
 	    	18 => "E",
@@ -199,7 +199,7 @@ class Util
 	    	6 => "M",
 	    	3 => "K",
 	    	0 => ""
-	    );
+	    ];
 	
 	    foreach( $abbrevs as $exponent => $abbrev )
 	    {

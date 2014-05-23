@@ -96,17 +96,17 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
 	public function testMatching()
 	{
-		$match = array( 'test', 'test' );
+		$match = [ 'test', 'test' ];
 		$this->assertTrue( Validate::is( $match, 'matching' ) );
 		$this->assertEquals( 'test', $match );
 
-		$match = array( 'test', 'test', 'test', 'test' );
+		$match = [ 'test', 'test', 'test', 'test' ];
 		$this->assertTrue( Validate::is( $match, 'matching' ) );
 		$this->assertEquals( 'test', $match );
 
-		$notmatching = array( 'test', 'nope' );
+		$notmatching = [ 'test', 'nope' ];
 		$this->assertFalse( Validate::is( $notmatching, 'matching' ) );
-		$this->assertEquals( array( 'test', 'nope' ), $notmatching );		
+		$this->assertEquals( [ 'test', 'nope' ], $notmatching );		
 	}
 
 	public function testNumeric()
@@ -127,7 +127,7 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 	public function testPassword()
 	{
 		$salt = 'saltvalue';
-		Validate::configure( array( 'salt' => $salt ) );
+		Validate::configure( [ 'salt' => $salt ] );
 
 		$password = 'testpassword';
 		$this->assertTrue( Validate::is( $password, 'password:8' ) );
@@ -181,22 +181,22 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
 	public function testMultipleRequirements()
 	{
-		$t = array( 'test', 'test' );
+		$t = [ 'test', 'test' ];
 		$this->assertTrue( Validate::is( $t, 'matching|string:2' ) );
 		$this->assertEquals( 'test', $t );
 	}
 
 	public function testKeyValueRequirements()
 	{
-		$test = array(
-			'test' => array( 'test', 'test' ),
+		$test = [
+			'test' => [ 'test', 'test' ],
 			'test2' => 'alphanumer1c'
-		);
+		];
 
-		$requirements = array(
+		$requirements = [
 			'test' => 'matching|string:2',
 			'test2' => 'alpha_numeric'
-		);
+		];
 
 		$this->assertTrue( Validate::is( $test, $requirements ) );
 		$this->assertEquals( 'test', $test[ 'test' ] );

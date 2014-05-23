@@ -20,9 +20,9 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 
 	function testIterator()
 	{
-		self::$iterator = new ModelIterator( 'IteratorTestModel', array(
+		self::$iterator = new ModelIterator( 'IteratorTestModel', [
 			'start' => $this->start,
-			'limit' => $this->limit ) );
+			'limit' => $this->limit ] );
 		$this->assertInstanceOf( '\\infuse\\ModelIterator', self::$iterator );
 	}
 
@@ -133,9 +133,9 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 	{
 		$start = 0;
 		$limit = 1001;
-		$iterator = new ModelIterator( 'IteratorTestModel', array(
+		$iterator = new ModelIterator( 'IteratorTestModel', [
 			'start' => $start,
-			'limit' => $limit ) );
+			'limit' => $limit ] );
 		
 		$i = $start;
 		foreach( $iterator as $k => $model )
@@ -156,22 +156,22 @@ class IteratorTestModel extends Model
 		return true;
 	}
 
-	static function totalRecords( array $where = array() )
+	static function totalRecords( array $where = [] )
 	{
 		return 1234;
 	}
 
-	static function find( array $params = array() )
+	static function find( array $params = [] )
 	{
 		$range = range( $params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1 );
-		$models = array();
+		$models = [];
 		$modelClass = get_called_class();
 
 		foreach( $range as $k )
 			$models[] = new $modelClass( $k );
 
-		return array(
+		return [
 			'models' => $models,
-			'count' => self::totalRecords() );
+			'count' => self::totalRecords() ];
 	}
 }

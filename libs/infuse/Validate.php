@@ -13,9 +13,9 @@ namespace infuse;
 
 class Validate
 {
-	private static $config = array(
+	private static $config = [
 		'salt' => ''
-	);
+	];
 
 	/**
 	 * Changes settings for the validator
@@ -300,7 +300,7 @@ class Validate
 	private static function time_zone( &$value, $parameters )
 	{
 		// thanks to http://stackoverflow.com/questions/5816960/how-to-check-is-timezone-identifier-valid-from-code
-		$valid = array();
+		$valid = [];
 		$tza = timezone_abbreviations_list();
 		foreach( $tza as $zone )
 			foreach( $zone as $item )

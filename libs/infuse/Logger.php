@@ -15,11 +15,11 @@ class Logger
 {
 	private static $monolog;
 	
-	private static $config = array(
+	private static $config = [
 		'productionLevel' => false
-	);
+	];
 
-	private static $monologLevels = array(
+	private static $monologLevels = [
 		'debug' => \Monolog\Logger::DEBUG,
 		'info' => \Monolog\Logger::INFO,
 		'notice' => \Monolog\Logger::NOTICE,
@@ -27,7 +27,7 @@ class Logger
 		'error' => \Monolog\Logger::ERROR,
 		'critical' => \Monolog\Logger::CRITICAL,
 		'alert' => \Monolog\Logger::ALERT,
-		'emergency' => \Monolog\Logger::EMERGENCY );
+		'emergency' => \Monolog\Logger::EMERGENCY ];
 	
 	/**
 	 * Sets up the handlers used by monolog

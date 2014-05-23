@@ -71,10 +71,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetBodyJson()
 	{
-		$body = array(
-			'test' => array(
+		$body = [
+			'test' => [
 				'meh',
-				'blah' ) );
+				'blah' ] ];
 
 		self::$res->setBodyJson( $body );
 
@@ -84,10 +84,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
 	public function testRedirect()
 	{
-		$req = new Request( null, null, null, null, array(
+		$req = new Request( null, null, null, null, [
 			'HTTP_HOST' => 'example.com',
 			'DOCUMENT_URI' => '/some/start',
-			'REQUEST_URI' => '/some/start/test/index.php' ) );
+			'REQUEST_URI' => '/some/start/test/index.php' ] );
 
 		$this->assertEquals( 'Location: //example.com/some/start/', self::$res->redirect( '/', $req, false ) );
 		$this->assertEquals( 'Location: //example.com/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
@@ -98,11 +98,11 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
 	public function testRedirectNonStandardPort()
 	{
-		$req = new Request( null, null, null, null, array(
+		$req = new Request( null, null, null, null, [
 			'HTTP_HOST' => 'example.com:1234',
 			'DOCUMENT_URI' => '/some/start',
 			'REQUEST_URI' => '/some/start/test/index.php',
-			'SERVER_PORT' => 5000 ) );
+			'SERVER_PORT' => 5000 ] );
 
 		$this->assertEquals( 'Location: //example.com:1234/some/start/', self::$res->redirect( '/', $req, false ) );
 		$this->assertEquals( 'Location: //example.com:1234/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
@@ -110,7 +110,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
 	public function testSend()
 	{
-		$req = new Request( null, null, null, null, array() );
+		$req = new Request( null, null, null, null, [] );
 
 		self::$res->setBody( 'test' );
 

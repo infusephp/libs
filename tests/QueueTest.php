@@ -15,15 +15,15 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 {
 	public function testConfigure()
 	{
-		Queue::configure( array(
+		Queue::configure( [
 			'type' => QUEUE_TYPE_IRON,
-		) );
+		] );
 
 		$this->assertEquals( Queue::type(), QUEUE_TYPE_IRON );
 
-		Queue::configure( array(
+		Queue::configure( [
 			'type' => QUEUE_TYPE_SYNCHRONOUS
-		) );
+		] );
 
 		$this->assertEquals( Queue::type(), QUEUE_TYPE_SYNCHRONOUS );
 	}
@@ -35,7 +35,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertTrue( Queue::enqueue( 'test1', 'test string!' ) );
 
-		$this->assertTrue( Queue::enqueue( 'test2', array( 'does' => 'this', 'thing' => 'work?' ) ) );
+		$this->assertTrue( Queue::enqueue( 'test2', [ 'does' => 'this', 'thing' => 'work?' ] ) );
 
 		$obj = new stdClass;
 		$obj->name = 'test';
@@ -95,13 +95,13 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testListeners()
 	{
-		Queue::configure( array(
+		Queue::configure( [
 			'type' => QUEUE_TYPE_SYNCHRONOUS,
-			'listeners' => array(
-				'test1' => array(
-					array( 'QueueMockController', 'receiveMessageListener1' ) ),
-				'test2' => array(
-					array( 'QueueMockController', 'receiveMessageListener2' ) ) ) ) );
+			'listeners' => [
+				'test1' => [
+					[ 'QueueMockController', 'receiveMessageListener1' ] ],
+				'test2' => [
+					[ 'QueueMockController', 'receiveMessageListener2' ] ] ] ] );
 
 		Queue::enqueue( 'test1', 'test' );
 		$this->assertInstanceOf( 'stdClass', QueueMockController::$test1Message );

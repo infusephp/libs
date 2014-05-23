@@ -15,7 +15,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 {
 	public function testTodo()
 	{
-		Database::configure( array() );
+		Database::configure( [] );
 		
         $this->markTestIncomplete(
           'This test has not been implemented yet.'

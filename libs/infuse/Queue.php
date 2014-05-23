@@ -16,14 +16,14 @@ define( 'QUEUE_TYPE_SYNCHRONOUS', 'synchronous' );
 
 class Queue
 {
-	private static $config = array(
+	private static $config = [
 		'type' => QUEUE_TYPE_SYNCHRONOUS,
-		'queues' => array(),
+		'queues' => [],
 		'namespace' => ''
-	);
+	];
 
 	// used for synchronous mode
-	private static $queues = array();
+	private static $queues = [];
 	private static $idCounter = 1;
 
 	// used for iron.io
@@ -48,7 +48,7 @@ class Queue
 	{
 		$type = Util::array_value( self::$config, 'type' );
 
-		if( in_array( $type, array( QUEUE_TYPE_IRON, QUEUE_TYPE_SYNCHRONOUS ) ) )
+		if( in_array( $type, [ QUEUE_TYPE_IRON, QUEUE_TYPE_SYNCHRONOUS ] ) )
 			return $type;
 		
 		return QUEUE_TYPE_SYNCHRONOUS;
@@ -78,7 +78,7 @@ class Queue
 		        foreach( self::$config[ 'queues' ] as $q )
 		        {
 		        	// setup each push subscriber url with an auth token (if used)
-		        	$subscribers = array();
+		        	$subscribers = [];
 		            foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
 		            {
 		            	$url = $s . "?q=$q";
@@ -86,13 +86,13 @@ class Queue
 		            	if( !empty( $authToken ) )
 		            		$url .= "&auth_token=$authToken";
 
-						$subscribers[] = array( 'url' => $url );
+						$subscribers[] = [ 'url' => $url ];
 		            }
 
-		            $ironmq->updateQueue( $q, array(
+		            $ironmq->updateQueue( $q, [
 						'push_type' => 'unicast',
 						'subscribers' => $subscribers
-		            ) );
+		            ] );
 
 		            if( $echoOutput )
 		            {
@@ -113,7 +113,7 @@ class Queue
 	 *
 	 * @return boolean success
 	 */
-	static function enqueue( $queue, $message, $parameters = array() )
+	static function enqueue( $queue, $message, $parameters = [] )
 	{
 		$type = self::type();
 
@@ -130,7 +130,7 @@ class Queue
 		else if( $type == QUEUE_TYPE_SYNCHRONOUS )
 		{
 			if( !isset( self::$queues[ $queue ] ) )
-				self::$queues[ $queue ] = array();
+				self::$queues[ $queue ] = [];
 
 			// wrap the message inside of an object
 			$messageWrapper = new \stdClass;
@@ -166,7 +166,7 @@ class Queue
 	{
 		$type = self::type();
 
-		$messages = array();
+		$messages = [];
 
 		if( $type == QUEUE_TYPE_IRON )
 		{
@@ -278,9 +278,9 @@ class Queue
 	private static function iron()
 	{
 		if( !self::$iron )
-			self::$iron = new \IronMQ( array(
+			self::$iron = new \IronMQ( [
 				'token' => Util::array_value( self::$config, 'token' ),
-				'project_id' => Util::array_value( self::$config, 'project' ) ) );
+				'project_id' => Util::array_value( self::$config, 'project' ) ] );
 
 		return self::$iron;
 	}

@@ -48,17 +48,17 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'non_existent_phrase', self::$locale->t( 'non_existent_phrase' ) );
 
 		// non-existent locale
-		$this->assertEquals( 'some_phrase', self::$locale->t( 'some_phrase', array(), 'pirate' ) );
+		$this->assertEquals( 'some_phrase', self::$locale->t( 'some_phrase', [], 'pirate' ) );
 	}
 
 	public function testTranslateParameterInjection()
 	{
 		self::$locale->setLocale( 'en' );
 
-		$parameters = array(
+		$parameters = [
 			'parameter_1' => 1,
 			'test' => 'testing',
-			'blah' => 'blah' );
+			'blah' => 'blah' ];
 
 		$expected = 'Testing parameter injection: 1 blah testing';
 

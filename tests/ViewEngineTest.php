@@ -33,26 +33,26 @@ class ViewEngineTest extends \PHPUnit_Framework_TestCase
 
 	function testAssetUrl()
 	{
-		ViewEngine::configure( array(
-			'assetsBaseUrl' => 'http://localhost' ) );
+		ViewEngine::configure( [
+			'assetsBaseUrl' => 'http://localhost' ] );
 		self::$engine = ViewEngine::engine();
 		$this->assertEquals( 'http://localhost/test', self::$engine->asset_url( '/test' ) );
 	}
 
 	function testRenderSmarty()
 	{
-		ViewEngine::configure( array( 'engine' => 'smarty' ) );
+		ViewEngine::configure( [ 'engine' => 'smarty' ] );
 		self::$engine = ViewEngine::engine();
-		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
+		self::$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
 
         // TODO
 	}
 
 	function testRenderPhp()
 	{
-		ViewEngine::configure( array( 'engine' => 'php' ) );
+		ViewEngine::configure( [ 'engine' => 'php' ] );
 		self::$engine = ViewEngine::engine();
-		self::$engine->assignData( array( 'param1' => 'hello', 'param2' => 'world' ) );
+		self::$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
 
         // TODO
 	}

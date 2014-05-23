@@ -18,7 +18,7 @@ class ErrorStack
 	/////////////////////////////
 	
 	private static $stackInstance;
-	private $stack = array();
+	private $stack = [];
 	private $context = '';
 	
 	/**
@@ -52,7 +52,7 @@ class ErrorStack
 			$error[ 'context' ] = $this->context;
 			
 		if( !isset( $error[ 'params' ] ) )
-			$error[ 'params' ] = array();
+			$error[ 'params' ] = [];
 		
 		if( !Util::array_value( $error, 'error' ) )
 			return false;
@@ -75,16 +75,16 @@ class ErrorStack
 	 *
 	 * @return boolean was error valid?
 	 */
-	static function add( $error, $class = null, $function = null, $params = array(), $context = null )
+	static function add( $error, $class = null, $function = null, $params = [], $context = null )
 	{
 		if( !is_array( $error ) )
 		{
-			$error = array(
+			$error = [
 				'error' => $error,
 				'params' => $params,
 				'class' => $class,
 				'function' => $function
-			);
+			];
 
 			if( $context )
 				$error[ 'context' ] = $context;
@@ -122,7 +122,7 @@ class ErrorStack
 	 */
 	function errors( $context = false, $locale = false )
 	{
-		$errors = array();
+		$errors = [];
 		
 		foreach( $this->stack as $error )
 		{
@@ -151,7 +151,7 @@ class ErrorStack
 	{
 		$errors = $this->errors( $context );
 		
-		$messages = array();
+		$messages = [];
 		
 		foreach( $errors as $error )
 			$messages[] = $error[ 'message' ];
@@ -196,6 +196,6 @@ class ErrorStack
 	 */
 	function clear()
 	{
-		$this->stack = array();
+		$this->stack = [];
 	}
 }

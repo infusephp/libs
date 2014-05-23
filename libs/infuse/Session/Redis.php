@@ -15,7 +15,7 @@ class Redis implements \SessionHandlerInterface
 {
 	private $prefix;
 	
-	static function start( array $redisConf = array(), $prefix = '' )
+	static function start( array $redisConf = [], $prefix = '' )
 	{
 		$obj = new self( $redisConf, $prefix );
 

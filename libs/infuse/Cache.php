@@ -28,7 +28,7 @@ class Cache
 	private static $memcacheConnectionAttempted;
 	
 	// local strategy
-	private static $local = array();	
+	private static $local = [];
 	
 	/**
 	 * Creates a new instance of the cache
@@ -36,10 +36,10 @@ class Cache
 	 * @param array $strategies
 	 * @param array $parameters
 	 */
-	function __construct( $strategies = array(), $parameters = array() )
+	function __construct( $strategies = [], $parameters = [] )
 	{
 		if( count( $strategies ) == 0 )
-			$strategies = array( 'local' );
+			$strategies = [ 'local' ];
 
 		foreach( $strategies as $strategy )
 		{
@@ -69,7 +69,7 @@ class Cache
 		$cachePrefix = $this->cachePrefix;
 		$prefixedKeys = array_map( function ($str) use ($cachePrefix) { return $cachePrefix . $str; }, $keys );
 		
-		$return = array();
+		$return = [];
 		
 		if( $this->strategy == 'memcache' )
 		{
@@ -230,7 +230,7 @@ class Cache
 	// STRATEGIES
 	/////////////////////////
 	
-	private function strategy_memcache( $parameters = array() )
+	private function strategy_memcache( $parameters = [] )
 	{
 		// initialize memcache if enabled
 		if( class_exists('Memcache') )
@@ -265,7 +265,7 @@ class Cache
 		return false;
 	}
 	
-	private function strategy_local( $parameters = array() )
+	private function strategy_local( $parameters = [] )
 	{
 		$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
 		

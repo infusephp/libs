@@ -112,9 +112,9 @@ abstract class Model extends Acl
 	// Public variables
 	/////////////////////////////
 
-	public static $properties = array(
-		'id' => array(
-			'type' => 'id' ) );
+	public static $properties = [
+		'id' => [
+			'type' => 'id' ] ];
 
 	/////////////////////////////
 	// Protected variables
@@ -123,31 +123,31 @@ abstract class Model extends Acl
 	protected $_id;
 
 	/* Property names that are excluded from the database */
-	protected static $propertiesNotInDatabase = array();
+	protected static $propertiesNotInDatabase = [];
 
 	/* Default model configuration */
-	protected static $config = array(
-		'cache' => array(
-			'strategies' => array(
-				'local' => array(
-					'prefix' => '' ) ) ),
-		'database' => array(
-			'enabled' => true ),
-		'requester' => false );
+	protected static $config = [
+		'cache' => [
+			'strategies' => [
+				'local' => [
+					'prefix' => '' ] ] ],
+		'database' => [
+			'enabled' => true ],
+		'requester' => false ];
 
 	/* Default parameters for Model::find() queries */
-	protected static $defaultFindParameters = array(
-		'where' => array(),
+	protected static $defaultFindParameters = [
+		'where' => [],
 		'start' => 0,
 		'limit' => 100,
 		'search' => '',
-		'sort' => '' );
+		'sort' => '' ];
 
 	/////////////////////////////
 	// Private variables
 	/////////////////////////////
 
-	private $localCache = array();
+	private $localCache = [];
 	private $sharedCache;
 	private $relationModels;
 
@@ -269,7 +269,7 @@ abstract class Model extends Acl
 		$idProperty = (array)static::idProperty();
 		
 		// get id(s) into key-value format
-		$return = array();
+		$return = [];
 		
 		// match up id values from comma-separated id string with property names
 		$ids = explode( ',', $this->_id );
@@ -353,13 +353,13 @@ abstract class Model extends Acl
 		$singularKey = Inflector::underscore( $modelName );
 		$pluralKey = Inflector::pluralize( $singularKey );
 
-		return array(
+		return [
 			'model' => $modelName,
 			'class_name' => $class_name,
 			'singular_key' => $singularKey,
 			'plural_key' => $pluralKey,
 			'proper_name' => Inflector::titleize( $singularKey ),
-			'proper_name_plural' => Inflector::titleize( $pluralKey ) );
+			'proper_name_plural' => Inflector::titleize( $pluralKey ) ];
 	}
 
 	/**
@@ -439,8 +439,8 @@ abstract class Model extends Acl
 		$validated = true;
 		
 		// get the property names, and required properties
-		$propertyNames = array();
-		$requiredProperties = array();
+		$propertyNames = [];
+		$requiredProperties = [];
 		foreach( static::$properties as $name => $property )
 		{
 			$propertyNames[] = $name;
@@ -456,7 +456,7 @@ abstract class Model extends Acl
 		}
 				
 		// loop through each supplied field and validate
-		$insertArray = array();
+		$insertArray = [];
 		foreach( $data as $field => $value )
 		{
 			if( !in_array( $field, $propertyNames ) )
@@ -496,11 +496,11 @@ abstract class Model extends Acl
 		{
 			if( !isset( $insertArray[ $name ] ) )
 			{
-				ErrorStack::add( array(
+				ErrorStack::add( [
 					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
-					'params' => array(
+					'params' => [
 						'field' => $name,
-						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::titleize( $name ) ) ) );
+						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
 
 				$validated = false;
 			}
@@ -514,7 +514,7 @@ abstract class Model extends Acl
 		{
 			// derive the id for every property that is not auto_increment
 			// NOTE this does not handle the case where there is > 1 auto_increment primary key
-			$ids = array();
+			$ids = [];
 			$idProperty = (array)static::idProperty();
 			foreach( $idProperty as $property )
 			{
@@ -569,7 +569,7 @@ abstract class Model extends Acl
 		*/
 
 		$i = 1;
-		$values = array();
+		$values = [];
 		while( $i <= 4 && count( $properties ) > 0 )
 		{
 			if( $i == 1 && !$skipLocalCache )
@@ -595,9 +595,9 @@ abstract class Model extends Acl
 	 *
 	 * @return array properties
 	 */
-	function toArray( array $exclude = array() )
+	function toArray( array $exclude = [] )
 	{
-		$properties = array();
+		$properties = [];
 		
 		// get the names of all the properties
 		foreach( static::$properties as $name => $property )
@@ -621,7 +621,7 @@ abstract class Model extends Acl
 	 *
 	 * @return string json
 	 */
-	function toJson( array $exclude = array() )
+	function toJson( array $exclude = [] )
 	{
 		return json_encode( $this->toArray( $exclude ) );
 	}
@@ -647,7 +647,7 @@ abstract class Model extends Acl
 		}
 		
 		if( !is_array( $data ) )
-			$data = array( $data => $value );
+			$data = [ $data => $value ];
 		
 		// not updating anything?
 		if( count( $data ) == 0 )
@@ -769,7 +769,7 @@ abstract class Model extends Acl
 	 *
 	 * @return array array( 'models' => models, 'count' => 'total found' )
 	 */ 
-	static function find( array $params = array() )
+	static function find( array $params = [] )
 	{
 		$params = array_replace( static::$defaultFindParameters, $params );
 	
@@ -782,7 +782,7 @@ abstract class Model extends Acl
 		
 		if( !empty( $params[ 'search' ] ) )
 		{
-			$w = array();
+			$w = [];
 			$search = addslashes( $params[ 'search' ] );
 			foreach( static::$properties as $name => $property )
 			{
@@ -794,7 +794,7 @@ abstract class Model extends Acl
 		}
 
 		// verify sort
-		$sortParams = array();
+		$sortParams = [];
 
 		$columns = explode( ',', $params[ 'sort' ] );
 		foreach( $columns as $column )
@@ -812,19 +812,19 @@ abstract class Model extends Acl
 
 			// validate direction
 			$direction = strtolower( $c[ 1 ] );
-			if( !in_array( $direction, array( 'asc', 'desc' ) ) )
+			if( !in_array( $direction, [ 'asc', 'desc' ] ) )
 				continue;
 			
 			$sortParams[] = "$propertyName $direction";
 		}
 		
-		$return = array(
+		$return = [
 			'count' => static::totalRecords( $params[ 'where' ] ),
-			'models' => array() );
+			'models' => [] ];
 		
-		$filter = array(
+		$filter = [
 			'where' => $params[ 'where' ],
-			'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] );
+			'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] ];
 		
 		$sortStr = implode( ',', $sortParams );
 		if( $sortStr )
@@ -845,7 +845,7 @@ abstract class Model extends Acl
 				$idProperty = static::idProperty();
 				if( is_array( $idProperty ) )
 				{
-					$id = array();
+					$id = [];
 					
 					foreach( $idProperty as $f )
 						$id[] = $info[ $f ];
@@ -864,7 +864,7 @@ abstract class Model extends Acl
 		return $return;
 	}
 
-	static function findAll( array $params = array() )
+	static function findAll( array $params = [] )
 	{
 		return new ModelIterator( get_called_class(), $params );
 	}
@@ -890,14 +890,14 @@ abstract class Model extends Acl
 	 *
 	 * @return int total
 	 */
-	static function totalRecords( array $where = array() )
+	static function totalRecords( array $where = [] )
 	{
 		return (int)Database::select(
 			static::tablename(),
 			'count(*)',
-			array(
+			[
 				'where' => $where,
-				'single' => true ) );
+				'single' => true ] );
 	}
 
 	/////////////////////////////
@@ -939,24 +939,24 @@ abstract class Model extends Acl
 		// get the current schema
 		$currentSchema = static::currentSchema();
 
-		$schema = array();
+		$schema = [];
 
 		$different = true; // TODO not implemented
 		
 		// derive a database column from each property
 		foreach( static::$properties as $name => $property )
 		{
-			if( in_array( $property[ 'type' ], array( 'custom' ) ) )
+			if( in_array( $property[ 'type' ], [ 'custom' ] ) )
 				continue;
 		
-			$column = array(
+			$column = [
 				'Field' => $name,
 				'Type' => 'varchar(255)',
 				'Null' => (Util::array_value( $property, 'null' )) ? 'YES' : 'NO',
 				'Key' => '',
 				'Default' => Util::array_value( $property, 'default' ),
 				'Extra' => ''
-			);
+			];
 			
 			$type = (isset($property['db_type'])) ? $property['db_type'] : null;
 			$length = (isset($property['length'])) ? $property['length'] : null;
@@ -1038,7 +1038,7 @@ abstract class Model extends Acl
 		}
 
 		// check if there are any extra fields in the current schema
-		$extraFields = array();
+		$extraFields = [];
 		if( $currentSchema )
 		{
 			foreach( $currentSchema as $field )
@@ -1062,14 +1062,14 @@ abstract class Model extends Acl
 
 		$tablename = static::tablename();
 		
-		return array(
+		return [
 			'tablename' => $tablename,
 			'current' => $currentSchema,
 			'currentSql' => Database::schemaToSql( $tablename, $currentSchema, true ),
 			'suggested' => $schema,
 			'suggestedSql' => Database::schemaToSql( $tablename, $schema, !$currentSchema ),
 			'extraFields' => $extraFields,
-			'different' => $different );
+			'different' => $different ];
 	}
 
 	/**
@@ -1092,7 +1092,7 @@ abstract class Model extends Acl
 		{
 			$sql = 'ALTER TABLE ' . $suggested[ 'tablename' ];
 			
-			$drops = array();
+			$drops = [];
 			foreach( $suggested[ 'extraFields' ] as $field )
 				$drops[] = ' DROP COLUMN ' . $field;
 			
@@ -1108,7 +1108,7 @@ abstract class Model extends Acl
 		}
 		catch( \Exception $e )
 		{
-			ErrorStack::add( array( 'error' => 'update_schema_error', 'messages' => $e->getMessage() ) );
+			ErrorStack::add( [ 'error' => 'update_schema_error', 'messages' => $e->getMessage() ] );
 		}		
 	}
 	
@@ -1131,9 +1131,9 @@ abstract class Model extends Acl
 		$info = Database::select(
 			static::tablename(),
 			'*',
-			array(
+			[
 				'where' => $this->id( true ),
-				'singleRow' => true ) );
+				'singleRow' => true ] );
 		
 		$this->cacheProperties( (array)$info );
 	}
@@ -1266,9 +1266,9 @@ abstract class Model extends Acl
 		$values = Database::select(
 			static::tablename(),
 			implode(',', $properties),
-			array(
+			[
 				'where' => $this->id( true ),
-				'singleRow' => true ) );
+				'singleRow' => true ] );
 
 		foreach( (array)$values as $property => $value )
 		{
@@ -1301,29 +1301,29 @@ abstract class Model extends Acl
 		$valid = true;
 
 		if( isset( $property[ 'validate' ] ) && is_callable( $property[ 'validate' ] ) )
-			$valid = call_user_func_array( $property[ 'validate' ], array( &$value ) );
+			$valid = call_user_func_array( $property[ 'validate' ], [ &$value ] );
 		else if( isset( $property[ 'validate' ] ) )
 			$valid = Validate::is( $value, $property[ 'validate' ] );
 		
 		if( !$valid )
-			ErrorStack::add( array(
+			ErrorStack::add( [
 				'error' => VALIDATION_FAILED,
-				'params' => array(
+				'params' => [
 					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ) ) );
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
 
 		return $valid;
 	}
 
 	private static function checkUniqueness( $property, $field, $value )
 	{
-		if( static::totalRecords( array( $field => $value ) ) > 0 )
+		if( static::totalRecords( [ $field => $value ] ) > 0 )
 		{
-			ErrorStack::add( array(
+			ErrorStack::add( [
 				'error' => VALIDATION_NOT_UNIQUE,
-				'params' => array(
+				'params' => [
 					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ) ) );
+					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
 			
 			return false;
 		}

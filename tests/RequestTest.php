@@ -19,36 +19,36 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		self::$req = new Request(
 			// query parameters
-			array(
+			[
 				'test' => 'test',
-				'blah' => 'blah' ),
+				'blah' => 'blah' ],
 			// request body
-			array(
+			[
 				'testParam' => 'test',
 				'meh' => 1,
-				'does' => 'this-work' ),
+				'does' => 'this-work' ],
 			// cookies
-			array(),
+			[],
 			 // files
-			array(
-				'test' => array(
+			[
+				'test' => [
 					'size' => 1234
-				),
-				'test2' => array(
+				],
+				'test2' => [
 					'error' => 0
-				)
-			),
+				]
+			],
 			// server
-			array(
+			[
 				'REMOTE_ADDR' => '1.2.3.4',
 				'SERVER_PORT' => '1234',
 				'REQUEST_METHOD' => 'PUT',
 				'REQUEST_URI' => '/users/comments/10',
-				'argv' => array(
+				'argv' => [
 					'update',
 					'force',
 					'all'
-				),
+				],
 				'HTTP_HOST' => 'example.com:1234',
 				'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 	            'HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
@@ -59,9 +59,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 				'CONTENT_TYPE' => 'application/json',
 				'PHP_AUTH_USER' => 'test_user',
 				'PHP_AUTH_PW' => 'test_pw',
-			),
+			],
 			// session
-			array()
+			[]
 		);
 	}
 
@@ -80,7 +80,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'http', self::$req->protocol() );
 
 		// test when HTTPS header set
-		$req = new Request( null, null, null, null, array( 'HTTPS' => 'on' ) );
+		$req = new Request( null, null, null, null, [ 'HTTPS' => 'on' ] );
 
 		$this->assertEquals( 'https', $req->protocol() );
 	}
@@ -90,7 +90,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse( self::$req->isSecure() );
 
 		// test when HTTPS header set
-		$req = new Request( null, null, null, null, array( 'HTTPS' => 'on' ) );
+		$req = new Request( null, null, null, null, [ 'HTTPS' => 'on' ] );
 
 		$this->assertTrue( $req->isSecure() );
 	}
@@ -104,7 +104,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'testing..123', self::$req->headers( 'test_header' ) );
 
-		$expected = array(
+		$expected = [
 			'HOST' => 'example.com:1234',
 			'USER_AGENT' => 'infuse/libs test',
 			'ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -114,7 +114,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 			'PHP_AUTH_USER' => 'test_user',
 			'PHP_AUTH_PW' => 'test_pw',
 			'AUTHORIZATION' => 'Basic dGVzdF91c2VyOnRlc3RfcHc=',
-			'CONTENT_TYPE' => 'application/json' );
+			'CONTENT_TYPE' => 'application/json' ];
 		$this->assertEquals( $expected, self::$req->headers() );
 
 		$this->assertNull( self::$req->headers( 'non-existent' ) );
@@ -144,7 +144,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'comments', self::$req->paths( 1 ) );
 
-		$expected = array( 'users', 'comments', '10' );
+		$expected = [ 'users', 'comments', '10' ];
 		$this->assertEquals( $expected, self::$req->paths() );
 
 		$this->assertNull( self::$req->paths( 100 ) );
@@ -162,9 +162,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testRemovingStartPath()
 	{
-		$req = new Request( null, null, null, null, array( 'REQUEST_URI' => '/some/start/path/test', 'DOCUMENT_URI' => '/some/start/path'  ) );
+		$req = new Request( null, null, null, null, [ 'REQUEST_URI' => '/some/start/path/test', 'DOCUMENT_URI' => '/some/start/path'  ] );
 
-		$expected = array( 'test' );
+		$expected = [ 'test' ];
 		$this->assertEquals( $expected, $req->paths() );
 
 		$this->assertEquals( '/some/start/path', $req->basePath() );
@@ -179,10 +179,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testMethodFromPost()
 	{
-		$req = new Request( null, array( 'method' => 'DELETE' ), null, null, array( 'REQUEST_METHOD' => 'POST' ) );
+		$req = new Request( null, [ 'method' => 'DELETE' ], null, null, [ 'REQUEST_METHOD' => 'POST' ] );
 		$this->assertEquals( 'DELETE', $req->method() );
 
-		$req = new Request( null, array( 'method' => 'PUT' ), null, null, array( 'REQUEST_METHOD' => 'POST' ) );
+		$req = new Request( null, [ 'method' => 'PUT' ], null, null, [ 'REQUEST_METHOD' => 'POST' ] );
 		$this->assertEquals( 'PUT', $req->method() );
 	}
 
@@ -193,66 +193,66 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testAccepts()
 	{
-		$expected = array(
-		    array(
+		$expected = [
+		    [
 				'main_type' => 'text',
 	            'sub_type' => 'html',
 	            'precedence' => 1,
-	            'tokens' => '', ),
-	        array(
+	            'tokens' => '', ],
+	        [
 	            'main_type' => 'application',
 	            'sub_type' => 'xhtml+xml',
 	            'precedence' => 1,
-	            'tokens' => '' ),
-	        array(
+	            'tokens' => '' ],
+	        [
 	            'main_type' => 'application',
 	            'sub_type' => 'xml',
 	            'precedence' => 0.9,
-	            'tokens' => '' ),
-	        array(
+	            'tokens' => '' ],
+	        [
 	            'main_type' => '*',
 	            'sub_type' => '*',
 	            'precedence' => 0.8,
-	            'tokens' => '' ) );
+	            'tokens' => '' ] ];
 
 		$this->assertEquals( $expected, self::$req->accepts() );
 	}
 
 	public function testCharsets()
 	{
-		$expected = array(
-		    array(
+		$expected = [
+		    [
 				'main_type' => 'ISO-8859-1',
 	            'sub_type' => '',
 	            'precedence' => 1,
-	            'tokens' => '', ),
-	        array(
+	            'tokens' => '', ],
+	        [
 	            'main_type' => 'utf-8',
 	            'sub_type' => '',
 	            'precedence' => 0.7,
-	            'tokens' => '' ),
-	        array(
+	            'tokens' => '' ],
+	        [
 	            'main_type' => '*',
 	            'sub_type' => '',
 	            'precedence' => 0.7,
-	            'tokens' => '' ) );
+	            'tokens' => '' ] ];
 
 		$this->assertEquals( $expected, self::$req->charsets() );
 	}
 
 	public function testLanguages()
 	{
-		$expected = array(
-		    array(
+		$expected = [
+		    [
 				'main_type' => 'en-us',
 	            'sub_type' => '',
 	            'precedence' => 1,
-	            'tokens' => '', ),
-	        array(
+	            'tokens' => '', ],
+	        [
 	            'main_type' => 'en',
 	            'sub_type' => '',
 	            'precedence' => 0.5,
-	            'tokens' => '' ) );
+	            'tokens' => '' ] ];
 
 		$this->assertEquals( $expected, self::$req->languages() );
 	}
@@ -266,7 +266,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertTrue( self::$req->isHtml() );
 
-		$req = new Request( null, null, null, null, array( 'HTTP_ACCEPT' => 'application/json' ) );		
+		$req = new Request( null, null, null, null, [ 'HTTP_ACCEPT' => 'application/json' ] );		
 		$this->assertFalse( $req->isHtml() );
 	}
 
@@ -274,7 +274,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertFalse( self::$req->isJson() );
 
-		$req = new Request( null, null, null, null, array( 'HTTP_ACCEPT' => 'application/json' ) );		
+		$req = new Request( null, null, null, null, [ 'HTTP_ACCEPT' => 'application/json' ] );		
 		$this->assertTrue( $req->isJson() );
 	}
 
@@ -282,7 +282,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertTrue( self::$req->isXml() );
 
-		$req = new Request( null, null, null, null, array( 'HTTP_ACCEPT' => 'application/json' ) );		
+		$req = new Request( null, null, null, null, [ 'HTTP_ACCEPT' => 'application/json' ] );		
 		$this->assertFalse( $req->isXml() );
 	}
 
@@ -290,7 +290,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertFalse( self::$req->isXhr() );
 
-		$req = new Request( null, null, null, null, array( 'HTTP_X-REQUESTED-WITH' => 'XMLHttpRequest' ) );		
+		$req = new Request( null, null, null, null, [ 'HTTP_X-REQUESTED-WITH' => 'XMLHttpRequest' ] );		
 		$this->assertFalse( $req->isXhr() );
 	}
 
@@ -298,7 +298,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertTrue( self::$req->isApi() );
 
-		$req = new Request( null, null, null, null, array() );
+		$req = new Request( null, null, null, null, [] );
 		$this->assertFalse( $req->isApi() );
 
 	}
@@ -311,7 +311,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testParams()
 	{
-		$expected = array( 'test' => 1, 'test2' => 'meh' );
+		$expected = [ 'test' => 1, 'test2' => 'meh' ];
 		self::$req->setParams( $expected );
 
 		$this->assertEquals( 'meh', self::$req->params( 'test2' ) );
@@ -324,9 +324,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'test', self::$req->query( 'test' ) );
 
-		$expected = array(
+		$expected = [
 			'test' => 'test',
-			'blah' => 'blah' );
+			'blah' => 'blah' ];
 		$this->assertEquals( $expected, self::$req->query() );
 
 		$this->assertNull( self::$req->query( 'non-existent' ) );
@@ -336,10 +336,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'test', self::$req->request( 'testParam' ) );
 
-		$expected = array(
+		$expected = [
 			'testParam' => 'test',
 			'meh' => 1,
-			'does' => 'this-work' );
+			'does' => 'this-work' ];
 		$this->assertEquals( $expected, self::$req->request() );
 
 		$this->assertNull( self::$req->request( 'non-existent' ) );
@@ -358,10 +358,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'testValue', self::$req->cookies( 'test' ) );
 
-		$expected = array(
+		$expected = [
 			'test' => 'testValue',
 			'test2' => 'testValue2'
-		);
+		];
 
 		$this->assertEquals( $expected, self::$req->cookies() );
 
@@ -370,16 +370,16 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 	public function testFiles()
 	{
-		$this->assertEquals( array( 'size' => 1234 ), self::$req->files( 'test' ) );
+		$this->assertEquals( [ 'size' => 1234 ], self::$req->files( 'test' ) );
 
-		$expected = array(
-			'test' => array(
+		$expected = [
+			'test' => [
 				'size' => 1234
-			),
-			'test2' => array(
+			],
+			'test2' => [
 				'error' => 0
-			)
-		);
+			]
+		];
 
 		$this->assertEquals( $expected, self::$req->files() );
 
@@ -389,7 +389,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	public function testSetSession()
 	{
 		global $_SESSION;
-		$_SESSION = array();
+		$_SESSION = [];
 
 		self::$req->setSession( 'test', 'test' );
 		self::$req->setSession( 'test2', 2 );
@@ -402,7 +402,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals( 'test', self::$req->session( 'test' ) );
 
-		$expected = array( 'test' => 'test', 'test2' => 2 );
+		$expected = [ 'test' => 'test', 'test2' => 2 ];
 		$this->assertEquals( $expected, self::$req->session() );
 
 		$this->assertNull( self::$req->session( 'non-existent' ) );		
@@ -416,12 +416,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 		self::$req->destroySession();
 
 		$this->assertNull( self::$req->session( 'test' ) );
-		$this->assertEquals( array(), self::$req->session() );
+		$this->assertEquals( [], self::$req->session() );
 	}
 
 	public function testCliArgs()
 	{
-		$expected = array( 'update', 'force', 'all' );
+		$expected = [ 'update', 'force', 'all' ];
 
 		$this->assertEquals( 'force', self::$req->cliArgs( 1 ) );
 		$this->assertEquals( $expected, self::$req->cliArgs() );

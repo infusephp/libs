@@ -13,7 +13,7 @@ namespace infuse;
 
 class Config
 {
-	private static $values = array();
+	private static $values = [];
 	
 	/**
 	 * Gets a global configuration value, section, or all values
@@ -52,7 +52,7 @@ class Config
 			if( !isset( self::$values[ $property ] ) ||
 				!isset( self::$values[ $property ] ) ||
 				!is_array( self::$values[ $property ][ $value ] ) )
-				self::$values[ $property ][ $value ] = array();
+				self::$values[ $property ][ $value ] = [];
 
 			return self::$values[ $property ][ $value ] = $deprecated;
 		}

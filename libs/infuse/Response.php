@@ -13,7 +13,7 @@ namespace infuse;
 
 class Response
 {
-	static $codes = Array(  
+	static $codes = [  
 		100 => 'Continue',  
 		101 => 'Switching Protocols',  
 		200 => 'OK',
@@ -55,7 +55,7 @@ class Response
 		503 => 'Service Unavailable',  
 		504 => 'Gateway Timeout',  
 		505 => 'HTTP Version Not Supported'  
-	);
+	];
 	
 	private $code;
 	private $contentType;
@@ -147,7 +147,7 @@ class Response
 	 * @param string $template template to render
 	 * @param array $parameters parameters to pass to the template
 	 */
-	public function render( $template, $parameters = array() )
+	public function render( $template, $parameters = [] )
 	{		
 		$engine = ViewEngine::engine();
 		
@@ -255,10 +255,10 @@ class Response
 				$contentType = 'application/xml';			
 		}
 	
-		$headers = array(
+		$headers = [
 			'HTTP/1.1 ' . $this->code . ' ' . self::$codes[$this->code],
 			'Content-type: ' . $contentType . '; charset=utf-8',
-			'X-Powered-By: infuse' );
+			'X-Powered-By: infuse' ];
 
 		if( $setHeaders )
 		{
@@ -301,11 +301,11 @@ class Response
 			
 			if( $contentType == 'text/html' )
 			{
-				$this->render( 'error', array(
+				$this->render( 'error', [
 					'message' => $message,
 					'errorCode' => $this->code,
 					'title' => $this->code,
-					'errorMessage' => $message ) );
+					'errorMessage' => $message ] );
 				
 				echo $this->body;
 			}

@@ -17,14 +17,14 @@ class Database
 	// Private class variables
 	/////////////////////////////
 	
-	private static $config = array(
+	private static $config = [
 		'type' => '',
 		'host' => '',
 		'name' => '',
 		'user' => '',
 		'password' => '',
 		'productionLevel' => false
-	);
+	];
 	
 	private static $DBH;
 	private static $numrows;
@@ -89,13 +89,13 @@ class Database
 			self::$DBH->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
 		
 		// Set counters
-		self::$queryCount = array(
+		self::$queryCount = [
 			'select' => 0,
 			'sql' => 0,
 			'insert' => 0,
 			'update' => 0,
 			'delete' => 0
-		);
+		];
 				
 		return true;
 	}
@@ -116,7 +116,7 @@ class Database
 	* Parameters:
 	* <ul>
 	* <li>where: Array of where parameters. Key => value translates into key = value. If no key is supplied then the value is treated as its own parameter.
-	* <code>'where' => array( 'first_name' => 'John', 'last_name' => 'Doe', 'created > 10405833' )</code></li>
+	* <code>'where' => [ 'first_name' => 'John', 'last_name' => 'Doe', 'created > 10405833' ]</code></li>
 	* <li>single: returns a single value</li>
 	* <li>singleRow: returns a single row</li>
 	* <li>fetchStyle: see PDO manual</li>
@@ -132,7 +132,7 @@ class Database
 	*
 	* @return boolean success?
 	*/
-	static function select( $tableName, $fields, $parameters = array(), $showQuery = false )
+	static function select( $tableName, $fields, $parameters = [], $showQuery = false )
 	{
 		if( !self::initialize() )
 			return false;
@@ -144,10 +144,10 @@ class Database
 		}
 		
 		$where = null;
-		$where_other = array(); // array of parameters which do not contain an equal sign or is too complex for our implode function
+		$where_other = []; // array of parameters which do not contain an equal sign or is too complex for our implode function
 		
 		// store the original where parameters
-		$originalWhere = array();
+		$originalWhere = [];
 		
 		if( isset( $parameters[ 'where' ] ) )
 		{
@@ -171,7 +171,7 @@ class Database
 					}
 				}
 				
-				$where_arr = array();
+				$where_arr = [];
 				$where_other_implode = implode(' AND ', $where_other );
 				if( $where_other_implode  != '' ) // add to where clause
 					$where_arr[] = $where_other_implode;
@@ -324,7 +324,7 @@ class Database
 	
 		$result = self::$DBH->query("show tables");
 		
-		return ($result) ? $result->fetchAll( \PDO::FETCH_COLUMN ) : array();
+		return ($result) ? $result->fetchAll( \PDO::FETCH_COLUMN ) : [];
 	}
 	
 	/**
@@ -339,7 +339,7 @@ class Database
 	
 		$result = self::$DBH->query("SHOW COLUMNS FROM `$table`");
 		
-		return ($result) ? $result->fetchAll( \PDO::FETCH_ASSOC ) : array();
+		return ($result) ? $result->fetchAll( \PDO::FETCH_ASSOC ) : [];
 	}
 		
 	/**
@@ -380,9 +380,9 @@ class Database
 		else
 			$sql .= "ALTER TABLE `$tablename`\n";
 
-		$primaryKeys = array();
+		$primaryKeys = [];
 
-		$cols = array();
+		$cols = [];
 		foreach( $schema as $column )
 		{
 			$col = "\t";
@@ -527,12 +527,12 @@ class Database
 			self::$DBH->beginTransaction();
 			
 			// prepare the values to be inserted
-			$insert_values = array();
-			$question_marks = array();
+			$insert_values = [];
+			$question_marks = [];
 			foreach( $data as $d )
 			{
 				// build the question marks
-			    $result = array();
+			    $result = [];
 		        for($x=0; $x < count($d); $x++)
 		            $result[] = '?';
 				$question_marks[] = '(' . implode(',', $result) . ')';
@@ -632,8 +632,8 @@ class Database
 	
 		try
 		{
-			$where_other = array(); // array of parameters which do not contain an equal sign or is too complex for our implode function
-			$where_arr = array(); // array that will be used to concatenate all where clauses together
+			$where_other = []; // array of parameters which do not contain an equal sign or is too complex for our implode function
+			$where_arr = []; // array that will be used to concatenate all where clauses together
 			
 			foreach( $where as $key=>$value )
 			{
@@ -677,13 +677,13 @@ class Database
 	// Private Class Functions
 	////////////////////////////
 	
-	private static function implode_key($glue = '', $pieces = array())
+	private static function implode_key($glue = '', $pieces = [])
 	{
 	    $arrK = array_keys($pieces);
 	    return implode($glue, $arrK);
 	}
 	
-	private static function multi_implode($array = array(), $glue = '') {
+	private static function multi_implode($array = [], $glue = '') {
 	    $ret = '';
 	
 	    foreach ($array as $item) {

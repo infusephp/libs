@@ -13,11 +13,11 @@ namespace infuse;
 
 class Router
 {
-	private static $config = array(
+	private static $config = [
 		'namespace' => '',
 		'defaultController' => '',
 		'defaultAction' => 'index'
-	);
+	];
 	
 	/**
 	 * Changes the router settings
@@ -55,8 +55,8 @@ class Router
 		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->path();
 		$routeGenericStr = $req->path();
 
-		$staticRoutes = array();
-		$dynamicRoutes = array();
+		$staticRoutes = [];
+		$dynamicRoutes = [];
 		
 		foreach( $routes as $routeStr => $route )
 		{
@@ -105,10 +105,10 @@ class Router
 	{
 		// method name and controller supplied
 		if( is_string( $route ) && $req->params( 'controller' ) )
-			$route = array( $req->params( 'controller' ), $route );
+			$route = [ $req->params( 'controller' ), $route ];
 		// method name supplied
 		if( is_string( $route ) )
-			$route = array( self::$config[ 'defaultController' ], $route );
+			$route = [ self::$config[ 'defaultController' ], $route ];
 		// no method name? fallback to the index() method
 		else if( count( $route ) == 1 )
 			$route[] = self::$config[ 'defaultAction' ];
@@ -160,7 +160,7 @@ class Router
 			return false;
 		
 		// compare each component of url, grab parameters along the way
-		$params = array();
+		$params = [];
 		foreach( $routePaths as $i => $path )
 		{
 			// is this a parameter

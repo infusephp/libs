@@ -16,26 +16,26 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 {
 	public function setUp()
 	{
-		Router::configure( array(
+		Router::configure( [
 			'namespace' => '',
-			'defaultController' => 'MockController' ) );
+			'defaultController' => 'MockController' ] );
 
 		MockController::$staticRouteCalled = false;
 		MockController::$dynamicRouteCalled = false;
-		MockController::$dynamicRouteParams = array();
+		MockController::$dynamicRouteParams = [];
 		MockController::$indexRouteCalled = false;
 	}
 
 	public function testStaticRoute()
 	{
-		$testRoutes = array(
-			'get /this/is/a' => array( 'MockController', 'fail' ),
-			'get /this/is/a/test/route' => array( 'MockController', 'fail' ),
-			'post /this/is/a/test/route/:test' => array( 'MockController', 'fail' ),
-			'post /this/is/a/test/route' => array( 'MockController', 'staticRoute' ),
-			'delete /this/is/a/test/route' => array( 'MockController', 'fail' ),
-			'get /this/is/a/test/route/' => array( 'MockController', 'fail' ),
-		);
+		$testRoutes = [
+			'get /this/is/a' => [ 'MockController', 'fail' ],
+			'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
+			'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
+			'post /this/is/a/test/route' => [ 'MockController', 'staticRoute' ],
+			'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
+			'get /this/is/a/test/route/' => [ 'MockController', 'fail' ],
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'POST';
@@ -50,14 +50,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 	public function testDynamicRoute()
 	{
-		$testRoutes = array(
+		$testRoutes = [
 			'get /this/is/a' => 'fail',
 			'get /this/is/a/test/route' => 'fail',
 			'post /:a1/:a2/:a3/:a4/:a5' => 'fail',
 			'put /dynamic/:a1/:a2/:a3/:a4' => 'dynamicRoute',
 			'delete /this/is/a/test/route' => 'fail',
 			'get /this/is/a/test/route/' => 'fail',
-		);
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'PUT';
@@ -70,19 +70,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( MockController::$dynamicRouteCalled );
 
 		// test route params
-		$expected = array( 'a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4 );
+		$expected = [ 'a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4 ];
 		$this->assertEquals( MockController::$dynamicRouteParams, $expected );
 	}
 
 	public function testSingleAction()
 	{
-		$testRoutes = array(
+		$testRoutes = [
 			'get /this/is/a/test/route' => 'fail',
 			'post /this/is/a/test/route/:test' => 'fail',
 			'post /this/is/a/test/route' => 'staticRoute',
 			'delete /this/is/a/test/route' => 'fail',
 			'post /this/is/a/test/route/' => 'fail',
-		);
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'POST';
@@ -98,14 +98,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 	public function testIndex()
 	{
 		// testing to see if index is appended when a method is not specified
-		$testRoutes = array(
-			'get /this/is/a' => array( 'MockController', 'fail' ),
-			'get /this/is/a/test/route' => array( 'MockController', 'fail' ),
-			'post /this/is/a/test/route/:test' => array( 'MockController', 'fail' ),
-			'post /this/is/a/test/route' => array( 'MockController' ),
-			'delete /this/is/a/test/route' => array( 'MockController', 'fail' ),
-			'post /this/is/a/test/route/' => array( 'MockController', 'fail' ),
-		);
+		$testRoutes = [
+			'get /this/is/a' => [ 'MockController', 'fail' ],
+			'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
+			'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
+			'post /this/is/a/test/route' => [ 'MockController' ],
+			'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
+			'post /this/is/a/test/route/' => [ 'MockController', 'fail' ],
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'POST';
@@ -121,9 +121,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 	public function testNonExistentController()
 	{
 		// call a route with a bogus controller
-		$testRoutes = array(
-			'post /this/is/a/test/route' => array( 'BogusController', 'who_cares' ),
-		);
+		$testRoutes = [
+			'post /this/is/a/test/route' => [ 'BogusController', 'who_cares' ],
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'POST';
@@ -136,12 +136,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 	public function testRouterControllerParam()
 	{
-		Router::configure( array( 'defaultController' => 'BogusController' ) );
+		Router::configure( [ 'defaultController' => 'BogusController' ] );
 
-		$testRoutes = array(
+		$testRoutes = [
 			'post /this/is/a/test/route' => 'staticRoute',
 			'get /not/it' => 'fail'
-		);
+		];
 
 		$server = $_SERVER;
 		$server[ 'REQUEST_METHOD' ] = 'POST';
@@ -149,7 +149,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/this/is/a/test/route' );
 
-		$req->setParams( array( 'controller' => 'MockController' ) );
+		$req->setParams( [ 'controller' => 'MockController' ] );
 
 		$this->assertTrue( Router::route( $testRoutes, $req ) );
 
@@ -161,7 +161,7 @@ class MockController
 {
 	public static $staticRouteCalled = false;
 	public static $dynamicRouteCalled = false;
-	public static $dynamicRouteParams = array();
+	public static $dynamicRouteParams = [];
 	public static $indexRouteCalled = false;
 
 	public function staticRoute( $req, $res )

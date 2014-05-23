@@ -31,8 +31,8 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 		// false
 		try
 		{
-			Logger::configure( array(
-				'handlers' => array() ) );
+			Logger::configure( [
+				'handlers' => [] ] );
 			Logger::logger()->popHandler();
 		}
 		catch( \Exception $e )
@@ -41,60 +41,60 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 		}
 
 		// stream
-		Logger::configure( array(
-			'handlers' => array(
-				'StreamHandler' => array(
-					'stream' => 'php://stderr' ) ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'StreamHandler' => [
+					'stream' => 'php://stderr' ] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\StreamHandler', Logger::logger()->popHandler() );
 
 		// firephp
-		Logger::configure( array(
-			'handlers' => array(
-				'FirePHPHandler' => array(
-					'level' => 'debug' ) ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'FirePHPHandler' => [
+					'level' => 'debug' ] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\FirePHPHandler', Logger::logger()->popHandler() );
 
 		// syslog
-		Logger::configure( array(
-			'handlers' => array(
-				'SyslogHandler' => array(
+		Logger::configure( [
+			'handlers' => [
+				'SyslogHandler' => [
 					'level' => 'warning',
 					'ident' => 'test',
-					'facility' => 'syslog' ) ) ) );
+					'facility' => 'syslog' ] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\SyslogHandler', Logger::logger()->popHandler() );
 
 		// error log
-		Logger::configure( array(
-			'handlers' => array(
-				'ErrorLogHandler' => array(
-					'level' => 'error' ) ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'ErrorLogHandler' => [
+					'level' => 'error' ] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\ErrorLogHandler', Logger::logger()->popHandler() );
 
 		// native mail
-		Logger::configure( array(
-			'handlers' => array(
-				'NativeMailerHandler' => array(
+		Logger::configure( [
+			'handlers' => [
+				'NativeMailerHandler' => [
 					'level' => 'notice',
 					'to' => 'test@example.com',
-					'from' => 'error@example.com' ) ) ) );
+					'from' => 'error@example.com' ] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\NativeMailerHandler', Logger::logger()->popHandler() );
 
 		// null
-		Logger::configure( array(
-			'handlers' => array(
-				'NullHandler' => array() ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'NullHandler' => [] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\NullHandler', Logger::logger()->popHandler() );
 
 		// test
-		Logger::configure( array(
-			'handlers' => array(
-				'TestHandler' => array() ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'TestHandler' => [] ] ] );
 		$this->assertInstanceOf( '\Monolog\Handler\TestHandler', Logger::logger()->popHandler() );
 
 		// test
-		Logger::configure( array(
-			'handlers' => array(
-				'bogus' => array() ) ) );
+		Logger::configure( [
+			'handlers' => [
+				'bogus' => [] ] ] );
 	}
 
 	public function testClearHandlers()

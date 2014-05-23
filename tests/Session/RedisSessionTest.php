@@ -15,6 +15,6 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
 {
 	public function testConstruct()
 	{
-		$session = new RedisSession( array(), 'infuse' );
+		$session = new RedisSession( [], 'infuse' );
 	}
 }

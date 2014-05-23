@@ -21,17 +21,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		self::$requester = new Person( 1 );
 
-		Model::configure( array(
-			'database' => array(
-				'enabled' => false ),
-			'requester' => self::$requester ) );
+		Model::configure( [
+			'database' => [
+				'enabled' => false ],
+			'requester' => self::$requester ] );
 	}
 
 	function testConfigure()
 	{
-		TestModel::configure( array(
+		TestModel::configure( [
 			'test' => 123,
-			'test2' => 12345 ) );
+			'test2' => 12345 ] );
 
 		$this->assertEquals( 123, TestModel::getConfigValue( 'test' ) );
 		$this->assertEquals( 12345, TestModel::getConfigValue( 'test2' ) );
@@ -46,7 +46,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testMultipleIds()
 	{
-		$model = new TestModel2( array( 5, 2 ) );
+		$model = new TestModel2( [ 5, 2 ] );
 
 		$this->assertEquals( '5,2', $model->id() );
 	}
@@ -54,10 +54,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testIdKeyValue()
 	{
 		$model = new TestModel( 3 );
-		$this->assertEquals( array( 'id' => 3 ), $model->id( true ) );
+		$this->assertEquals( [ 'id' => 3 ], $model->id( true ) );
 
-		$model = new TestModel2( array( 5, 2 ) );
-		$this->assertEquals( array( 'id' => 5, 'id2' => 2 ), $model->id( true ) );
+		$model = new TestModel2( [ 5, 2 ] );
+		$this->assertEquals( [ 'id' => 5, 'id2' => 2 ], $model->id( true ) );
 	}
 
 	function testToString()
@@ -101,13 +101,13 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testInfo()
 	{
-		$expected = array(
+		$expected = [
 			'model' => 'TestModel',
 			'class_name' => 'TestModel',
 			'singular_key' => 'test_model',
 			'plural_key' => 'test_models',
 			'proper_name' => 'Test Model',
-			'proper_name_plural' => 'Test Models' );
+			'proper_name_plural' => 'Test Models' ];
 
 		$this->assertEquals( $expected, TestModel::info() );
 	}
@@ -161,11 +161,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$expected = array(
+		$expected = [
 			'id' => 5,
 			'relation' => 'test',
 			'answer' => null
-		);
+		];
 
 		$this->assertEquals( $expected, $model->toArray() );
 	}
@@ -175,11 +175,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$expected = array(
+		$expected = [
 			'id' => 5
-		);
+		];
 
-		$this->assertEquals( $expected, $model->toArray( array( 'relation', 'answer' ) ) );
+		$this->assertEquals( $expected, $model->toArray( [ 'relation', 'answer' ] ) );
 	}
 
 	function testToJson()
@@ -200,9 +200,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$model = new TestModel( 3 );
 
-		$model->cacheProperties( array(
+		$model->cacheProperties( [
 			'test' => 123,
-			'test2' => 'hello' ) );
+			'test2' => 'hello' ] );
 		$this->assertEquals( 123, $model->test );
 		$this->assertEquals( 'hello', $model->test2 );
 
@@ -229,7 +229,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testCreate()
 	{
 		$newModel = new TestModel;
-		$this->assertTrue( $newModel->create( array( 'relation' => '', 'answer' => 42 ) ) );
+		$this->assertTrue( $newModel->create( [ 'relation' => '', 'answer' => 42 ] ) );
 		$id = $newModel->id();
 		$this->assertTrue( !empty( $id ) );
 		$this->assertEquals( null, $newModel->relation );
@@ -239,7 +239,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testCreateMutable()
 	{
 		$newModel = new TestModel2;
-		$this->assertTrue( $newModel->create( array( 'id' => 1, 'id2' => 2, 'required' => 'yes' ) ) );
+		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 'yes' ] ) );
 		$this->assertEquals( '1,2', $newModel->id() );
 	}
 
@@ -247,14 +247,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		ErrorStack::stack()->clear();
 		$newModel = new TestModelNoPermission;
-		$this->assertFalse( $newModel->create( array() ) );
+		$this->assertFalse( $newModel->create( [] ) );
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.create' ) );
 	}
 
 	function testCreateHookFail()
 	{
 		$newModel = new TestModelHookFail;
-		$this->assertFalse( $newModel->create( array() ) );
+		$this->assertFalse( $newModel->create( [] ) );
 	}
 
 	function testCreateNotUnique()
@@ -266,7 +266,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		ErrorStack::stack()->clear();
 		$newModel = new TestModel2;
-		$this->assertFalse( $newModel->create( array( 'id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true ) ) );
+		$this->assertFalse( $newModel->create( [ 'id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true ] ) );
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
 	}
 
@@ -274,7 +274,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		ErrorStack::stack()->clear();
 		$newModel = new TestModel2;
-		$this->assertFalse( $newModel->create( array( 'id' => 10, 'id2' => 1 ) ) );
+		$this->assertFalse( $newModel->create( [ 'id' => 10, 'id2' => 1 ] ) );
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
 	}
 
@@ -290,10 +290,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$model = new TestModel( 11 );
 
-		$this->assertTrue( $model->set( array(
+		$this->assertTrue( $model->set( [
 			'answer' => 'hello',
 			'relation' => '',
-			'nonexistent_property' => 'whatever' ) ) );
+			'nonexistent_property' => 'whatever' ] ) );
 		$this->assertEquals( 'hello', $model->answer );
 		$this->assertEquals( null, $model->relation );
 	}
@@ -352,19 +352,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 class TestModel extends Model
 {
-	static $properties = array(
-		'id' => array(
+	static $properties = [
+		'id' => [
 			'type' => 'id'
-		),
-		'relation' => array(
+		],
+		'relation' => [
 			'type' => 'id',
 			'relation' => 'TestModel2',
 			'null' => true
-		),
-		'answer' => array(
+		],
+		'answer' => [
 			'type' => 'string'
-		)
-	);
+		]
+	];
 	var $preDelete;
 	var $postDelete;
 
@@ -409,33 +409,33 @@ class TestModel extends Model
 
 class TestModel2 extends Model
 {
-	static $properties = array(
-		'id' => array(
+	static $properties = [
+		'id' => [
 			'type' => 'id',
 			'mutable' => true
-		),
-		'id2' => array(
+		],
+		'id2' => [
 			'type' => 'id',
 			'mutable' => true
-		),
-		'default' => array(
+		],
+		'default' => [
 			'type' => 'text',
 			'default' => 'some default value'
-		),
-		'validate' => array(
+		],
+		'validate' => [
 			'type' => 'text',
 			'validate' => 'email',
 			'null' => true
-		),
-		'unique' => array(
+		],
+		'unique' => [
 			'type' => 'text',
 			'unique' => true
-		),
-		'required' => array(
+		],
+		'required' => [
 			'type' => 'text',
 			'required' => true
-		)
-	);
+		]
+	];
 
 	protected function hasPermission( $permission, Model $requester )
 	{
@@ -444,7 +444,7 @@ class TestModel2 extends Model
 
 	static function idProperty()
 	{
-		return array( 'id', 'id2' );
+		return [ 'id', 'id2' ];
 	}
 
 	static function hasSchema()
