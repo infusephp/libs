@@ -254,7 +254,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( $model->set( array(
 			'answer' => 'hello',
 			'relation' => 'anyone there?',
-			'nonexistent property' => 'whatever' ) ) );
+			'nonexistent_property' => 'whatever' ) ) );
 		$this->assertEquals( 'hello', $model->answer );
 		$this->assertEquals( 'anyone there?', $model->relation );
 	}

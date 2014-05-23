@@ -435,11 +435,9 @@ abstract class Model extends Acl
 				
 		// loop through each supplied field and validate
 		$insertArray = array();
-		foreach( $data as $field => $field_info )
+		foreach( $data as $field => $value )
 		{
-			if( in_array( $field, $propertyNames ) )
-				$value = $data[ $field ];
-			else
+			if( !in_array( $field, $propertyNames ) )
 				continue;
 
 			$property = static::$properties[ $field ];
@@ -450,10 +448,11 @@ abstract class Model extends Acl
 			
 			if( is_array( $property ) )
 			{
-				// null value
+				// assume empty string is a null value for properties
+				// that are marked as optionally-null
 				if( Util::array_value( $property, 'null' ) && empty( $value ) )
 				{
-					$updateArray[ $field ] = null;
+					$insertArray[ $field ] = null;
 					continue;
 				}
 				
@@ -610,31 +609,25 @@ abstract class Model extends Acl
 		$updateKeys = array_keys( $updateArray );
 		
 		// get the property names
-		$propertyNames = array();
-		foreach( static::$properties as $name => $property )
-		{
-			if( empty( $name ) )
-				continue;
-			$propertyNames[] = $name;
-		}
+		$propertyNames = array_keys( static::$properties );
 		
-		// loop through each supplied field and validate, if setup
-		foreach ($data as $field => $field_info)
+		// loop through each supplied field and validate
+		foreach( $data as $field => $value )
 		{
 			// cannot change keys
 			if( in_array( $field, $updateKeys ) )
 				continue;
-		
-			if( in_array( $field, $propertyNames ) )
-				$value = $data[ $field ];
-			else
+			
+			// exclude if field does not map to a property
+			if( !in_array( $field, $propertyNames ) )
 				continue;
 
 			$property = static::$properties[ $field ];
 
 			if( is_array( $property ) )
 			{
-				// null values
+				// assume empty string is a null value for properties
+				// that are marked as optionally-null
 				if( Util::array_value( $property, 'null' ) && empty( $value ) )
 				{
 					$updateArray[ $field ] = null;
@@ -646,7 +639,7 @@ abstract class Model extends Acl
 				// validate
 				if( isset( $property[ 'validate' ] ) )
 					$thisIsValid = $this->validate( $property, $field, $value );
-				
+
 				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
 					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
