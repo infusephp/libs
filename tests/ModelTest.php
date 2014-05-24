@@ -132,7 +132,18 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testGetMultipleProperties()
 	{
-		// TODO
+		$model = new TestModel( 3 );
+		$model->id = 3;
+		$model->relation = 'test';
+		$model->answer = 42;
+
+		$expected = array(
+			'id' => 3,
+			'relation' => 'test',
+			'answer' => 42 );
+
+		$values = $model->get( array( 'id', 'relation', 'answer' ) );
+		$this->assertEquals( $expected, $values );
 	}
 
 	function testGetDefaultValue()
@@ -300,6 +311,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testSetNoPermission()
 	{
+		ErrorStack::stack()->clear();
 		$model = new TestModelNoPermission( 5 );
 		$this->assertFalse( $model->set( 'answer', 42 ) );
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.set' ) );
@@ -318,7 +330,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testSetInvalid()
 	{
-		// TODO
+		ErrorStack::stack()->clear();
+		$model = new TestModel2( 15 );
+
+		$this->assertFalse( $model->set( 'validate', 'not a valid email' ) );
+		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.set' ) );
 	}
 
 	function testDelete()
