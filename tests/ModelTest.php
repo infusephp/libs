@@ -133,7 +133,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testGetMultipleProperties()
 	{
 		$model = new TestModel( 3 );
-		$model->id = 3;
 		$model->relation = 'test';
 		$model->answer = 42;
 
@@ -187,10 +186,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model->relation = 'test';
 
 		$expected = [
-			'id' => 5
+			'relation' => 'test'
 		];
 
-		$this->assertEquals( $expected, $model->toArray( [ 'relation', 'answer' ] ) );
+		$this->assertEquals( $expected, $model->toArray( [ 'id', 'answer' ] ) );
 	}
 
 	function testToJson()
@@ -243,6 +242,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( $newModel->create( [ 'relation' => '', 'answer' => 42 ] ) );
 		$id = $newModel->id();
 		$this->assertTrue( !empty( $id ) );
+		$this->assertTrue( !empty( $newModel->id ) );
 		$this->assertEquals( null, $newModel->relation );
 		$this->assertEquals( 42, $newModel->answer );
 	}

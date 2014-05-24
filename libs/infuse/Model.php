@@ -613,8 +613,7 @@ abstract class Model extends Acl
 		// and then get the value for each property
 		return array_replace(
 			array_fill_keys( $properties, null ),
-			(array)$this->get( $properties, false, true ),
-			$this->id( true ) );
+			(array)$this->get( $properties, false, true ) );
 	}
 	
 	/**
@@ -1243,11 +1242,21 @@ abstract class Model extends Acl
 
 	private function getFromLocalCache( &$properties, &$values )
 	{
+		$idProperties = $this->id( true );
+
 		foreach( $properties as $property )
 		{
 			if( array_key_exists( $property, $this->localCache ) )
 			{
 				$values[ $property ] = $this->localCache[ $property ];
+
+				// remove property from list of remaining
+				$index = array_search( $property, $properties );
+				unset( $properties[ $index ] );
+			}
+			else if( static::isIdProperty( $property ) )
+			{
+				$values[ $property ] = $idProperties[ $property ];
 
 				// remove property from list of remaining
 				$index = array_search( $property, $properties );
