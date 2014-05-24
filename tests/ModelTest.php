@@ -254,6 +254,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( '1,2', $newModel->id() );
 	}
 
+	function testCreateWithId()
+	{
+		$model = new TestModel( 5 );
+		$this->assertFalse( $model->create( [ 'relation' => '', 'answer' => 42 ] ) );
+	}
+
 	function testCreateNoPermission()
 	{
 		ErrorStack::stack()->clear();
@@ -309,6 +315,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( null, $model->relation );
 	}
 
+	function testSetWithNoId()
+	{
+		$model = new TestModel;
+		$this->assertFalse( $model->set( [ 'answer' => 42 ] ) );
+	}
+
 	function testSetNoPermission()
 	{
 		ErrorStack::stack()->clear();
@@ -341,6 +353,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$model = new TestModel2( 1 );
 		$this->assertTrue( $model->delete() );
+	}
+
+	function testDeleteWithNoId()
+	{
+		$model = new TestModel;
+		$this->assertFalse( $model->delete() );
 	}
 
 	function testDeleteWithHook()

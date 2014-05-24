@@ -265,7 +265,7 @@ abstract class Model extends Acl
 	{
 		if( !$keyValue )
 			return $this->_id;
-	
+		
 		$idProperty = (array)static::idProperty();
 		
 		// get id(s) into key-value format
@@ -424,6 +424,9 @@ abstract class Model extends Acl
 	function create( array $data )
 	{
 		ErrorStack::stack()->setCurrentContext( static::modelName() . '.create' );
+
+		if( $this->_id !== false )
+			return false;
 
 		// permission?
 		if( !$this->can( 'create', static::$config[ 'requester' ] ) )
@@ -639,6 +642,9 @@ abstract class Model extends Acl
 	{
 		ErrorStack::stack()->setCurrentContext( static::modelName() . '.set' );
 	
+		if( $this->_id === false )
+			return false;
+
 		// permission?
 		if( !$this->can( 'edit', static::$config[ 'requester' ] ) )
 		{
@@ -727,6 +733,9 @@ abstract class Model extends Acl
 	function delete()
 	{
 		ErrorStack::stack()->setCurrentContext( static::modelName() . '.delete' );
+
+		if( $this->_id === false )
+			return false;
 
 		// permission?
 		if( !$this->can( 'delete', static::$config[ 'requester' ] ) )
