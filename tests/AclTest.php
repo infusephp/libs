@@ -14,6 +14,15 @@ use infuse\Model;
 
 class AclTest extends \PHPUnit_Framework_TestCase
 {
+	function testCan()
+	{
+		$acl = new AclObject();
+
+		$this->assertFalse( $acl->can( 'whatever', new SomeModel ) );
+		$this->assertTrue( $acl->can( 'do nothing', new SomeModel(5) ) );
+		$this->assertFalse( $acl->can( 'do nothing', new SomeModel ) );
+	}
+
 	function testCache()
 	{
 		$acl = new AclObject();
@@ -48,14 +57,19 @@ class AclObject extends Acl
 
 	protected function hasPermission( $permission, Model $requester )
 	{
-		// always say no the first time
-		if( $this->first )
+		if( $permission == 'whatever' )
 		{
-			$this->first = false;
-			return false;
-		}
+			// always say no the first time
+			if( $this->first )
+			{
+				$this->first = false;
+				return false;
+			}
 
-		return true;
+			return true;
+		}
+		else if( $permission == 'do nothing' )
+			return $requester->id() == 5;
 	}
 }
 

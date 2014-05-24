@@ -23,19 +23,19 @@ abstract class Acl
 		if( $this->permissionsDisabled )
 			return true;
 
-		$permission = false;
+		$perm = false;
 
 		// cache when checking permissions
 		$k = $permission . '.' . $requester;
 		if( !isset( $this->permissionsCache[ $k ] ) )
 		{
-			$permission = $this->hasPermission( $permission, $requester );
-			$this->permissionsCache[ $k ] = $permission;
+			$perm = $this->hasPermission( $permission, $requester );
+			$this->permissionsCache[ $k ] = $perm;
 		}
 		else
-			$permission = $this->permissionsCache[ $k ];
+			$perm = $this->permissionsCache[ $k ];
 
-		return $permission;
+		return $perm;
 	}
 
 	/**
