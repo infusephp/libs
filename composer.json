@@ -1,6 +1,6 @@
 {
 	"name": "infuse/libs",
-	"version": "0.1.21",
+	"version": "0.1.21.1",
 	"description": "Essential libraries for rapid PHP development",
 	"type": "library",
 	"keywords": ["infuse","libs"],
