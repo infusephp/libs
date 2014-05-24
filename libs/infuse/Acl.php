@@ -23,9 +23,10 @@ abstract class Acl
 		if( $this->permissionsDisabled )
 			return true;
 
-		// cache when checking permissions
-		$k = $permission . '.' . get_class( $requester ) . '.' . $requester->id();
 		$permission = false;
+
+		// cache when checking permissions
+		$k = $permission . '.' . $requester;
 		if( !isset( $this->permissionsCache[ $k ] ) )
 		{
 			$permission = $this->hasPermission( $permission, $requester );
