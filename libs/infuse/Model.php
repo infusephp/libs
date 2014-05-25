@@ -1247,18 +1247,13 @@ abstract class Model extends Acl
 		foreach( $properties as $property )
 		{
 			if( array_key_exists( $property, $this->localCache ) )
-			{
 				$values[ $property ] = $this->localCache[ $property ];
-
-				// remove property from list of remaining
-				$index = array_search( $property, $properties );
-				unset( $properties[ $index ] );
-			}
 			else if( static::isIdProperty( $property ) )
-			{
 				$values[ $property ] = $idProperties[ $property ];
 
-				// remove property from list of remaining
+			// remove property from list of remaining
+			if( isset( $values[ $property ] ) )
+			{
 				$index = array_search( $property, $properties );
 				unset( $properties[ $index ] );
 			}
