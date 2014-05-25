@@ -561,8 +561,6 @@ abstract class Model extends Acl
 		else
 			$properties = (array)$properties;
 
-		$onlyOneProperty = count( $properties ) == 1;
-
 		/*
 			Look up property values in this order:
 			i) Local Cache (unless explicitly skipped)
@@ -571,18 +569,23 @@ abstract class Model extends Acl
 			iv) Model Property Value Defaults
 		*/
 
+		// Make a copy of properties to keep track of what's remaining.
+		// Since this will be modified a copy must be made to prevent
+		// functional side effects
+		$remaining = $properties;
+
 		$i = 1;
 		$values = [];
-		while( $i <= 4 && count( $properties ) > 0 )
+		while( $i <= 4 && count( $remaining ) > 0 )
 		{
 			if( $i == 1 && !$skipLocalCache )
-				$this->getFromLocalCache( $properties, $values );
+				$this->getFromLocalCache( $remaining, $values );
 			else if( $i == 2 )
-				$this->getFromSharedCache( $properties, $values );
+				$this->getFromSharedCache( $remaining, $values );
 			else if( $i == 3 && static::$config[ 'database' ][ 'enabled' ] )
-				$this->getFromDatabase( $properties, $values );
+				$this->getFromDatabase( $remaining, $values );
 			else if( $i == 4 )
-				$this->getFromDefaultValues( $properties, $values );
+				$this->getFromDefaultValues( $remaining, $values );
 
 			$i++;
 		}
