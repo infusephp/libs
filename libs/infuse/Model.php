@@ -564,11 +564,11 @@ abstract class Model extends Acl
 		$onlyOneProperty = count( $properties ) == 1;
 
 		/*
-			Look up values in this order from these places:
+			Look up property values in this order:
 			i) Local Cache (unless skipped)
 			ii) Shared Cache
 			iii) Database
-			iv) Default Model Property Values
+			iv) Model Property Value Defaults
 		*/
 
 		$i = 1;
