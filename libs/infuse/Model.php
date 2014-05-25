@@ -565,7 +565,7 @@ abstract class Model extends Acl
 
 		/*
 			Look up property values in this order:
-			i) Local Cache (unless skipped)
+			i) Local Cache (unless explicitly skipped)
 			ii) Shared Cache
 			iii) Database
 			iv) Model Property Value Defaults
