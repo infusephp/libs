@@ -295,6 +295,26 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
 	}
 
+	function testToArrayAfterCreate()
+	{
+		$model = new TestModel2;
+		$this->assertTrue( $model->create( [
+			'id' => 5,
+			'id2' => 10,
+			'required' => true ] ) );
+
+		$expected = [
+			'id' => 5,
+			'id2' => 10,
+			'required' => true,
+			'default' => 'some default value',
+			'validate' => null,
+			'unique' => null
+		];
+
+		$this->assertEquals( $expected, $model->toArray() );
+	}
+
 	function testSet()
 	{
 		$model = new TestModel( 10 );
