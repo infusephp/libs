@@ -288,10 +288,11 @@ class Validate
 		if( !is_string( $value ) )
 			return false;
 
+		$len = strlen( $value );
 		$min = Util::array_value( $parameters, 0 );
 		$max = Util::array_value( $parameters, 1 );
 
-		return strlen( $value ) >= $min && ( !$max || strlen( $value ) <= $max );
+		return $len >= $min && ( !$max || $len <= $max );
 	}
 
 	/**
