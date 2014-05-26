@@ -616,7 +616,7 @@ abstract class Model extends Acl
 		// and then get the value for each property
 		return array_replace(
 			array_fill_keys( $properties, null ),
-			(array)$this->get( $properties, false, true ) );
+			$this->get( $properties, false, true ) );
 	}
 	
 	/**
@@ -1246,6 +1246,7 @@ abstract class Model extends Acl
 	private function getFromLocalCache( &$properties, &$values )
 	{
 		$idProperties = $this->id( true );
+		$remove = [];
 
 		foreach( $properties as $property )
 		{
@@ -1254,12 +1255,15 @@ abstract class Model extends Acl
 			else if( static::isIdProperty( $property ) )
 				$values[ $property ] = $idProperties[ $property ];
 
-			// remove property from list of remaining
+			// mark index of property to remove from list of properties
 			if( isset( $values[ $property ] ) )
-			{
-				$index = array_search( $property, $properties );
-				unset( $properties[ $index ] );
-			}
+				$remove[] = $property;
+		}
+
+		foreach( $remove as $property )
+		{
+			$index = array_search( $property, $properties );
+			unset( $properties[ $index ] );
 		}
 	}
 
@@ -1279,14 +1283,14 @@ abstract class Model extends Acl
 
 	private function getFromDatabase( &$properties, &$values )
 	{
-		$values = Database::select(
+		$dbValues = Database::select(
 			static::tablename(),
 			implode(',', $properties),
 			[
 				'where' => $this->id( true ),
 				'singleRow' => true ] );
 
-		foreach( (array)$values as $property => $value )
+		foreach( (array)$dbValues as $property => $value )
 		{
 			$values[ $property ] = $value;
 			$this->cacheProperty( $property, $value );
@@ -1299,16 +1303,23 @@ abstract class Model extends Acl
 
 	private function getFromDefaultValues( &$properties, &$values )
 	{
+		$remove = [];
+
 		foreach( $properties as $property )
 		{
 			if( isset( static::$properties[ $property ] ) && isset( static::$properties[ $property ][ 'default' ] ) )
 			{
 				$values[ $property ] = static::$properties[ $property ][ 'default' ];
 
-				// remove property from list of remaining
-				$index = array_search( $property, $properties );
-				unset( $properties[ $index ] );
+				// mark index of property to remove from list of properties
+				$remove[] = $property;
 			}
+		}
+
+		foreach( $remove as $property )
+		{
+			$index = array_search( $property, $properties );
+			unset( $properties[ $index ] );
 		}
 	}
 
