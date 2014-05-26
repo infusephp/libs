@@ -274,7 +274,9 @@ class Validate
 	}
 
 	/**
-	 * Validates a string. OPTIONAL string:5 supplies a minimum length
+	 * Validates a string.
+	 * OPTIONAL string:5 supplies a minimum length
+	 * 			string:1:5 supplies a minimum and maximum length
 	 * 
 	 * @param $value
 	 * @param $parameters
@@ -286,7 +288,10 @@ class Validate
 		if( !is_string( $value ) )
 			return false;
 
-		return strlen( $value ) >= Util::array_value( $parameters, 0 );
+		$min = Util::array_value( $parameters, 0 );
+		$max = Util::array_value( $parameters, 1 );
+
+		return strlen( $value ) >= $min && ( !$max || strlen( $value ) <= $max );
 	}
 
 	/**
