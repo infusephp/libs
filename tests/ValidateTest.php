@@ -150,6 +150,11 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 		$s = 'thisisok';
 		$this->assertTrue( Validate::is( $s, 'string' ) );
 		$this->assertTrue( Validate::is( $s, 'string:5' ) );
+		$this->assertTrue( Validate::is( $s, 'string:1:8' ) );
+		$this->assertTrue( Validate::is( $s, 'string:0:9' ) );
+		$this->assertFalse( Validate::is( $s, 'string:9' ) );
+		$this->assertFalse( Validate::is( $s, 'string:1:7' ) );
+
 		$s = new stdClass;
 		$this->assertFalse( Validate::is( $s, 'string' ) );
 	}
