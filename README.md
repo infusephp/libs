@@ -8,7 +8,7 @@ infuse/libs
 
 *infuse/libs* is a set of libraries designed for rapid PHP development.
 
-These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of many node.js libraries like express.js.
+These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of node libraries like express.js.
 
 ## Infuse Framework
 
