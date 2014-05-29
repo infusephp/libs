@@ -77,7 +77,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::alert( Logger::formatException( $e ) );
+			Logger::alert( $e );
 			die( 'Could not connect to database.' );
 			return false;
 		}
@@ -243,7 +243,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 
 			return false;
 		}
@@ -298,7 +298,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 
 			return null;
 		}
@@ -486,7 +486,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException() );
+			Logger::error( $e );
 
 			return false;
 		}
@@ -557,7 +557,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 
 			return false;
 		}
@@ -606,7 +606,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 
 			return false;
 		}
@@ -662,7 +662,7 @@ class Database
 		}
 		catch(PDOException $e)
 		{
-			Logger::error( Logger::formatException( $e ) );
+			Logger::error( $e );
 
 			return false;
 		}
