@@ -135,11 +135,16 @@ class Database
 		else if( Util::array_value( $parameters, 'singleColumn' ) )
 			$parameters[ 'fetchStyle' ] = 'singleColumn';
 
+		// escape identifiers in field list
+		$escapedFields = implode( ',', array_map( function( $field ) {
+			return self::escapeIdentifier( $field );
+		}, explode( ',', $fields ) ) );
+
 		// add backticks to table name, unless a space is found
 		// in which case, the developer is responsible for adding backticks where needed
 		$tablename = self::escapeIdentifier( $tablename );
 
-		$sql = "SELECT $fields FROM $tablename";
+		$sql = "SELECT $escapedFields FROM $tablename";
 		
 		$whereData = (isset($parameters['where'])) ? $parameters[ 'where' ] : [];
 		$sql .= ' ' . self::generateWhereString( $whereData );
