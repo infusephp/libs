@@ -6,9 +6,9 @@ infuse/libs
 [![Latest Stable Version](https://poser.pugx.org/infuse/libs/v/stable.png)](https://packagist.org/packages/infuse/libs)
 [![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.png)](https://packagist.org/packages/infuse/libs)
 
-*infuse/libs* is a set of libraries designed for rapid PHP development of single-page apps, giant monolithic projects, and everything in-between. There is even a [framework](https://github.com/jaredtking/infuse) built around *infuse/libs*.
+*infuse/libs* is a set of libraries designed for rapid PHP development.
 
-The simplified syntax was inspired by express.js. These libraries are unit-tested, battle-tested, and can be used à la carte. Depending on the class, there will be few to no external dependencies.
+These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of many node.js libraries like express.js.
 
 ## Infuse Framework
 
