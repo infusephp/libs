@@ -153,42 +153,34 @@ class Database
 		{
 			$originalWhere = $parameters[ 'where' ];
 			
-			if( is_string( $parameters[ 'where' ] ) )
-			{ // deprecating building where strings, use named parameters instead
-				$where = ' WHERE ' . $parameters['where'];
-				exit( "Deprecated: $where" );
+			foreach( (array)$parameters['where'] as $key=>$value )
+			{
+				if( is_numeric( $key ) )
+				{ // should not be parameterized
+					if( $value != '' )
+						$where_other[] = $value;
+						
+					unset( $parameters['where'][$key] );
+				}
 			}
-			else
-			{ // use named parameters, its safer
-				foreach( (array)$parameters['where'] as $key=>$value )
-				{
-					if( is_numeric( $key ) )
-					{ // should not be parameterized
-						if( $value != '' )
-							$where_other[] = $value;
-							
-						unset( $parameters['where'][$key] );
-					}
-				}
-				
-				$where_arr = [];
-				$where_other_implode = implode(' AND ', $where_other );
-				if( $where_other_implode  != '' ) // add to where clause
-					$where_arr[] = $where_other_implode;
-				
-				$where_parameterized = implode(' AND ', array_map(create_function('$key, $value', 'return $key.\' = :\'.str_replace(".","",$key);'), array_keys($parameters['where']), array_values($parameters['where'])) );
-				foreach( (array)$parameters['where'] as $parameter=>$value )
-				{ // strip periods from named parameters, MySQL does not like this
-					unset($parameters['where'][$parameter]);
-					$parameters['where'][str_replace('.','',$parameter)] = $value;
-				}
+			
+			$where_arr = [];
+			$where_other_implode = implode(' AND ', $where_other );
+			if( $where_other_implode  != '' ) // add to where clause
+				$where_arr[] = $where_other_implode;
+			
+			$where_parameterized = implode(' AND ', array_map(create_function('$key, $value', 'return "`$key` = :".str_replace(".","",$key);'), array_keys($parameters['where']), array_values($parameters['where'])) );
+			foreach( (array)$parameters['where'] as $parameter=>$value )
+			{ // strip periods from named parameters, MySQL does not like this
+				unset($parameters['where'][$parameter]);
+				$parameters['where'][str_replace('.','',$parameter)] = $value;
+			}
 
-				if( $where_parameterized != '' )
-					$where_arr[] = $where_parameterized;
-					
-				if( count( $where_arr ) > 0 )
-					$where = ' WHERE ' . implode(' AND ', $where_arr );
-			}
+			if( $where_parameterized != '' )
+				$where_arr[] = $where_parameterized;
+				
+			if( count( $where_arr ) > 0 )
+				$where = ' WHERE ' . implode(' AND ', $where_arr );
 		}
 		else
 			$parameters[ 'where' ] = null;
@@ -222,7 +214,7 @@ class Database
 		
 		try
 		{
-			$query = 'SELECT ' . implode(',', (array)$fields) . ' FROM ' . $tableName . $where . $groupBy . $orderBy . $limit;
+			$query = 'SELECT ' . implode(',', (array)$fields) . ' FROM `' . $tableName  . '`' . $where . $groupBy . $orderBy . $limit;
 			
 			if( $showQuery || false )
 			{
@@ -482,7 +474,7 @@ class Database
 		try
 		{
 			// prepare and execute the statement
-			$STH = self::$DBH->prepare('INSERT INTO ' . $tableName . ' (' . self::implode_key( ',', (array)$data ) . ') VALUES (:' . self::implode_key( ',:', (array)$data ) . ')');
+			$STH = self::$DBH->prepare('INSERT INTO `' . $tableName . '` (' . self::implode_key( ',', (array)$data, true ) . ') VALUES (:' . self::implode_key( ',:', (array)$data ) . ')');
 			
 			if( $STH->execute($data) )
 			{
@@ -525,6 +517,9 @@ class Database
 		{
 			// start the transaction
 			self::$DBH->beginTransaction();
+
+			// quote fields
+			$fields = array_map( function( $field ) { return "`$field`"; }, $fields );
 			
 			// prepare the values to be inserted
 			$insert_values = [];
@@ -542,7 +537,7 @@ class Database
 			}
 			
 			// generate the SQL
-			$sql = "INSERT INTO $tableName (" . implode( ",", $fields ) . ") VALUES " . implode( ',', $question_marks );
+			$sql = "INSERT INTO `$tableName` (" . implode( ",", $fields ) . ") VALUES " . implode( ',', $question_marks );
 			
 			// prepare and execute the statement
 			$stmt = self::$DBH->prepare( $sql );
@@ -585,14 +580,14 @@ class Database
 	
 		try
 		{
-			$sql = 'UPDATE ' . $tableName . ' SET ';
+			$sql = 'UPDATE `' . $tableName . '` SET ';
 			foreach( (array)$data as $key=>$value )
-			 	$sql .= $key . ' = :' . $key . ',';
+			 	$sql .= "`$key` = :$key,";
 			$sql = substr_replace($sql,'',-1);
 			if( $where == null )
-				$sql .= ' WHERE id = :id';
+				$sql .= ' WHERE `id` = :id';
 			else
-				$sql .= ' WHERE ' . implode(' AND ', array_map(create_function('$key, $value', 'return $value.\' = :\'.$value;'), array_keys($where), array_values($where)) );
+				$sql .= ' WHERE ' . implode(' AND ', array_map(create_function('$key, $value', 'return "`$value` = :$value";'), array_keys($where), array_values($where)) );
 
 			if( $showQuery ) {
 				echo $sql;
@@ -650,11 +645,11 @@ class Database
 			if( $where_other_implode  != '' ) // add to where clause
 				$where_arr[] = $where_other_implode;
 				
-			$where_parameterized = implode(' AND ', array_map(create_function('$key, $value', 'return $key.\'=\'.$value;'), array_keys($where), array_values($where) ) );
+			$where_parameterized = implode(' AND ', array_map(create_function('$key, $value', 'return "`$key` = :$value";'), array_keys($where), array_values($where) ) );
 			if( $where_parameterized != '' )
 				$where_arr[] = $where_parameterized;
 				
-			$query = 'DELETE FROM ' . $tableName . ' WHERE ' . implode(' AND ', $where_arr );
+			$query = 'DELETE FROM `' . $tableName . '` WHERE ' . implode(' AND ', $where_arr );
 
 			if( $showQuery )
 				echo $query;
@@ -677,9 +672,13 @@ class Database
 	// Private Class Functions
 	////////////////////////////
 	
-	private static function implode_key($glue = '', $pieces = [])
+	private static function implode_key($glue = '', $pieces = [], $quotes = false)
 	{
 	    $arrK = array_keys($pieces);
+
+	    if( $quotes )
+	    	$arrK = array_map( function( $k ) { return "`$k`"; }, $arrK );
+
 	    return implode($glue, $arrK);
 	}
 	
