@@ -1105,7 +1105,7 @@ abstract class Model extends Acl
 			
 			$drops = [];
 			foreach( $suggested[ 'extraFields' ] as $field )
-				$drops[] = ' DROP COLUMN ' . $field;
+				$drops[] = ' DROP COLUMN `' . $field . '`';
 			
 			$sql .= implode( ',', $drops ) . ';';
 		}
