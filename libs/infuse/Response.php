@@ -152,7 +152,7 @@ class Response
 		$engine = ViewEngine::engine();
 		
 		// deal with relative paths when using modules
-		// TODO this is not ideal, kind of a hack
+		// TODO this is a hack
 		if( substr( $template, 0, 1 ) != '/' )
 		{
 			// check if called from a controller
@@ -165,9 +165,15 @@ class Response
 				{
 					$parts = explode( '\\', $class );
 					$module = $parts[ 1 ];
-					
-					$parameters[ 'moduleViewsDir' ] = INFUSE_APP_DIR . '/' . $module . '/views';
-					$template = $parameters[ 'moduleViewsDir' ] . '/' . $template;
+
+					$moduleViewsDir = INFUSE_APP_DIR . '/' . $module . '/views';
+
+					$newTemplate = $moduleViewsDir . '/' . $template . '.tpl';
+					if( file_exists( $newTemplate ) )
+					{
+						$parameters[ 'moduleViewsDir' ] = $moduleViewsDir;
+						$template = $newTemplate;
+					}
 				}
 			}
 		}
