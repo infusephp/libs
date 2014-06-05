@@ -798,7 +798,7 @@ abstract class Model extends Acl
 			foreach( static::$properties as $name => $property )
 			{
 				if( !in_array( $name, static::$propertiesNotInDatabase ) )
-					$w[] = "$name LIKE '%$search%'";
+					$w[] = "`$name` LIKE '%$search%'";
 			}
 			
 			$params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
