@@ -35,6 +35,14 @@ class ModelIterator implements \Iterator
 		$this->where = (isset($parameters['where'])) ? $parameters[ 'where' ] : [];
 		$this->search = (isset($parameters['search'])) ? $parameters[ 'search' ] : '';
 		$this->sort = (isset($parameters['sort'])) ? $parameters[ 'sort' ] : '';
+
+		if( empty( $this->sort ) )
+		{
+			$idProperties = (array)$modelClass::idProperty();
+			foreach( $idProperties as $k => $property )
+				$idProperties[ $k ] .= ' ASC';
+			$this->sort = implode( ',', $idProperties );
+		}
 	}
 
 	/**

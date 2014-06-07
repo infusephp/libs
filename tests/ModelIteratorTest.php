@@ -132,7 +132,7 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 	function testFromZero()
 	{
 		$start = 0;
-		$limit = 1001;
+		$limit = 101;
 		$iterator = new ModelIterator( 'IteratorTestModel', [
 			'start' => $start,
 			'limit' => $limit ] );
@@ -151,6 +151,10 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 
 class IteratorTestModel extends Model
 {
+	static function idProperty()
+	{
+		return [ 'id', 'id2' ];
+	}
 	protected function hasPermission( $permission, Model $requester )
 	{
 		return true;
@@ -158,11 +162,14 @@ class IteratorTestModel extends Model
 
 	static function totalRecords( array $where = [] )
 	{
-		return 1234;
+		return 123;
 	}
 
 	static function find( array $params = [] )
 	{
+		if( $params[ 'sort' ] != 'id ASC,id2 ASC')
+			return [ 'models' => [], 'count' => 0 ];
+
 		$range = range( $params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1 );
 		$models = [];
 		$modelClass = get_called_class();
