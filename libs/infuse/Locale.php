@@ -726,7 +726,8 @@ class Locale
 			'symbol' => '¥'
 		],
 		'KES' => [
-			'name' => 'Kenya Shilling'
+			'name' => 'Kenya Shilling',
+			'symbol' => 'KSh'
 		],
 		'KGS' => [
 			'name' => 'Kyrgyzstan Som',
@@ -999,14 +1000,16 @@ class Locale
 			'symbol' => 'NT$'
 		],
 		'TZS' => [
-			'name' => 'Tanzania Shilling'
+			'name' => 'Tanzania Shilling',
+			'symbol' => 'TSh'
 		],
 		'UAH' => [
 			'name' => 'Ukraine Hryvna',
 			'symbol' => '₴'
 		],
 		'UGX' => [
-			'name' => 'Uganda Shilling'
+			'name' => 'Uganda Shilling',
+			'symbol' => 'USh'
 		],
 		'USD' => [
 			'name' => 'United States Dollar',
