@@ -163,52 +163,54 @@ class Locale
 	
 	/**
 	 * Generates a select box for the time zones
-	 * - lifted from php.net comments
 	 *
-	 * @param string $selectedTimezone
+	 * @param string $selected selected timezone
 	 *
 	 * @return string html
 	 */
-	function timezoneOptions( $selectedTimezone = '' )
+	function timezoneOptions( $selected = '' )
 	{
-		$all = timezone_identifiers_list();
-		
-		$i = 0;
-		foreach($all AS $zone)
+		$zones = [];
+		foreach( timezone_identifiers_list() AS $tzIdentifier )
 		{
-			$zone = explode('/',$zone);
-			$zonen[$i]['continent'] = Util::array_value( $zone, 0 );
-			$zonen[$i]['city'] = Util::array_value( $zone, 1 );
-			$zonen[$i]['subcity'] = Util::array_value( $zone, 2 );
-			$i++;
+			$exp = explode( '/', $tzIdentifier );
+			$zones[] = [
+				'continent' => Util::array_value( $exp, 0 ),
+				'city' => implode( '/', (array)array_slice( $exp, 1 ) ) ];
 		}
 		
-		asort($zonen);
+		asort( $zones );
+
 		$return = '';
-		foreach($zonen AS $zone)
+
+		$currContinent = false;
+
+		foreach( $zones AS $zone)
 		{
-			extract($zone);
-			if($continent == 'Africa' || $continent == 'America' || $continent == 'Antarctica' || $continent == 'Arctic' || $continent == 'Asia' || $continent == 'Atlantic' || $continent == 'Australia' || $continent == 'Europe' || $continent == 'Indian' || $continent == 'Pacific')
+			extract( $zone );
+
+			if( !$currContinent )
+				$return .= '<optgroup label="' . $continent . '">';
+			elseif( $currContinent != $continent )
+				$return .= '</optgroup><optgroup label="'.$continent.'">';
+		
+			$key = $continent;
+			$value = $continent;
+
+			if( !empty( $city ) )
 			{
-				if(!isset($selectcontinent))
-					$return .= '<optgroup label="'.$continent.'">'; // continent
-				elseif($selectcontinent != $continent)
-					$return .= '</optgroup><optgroup label="'.$continent.'">'; // continent
-			
-				if(!empty($city))
-				{
-					if (!empty($subcity))
-						$city .= '/' . $subcity;
-					
-					$return .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace(['_','/'],[' ',': '],$city)."</option>"; //Timezone
-				}
-				else
-				{
-					$return .= "<option ".(($continent==$selectedTimezone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
-				}
-				
-				$selectcontinent = $continent;
+				$key = $continent . '/' . $city;
+				$value = str_replace( ['_', '/' ], [ ' ', ': ' ], $city );
 			}
+			else
+			{
+				
+			}
+
+			$return .= '<option ' . (($key == $selected)?'selected="selected "':'');
+			$return .= ' value="' . $key . '">' . $value . '</option>';
+			
+			$currContinent = $continent;
 		}
 		
 		$return .= '</optgroup>';
