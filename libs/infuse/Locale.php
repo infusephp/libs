@@ -177,9 +177,9 @@ class Locale
 		foreach($all AS $zone)
 		{
 			$zone = explode('/',$zone);
-			$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
-			$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
-			$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
+			$zonen[$i]['continent'] = Util::array_value( $zone, 0 );
+			$zonen[$i]['city'] = Util::array_value( $zone, 1 );
+			$zonen[$i]['subcity'] = Util::array_value( $zone, 2 );
 			$i++;
 		}
 		
@@ -195,18 +195,15 @@ class Locale
 				elseif($selectcontinent != $continent)
 					$return .= '</optgroup><optgroup label="'.$continent.'">'; // continent
 			
-				if(isset($city) != '')
+				if(!empty($city))
 				{
-					if (!empty($subcity) != '')
-						$city = $city . '/'. $subcity;
-						
-					$return .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace('_',' ',$city)."</option>"; //Timezone
+					if (!empty($subcity))
+						$city .= '/' . $subcity;
+					
+					$return .= "<option ".((($continent.'/'.$city)==$selectedTimezone)?'selected="selected "':'')." value=\"".($continent.'/'.$city)."\">".str_replace(['_','/'],[' ',': '],$city)."</option>"; //Timezone
 				}
 				else
 				{
-					if (!empty($subcity) != '')
-					$city = $city . '/'. $subcity;
-					
 					$return .= "<option ".(($continent==$selectedTimezone)?'selected="selected "':'')." value=\"".$continent."\">".$continent."</option>"; //Timezone
 				}
 				
