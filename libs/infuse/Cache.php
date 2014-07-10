@@ -23,6 +23,10 @@ class Cache
 	private $strategy;
 	private $cachePrefix;
 
+	// redis strategy
+	private static $redis;
+	private static $redisConnectionAttempted;	
+
 	// memcache strategy
 	private static $memcache;
 	private static $memcacheConnectionAttempted;
@@ -32,6 +36,7 @@ class Cache
 	
 	/**
 	 * Creates a new instance of the cache
+	 * Uses the first strategy supplied that does not fail
 	 *
 	 * @param array $strategies
 	 * @param array $parameters
@@ -65,19 +70,49 @@ class Cache
 	 */
 	function get( $keys, $forceArray = false )
 	{
-		$keys = (array)$keys;
+		// force the array keys to renumber sequentially starting at 0
+		$keys = array_values( (array)$keys );
 		$cachePrefix = $this->cachePrefix;
-		$prefixedKeys = array_map( function ($str) use ($cachePrefix) { return $cachePrefix . $str; }, $keys );
+		$prefixedKeys = array_map( function ($str) use ($cachePrefix) {
+			return $cachePrefix . $str; }, $keys );
 		
 		$return = [];
 		
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+		{
+			$cache = self::$redis->mget( $prefixedKeys );
+
+			// for mget() predis will return an ordered list
+			// corresponding to the order the keys were passed in
+
+			$i = 0;
+			foreach( $prefixedKeys as $key )
+			{
+				$unprefixedKey = $keys[ $i ];
+				$value = $cache[ $i ];
+
+				$i++;
+
+				// We do not actually know if the value is null
+				// because it was set to null or if it is because the
+				// key does not exist. Therefore, we only proceed if
+				// the key exists.
+				// TODO This could get nasty if null values
+				// are frequently stored in the cache.
+				if( $value === null && !$this->has( $unprefixedKey ) )
+					continue;
+
+				// strip cache prefix and add it to return
+				$return[ $unprefixedKey ] = $value;
+			}
+		}
+		else if( $this->strategy == 'memcache' )
 		{
 			$cache = self::$memcache->get( $prefixedKeys );
 
 			foreach( $cache as $key => $value )
 				// strip cache prefix and add it to return
-				$return[ str_replace( $this->cachePrefix, '', $key ) ] = $value;
+				$return[ str_replace( $cachePrefix, '', $key ) ] = $value;
 		}
 		else if( $this->strategy == 'local' )
 		{
@@ -108,7 +143,10 @@ class Cache
 	 */
 	function has( $key )
 	{
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+			return self::$redis->exists( $this->cachePrefix . $key );
+
+		else if( $this->strategy == 'memcache' )
 		{
 			$added = self::$memcache->set( $this->cachePrefix . $key, null );
 			
@@ -132,13 +170,21 @@ class Cache
 	 *
 	 * @param string $key
 	 * @param mixed $value
-	 * @param int $expires expiration time (0 = never)
+	 * @param int $expires expiration time in seconds (0 = never)
 	 *
 	 * @return boolean
 	 */
 	function set( $key, $value, $expires = 0 )
 	{
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+		{
+			if( $expires <= 0 )
+				return self::$redis->set( $this->cachePrefix . $key, $value );
+
+			else
+				return self::$redis->setex( $this->cachePrefix . $key, $expires, $value );
+		}
+		else if( $this->strategy == 'memcache' )
 			return self::$memcache->set( $this->cachePrefix . $key, $value, $expires );
 
 		else if( $this->strategy == 'local' )
@@ -161,7 +207,10 @@ class Cache
 	 */
 	function increment( $key, $amount = 1 )
 	{
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+			return self::$redis->incrby( $this->cachePrefix . $key, $amount );
+
+		else if( $this->strategy == 'memcache' )
 			return self::$memcache->increment( $this->cachePrefix . $key, $amount );
 			
 		else if( $this->strategy == 'local' )
@@ -186,7 +235,10 @@ class Cache
 	 */
 	function decrement( $key, $amount = 1 )
 	{
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+			return self::$redis->decrby( $this->cachePrefix . $key, $amount );
+
+		else if( $this->strategy == 'memcache' )
 			return self::$memcache->decrement( $this->cachePrefix . $key, $amount );
 			
 		else if( $this->strategy == 'local' )
@@ -210,11 +262,12 @@ class Cache
 	 */
 	function delete( $key )
 	{
-		// use memcache
-		if( $this->strategy == 'memcache' )
+		if( $this->strategy == 'redis' )
+			return self::$redis->del( $this->cachePrefix . $key );
+
+		else if( $this->strategy == 'memcache' )
 			return self::$memcache->delete( $this->cachePrefix . $key );
 		
-		// fallback to local cache
 		else if( $this->strategy == 'local' )
 		{
 			if( isset( self::$local[ $this->cachePrefix . $key ] ) )
@@ -229,13 +282,45 @@ class Cache
 	/////////////////////////
 	// STRATEGIES
 	/////////////////////////
+
+	private function strategy_redis( $parameters = [] )
+	{
+		// initialize reids if enabled
+		if( !self::$redis &&
+			!self::$redisConnectionAttempted &&
+			class_exists( 'Predis\Client' ) )
+		{
+			// attempt to connect to redis
+			try
+			{
+				self::$redisConnectionAttempted = true;
+				
+				self::$redis = new \Predis\Client( $parameters ) or (self::$redis = false);
+			}
+			catch(\Exception $e)
+			{
+				self::$redis = false;
+			}
+		}
+
+		if( self::$redis )
+		{
+			$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
+			
+			$this->strategy = 'redis';
+
+			return true;
+		}
+		
+		return false;
+	}
 	
 	private function strategy_memcache( $parameters = [] )
 	{
 		// initialize memcache if enabled
 		if( !self::$memcache &&
 			!self::$memcacheConnectionAttempted &&
-			class_exists('Memcache') )
+			class_exists( 'Memcache' ) )
 		{
 			// attempt to connect to memcache
 			try
@@ -256,7 +341,7 @@ class Cache
 			$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
 			
 			$this->strategy = 'memcache';
-			
+
 			return true;
 		}
 		
