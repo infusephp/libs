@@ -233,32 +233,30 @@ class Cache
 	private function strategy_memcache( $parameters = [] )
 	{
 		// initialize memcache if enabled
-		if( class_exists('Memcache') )
+		if( !self::$memcache &&
+			!self::$memcacheConnectionAttempted &&
+			class_exists('Memcache') )
 		{
 			// attempt to connect to memcache
 			try
 			{
-				if( !self::$memcache && !self::$memcacheConnectionAttempted )
-				{
-					self::$memcacheConnectionAttempted = true;
-					
-					self::$memcache = new \Memcache;
-					
-					self::$memcache->connect( $parameters[ 'host' ], $parameters[ 'port' ] ) or (self::$memcache = false);
-				}
+				self::$memcacheConnectionAttempted = true;
+				
+				self::$memcache = new \Memcache;
+				self::$memcache->connect( $parameters[ 'host' ], $parameters[ 'port' ] ) or (self::$memcache = false);
 			}
 			catch(\Exception $e)
 			{
 				self::$memcache = false;
 			}
 		}
-		
+
 		if( self::$memcache )
 		{
 			$this->cachePrefix = Util::array_value( $parameters, 'prefix' );
 			
 			$this->strategy = 'memcache';
-
+			
 			return true;
 		}
 		
