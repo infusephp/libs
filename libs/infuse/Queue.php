@@ -11,6 +11,8 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 define( 'QUEUE_TYPE_IRON', 'iron' );
 define( 'QUEUE_TYPE_SYNCHRONOUS', 'synchronous' );
 
@@ -19,7 +21,8 @@ class Queue
 	private static $config = [
 		'type' => QUEUE_TYPE_SYNCHRONOUS,
 		'queues' => [],
-		'namespace' => ''
+		'namespace' => '',
+		'container' => null
 	];
 
 	// used for synchronous mode
@@ -145,7 +148,7 @@ class Queue
 			self::$queues[ $queue ][] = $json;
 
 			// since this is synchronous mode, notify all listeners that we have a new message
-			self::receiveMessage( $queue, $json );
+			self::receiveMessage( $queue, $json, self::$config[ 'container' ] );
 
 			return true;
 		}
@@ -242,8 +245,9 @@ class Queue
 	 *
 	 * @param string $queue queue name
 	 * @param string $message message
+	 * @param Container $container optional DI container
 	 */
-	static function receiveMessage( $queue, $message )
+	static function receiveMessage( $queue, $message, Container $container = null )
 	{
 		$success = true;
 
@@ -264,7 +268,7 @@ class Queue
 				if( !class_exists( $controller ) )
 					continue;
 
-				$controllerObj = new $controller();
+				$controllerObj = new $controller( $container );
 
 				$controllerObj->$method( $message );
 			}
