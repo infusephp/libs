@@ -11,6 +11,8 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 class Router
 {
 	private static $config = [
@@ -35,10 +37,11 @@ class Router
 	 * @param array $routes
 	 * @param Request $req
 	 * @param Response $res
+	 * @param Container $container DI container
 	 *
 	 * @return boolean was a route match made?
 	 */
-	static function route( $routes, $req = null, $res = null )
+	static function route( $routes, $req = null, $res = null, Container $container = null )
 	{
 		if( !$req )
 			$req = new Request();
@@ -68,11 +71,11 @@ class Router
 		
 		/* global static routes */						
 		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res, $container ) !== -1 )
 			return true;
 		
 		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res, $container ) !== -1 )
 			return true;
 		
 		/* global dynamic routes */
@@ -80,7 +83,7 @@ class Router
 		foreach( $dynamicRoutes as $routeStr => $route )
 		{
 			if( self::matchRouteToRequest( $routeStr, $req ) &&
-				self::performRoute( $route, $req, $res ) !== -1 )
+				self::performRoute( $route, $req, $res, $container ) !== -1 )
 				return true;
 		}
 		
@@ -98,10 +101,11 @@ class Router
 	 * or 'method'
 	 * @param Request $req
 	 * @param Response $res
+	 * @param Container $app optional DI container
 	 *
 	 * @return boolean
 	 */
-	private static function performRoute( $route, $req, $res )
+	private static function performRoute( $route, $req, $res, $app )
 	{
 		// method name and controller supplied
 		if( is_string( $route ) && $req->params( 'controller' ) )
@@ -122,7 +126,7 @@ class Router
 		if( !class_exists( $controller ) )
 			return -1;
 
-		$controllerObj = new $controller();
+		$controllerObj = new $controller( $app );
 		
 		$result = $controllerObj->$method( $req, $res );
 		
