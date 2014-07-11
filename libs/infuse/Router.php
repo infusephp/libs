@@ -101,11 +101,11 @@ class Router
 	 * or 'method'
 	 * @param Request $req
 	 * @param Response $res
-	 * @param Container $app optional DI container
+	 * @param Container $container optional DI container
 	 *
 	 * @return boolean
 	 */
-	private static function performRoute( $route, $req, $res, $app )
+	private static function performRoute( $route, $req, $res, $container )
 	{
 		// method name and controller supplied
 		if( is_string( $route ) && $req->params( 'controller' ) )
@@ -126,7 +126,7 @@ class Router
 		if( !class_exists( $controller ) )
 			return -1;
 
-		$controllerObj = new $controller( $app );
+		$controllerObj = new $controller( $container );
 		
 		$result = $controllerObj->$method( $req, $res );
 		
