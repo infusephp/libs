@@ -97,6 +97,8 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 if( !defined( 'ERROR_NO_PERMISSION' ) )
 	define( 'ERROR_NO_PERMISSION', 'no_permission' );
 if( !defined( 'VALIDATION_REQUIRED_FIELD_MISSING' ) )
@@ -121,6 +123,7 @@ abstract class Model extends Acl
 	/////////////////////////////
 
 	protected $_id;
+	protected $app;
 
 	/* Property names that are excluded from the database */
 	protected static $propertiesNotInDatabase = [];
@@ -142,6 +145,8 @@ abstract class Model extends Acl
 		'limit' => 100,
 		'search' => '',
 		'sort' => '' ];
+
+	protected static $injectedApp;
 
 	/////////////////////////////
 	// Private variables
@@ -175,6 +180,11 @@ abstract class Model extends Acl
 		return Util::array_value( static::$config, $key );
 	}
 
+	static function inject( Container $app )
+	{
+		self::$injectedApp = $app;
+	}
+
 	/////////////////////////////
 	// MAGIC METHODS
 	/////////////////////////////
@@ -190,6 +200,8 @@ abstract class Model extends Acl
 			$id = implode( ',', $id );
 
 		$this->_id = $id;
+
+		$this->app = self::$injectedApp;
 	}
 
 	/**
