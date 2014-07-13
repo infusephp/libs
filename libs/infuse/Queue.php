@@ -23,7 +23,11 @@ class Queue
 	private static $config = [
 		'queues' => [],
 		'namespace' => '',
-		'container' => null
+		'container' => null,
+		// used for iron.io
+		'push_type' => 'unicast',
+		'token' => '',
+		'project' => ''
 	];
 
 	// used for synchronous mode
@@ -31,7 +35,7 @@ class Queue
 	private static $idCounter = 1;
 
 	// used for iron.io
-	private static $iron;
+	private static $ironmq;
 
 	private static $queueTypes = [
 		QUEUE_TYPE_IRON,
@@ -71,54 +75,6 @@ class Queue
 	}
 
 	/**
-	 * Sets up the queue(s) according to the configuration. Usually only needs to be 
-	 * called when the configuration changes, and certainly not on every request
-	 *
-	 * @param boolean $echoOutput
-	 *
-	 * @return boolean success
-	 */
-	static function install( $echoOutput = false )
-	{
-		if( $this->type == QUEUE_TYPE_IRON )
-		{
-			$ironmq = self::iron();
-
-			// setup push queues
-			if( isset( self::$config[ 'queues' ] ) && isset( self::$config[ 'push_subscribers' ] ) )
-			{
-				$authToken = Util::array_value( self::$config, 'auth_token' );
-
-		        foreach( self::$config[ 'queues' ] as $q )
-		        {
-		        	// setup each push subscriber url with an auth token (if used)
-		        	$subscribers = [];
-		            foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
-		            {
-		            	$url = $s . "?q=$q";
-
-		            	if( !empty( $authToken ) )
-		            		$url .= "&auth_token=$authToken";
-
-						$subscribers[] = [ 'url' => $url ];
-		            }
-
-		            $ironmq->updateQueue( $q, [
-						'push_type' => 'unicast',
-						'subscribers' => $subscribers
-		            ] );
-
-		            if( $echoOutput )
-		            {
-		            	echo "Installed $q with subscribers:\n";
-		            	print_r( $subscribers );
-		            }
-		        }
-			}
-		}
-	}
-
-	/**
 	 * Puts a message onto the queue
 	 *
 	 * @param string $queue queue name
@@ -131,7 +87,7 @@ class Queue
 	{
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::iron();
+			$ironmq = self::ironmq();
 
 			// serialize arrays and objects stored in queue
 			if( is_array( $message ) || is_object( $message ) )
@@ -139,7 +95,8 @@ class Queue
 			
 			return $ironmq->postMessage( $queue, $message, $parameters );
 		}
-		else if( $this->type == QUEUE_TYPE_SYNCHRONOUS )
+		// synchronous queue
+		else
 		{
 			if( !isset( self::$queues[ $queue ] ) )
 				self::$queues[ $queue ] = [];
@@ -161,8 +118,6 @@ class Queue
 
 			return true;
 		}
-
-		return false;
 	}
 
 	/**
@@ -180,11 +135,12 @@ class Queue
 
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::iron();
+			$ironmq = self::ironmq();
 
 			$messages = $ironmq->getMessages( $queue, $n );
 		}
-		else if( $this->type = QUEUE_TYPE_SYNCHRONOUS )
+		// synchronous queue
+		else
 		{
 			if( isset( self::$queues[ $queue ] ) )
 			{
@@ -219,14 +175,15 @@ class Queue
 		
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::iron();
+			$ironmq = self::ironmq();
 
 			return $ironmq->deleteMessage( $queue, $message->id );
 		}
-		else if( $this->type == QUEUE_TYPE_SYNCHRONOUS )
+		// synchronous queue
+		else
 		{
 			if( !isset( self::$queues[ $queue ] ) )
-				return true;
+				return false;
 
 			// find the message with the specified id, and delete it
 			foreach( (array)self::$queues[ $queue ] as $k => $str )
@@ -240,9 +197,9 @@ class Queue
 					return true;
 				}
 			}
-		}
 
-		return false;
+			return false;
+		}
 	}
 
 	/**
@@ -277,17 +234,88 @@ class Queue
 		}
 	}
 
+	/**
+	 * Sets up the queue(s) according to the configuration. Usually only needs to be 
+	 * called when the configuration changes, and certainly not on every request
+	 *
+	 * @return boolean success
+	 */
+	function install()
+	{
+		if( $this->type == QUEUE_TYPE_IRON )
+		{
+			// setup push queues with iron.io
+			$ironmq = self::ironmq();
+
+			$subscribers = $this->pushQueueSubscribers();
+
+			$success = true;
+
+			foreach( $subscribers as $q => $subscribers )
+			{
+				if( !$ironmq->updateQueue( $q, [
+						'push_type' => self::$config[ 'push_type' ],
+						'subscribers' => $subscribers ] ) )
+					$success = false;
+			}
+
+			return $success;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Generates the endpoints of the push queue subscribers (iron.io) for
+	 * each queue in the configuration.
+	 *
+	 * @return array subscriber endpoints
+	 */
+	function pushQueueSubscribers()
+	{
+		$subscribers = [];
+
+		$authToken = Util::array_value( self::$config, 'auth_token' );
+
+		foreach( self::$config[ 'queues' ] as $q )
+		{
+			// setup each push subscriber url with an auth token (if used)
+			
+			foreach( (array)Util::array_value( self::$config, 'push_subscribers' ) as $s )
+			{
+				$url = $s . "?q=$q";
+
+				if( !empty( $authToken ) )
+					$url .= "&auth_token=$authToken";
+
+				if( !isset( $subscribers[ $q ] ) )
+					$subscribers[ $q ] = [];
+
+				$subscribers[ $q ][] = [ 'url' => $url ];
+			}
+		}
+
+		return $subscribers;
+	}
+
+	/**
+	 * Injects an instance of the iron.io MQ for testing
+	 */
+	static function injectIron( $ironmq )
+	{
+		self::$ironmq = $ironmq;
+	}
+
 	//////////////////////////
 	// QUEUE PROVIDERS
 	//////////////////////////
 
-	private static function iron()
+	static function ironmq()
 	{
-		if( !self::$iron )
-			self::$iron = new \IronMQ( [
-				'token' => Util::array_value( self::$config, 'token' ),
-				'project_id' => Util::array_value( self::$config, 'project' ) ] );
+		if( !self::$ironmq )
+			self::$ironmq = new \IronMQ( [ 'token' => self::$config[ 'token' ],
+				'project_id' => self::$config[ 'project' ] ] );
 
-		return self::$iron;
+		return self::$ironmq;
 	}
 }
