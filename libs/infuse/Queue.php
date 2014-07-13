@@ -50,9 +50,9 @@ class Queue
 	 *
 	 * @param array $config
 	 */
-	static function configure( $config )
+	static function configure( array $config )
 	{
-		self::$config = array_replace( self::$config, (array)$config );
+		self::$config = array_replace( self::$config, $config );
 	}
 
 	function __construct( $type, array $listeners = [] )
@@ -313,7 +313,8 @@ class Queue
 	static function ironmq()
 	{
 		if( !self::$ironmq )
-			self::$ironmq = new \IronMQ( [ 'token' => self::$config[ 'token' ],
+			self::$ironmq = new \IronMQ( [
+				'token' => self::$config[ 'token' ],
 				'project_id' => self::$config[ 'project' ] ] );
 
 		return self::$ironmq;

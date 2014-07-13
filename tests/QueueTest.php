@@ -239,10 +239,10 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
 	public function testIronmq()
 	{
+		Queue::configure( [ 'token' => 'test', 'project' => 10 ] );
 		Queue::injectIron( false );
-		$ironmq = Queue::ironmq();
 
-		Queue::configure( [ 'token' => 'test', 'project_id' => 10 ] );
+		$ironmq = Queue::ironmq();
 
 		$this->assertInstanceOf( '\IronMQ', $ironmq );
 

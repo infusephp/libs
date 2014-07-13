@@ -31,7 +31,7 @@
 		"smarty/smarty": "v3.1.18",
 		"predis/predis": "v0.8.4",
 		"mockery/mockery": "0.9.1",
-		"iron-io/iron_mq": "1.4.5",
+		"iron-io/iron_mq": "1.4.5"
 	},
     "suggest": {
     	"leafo/lessphp": "Can compile LESS stylesheets",
