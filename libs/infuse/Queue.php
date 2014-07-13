@@ -13,8 +13,10 @@ namespace infuse;
 
 use Pimple\Container;
 
-define( 'QUEUE_TYPE_IRON', 'iron' );
-define( 'QUEUE_TYPE_SYNCHRONOUS', 'synchronous' );
+if( !defined( 'QUEUE_TYPE_IRON' ) )
+	define( 'QUEUE_TYPE_IRON', 'iron' );
+if( !defined( 'QUEUE_TYPE_SYNCHRONOUS' ) )
+	define( 'QUEUE_TYPE_SYNCHRONOUS', 'synchronous' );
 
 class Queue
 {

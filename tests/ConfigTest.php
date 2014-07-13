@@ -13,7 +13,7 @@ use infuse\Config;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
-	public function testLoad()
+	public function testConstruct()
 	{
 		$testConfig = [
 			'test' => 1,
@@ -27,50 +27,32 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 			]
 		];
 
-		Config::load( $testConfig );
+		$config = new Config( $testConfig );
 
-		$this->assertEquals( Config::get(), $testConfig );
+		$this->assertEquals( $config->get(), $testConfig );
 	}
 
-	/**
-	 * @depends testLoad
-	 */	
 	public function testSetandGet()
 	{
-		Config::set( 'test-property', 'abc' );
-		$this->assertEquals( Config::get( 'test-property' ), 'abc' );
+		$config = new Config();
 
-		Config::set( 'test.1.2.3', 'test' );
-		$this->assertEquals( Config::get( 'test.1.2.3' ), 'test' );
+		$config->set( 'test-property', 'abc' );
+		$this->assertEquals( $config->get( 'test-property' ), 'abc' );
 
-		Config::set( 'test-property', 'blah' );
-		$this->assertEquals( Config::get( 'test-property' ), 'blah' );
+		$config->set( 'test.1.2.3', 'test' );
+		$this->assertEquals( $config->get( 'test.1.2.3' ), 'test' );
 
-		$this->assertEquals( Config::get( 'some.invalid.property' ), null );
-	}
+		$config->set( 'test-property', 'blah' );
+		$this->assertEquals( $config->get( 'test-property' ), 'blah' );
 
-	/**
-	 * @depends testLoad
-	 */
-	public function testSetandGetDeprecated()
-	{
-		Config::set( 'section', 'property', 'abc' );
-		$this->assertEquals( Config::get( 'section', 'property' ), 'abc' );
+		$this->assertEquals( $config->get( 'some.invalid.property' ), null );
 
-		Config::set( 'test.1.2.3', 'property', 'test' );
-		$this->assertEquals( Config::get( 'test.1.2.3', 'property' ), 'test' );
-
-		Config::set( 'section', 'property', 'overwrite' );
-		$this->assertEquals( Config::get( 'section', 'property' ), 'overwrite' );
-
-		$this->assertEquals( Config::get( 'some', 'invalid-property' ), null );
-	}
-
-	/**
-	 * @depends testLoad
-	 */
-	public function testGetSection()
-	{
-
+		$expected = [
+			'test-property' => 'blah',
+			'test' => [
+				'1' => [
+					'2' => [
+						'3' => 'test' ] ] ] ];
+		$this->assertEquals( $expected, $config->get() );
 	}
 }

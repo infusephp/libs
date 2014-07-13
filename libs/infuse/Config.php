@@ -13,29 +13,26 @@ namespace infuse;
 
 class Config
 {
-	private static $values = [];
+	private $values = [];
 	
+	function __construct( array $values = [] )
+	{
+		$this->values = array_replace( $this->values, $values );
+	}
+
 	/**
 	 * Gets a global configuration value, section, or all values
 	 *
 	 * @param string $property dot value property name
-	 * @param string $deprecated when supplied looks up a key in a section (@deprecated)
 	 *
-	 * @return string|null value
+	 * @return mixed value
 	 */
-	static function get( $property = false, $deprecated = false )
+	function get( $property = false )
 	{
 		if( !$property )
-			return self::$values;
-
-		if( $deprecated )
-		{
-			if( isset( self::$values[ $property ] ) &&
-				isset( self::$values[ $property ][ $deprecated ] ) )
-				return self::$values[ $property ][ $deprecated ];
-		}
+			return $this->values;
 		
-		return Util::array_value( self::$values, $property );		
+		return Util::array_value( $this->values, $property );		
 	}
 	
 	/** 
@@ -43,30 +40,9 @@ class Config
 	 *
 	 * @param string $property dot value property name
 	 * @param string $value value to set
-	 * @param string $deprecated when used sets the value of a key in a section (@deprecated)
 	 */
-	static function set( $property, $value, $deprecated = false )
+	function set( $property, $value )
 	{
-		if( $deprecated )
-		{
-			if( !isset( self::$values[ $property ] ) ||
-				!isset( self::$values[ $property ] ) ||
-				!is_array( self::$values[ $property ][ $value ] ) )
-				self::$values[ $property ][ $value ] = [];
-
-			return self::$values[ $property ][ $value ] = $deprecated;
-		}
-
-		Util::array_set( self::$values, $property, $value );
-	}
-	
-	/**
-	 * Loads the site configuration from an array
-	 *
-	 * @param array $value
-	 */
-	static function load( $values )
-	{
-		self::$values = $values;
+		Util::array_set( $this->values, $property, $value );
 	}
 }
