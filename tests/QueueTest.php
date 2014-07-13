@@ -16,31 +16,33 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	public function testConfigure()
 	{
 		Queue::configure( [
-			'type' => QUEUE_TYPE_IRON,
+			'test' => true
 		] );
 
-		$this->assertEquals( Queue::type(), QUEUE_TYPE_IRON );
-
-		Queue::configure( [
-			'type' => QUEUE_TYPE_SYNCHRONOUS
-		] );
-
-		$this->assertEquals( Queue::type(), QUEUE_TYPE_SYNCHRONOUS );
+		// nothing to see here
 	}
 
-	/**
-	 * @depends testConfigure
-	 */
-	public function testEnqueue( $notused )
+	public function testType()
 	{
-		$this->assertTrue( Queue::enqueue( 'test1', 'test string!' ) );
+		$q = new Queue( QUEUE_TYPE_IRON );
+		$this->assertEquals( QUEUE_TYPE_IRON, $q->type() );
 
-		$this->assertTrue( Queue::enqueue( 'test2', [ 'does' => 'this', 'thing' => 'work?' ] ) );
+		$q = new Queue( 'random' );
+		$this->assertEquals( QUEUE_TYPE_SYNCHRONOUS, $q->type() );
+	}
+
+	public function testEnqueue()
+	{
+		$q = new Queue( QUEUE_TYPE_SYNCHRONOUS );
+
+		$this->assertTrue( $q->enqueue( 'test1', 'test string!' ) );
+
+		$this->assertTrue( $q->enqueue( 'test2', [ 'does' => 'this', 'thing' => 'work?' ] ) );
 
 		$obj = new stdClass;
 		$obj->name = 'test';
 		$obj->answer = 42;
-		$this->assertTrue( Queue::enqueue( 'test1', $obj ) );
+		$this->assertTrue( $q->enqueue( 'test1', $obj ) );
 	}
 
 	/**
@@ -48,13 +50,15 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testDequeue( $notused )
 	{
-		$test1 = Queue::dequeue( 'test1' );
+		$q = new Queue( QUEUE_TYPE_SYNCHRONOUS );
+
+		$test1 = $q->dequeue( 'test1' );
 
 		$this->assertInstanceOf( 'stdClass', $test1 );
 		$this->assertEquals( $test1->id, 1 );
 		$this->assertEquals( $test1->body, 'test string!' );
 
-		$messages = Queue::dequeue( 'test1', 2 );
+		$messages = $q->dequeue( 'test1', 2 );
 
 		$this->assertEquals( count( $messages ), 2 );
 		$this->assertEquals( $messages[ 0 ]->id, 1 );
@@ -65,7 +69,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 		$expected->answer = 42;
 		$this->assertEquals( $messages[ 1 ]->body, $expected );
 
-		$test2 = Queue::dequeue( 'test2' );
+		$test2 = $q->dequeue( 'test2' );
 		$this->assertEquals( $test2->id, 2 );
 		$expected = new stdClass;
 		$expected->does = 'this';
@@ -78,11 +82,13 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testDeleteMessage( $notused )
 	{
-		$test1 = Queue::dequeue( 'test1' );
+		$q = new Queue( QUEUE_TYPE_SYNCHRONOUS );
 
-		$this->assertTrue( Queue::deleteMessage( 'test1', $test1 ) );
+		$test1 = $q->dequeue( 'test1' );
 
-		$test1 = Queue::dequeue( 'test1' );
+		$this->assertTrue( $q->deleteMessage( 'test1', $test1 ) );
+
+		$test1 = $q->dequeue( 'test1' );
 		$this->assertEquals( $test1->id, 3 );
 		$expected = new stdClass;
 		$expected->name = 'test';
@@ -95,20 +101,18 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testListeners()
 	{
-		Queue::configure( [
-			'type' => QUEUE_TYPE_SYNCHRONOUS,
-			'listeners' => [
+		$q = new Queue( QUEUE_TYPE_SYNCHRONOUS, [
 				'test1' => [
 					[ 'QueueMockController', 'receiveMessageListener1' ] ],
 				'test2' => [
-					[ 'QueueMockController', 'receiveMessageListener2' ] ] ] ] );
+					[ 'QueueMockController', 'receiveMessageListener2' ] ] ] );
 
-		Queue::enqueue( 'test1', 'test' );
+		$q->enqueue( 'test1', 'test' );
 		$this->assertInstanceOf( 'stdClass', QueueMockController::$test1Message );
 		$this->assertTrue( QueueMockController::$test1Message->id > 0 );
 		$this->assertEquals( QueueMockController::$test1Message->body, 'test' );
 
-		Queue::enqueue( 'test2', 1234 );
+		$q->enqueue( 'test2', 1234 );
 		$this->assertInstanceOf( 'stdClass', QueueMockController::$test2Message );
 		$this->assertTrue( QueueMockController::$test2Message->id > 0 );
 		$this->assertEquals( QueueMockController::$test2Message->body, 1234 );
@@ -120,17 +124,17 @@ class QueueMockController
 	static $test1Message;
 	static $test2Message;
 
-	public function receiveMessageListener1( $message )
+	public function receiveMessageListener1( $queue, $message )
 	{
 		self::$test1Message = $message;
 
-		Queue::deleteMessage( 'test1', $message );
+		$queue->deleteMessage( 'test1', $message );
 	}
 
-	public function receiveMessageListener2( $message )
+	public function receiveMessageListener2( $queue, $message )
 	{
 		self::$test2Message = $message;
 
-		Queue::deleteMessage( 'test2', $message );
+		$queue->deleteMessage( 'test2', $message );
 	}
 }

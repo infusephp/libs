@@ -19,7 +19,6 @@ define( 'QUEUE_TYPE_SYNCHRONOUS', 'synchronous' );
 class Queue
 {
 	private static $config = [
-		'type' => QUEUE_TYPE_SYNCHRONOUS,
 		'queues' => [],
 		'namespace' => '',
 		'container' => null
@@ -32,6 +31,14 @@ class Queue
 	// used for iron.io
 	private static $iron;
 
+	private static $queueTypes = [
+		QUEUE_TYPE_IRON,
+		QUEUE_TYPE_SYNCHRONOUS
+	];
+
+	private $type;
+	private $listeners;
+
 	/**
 	 * Changes the queue settings
 	 *
@@ -42,23 +49,27 @@ class Queue
 		self::$config = array_replace( self::$config, (array)$config );
 	}
 
+	function __construct( $type, array $listeners = [] )
+	{
+		if( !in_array( $type, self::$queueTypes ) )
+			$type = QUEUE_TYPE_SYNCHRONOUS;
+
+		$this->type = $type;
+		$this->listeners = $listeners;
+	}
+
 	/**
 	 * Returns the type of the queue
 	 *
 	 * @return string synchronous|iron
 	 */
-	static function type()
+	function type()
 	{
-		$type = Util::array_value( self::$config, 'type' );
-
-		if( in_array( $type, [ QUEUE_TYPE_IRON, QUEUE_TYPE_SYNCHRONOUS ] ) )
-			return $type;
-		
-		return QUEUE_TYPE_SYNCHRONOUS;
+		return $this->type;
 	}
 
 	/**
-	 * Sets up the queue according to the configuration. Usually only needs to be 
+	 * Sets up the queue(s) according to the configuration. Usually only needs to be 
 	 * called when the configuration changes, and certainly not on every request
 	 *
 	 * @param boolean $echoOutput
@@ -67,9 +78,7 @@ class Queue
 	 */
 	static function install( $echoOutput = false )
 	{
-		$type = self::type();
-
-		if( $type == QUEUE_TYPE_IRON )
+		if( $this->type == QUEUE_TYPE_IRON )
 		{
 			$ironmq = self::iron();
 
@@ -111,16 +120,14 @@ class Queue
 	 * Puts a message onto the queue
 	 *
 	 * @param string $queue queue name
-	 * @param array|object|string $message
+	 * @param mixed $message
 	 * @param array $parameters
 	 *
 	 * @return boolean success
 	 */
-	static function enqueue( $queue, $message, $parameters = [] )
+	function enqueue( $queue, $message, $parameters = [] )
 	{
-		$type = self::type();
-
-		if( $type == QUEUE_TYPE_IRON )
+		if( $this->type == QUEUE_TYPE_IRON )
 		{
 			$ironmq = self::iron();
 
@@ -130,7 +137,7 @@ class Queue
 			
 			return $ironmq->postMessage( $queue, $message, $parameters );
 		}
-		else if( $type == QUEUE_TYPE_SYNCHRONOUS )
+		else if( $this->type == QUEUE_TYPE_SYNCHRONOUS )
 		{
 			if( !isset( self::$queues[ $queue ] ) )
 				self::$queues[ $queue ] = [];
@@ -148,7 +155,7 @@ class Queue
 			self::$queues[ $queue ][] = $json;
 
 			// since this is synchronous mode, notify all listeners that we have a new message
-			self::receiveMessage( $queue, $json, self::$config[ 'container' ] );
+			$this->receiveMessage( $queue, $json, self::$config[ 'container' ] );
 
 			return true;
 		}
@@ -165,19 +172,17 @@ class Queue
 	 *
 	 * @return array($n > 1)|object($n = 1)|null message(s)
 	 */
-	static function dequeue( $queue, $n = 1 )
+	function dequeue( $queue, $n = 1 )
 	{
-		$type = self::type();
-
 		$messages = [];
 
-		if( $type == QUEUE_TYPE_IRON )
+		if( $this->type == QUEUE_TYPE_IRON )
 		{
 			$ironmq = self::iron();
 
 			$messages = $ironmq->getMessages( $queue, $n );
 		}
-		else if( $type = QUEUE_TYPE_SYNCHRONOUS )
+		else if( $this->type = QUEUE_TYPE_SYNCHRONOUS )
 		{
 			if( isset( self::$queues[ $queue ] ) )
 			{
@@ -205,20 +210,18 @@ class Queue
 	 *
 	 * @return boolean
 	 */
-	static function deleteMessage( $queue, $message )
+	function deleteMessage( $queue, $message )
 	{
-		$type = self::type();
-
 		if( !$message->id )
 			return true;
 		
-		if( $type == QUEUE_TYPE_IRON )
+		if( $this->type == QUEUE_TYPE_IRON )
 		{
 			$ironmq = self::iron();
 
 			return $ironmq->deleteMessage( $queue, $message->id );
 		}
-		else if( $type == QUEUE_TYPE_SYNCHRONOUS )
+		else if( $this->type == QUEUE_TYPE_SYNCHRONOUS )
 		{
 			if( !isset( self::$queues[ $queue ] ) )
 				return true;
@@ -247,31 +250,28 @@ class Queue
 	 * @param string $message message
 	 * @param Container $container optional DI container
 	 */
-	static function receiveMessage( $queue, $message, Container $container = null )
+	function receiveMessage( $queue, $message, Container $container = null )
 	{
 		$success = true;
 
-		if( isset( self::$config[ 'listeners' ] ) )
+		if( is_string( $message ) )
+			$message = json_decode( $message );
+
+		$listeners = (array)Util::array_value( $this->listeners, $queue );
+
+		// notify all listeners that we have a new message
+		foreach( $listeners as $route )
 		{
-			if( is_string( $message ) )
-				$message = json_decode( $message );
+			list( $controller, $method ) = $route;
 
-			$listeners = (array)Util::array_value( self::$config[ 'listeners' ], $queue );
+			$controller = self::$config[ 'namespace' ] . '\\' . $controller;
+			
+			if( !class_exists( $controller ) )
+				continue;
 
-			// notify all listeners that we have a new message
-			foreach( $listeners as $route )
-			{
-				list( $controller, $method ) = $route;
+			$controllerObj = new $controller( $container );
 
-				$controller = self::$config[ 'namespace' ] . '\\' . $controller;
-				
-				if( !class_exists( $controller ) )
-					continue;
-
-				$controllerObj = new $controller( $container );
-
-				$controllerObj->$method( $message );
-			}
+			$controllerObj->$method( $this, $message );
 		}
 	}
 
