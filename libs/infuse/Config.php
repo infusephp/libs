@@ -32,7 +32,7 @@ class Config
 		if( !$property )
 			return $this->values;
 		
-		return Util::array_value( $this->values, $property );		
+		return Util::array_value( $this->values, $property );
 	}
 	
 	/** 
