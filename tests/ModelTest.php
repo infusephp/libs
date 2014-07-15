@@ -37,6 +37,75 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 12345, TestModel::getConfigValue( 'test2' ) );
 	}
 
+	function testInjectContainer()
+	{
+		$c = new \Pimple\Container;
+		Model::inject( $c );
+	}
+
+	function testProperties()
+	{
+		$expected = [
+			'id' => [
+				'type' => 'id'
+			],
+			'relation' => [
+				'type' => 'id',
+				'relation' => 'TestModel2',
+				'null' => true
+			],
+			'answer' => [
+				'type' => 'string'
+			]
+		];
+
+		$this->assertEquals( $expected, TestModel::properties() );
+	}
+
+	function testPropertiesAutoTimestamps()
+	{
+		$expected = [
+			'id' => [
+				'type' => 'id',
+				'mutable' => true
+			],
+			'id2' => [
+				'type' => 'id',
+				'mutable' => true
+			],
+			'default' => [
+				'type' => 'text',
+				'default' => 'some default value'
+			],
+			'validate' => [
+				'type' => 'text',
+				'validate' => 'email',
+				'null' => true
+			],
+			'unique' => [
+				'type' => 'text',
+				'unique' => true
+			],
+			'required' => [
+				'type' => 'text',
+				'required' => true
+			],
+			'created_at' => [
+				'type' => 'date',
+				'validate' => 'timestamp',
+				'required' => true,
+				'default' => 'today'
+			],
+			'updated_at' => [
+				'type' => 'date',
+				'validate' => 'timestamp',
+				'null' => true,
+			]
+		];
+
+		$this->assertEquals( $expected, TestModel2::properties() );
+	}
+
 	function testId()
 	{
 		$model = new TestModel( 5 );
@@ -192,6 +261,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $expected, $model->toArray( [ 'id', 'answer' ] ) );
 	}
 
+	function testToArrayAutoTimestamps()
+	{
+		$model = new TestModel2( 5 );
+		$model->created_at = 100;
+		$model->updated_at = 102;
+
+		$expected = [ 'created_at' => 100, 'updated_at' => 102 ];
+
+		$this->assertEquals( $expected, $model->toArray( [ 'id', 'id2', 'default', 'validate', 'unique', 'required' ] ) );
+	}
+
 	function testToJson()
 	{
 		$model = new TestModel( 5 );
@@ -256,7 +336,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreateAutoTimestamps()
 	{
-		$newModel = TestModel2;
+		$newModel = new TestModel2;
 		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 'yes' ] ) );
 		$this->assertGreaterThan( 0, $newModel->created_at );
 	}
@@ -316,10 +396,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 			'required' => true,
 			'default' => 'some default value',
 			'validate' => null,
-			'unique' => null
+			'unique' => null,
+			'updated_at' => null
 		];
 
-		$this->assertEquals( $expected, $model->toArray() );
+		$this->assertEquals( $expected, $model->toArray( [ 'created_at' ] ) );
 	}
 
 	function testSet()

@@ -152,6 +152,20 @@ abstract class Model extends Acl
 	// Private variables
 	/////////////////////////////
 
+	private static $timestampProperties = [
+		'created_at' => [
+			'type' => 'date',
+			'validate' => 'timestamp',
+			'required' => true,
+			'default' => 'today'
+		],
+		'updated_at' => [
+			'type' => 'date',
+			'validate' => 'timestamp',
+			'null' => true
+		]
+	];
+
 	private $localCache = [];
 	private $sharedCache;
 	private $relationModels;
@@ -180,6 +194,11 @@ abstract class Model extends Acl
 		return Util::array_value( static::$config, $key );
 	}
 
+	/**
+	 * Injects a container for use by model instances
+	 *
+	 * @param Container $app
+	 */
 	static function inject( Container $app )
 	{
 		self::$injectedApp = $app;
@@ -313,10 +332,12 @@ abstract class Model extends Acl
 	 */
 	function relation( $property )
 	{
-		if( !static::hasProperty( $property ) || !isset( static::$properties[ $property ][ 'relation' ] ) )
+		$properties = static::properties();
+
+		if( !static::hasProperty( $property ) || !isset( $properties[ $property ][ 'relation' ] ) )
 			return false;
 
-		$relationModelName = static::$properties[ $property ][ 'relation' ];
+		$relationModelName = $properties[ $property ][ 'relation' ];
 
 		if( !isset( $this->relationModels[ $relationModelName ] ) )
 			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->$property );
@@ -393,6 +414,21 @@ abstract class Model extends Acl
 	}
 
 	/**
+	 * Gets the properties for the model
+	 *
+	 * @return array
+	 */
+	static function properties()
+	{
+		$properties = static::$properties;
+
+		if( property_exists( get_called_class(), 'autoTimestamps' ) )
+			$properties = array_replace( self::$timestampProperties, $properties );
+
+		return $properties;
+	}
+
+	/**
 	 * Checks if the model has a property
 	 *
 	 * @param string $property property
@@ -401,7 +437,8 @@ abstract class Model extends Acl
 	 */
 	static function hasProperty( $property )
 	{
-		return isset( static::$properties[ $property ] );
+		$properties = static::properties();
+		return isset( $properties[ $property ] );
 	}
 
 	/**
@@ -452,11 +489,13 @@ abstract class Model extends Acl
 			return false;
 
 		$validated = true;
+
+		$properties = static::properties();
 		
 		// get the property names, and required properties
 		$propertyNames = [];
 		$requiredProperties = [];
-		foreach( static::$properties as $name => $property )
+		foreach( $properties as $name => $property )
 		{
 			$propertyNames[] = $name;
 			if( Util::array_value( $property, 'required' ) )
@@ -464,7 +503,7 @@ abstract class Model extends Acl
 		}
 		
 		// add in default values
-		foreach( static::$properties as $name => $fieldInfo )
+		foreach( $properties as $name => $fieldInfo )
 		{
 			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
 				$data[ $name ] = $fieldInfo[ 'default' ];
@@ -477,7 +516,7 @@ abstract class Model extends Acl
 			if( !in_array( $field, $propertyNames ) )
 				continue;
 
-			$property = static::$properties[ $field ];
+			$property = $properties[ $field ];
 
 			// cannot insert keys, unless explicitly allowed
 			if( self::isIdProperty( $field ) && !Util::array_value( $property, 'mutable' ) )
@@ -515,7 +554,7 @@ abstract class Model extends Acl
 					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
 					'params' => [
 						'field' => $name,
-						'field_name' => (isset(static::$properties[$name]['title'])) ? static::$properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
+						'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
 
 				$validated = false;
 			}
@@ -533,7 +572,7 @@ abstract class Model extends Acl
 			$idProperty = (array)static::idProperty();
 			foreach( $idProperty as $property )
 			{
-				if( Util::array_value( static::$properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
+				if( Util::array_value( $properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
 					$ids[] = $data[ $property ];
 				else
 					$ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
@@ -618,7 +657,7 @@ abstract class Model extends Acl
 		$properties = [];
 		
 		// get the names of all the properties
-		foreach( static::$properties as $name => $property )
+		foreach( static::properties() as $name => $property )
 		{
 			if( !empty( $name ) && !in_array( $name, $exclude ) && !in_array( $name, static::$propertiesNotInDatabase ) )
 				$properties[] = $name;
@@ -672,7 +711,11 @@ abstract class Model extends Acl
 		// not updating anything?
 		if( count( $data ) == 0 )
 			return true;
-			
+
+		// update timestamp
+		if( property_exists( get_called_class(), 'autoTimestamps' ) )
+			$data[ 'updated_at' ] = time();
+		
 		// pre-hook
 		if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
 			return false;
@@ -680,9 +723,10 @@ abstract class Model extends Acl
 		$validated = true;
 		$updateArray = $this->id( true );
 		$updateKeys = array_keys( $updateArray );
+		$properties = static::properties();
 		
 		// get the property names
-		$propertyNames = array_keys( static::$properties );
+		$propertyNames = array_keys( $properties );
 		
 		// loop through each supplied field and validate
 		foreach( $data as $field => $value )
@@ -695,7 +739,7 @@ abstract class Model extends Acl
 			if( !in_array( $field, $propertyNames ) )
 				continue;
 
-			$property = static::$properties[ $field ];
+			$property = $properties[ $field ];
 
 			if( is_array( $property ) )
 			{
@@ -800,6 +844,7 @@ abstract class Model extends Acl
 		$params[ 'limit' ] = min( $params[ 'limit' ], 1000 );
 
 		$modelName = get_called_class();
+		$properties = static::properties();
 		
 		// WARNING: using MYSQL LIKE for search, this is very inefficient
 		
@@ -807,7 +852,7 @@ abstract class Model extends Acl
 		{
 			$w = [];
 			$search = addslashes( $params[ 'search' ] );
-			foreach( static::$properties as $name => $property )
+			foreach( $properties as $name => $property )
 			{
 				if( !in_array( $name, static::$propertiesNotInDatabase ) )
 					$w[] = "`$name` LIKE '%$search%'";
@@ -830,7 +875,7 @@ abstract class Model extends Acl
 			$propertyName = $c[ 0 ];
 			
 			// validate property
-			if( !isset( static::$properties[ $propertyName ] ) )
+			if( !isset( $properties[ $propertyName ] ) )
 				continue;
 
 			// validate direction
@@ -961,13 +1006,14 @@ abstract class Model extends Acl
 
 		// get the current schema
 		$currentSchema = static::currentSchema();
+		$properties = static::properties();
 
 		$schema = [];
 
 		$different = true; // TODO not implemented
 		
 		// derive a database column from each property
-		foreach( static::$properties as $name => $property )
+		foreach( $properties as $name => $property )
 		{
 			if( in_array( $property[ 'type' ], [ 'custom' ] ) )
 				continue;
@@ -1216,7 +1262,7 @@ abstract class Model extends Acl
 	{
 		// explicitly clear all properties and any other values in cache
 		$properties = array_unique( array_merge(
-			array_keys( static::$properties ),
+			array_keys( static::properties() ),
 			array_keys( $this->localCache ) ) );
 
 		foreach( $properties as $property )
@@ -1317,11 +1363,13 @@ abstract class Model extends Acl
 	{
 		$remove = [];
 
+		$availableProperties = static::properties();
+
 		foreach( $properties as $property )
 		{
-			if( isset( static::$properties[ $property ] ) && isset( static::$properties[ $property ][ 'default' ] ) )
+			if( isset( $availableProperties[ $property ] ) && isset( $availableProperties[ $property ][ 'default' ] ) )
 			{
-				$values[ $property ] = static::$properties[ $property ][ 'default' ];
+				$values[ $property ] = $availableProperties[ $property ][ 'default' ];
 
 				// mark index of property to remove from list of properties
 				$remove[] = $property;
