@@ -254,6 +254,13 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( '1,2', $newModel->id() );
 	}
 
+	function testCreateAutoTimestamps()
+	{
+		$newModel = TestModel2;
+		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 'yes' ] ) );
+		$this->assertGreaterThan( 0, $newModel->created_at );
+	}
+
 	function testCreateWithId()
 	{
 		$model = new TestModel( 5 );
@@ -335,7 +342,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( null, $model->relation );
 	}
 
-	function testSetWithNoId()
+	function testSetAutoTimestamps()
+	{
+		$model = new TestModel2( 12 );
+		$updatedAt = $model->updated_at;
+		$model->set( 'default', 'testing' );
+		$this->assertNotEquals( $updatedAt, $model->updated_at );
+	}
+
+	function testSetFailWithNoId()
 	{
 		$model = new TestModel;
 		$this->assertFalse( $model->set( [ 'answer' => 42 ] ) );
@@ -490,6 +505,8 @@ class TestModel2 extends Model
 			'required' => true
 		]
 	];
+
+	public static $autoTimestamps;
 
 	protected function hasPermission( $permission, Model $requester )
 	{
