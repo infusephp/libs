@@ -1434,10 +1434,10 @@ abstract class Model extends Acl
 		// look up property
 		$pData = static::properties( $property );
 
-		if( isset( $pData[ 'null' ] ) && $pData[ 'null' ] && $value == '' )
+		if( Util::array_value( $pData, 'null' ) && $value == '' )
 			return null;
 
-		if( $pData[ 'type' ] == 'boolean' )
+		if( Util::array_value( $pData, 'type' ) == 'boolean' )
 			return ($value == '1') ? true : false;
 
 		return $value;
