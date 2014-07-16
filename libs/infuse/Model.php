@@ -1437,8 +1437,14 @@ abstract class Model extends Acl
 		if( Util::array_value( $pData, 'null' ) && $value == '' )
 			return null;
 
-		if( Util::array_value( $pData, 'type' ) == 'boolean' )
+		$type = Util::array_value( $pData, 'type' );
+
+		if( $type == 'boolean' )
 			return ($value == '1') ? true : false;
+
+		// ensure numbers are cast as numbers and not strings by adding 0
+		if( $type == 'number' )
+			return $value + 0;
 
 		return $value;
 	}
