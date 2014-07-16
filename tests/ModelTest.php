@@ -89,7 +89,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'unique' => true
 			],
 			'required' => [
-				'type' => 'text',
+				'type' => 'number',
 				'required' => true
 			],
 			'hidden' => [
@@ -352,18 +352,30 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse( TestModel2::hasSchema() );
 	}
 
-	function testCache()
+	function testCacheAndValueMarshaling()
 	{
-		$model = new TestModel( 3 );
+		$model = new TestModel2( 3 );
 
 		$model->cacheProperties( [
-			'test' => 123,
-			'test2' => 'hello' ] );
-		$this->assertEquals( 123, $model->test );
+			'validate' => '',
+			'hidden' => '1',
+			'default' => 'testing',
+			'test2' => 'hello',
+			'person' => '30',
+			'required' => '50' ] );
+		$this->assertEquals( '', $model->validate );
+		$this->assertEquals( '1', $model->hidden );
+		$this->assertEquals( '50', $model->required );
+		$this->assertEquals( '30', $model->person );
 		$this->assertEquals( 'hello', $model->test2 );
+		$this->assertEquals( 'testing', $model->default );
 
-		$model2 = new TestModel( 3 );
-		$this->assertEquals( 123, $model2->test );
+		$model2 = new TestModel2( 3 );
+		$this->assertTrue( $model2->validate === null );
+		$this->assertTrue( $model2->hidden === true );
+		$this->assertTrue( $model2->required === 50 );
+		$this->assertTrue( $model2->person === 30 );
+		$this->assertTrue( $model2->default === 'testing' );
 		$this->assertEquals( 'hello', $model2->test2 );
 	}
 
@@ -396,14 +408,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testCreateMutable()
 	{
 		$newModel = new TestModel2;
-		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 'yes' ] ) );
+		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 25 ] ) );
 		$this->assertEquals( '1,2', $newModel->id() );
 	}
 
 	function testCreateAutoTimestamps()
 	{
 		$newModel = new TestModel2;
-		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 'yes' ] ) );
+		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 235 ] ) );
 		$this->assertGreaterThan( 0, $newModel->created_at );
 	}
 
@@ -654,7 +666,7 @@ class TestModel2 extends Model
 			'unique' => true
 		],
 		'required' => [
-			'type' => 'text',
+			'type' => 'number',
 			'required' => true
 		],
 		'hidden' => [
