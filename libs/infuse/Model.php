@@ -165,6 +165,7 @@ abstract class Model extends Acl
 			'null' => true
 		]
 	];
+	private static $cachedProperties = [];
 
 	private $localCache = [];
 	private $sharedCache;
@@ -416,16 +417,26 @@ abstract class Model extends Acl
 	/**
 	 * Gets the properties for the model
 	 *
+	 * @param string $property property to lookup
+	 * 
 	 * @return array
 	 */
-	static function properties()
+	static function properties( $property = false )
 	{
-		$properties = static::$properties;
+		$k = get_called_class();
 
-		if( property_exists( get_called_class(), 'autoTimestamps' ) )
-			$properties = array_replace( self::$timestampProperties, $properties );
+		if( !isset( self::$cachedProperties[ $k ] ) )
+		{
+			self::$cachedProperties[ $k ] = static::$properties;
 
-		return $properties;
+			if( property_exists( get_called_class(), 'autoTimestamps' ) )
+				self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
+		}
+
+		if( $property )
+			return Util::array_value( self::$cachedProperties[ $k ], $property );
+		else
+			return self::$cachedProperties[ $k ];
 	}
 
 	/**
@@ -1331,7 +1342,7 @@ abstract class Model extends Acl
 		
 		foreach( $cached as $property => $value )
 		{
-			$values[ $property ] = $value;
+			$values[ $property ] = $this->marshalValue( $value, $property );
 
 			// remove property from list of remaining
 			$index = array_search( $property, $properties );
@@ -1350,7 +1361,7 @@ abstract class Model extends Acl
 
 		foreach( (array)$dbValues as $property => $value )
 		{
-			$values[ $property ] = $value;
+			$values[ $property ] = $this->marshalValue( $value, $property );
 			$this->cacheProperty( $property, $value );
 
 			// remove property from list of remaining
@@ -1416,5 +1427,19 @@ abstract class Model extends Acl
 		}
 
 		return true;
+	}
+
+	private function marshalValue( $value, $property )
+	{
+		// look up property
+		$pData = static::properties( $property );
+
+		if( isset( $pData[ 'null' ] ) && $pData[ 'null' ] && $value == '' )
+			return null;
+
+		if( $pData[ 'type' ] == 'boolean' )
+			return ($value == '1') ? true : false;
+
+		return $value;
 	}
 }

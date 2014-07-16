@@ -60,6 +60,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		];
 
 		$this->assertEquals( $expected, TestModel::properties() );
+
+		$this->assertEquals( [ 'type' => 'id' ], TestModel::properties( 'id' ) );
 	}
 
 	function testPropertiesAutoTimestamps()
