@@ -93,6 +93,11 @@
 			Model class name (including namespace) the property is related to
   			String
   			Optional
+  		hidden:
+  			Hides a property when expanding the model, i.e. toArray()
+			Boolean
+			Default: false
+			Optional
  */
 
 namespace infuse;
@@ -672,37 +677,86 @@ abstract class Model extends Acl
 	 * Converts the model to an array
 	 *
 	 * @param array $exclude properties to exclude
+	 * @param array $include properties to include
+	 * @param array $expand properties to expand
 	 *
 	 * @return array properties
 	 */
-	function toArray( array $exclude = [] )
+	function toArray( array $exclude = [], array $include = [], array $expand = [] )
 	{
+		// TODO this method is ripe for some performance improvements
+
 		$properties = [];
+
+		// apply namespacing to $exclude
+		$namedExc = [];
+		foreach( $exclude as $e )
+			Util::array_set( $namedExc, $e, true );
+
+		// apply namespacing to $include
+		$namedInc = [];
+		foreach( $include as $e )
+			Util::array_set( $namedInc, $e, true );
+
+		// apply namespacing to $expand
+		$namedExp = [];
+		foreach( $expand as $e )
+			Util::array_set( $namedExp, $e, true );
 		
-		// get the names of all the properties
-		foreach( static::properties() as $name => $property )
+		// get the list of appropriate properties
+		foreach( static::properties() as $property => $pData )
 		{
-			if( !empty( $name ) && !in_array( $name, $exclude ) && !in_array( $name, static::$propertiesNotInDatabase ) )
-				$properties[] = $name;
+			// skip excluded properties
+			if( isset( $namedExc[ $property ] ) )
+				continue;
+
+			// skip hidden properties that are not explicitly included
+			if( Util::array_value( $pData, 'hidden' ) &&
+				!isset( $namedInc[ $property ] ) )
+				continue;
+
+			$properties[] = $property;
 		}
 
 		// make sure each property key at least has a null value
 		// and then get the value for each property
-		return array_replace(
-			array_fill_keys( $properties, null ),
-			$this->get( $properties, false, true ) );
+		$result = array_replace( array_fill_keys( $properties, null ),
+								 $this->get( $properties, false, true ) );
+
+		// expand properties
+		foreach( $namedExp as $k => $subExp )
+		{
+			$subExc = Util::array_value( $namedExc, $k );
+			$subInc = Util::array_value( $namedInc, $k );
+
+			// convert exclude, include, and expand into dot notation
+			// then take the keys for a flattened dot notation
+			$flatExc = is_array($subExc) ? array_keys( Util::array_dot( $subExc ) ) : [];
+			$flatInc = is_array($subInc) ? array_keys( Util::array_dot( $subInc ) ) : [];
+			$flatExp = is_array($subExp) ? array_keys( Util::array_dot( $subExp ) ) : [];
+
+			$result[ $k ] = $this->relation( $k )->toArray( $flatExc, $flatInc, $flatExp );
+		}
+
+		// apply hooks, if available
+		if( method_exists( $this, 'toArrayHook' ) )
+			$this->toArrayHook( $result, $namedExc, $namedInc, $namedExp );
+
+		return $result;
 	}
 	
 	/**
 	 * Converts the object to JSON format
 	 *
 	 * @param array $exclude properties to exclude
+	 * @param array $include properties to include
+	 * @param array $expand properties to expand
 	 *
 	 * @return string json
 	 */
-	function toJson( array $exclude = [] )
+	function toJson( array $exclude = [], array $include = [], array $expand = [] )
 	{
-		return json_encode( $this->toArray( $exclude ) );
+		return json_encode( $this->toArray( $exclude, $include, $expand ) );
 	}
 	
 	/**
@@ -1443,8 +1497,10 @@ abstract class Model extends Acl
 
 	private function marshalValue( $value, $property )
 	{
-		// look up property
+		// look up property (if it exists)
 		$pData = static::properties( $property );
+		if( !$pData )
+			return $value;
 
 		if( Util::array_value( $pData, 'null' ) && $value == '' )
 			return null;

@@ -92,6 +92,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'type' => 'text',
 				'required' => true
 			],
+			'hidden' => [
+				'type' => 'boolean',
+				'default' => false,
+				'hidden' => true
+			],
+			'person' => [
+				'type' => 'id',
+				'relation' => 'Person',
+				'default' => 20,
+				'hidden' => true
+			],
 			'created_at' => [
 				'type' => 'date',
 				'validate' => 'timestamp',
@@ -245,7 +256,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$expected = [
 			'id' => 5,
 			'relation' => 'test',
-			'answer' => null
+			'answer' => null,
+			// this is tacked on in toArrayHook() below
+			'toArray' => true
 		];
 
 		$this->assertEquals( $expected, $model->toArray() );
@@ -260,7 +273,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 			'relation' => 'test'
 		];
 
-		$this->assertEquals( $expected, $model->toArray( [ 'id', 'answer' ] ) );
+		$this->assertEquals( $expected, $model->toArray( [ 'id', 'answer', 'toArray' ] ) );
 	}
 
 	function testToArrayAutoTimestamps()
@@ -274,12 +287,63 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $expected, $model->toArray( [ 'id', 'id2', 'default', 'validate', 'unique', 'required' ] ) );
 	}
 
+	function testToArrayIncluded()
+	{
+		$model = new TestModel2( 5 );
+		$model->hidden = true;
+
+		$expected = [
+			'hidden' => true,
+			'toArrayHook' => true ];
+
+		$this->assertEquals( $expected, $model->toArray( [ 'id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at' ], [ 'hidden', 'toArrayHook' ] ) );
+	}
+
+	function testToArrayExpand()
+	{
+		$model = new TestModel( 10 );
+		$model->relation = 100;
+		$model->answer = 42;
+
+		$result = $model->toArray(
+			[
+				'id',
+				'toArray',
+				'relation.created_at',
+				'relation.updated_at',
+				'relation.validate',
+				'relation.unique',
+				'relation.person.address' ],
+			[
+				'relation.hidden',
+				'relation.person' ],
+			[
+				'relation.person' ] );
+
+		$expected = [
+			'answer' => 42,
+			'relation' => [
+				'id' => 100,
+				'id2' => 0,
+				'required' => null,
+				'default' => 'some default value',
+				'hidden' => false,
+				'person' => [
+					'id' => 20,
+					'name' => 'Jared'
+				]
+			]
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
 	function testToJson()
 	{
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson() );
+		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson( [ 'toArray' ] ) );
 	}
 
 	function testHasSchema()
@@ -557,6 +621,12 @@ class TestModel extends Model
 	{
 		$this->postDelete = true;
 	}
+
+	function toArrayHook( array &$result, array $exclude, array $include, array $expand )
+	{
+		if( !isset( $exclude[ 'toArray' ] ) )
+			$result[ 'toArray' ] = true;
+	}
 }
 
 class TestModel2 extends Model
@@ -586,6 +656,17 @@ class TestModel2 extends Model
 		'required' => [
 			'type' => 'text',
 			'required' => true
+		],
+		'hidden' => [
+			'type' => 'boolean',
+			'default' => false,
+			'hidden' => true
+		],
+		'person' => [
+			'type' => 'id',
+			'relation' => 'Person',
+			'default' => 20,
+			'hidden' => true
 		]
 	];
 
@@ -594,6 +675,12 @@ class TestModel2 extends Model
 	protected function hasPermission( $permission, Model $requester )
 	{
 		return true;
+	}
+
+	function toArrayHook( array &$result, array $exclude, array $include, array $expand )
+	{
+		if( isset( $include[ 'toArrayHook' ] ) )
+			$result[ 'toArrayHook' ] = true;
 	}
 
 	static function idProperty()
@@ -640,6 +727,19 @@ class TestModelHookFail extends Model
 
 class Person extends Model
 {
+	static $properties = [
+		'id' => [
+			'type' => 'id'
+		],
+		'name' => [
+			'type' => 'text',
+			'default' => 'Jared'
+		],
+		'address' => [
+			'type' => 'text'
+		]
+	];
+
 	protected function hasPermission( $permission, Model $requester )
 	{
 		return false;

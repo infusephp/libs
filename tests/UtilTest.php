@@ -52,6 +52,37 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $expected, $a );
 	}
 
+	public function testArrayDot()
+	{
+		$a = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
+		$expected = [ '1.2.3.4.5' => 'test' ];
+
+		$this->assertEquals( $expected, Util::array_dot( $a ) );
+
+		$a = [
+			'fruit' => [
+				'apples' => [
+					'sold' => 100,
+					'remaining' => 100,
+					'percent' => 0.5
+				],
+				'oranges' => [
+					'remaining' => 0
+				]
+			],
+			'test' => true
+		];
+		$expected = [
+			'fruit.apples.sold' => 100,
+			'fruit.apples.remaining' => 100,
+			'fruit.apples.percent' => 0.5,
+			'fruit.oranges.remaining' => 0,
+			'test' => true
+		];
+
+		$this->assertEquals( $expected, Util::array_dot( $a ) );
+	}
+
 	public function testEncryptPassword()
 	{
 		$password = 'most-secure-p4ssw0rd ever';

@@ -22,7 +22,7 @@ class Util
 	 *
 	 * @return mixed|null
 	 */
-	static function array_value( $a = [], $k = '' )
+	static function array_value( array $a = [], $k = '' )
 	{
 		$a = (array)$a;
 		if( array_key_exists( $k, $a ) )
@@ -55,7 +55,7 @@ class Util
 	 * @param string $key
 	 * @param mixed $value
 	 */
-	static function array_set( &$a, $key, $value )
+	static function array_set( array &$a, $key, $value )
 	{
 	    $pieces = explode('.', $key);
 	    
@@ -67,7 +67,37 @@ class Util
 	    }
 	    
 	    return $a = $value;
-	}	
+	}
+
+	/**
+	 * Flattens a multi-dimensional array using dot notation
+	 * i.e. [ 'fruit' => [ 'apples' => [ 'qty' => 1 ] ] ] produces
+	 * [ fruit.apples.qty => 1 ]
+	 *
+	 * @param array $a input array
+	 * @param string $prefix key prefix
+	 *
+	 * @return array output array
+	 */
+	static function array_dot( array $a, $prefix = '' )
+	{
+		$result = [];
+
+		if( !empty( $prefix ) )
+			$prefix = $prefix . '.';
+
+		foreach( $a as $k => $v )
+		{
+			if( is_array( $v ) )
+				$result = array_replace(
+					$result,
+					self::array_dot( $v, $prefix . $k ) );
+			else
+				$result[ $prefix . $k ] = $v;
+		}
+
+		return $result;
+	}
 	
 	/**
 	 * Securely hashes a string, useful for passwords
