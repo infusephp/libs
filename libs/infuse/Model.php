@@ -1438,12 +1438,18 @@ abstract class Model extends Acl
 			return null;
 
 		$type = Util::array_value( $pData, 'type' );
+		$dbType = Util::array_value( $pData, 'db_type' );
 
 		if( $type == 'boolean' )
 			return ($value == '1') ? true : false;
 
-		// ensure numbers are cast as numbers and not strings by adding 0
-		if( $type == 'number' )
+		// ensure numbers/dates are cast as numbers
+		// instead of strings by adding 0
+		if( in_array( $type, [ 'number', 'date' ] ) )
+			return $value + 0;
+
+		// by default, ids should also be numbers
+		if( $type == 'id' && !isset( $pData[ 'db_type' ] ) )
 			return $value + 0;
 
 		return $value;
