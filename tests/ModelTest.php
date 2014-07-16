@@ -279,7 +279,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$this->assertEquals( '{"id":"5","relation":"test","answer":null}', $model->toJson() );
+		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson() );
 	}
 
 	function testHasSchema()

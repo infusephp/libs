@@ -308,7 +308,19 @@ abstract class Model extends Acl
 		$ids = array_reverse( $ids );
 		
 		foreach( $idProperty as $f )
-			$return[ $f ] = (count($ids)>0) ? array_pop( $ids ) : false;
+		{
+			$id = (count($ids)>0) ? array_pop( $ids ) : false;
+
+			// If we are using stock IDs then we want
+			// to convert it from a string into a number.
+			// This comes in handy if the ID will eventually be
+			// serialized into JSON.
+			$pData = static::properties( $f );
+			if( Util::array_value( $pData, 'type' ) == 'id' && !Util::array_value( $pData, 'db_type' ) )
+				$id = $id + 0;
+
+			$return[ $f ] = $id;
+		}
 		
 		return $return;
 	}
@@ -1449,7 +1461,7 @@ abstract class Model extends Acl
 			return $value + 0;
 
 		// by default, ids should also be numbers
-		if( $type == 'id' && !isset( $pData[ 'db_type' ] ) )
+		if( $type == 'id' && !$dbType )
 			return $value + 0;
 
 		return $value;
