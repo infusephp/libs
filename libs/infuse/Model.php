@@ -650,15 +650,17 @@ abstract class Model extends Acl
 		// functional side effects
 		$remaining = $properties;
 
+		$hasId = $this->_id !== false;
+
 		$i = 1;
 		$values = [];
 		while( $i <= 4 && count( $remaining ) > 0 )
 		{
 			if( $i == 1 && !$skipLocalCache )
 				$this->getFromLocalCache( $remaining, $values );
-			else if( $i == 2 )
+			else if( $i == 2 && $hasId )
 				$this->getFromSharedCache( $remaining, $values );
-			else if( $i == 3 && static::$config[ 'database' ][ 'enabled' ] )
+			else if( $i == 3 && static::$config[ 'database' ][ 'enabled' ] && $hasId )
 				$this->getFromDatabase( $remaining, $values );
 			else if( $i == 4 )
 				$this->getFromDefaultValues( $remaining, $values );
