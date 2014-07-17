@@ -704,7 +704,7 @@ abstract class Model extends Acl
 		foreach( static::properties() as $property => $pData )
 		{
 			// skip excluded properties
-			if( isset( $namedExc[ $property ] ) )
+			if( isset( $namedExc[ $property ] ) && !is_array( $namedExc[ $property ] ) )
 				continue;
 
 			// skip hidden properties that are not explicitly included
@@ -723,6 +723,11 @@ abstract class Model extends Acl
 		// expand properties
 		foreach( $namedExp as $k => $subExp )
 		{
+			// if the property is null, excluded, or not included
+			// then we are not going to expand it
+			if( !isset( $result[ $k ] ) || !$result[ $k ] )
+				continue;
+
 			$subExc = Util::array_value( $namedExc, $k );
 			$subInc = Util::array_value( $namedInc, $k );
 

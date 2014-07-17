@@ -223,12 +223,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model->relation = 'test';
 		$model->answer = 42;
 
-		$expected = array(
+		$expected = [
 			'id' => 3,
 			'relation' => 0,
-			'answer' => 42 );
+			'answer' => 42 ];
 
-		$values = $model->get( array( 'id', 'relation', 'answer' ) );
+		$values = $model->get( [ 'id', 'relation', 'answer' ] );
 		$this->assertEquals( $expected, $values );
 	}
 
