@@ -176,6 +176,9 @@ class Cache
 	 */
 	function set( $key, $value, $expires = 0 )
 	{
+		if( is_array( $value ) || is_object( $value ) )
+			$value = json_encode( $value );
+
 		if( $this->strategy == 'redis' )
 		{
 			if( $expires <= 0 )

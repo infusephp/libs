@@ -36,8 +36,11 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
 	public function testSet()
 	{
+		$json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+
 		$this->assertTrue( self::$cache->set( 'test.key', 100 ) );
 		$this->assertTrue( self::$cache->set( 'test.key.2', 101, 500 ) );
+		$this->assertTrue( self::$cache->set( 'test.key.3', $json ) );
 	}
 
 	/**
@@ -52,6 +55,10 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
 		$expected = [ 'test.key.2' => 101 ];
 		$this->assertEquals( $expected, self::$cache->get( [ 'test.key.2' ], true ) );
+
+		$json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+		$expected = json_encode( $json );
+		$this->assertEquals( $expected, self::$cache->get( 'test.key.3' ) );
 
 		$this->assertNull( self::$cache->get( 'does.not.exist' ) );
 	}
