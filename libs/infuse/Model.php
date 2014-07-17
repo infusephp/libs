@@ -1274,16 +1274,20 @@ abstract class Model extends Acl
 		if( $this->_id === false || !static::$config[ 'database' ][ 'enabled' ] )
 			return;
 		
-		$info = Database::select(
+		$info = (array)Database::select(
 			static::tablename(),
 			'*',
 			[
 				'where' => $this->id( true ),
 				'singleRow' => true ] );
+
+		// marshal values from database
+		foreach( $info as $k => $v )
+			$info[ $k ] = $this->marshalValue( $k, $v );
 		
-		$this->cacheProperties( (array)$info );
+		$this->cacheProperties( $info );
 	}
-		
+	
 	/**
 	 * Updates the local and shared cache with the new value for a property
 	 *
@@ -1408,7 +1412,7 @@ abstract class Model extends Acl
 		
 		foreach( $cached as $property => $value )
 		{
-			$values[ $property ] = $this->marshalValue( $value, $property );
+			$values[ $property ] = $this->marshalValue( $property, $value );
 
 			// remove property from list of remaining
 			$index = array_search( $property, $properties );
@@ -1427,7 +1431,7 @@ abstract class Model extends Acl
 
 		foreach( (array)$dbValues as $property => $value )
 		{
-			$values[ $property ] = $this->marshalValue( $value, $property );
+			$values[ $property ] = $this->marshalValue( $proeprty, $value );
 			$this->cacheProperty( $property, $value );
 
 			// remove property from list of remaining
@@ -1495,7 +1499,7 @@ abstract class Model extends Acl
 		return true;
 	}
 
-	private function marshalValue( $value, $property )
+	private function marshalValue( $property, $value )
 	{
 		// look up property (if it exists)
 		$pData = static::properties( $property );
