@@ -563,7 +563,7 @@ abstract class Model extends Acl
 				$validated = $validated && $thisIsValid;
 				
 				// json
-				if( Util::array_value( $property, 'type' ) == 'json' && is_string( $value ) )
+				if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
 					$value = json_encode( $value );
 
 				$insertArray[ $field ] = $value;
@@ -835,7 +835,7 @@ abstract class Model extends Acl
 				$validated = $validated && $thisIsValid;
 				
 				// json
-				if( Util::array_value( $property, 'type' ) == 'json' )
+				if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
 					$value = json_encode( $value );
 
 				$updateArray[ $field ] = $value;
