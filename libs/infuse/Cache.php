@@ -62,6 +62,9 @@ class Cache
 	 * NOTE: If a value is not found, it will not be bundled in the array returned.
 	 *       Also, if only a single value is requested, the return will be that value.
 	 *       Otherwise, a key-value array will be returned.
+	 *		 Regarding objects and arrays, they will automatically be serialized
+	 *		 in set(), but when they come back they will still be serialized
+	 *		 as JSON. It is up to you to unserialize the JSON returned.
 	 *
 	 * @param array|string key(s) to lookup values for
 	 * @param array force a key-value array to be returned, even if only 1 key is provided
