@@ -105,7 +105,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 			],
 			'json' => [
 				'type' => 'json',
-				'hidden' => true
+				'hidden' => true,
+				'default' => '{"tax":"%","discounts":false,"shipping":false}'
 			],
 			'created_at' => [
 				'type' => 'date',
@@ -298,9 +299,13 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$expected = [
 			'hidden' => true,
+			'json' => [
+				'tax' => '%',
+				'discounts' => false,
+				'shipping' => false ],
 			'toArrayHook' => true ];
 
-		$this->assertEquals( $expected, $model->toArray( [ 'id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at' ], [ 'hidden', 'toArrayHook' ] ) );
+		$this->assertEquals( $expected, $model->toArray( [ 'id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at' ], [ 'hidden', 'toArrayHook', 'json' ] ) );
 	}
 
 	function testToArrayExpand()
@@ -713,6 +718,7 @@ class TestModel2 extends Model
 		],
 		'json' => [
 			'type' => 'json',
+			'default' => '{"tax":"%","discounts":false,"shipping":false}',
 			'hidden' => true
 		]
 	];
