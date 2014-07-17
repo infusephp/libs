@@ -20,6 +20,7 @@
   				id
 	  			text
 	  			longtext
+	  			json
 	  			number
 	  			boolean
 	  			enum
@@ -316,14 +317,6 @@ abstract class Model extends Acl
 		{
 			$id = (count($ids)>0) ? array_pop( $ids ) : false;
 
-			// If we are using stock IDs then we want
-			// to convert it from a string into a number.
-			// This comes in handy if the ID will eventually be
-			// serialized into JSON.
-			$pData = static::properties( $f );
-			if( Util::array_value( $pData, 'type' ) == 'id' && !Util::array_value( $pData, 'db_type' ) )
-				$id = $id + 0;
-
 			$return[ $f ] = $id;
 		}
 		
@@ -569,6 +562,10 @@ abstract class Model extends Acl
 				
 				$validated = $validated && $thisIsValid;
 				
+				// json
+				if( Util::array_value( $property, 'type' ) == 'json' )
+					$value = json_encode( $value );
+
 				$insertArray[ $field ] = $value;
 			}
 		}
@@ -837,6 +834,10 @@ abstract class Model extends Acl
 				
 				$validated = $validated && $thisIsValid;
 				
+				// json
+				if( Util::array_value( $property, 'type' ) == 'json' )
+					$value = json_encode( $value );
+
 				$updateArray[ $field ] = $value;
 			}
 		}
@@ -1140,6 +1141,7 @@ abstract class Model extends Acl
 				
 				$column[ 'Type' ] = "$type($length)";
 			break;
+			case 'json':
 			case 'longtext':
 				if( !$type ) $type = 'text';
 				if( !$length ) $length = 65535;
@@ -1390,9 +1392,9 @@ abstract class Model extends Acl
 		foreach( $properties as $property )
 		{
 			if( array_key_exists( $property, $this->localCache ) )
-				$values[ $property ] = $this->localCache[ $property ];
+				$values[ $property ] = self::marshalValue( $property, $this->localCache[ $property ] );
 			else if( static::isIdProperty( $property ) )
-				$values[ $property ] = $idProperties[ $property ];
+				$values[ $property ] = self::marshalValue( $property, $idProperties[ $property ] );
 
 			// mark index of property to remove from list of properties
 			if( isset( $values[ $property ] ) )
@@ -1523,6 +1525,9 @@ abstract class Model extends Acl
 		// by default, ids should also be numbers
 		if( $type == 'id' && !$dbType )
 			return $value + 0;
+
+		if( $type == 'json' && is_string( $value ) )
+			return (array)json_decode( $value, true );
 
 		return $value;
 	}

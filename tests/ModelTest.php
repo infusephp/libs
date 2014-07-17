@@ -103,6 +103,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'default' => 20,
 				'hidden' => true
 			],
+			'json' => [
+				'type' => 'json',
+				'hidden' => true
+			],
 			'created_at' => [
 				'type' => 'date',
 				'validate' => 'timestamp',
@@ -220,7 +224,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$expected = array(
 			'id' => 3,
-			'relation' => 'test',
+			'relation' => 0,
 			'answer' => 42 );
 
 		$values = $model->get( array( 'id', 'relation', 'answer' ) );
@@ -255,7 +259,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$expected = [
 			'id' => 5,
-			'relation' => 'test',
+			'relation' => 0,
 			'answer' => null,
 			// this is tacked on in toArrayHook() below
 			'toArray' => true
@@ -267,10 +271,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testToArrayExcluded()
 	{
 		$model = new TestModel( 5 );
-		$model->relation = 'test';
+		$model->relation = 100;
 
 		$expected = [
-			'relation' => 'test'
+			'relation' => 100
 		];
 
 		$this->assertEquals( $expected, $model->toArray( [ 'id', 'answer', 'toArray' ] ) );
@@ -343,7 +347,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$model = new TestModel( 5 );
 		$model->relation = 'test';
 
-		$this->assertEquals( '{"id":5,"relation":"test","answer":null}', $model->toJson( [ 'toArray' ] ) );
+		$this->assertEquals( '{"id":5,"relation":0,"answer":null}', $model->toJson( [ 'toArray' ] ) );
 	}
 
 	function testHasSchema()
@@ -356,19 +360,27 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$model = new TestModel2( 3 );
 
+		$json = [
+			'test' => true,
+			'test2' => [
+				'hello',
+				'anyone there?' ] ];
+
 		$model->cacheProperties( [
 			'validate' => '',
 			'hidden' => '1',
 			'default' => 'testing',
 			'test2' => 'hello',
 			'person' => '30',
-			'required' => '50' ] );
+			'required' => '50',
+			'json' => $json ] );
 		$this->assertEquals( '', $model->validate );
 		$this->assertEquals( '1', $model->hidden );
 		$this->assertEquals( '50', $model->required );
 		$this->assertEquals( '30', $model->person );
 		$this->assertEquals( 'hello', $model->test2 );
 		$this->assertEquals( 'testing', $model->default );
+		$this->assertEquals( $json, $model->json );
 
 		$model2 = new TestModel2( 3 );
 		$this->assertTrue( $model2->validate === null );
@@ -377,6 +389,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( $model2->person === 30 );
 		$this->assertTrue( $model2->default === 'testing' );
 		$this->assertEquals( 'hello', $model2->test2 );
+		$this->assertEquals( $json, $model2->json );
 	}
 
 	function testInvalidateCache()
@@ -410,6 +423,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$newModel = new TestModel2;
 		$this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 25 ] ) );
 		$this->assertEquals( '1,2', $newModel->id() );
+	}
+
+	function testCreateJson()
+	{
+		$json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+
+		$newModel = new TestModel2;
+		$this->assertTrue( $newModel->create( [ 'id' => 2, 'id2' => 4, 'required' => 25, 'json' => $json ] ) );
+		$this->assertEquals( $json, $newModel->json );
 	}
 
 	function testCreateAutoTimestamps()
@@ -507,6 +529,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$updatedAt = $model->updated_at;
 		$model->set( 'default', 'testing' );
 		$this->assertNotEquals( $updatedAt, $model->updated_at );
+	}
+
+	function testSetJson()
+	{
+		$json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+
+		$model = new TestModel2( 13 );
+		$model->set( 'json', $json );
+		$this->assertEquals( $json, $model->json );
 	}
 
 	function testSetFailWithNoId()
@@ -678,6 +709,10 @@ class TestModel2 extends Model
 			'type' => 'id',
 			'relation' => 'Person',
 			'default' => 20,
+			'hidden' => true
+		],
+		'json' => [
+			'type' => 'json',
 			'hidden' => true
 		]
 	];
