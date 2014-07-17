@@ -1431,7 +1431,7 @@ abstract class Model extends Acl
 
 		foreach( (array)$dbValues as $property => $value )
 		{
-			$values[ $property ] = self::marshalValue( $proeprty, $value );
+			$values[ $property ] = self::marshalValue( $property, $value );
 			$this->cacheProperty( $property, $value );
 
 			// remove property from list of remaining
