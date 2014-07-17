@@ -1283,7 +1283,7 @@ abstract class Model extends Acl
 
 		// marshal values from database
 		foreach( $info as $k => $v )
-			$info[ $k ] = $this->marshalValue( $k, $v );
+			$info[ $k ] = self::marshalValue( $k, $v );
 		
 		$this->cacheProperties( $info );
 	}
@@ -1412,7 +1412,7 @@ abstract class Model extends Acl
 		
 		foreach( $cached as $property => $value )
 		{
-			$values[ $property ] = $this->marshalValue( $property, $value );
+			$values[ $property ] = self::marshalValue( $property, $value );
 
 			// remove property from list of remaining
 			$index = array_search( $property, $properties );
@@ -1431,7 +1431,7 @@ abstract class Model extends Acl
 
 		foreach( (array)$dbValues as $property => $value )
 		{
-			$values[ $property ] = $this->marshalValue( $proeprty, $value );
+			$values[ $property ] = self::marshalValue( $proeprty, $value );
 			$this->cacheProperty( $property, $value );
 
 			// remove property from list of remaining
@@ -1499,7 +1499,7 @@ abstract class Model extends Acl
 		return true;
 	}
 
-	private function marshalValue( $property, $value )
+	private static function marshalValue( $property, $value )
 	{
 		// look up property (if it exists)
 		$pData = static::properties( $property );
