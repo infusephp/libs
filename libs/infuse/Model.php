@@ -493,7 +493,8 @@ abstract class Model extends Acl
 	 */
 	function create( array $data )
 	{
-		ErrorStack::stack()->setCurrentContext( static::modelName() . '.create' );
+		$errorStack = $this->app[ 'errors' ];
+		$errorStack->setCurrentContext( static::modelName() . '.create' );
 
 		if( $this->_id !== false )
 			return false;
@@ -501,7 +502,7 @@ abstract class Model extends Acl
 		// permission?
 		if( !$this->can( 'create', static::$config[ 'requester' ] ) )
 		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
+			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 			return false;
 		}
 
@@ -554,11 +555,11 @@ abstract class Model extends Acl
 				}
 				
 				// validate
-				$thisIsValid = self::validate( $property, $field, $value );
+				$thisIsValid = $this->validate( $property, $field, $value );
 				
 				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
-					$thisIsValid = self::checkUniqueness( $property, $field, $value );
+					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -575,7 +576,7 @@ abstract class Model extends Acl
 		{
 			if( !isset( $insertArray[ $name ] ) )
 			{
-				ErrorStack::add( [
+				$this->app[ 'errors' ]->push( [
 					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
 					'params' => [
 						'field' => $name,
@@ -774,7 +775,8 @@ abstract class Model extends Acl
 	 */
 	function set( $data, $value = false )
 	{
-		ErrorStack::stack()->setCurrentContext( static::modelName() . '.set' );
+		$errorStack = $this->app[ 'errors' ];
+		$errorStack->setCurrentContext( static::modelName() . '.set' );
 	
 		if( $this->_id === false )
 			return false;
@@ -782,7 +784,7 @@ abstract class Model extends Acl
 		// permission?
 		if( !$this->can( 'edit', static::$config[ 'requester' ] ) )
 		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
+			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 			return false;
 		}
 		
@@ -833,11 +835,11 @@ abstract class Model extends Acl
 				}
 
 				// validate
-				$thisIsValid = self::validate( $property, $field, $value );
+				$thisIsValid = $this->validate( $property, $field, $value );
 
 				// unique?
 				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
-					$thisIsValid = self::checkUniqueness( $property, $field, $value );
+					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
 				
 				$validated = $validated && $thisIsValid;
 				
@@ -875,7 +877,8 @@ abstract class Model extends Acl
 	 */
 	function delete()
 	{
-		ErrorStack::stack()->setCurrentContext( static::modelName() . '.delete' );
+		$errorStack = $this->app[ 'errors' ];
+		$errorStack->setCurrentContext( static::modelName() . '.delete' );
 
 		if( $this->_id === false )
 			return false;
@@ -883,7 +886,7 @@ abstract class Model extends Acl
 		// permission?
 		if( !$this->can( 'delete', static::$config[ 'requester' ] ) )
 		{
-			ErrorStack::add( ERROR_NO_PERMISSION );
+			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 			return false;
 		}
 		
@@ -1263,7 +1266,7 @@ abstract class Model extends Acl
 		}
 		catch( \Exception $e )
 		{
-			ErrorStack::add( [ 'error' => 'update_schema_error', 'messages' => $e->getMessage() ] );
+			$this->app[ 'errors' ]->push( [ 'error' => 'update_schema_error', 'messages' => $e->getMessage() ] );
 		}		
 	}
 	
@@ -1292,7 +1295,7 @@ abstract class Model extends Acl
 
 		// marshal values from database
 		foreach( $info as $k => $v )
-			$info[ $k ] = self::marshalValue( $k, $v );
+			$info[ $k ] = $this->marshalValue( $k, $v );
 		
 		$this->cacheProperties( $info );
 	}
@@ -1399,9 +1402,9 @@ abstract class Model extends Acl
 		foreach( $properties as $property )
 		{
 			if( array_key_exists( $property, $this->localCache ) )
-				$values[ $property ] = self::marshalValue( $property, $this->localCache[ $property ] );
+				$values[ $property ] = $this->marshalValue( $property, $this->localCache[ $property ] );
 			else if( static::isIdProperty( $property ) )
-				$values[ $property ] = self::marshalValue( $property, $idProperties[ $property ] );
+				$values[ $property ] = $this->marshalValue( $property, $idProperties[ $property ] );
 
 			// mark index of property to remove from list of properties
 			if( isset( $values[ $property ] ) )
@@ -1421,7 +1424,7 @@ abstract class Model extends Acl
 		
 		foreach( $cached as $property => $value )
 		{
-			$values[ $property ] = self::marshalValue( $property, $value );
+			$values[ $property ] = $this->marshalValue( $property, $value );
 
 			// remove property from list of remaining
 			$index = array_search( $property, $properties );
@@ -1440,7 +1443,7 @@ abstract class Model extends Acl
 
 		foreach( (array)$dbValues as $property => $value )
 		{
-			$values[ $property ] = self::marshalValue( $property, $value );
+			$values[ $property ] = $this->marshalValue( $property, $value );
 			$this->cacheProperty( $property, $value );
 
 			// remove property from list of remaining
@@ -1459,7 +1462,7 @@ abstract class Model extends Acl
 		{
 			if( isset( $availableProperties[ $property ] ) && isset( $availableProperties[ $property ][ 'default' ] ) )
 			{
-				$values[ $property ] = self::marshalValue( $property, $availableProperties[ $property ][ 'default' ] );
+				$values[ $property ] = $this->marshalValue( $property, $availableProperties[ $property ][ 'default' ] );
 
 				// mark index of property to remove from list of properties
 				$remove[] = $property;
@@ -1473,7 +1476,7 @@ abstract class Model extends Acl
 		}
 	}
 
-	private static function validate( $property, $field, &$value )
+	private function validate( $property, $field, &$value )
 	{
 		$valid = true;
 
@@ -1483,7 +1486,7 @@ abstract class Model extends Acl
 			$valid = Validate::is( $value, $property[ 'validate' ] );
 		
 		if( !$valid )
-			ErrorStack::add( [
+			$this->app[ 'errors' ]->push( [
 				'error' => VALIDATION_FAILED,
 				'params' => [
 					'field' => $field,
@@ -1492,11 +1495,11 @@ abstract class Model extends Acl
 		return $valid;
 	}
 
-	private static function checkUniqueness( $property, $field, $value )
+	private function checkUniqueness( $property, $field, $value )
 	{
 		if( static::totalRecords( [ $field => $value ] ) > 0 )
 		{
-			ErrorStack::add( [
+			$this->app[ 'errors' ]->push( [
 				'error' => VALIDATION_NOT_UNIQUE,
 				'params' => [
 					'field' => $field,
@@ -1508,7 +1511,7 @@ abstract class Model extends Acl
 		return true;
 	}
 
-	private static function marshalValue( $property, $value )
+	private function marshalValue( $property, $value )
 	{
 		// look up property (if it exists)
 		$pData = static::properties( $property );

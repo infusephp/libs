@@ -16,6 +16,7 @@ use infuse\Model;
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
 	static $requester;
+	static $app;
 
 	static function setUpBeforeClass()
 	{
@@ -25,6 +26,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 			'database' => [
 				'enabled' => false ],
 			'requester' => self::$requester ] );
+
+		// set up DI
+		self::$app = new \Pimple\Container;
+		self::$app[ 'errors' ] = new ErrorStack;
+		Model::inject( self::$app );
 	}
 
 	function testConfigure()
@@ -40,7 +46,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testInjectContainer()
 	{
 		$c = new \Pimple\Container;
-		Model::inject( $c );
+		Model::inject( self::$app );
 	}
 
 	function testProperties()
@@ -454,10 +460,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreateNoPermission()
 	{
-		ErrorStack::stack()->clear();
+		$errorStack = self::$app[ 'errors' ];
+		$errorStack->clear();
 		$newModel = new TestModelNoPermission;
 		$this->assertFalse( $newModel->create( [] ) );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.create' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModelNoPermission.create' ) );
 	}
 
 	function testCreateHookFail()
@@ -473,18 +480,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testCreateInvalid()
 	{
-		ErrorStack::stack()->clear();
+		$errorStack = self::$app[ 'errors' ];
+		$errorStack->clear();
 		$newModel = new TestModel2;
 		$this->assertFalse( $newModel->create( [ 'id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true ] ) );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModel2.create' ) );
 	}
 
 	function testCreateMissingRequired()
 	{
-		ErrorStack::stack()->clear();
+		$errorStack = self::$app[ 'errors' ];
+		$errorStack->clear();
 		$newModel = new TestModel2;
 		$this->assertFalse( $newModel->create( [ 'id' => 10, 'id2' => 1 ] ) );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.create' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModel2.create' ) );
 	}
 
 	function testToArrayAfterCreate()
@@ -553,10 +562,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testSetNoPermission()
 	{
-		ErrorStack::stack()->clear();
+		$errorStack = self::$app[ 'errors' ];
+		$errorStack->clear();
 		$model = new TestModelNoPermission( 5 );
 		$this->assertFalse( $model->set( 'answer', 42 ) );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.set' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModelNoPermission.set' ) );
 	}
 
 	function testSetHookFail()
@@ -572,11 +582,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testSetInvalid()
 	{
-		ErrorStack::stack()->clear();
+		$errorStack = self::$app[ 'errors' ];
+		$errorStack->clear();
 		$model = new TestModel2( 15 );
 
 		$this->assertFalse( $model->set( 'validate', 'not a valid email' ) );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModel2.set' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModel2.set' ) );
 	}
 
 	function testDelete()
@@ -602,9 +613,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 	function testDeleteNoPermission()
 	{
+		$errorStack = self::$app[ 'errors' ];
 		$model = new TestModelNoPermission( 5 );
 		$this->assertFalse( $model->delete() );
-		$this->assertCount( 1, ErrorStack::stack()->errors( 'TestModelNoPermission.delete' ) );
+		$this->assertCount( 1, $errorStack->errors( 'TestModelNoPermission.delete' ) );
 	}
 
 	function testDeleteHookFail()

@@ -17,23 +17,9 @@ class ErrorStack
 	// Private Class Variables
 	/////////////////////////////
 	
-	private static $stackInstance;
 	private $stack = [];
 	private $context = '';
-	
-	/**
-	 * Gets an instance of the stack
-	 *
-	 * @return ErrorStack
-	 */
-	static function stack()
-	{
-		if( !self::$stackInstance )
-			self::$stackInstance = new ErrorStack();
 		
-		return self::$stackInstance;
-	}
-	
 	/**
 	 * Adds an error message to the stack
 	 *
@@ -60,37 +46,6 @@ class ErrorStack
 		$this->stack[] = $error;
 		
 		return true;
-	}
-
-	/**
-	 * Adds an error message to the stack statically
-	 * NOTE this may be deprecated in the future
-	 *
-	 * @param array $error
-	 * - error: error code
-	 * - params: array of parameters to be passed to message
-	 * - context: (optional) the context which the error message occured in
-	 * - class: (optional) the class invoking the error
-	 * - function: (optional) the function invoking the error
-	 *
-	 * @return boolean was error valid?
-	 */
-	static function add( $error, $class = null, $function = null, $params = [], $context = null )
-	{
-		if( !is_array( $error ) )
-		{
-			$error = [
-				'error' => $error,
-				'params' => $params,
-				'class' => $class,
-				'function' => $function
-			];
-
-			if( $context )
-				$error[ 'context' ] = $context;
-		}
-
-		return self::stack()->push( $error, $class, $function, $params, $context );
 	}
 
 	/**

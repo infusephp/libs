@@ -17,17 +17,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		self::$stack = ErrorStack::stack();
-	}
-
-	protected function assertPreConditions()
-	{
-		$this->assertInstanceOf( '\\infuse\\ErrorStack', self::$stack );
-	}
-
-	public function testStack()
-	{
-		$this->assertInstanceOf( '\\infuse\\ErrorStack', ErrorStack::stack() );
+		self::$stack = new ErrorStack;
 	}
 
 	public function testPush()
@@ -42,20 +32,16 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'error' => 'username_invalid',
 			'message' => 'Username is invalid',
 			'context' => 'user.create',
-			'class' => 'User',
-			'function' => 'create',
 			'params' => [
 				'field' => 'username' ] ];
 
-		$this->assertTrue( ErrorStack::add( $error2 ) );
+		$this->assertTrue( self::$stack->push( $error2 ) );
 
 		$this->assertFalse( self::$stack->push( [
 			'message' => 'Username is invalid',
-			'context' => 'user.create',
-			'class' => 'User',
-			'function' => 'create' ] ) );
+			'context' => 'user.create' ] ) );
 
-		$this->assertTrue( ErrorStack::add( 'some_error' ) );
+		$this->assertTrue( self::$stack->push( [ 'error' => 'some_error' ] ) );
 	}
 
 	/**
@@ -73,8 +59,6 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'error' => 'username_invalid',
 			'message' => 'Username is invalid',
 			'context' => 'user.create',
-			'class' => 'User',
-			'function' => 'create',
 			'params' => [
 				'field' => 'username' ] ];
 
@@ -82,9 +66,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'error' => 'some_error',
 			'message' => 'some_error',
 			'context' => '',
-			'params' => [],
-			'class' => null,
-			'function' => null ];
+			'params' => [] ];
 
 		$errors = self::$stack->errors();
 		$this->assertEquals( 3, count( $errors ) );
@@ -125,8 +107,6 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 			'error' => 'username_invalid',
 			'message' => 'Username is invalid',
 			'context' => 'user.create',
-			'class' => 'User',
-			'function' => 'create',
 			'params' => [
 				'field' => 'username' ] ];
 
