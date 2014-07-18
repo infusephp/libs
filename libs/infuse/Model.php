@@ -669,8 +669,18 @@ abstract class Model extends Acl
 			$i++;
 		}
 
-		// TODO should we throw a notice if properties are remaining?
-		return ( !$forceReturnArray && count( $values ) == 1 ) ? reset( $values ) : $values;
+		if( count( $properties ) != count( $values ) )
+		{
+			// TODO should we throw a notice if one or more
+			// properties were not found?
+			if( !$forceReturnArray && count( $properties ) == 1 )
+				return null;
+			else
+				return $values;
+		}
+
+		return (!$forceReturnArray && count($values) == 1) ?
+			reset( $values ) : $values;
 	}
 
 	/**
