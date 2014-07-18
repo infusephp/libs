@@ -11,19 +11,29 @@
 
 use infuse\Response;
 use infuse\Request;
+use infuse\ViewEngine;
+use Pimple\Container;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
+	static $app;
 	static $res;
 
 	public static function setUpBeforeClass()
 	{
-		self::$res = new Response();
+		self::$app = new Container;
+		self::$app[ 'view_engine' ] = new ViewEngine;
+		self::$res = new Response( self::$app );
 	}
 
 	public function assertPreConditions()
 	{
 		$this->assertInstanceOf( '\\infuse\\Response', self::$res );
+	}
+
+	public function testConstruct()
+	{
+		$res = new Response( self::$app );
 	}
 
 	public function testSetCode()

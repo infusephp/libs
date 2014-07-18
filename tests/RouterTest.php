@@ -11,9 +11,17 @@
 
 use infuse\Request;
 use infuse\Router;
+use Pimple\Container;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
+	static $app;
+
+	public static function setUpBeforeClass()
+	{
+		self::$app = new Container;
+	}
+	
 	public function setUp()
 	{
 		Router::configure( [
@@ -43,7 +51,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( Router::route( $testRoutes, $req ) );
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
 		$this->assertTrue( MockController::$staticRouteCalled );
 	}
@@ -65,7 +73,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/dynamic/1/2/3/4' );
 
-		$this->assertTrue( Router::route( $testRoutes, $req ) );
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
 		$this->assertTrue( MockController::$dynamicRouteCalled );
 
@@ -90,7 +98,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( Router::route( $testRoutes, $req ) );
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
 		$this->assertTrue( MockController::$staticRouteCalled );
 	}
@@ -113,7 +121,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( Router::route( $testRoutes, $req ) );
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
 		$this->assertTrue( MockController::$indexRouteCalled );
 	}
@@ -131,7 +139,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 		$req = new Request( null, null, null, null, $server );
 		$req->setPath( '/this/is/a/test/route' );
 
-		$this->assertFalse( Router::route( $testRoutes, $req ) );
+		$this->assertFalse( Router::route( $testRoutes, self::$app, $req ) );
 	}
 
 	public function testRouterControllerParam()
@@ -151,7 +159,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 		$req->setParams( [ 'controller' => 'MockController' ] );
 
-		$this->assertTrue( Router::route( $testRoutes, $req ) );
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
 		$this->assertTrue( MockController::$staticRouteCalled );
 	}

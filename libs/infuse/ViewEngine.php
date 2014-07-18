@@ -27,8 +27,6 @@ class ViewEngine
 		'php' => '.php'
 	];
 	
-	private static $engine;
-	
 	private $type;
 	private $viewsDir;
 	private $compileDir;
@@ -41,16 +39,6 @@ class ViewEngine
 
 	private $data;
 	
-	/**
-	 * Configures the engine to use the specified settings. This overwrites any previous instances of the engine.
-	 *
-	 * @param array $options
-	 */
-	static function configure( array $options )
-	{
-		self::$engine = new self( $options );
-	}
-
 	/**
 	 * Creates a new instance
 	 *
@@ -151,19 +139,6 @@ class ViewEngine
 			$this->smarty()->assign( $key, $value );
 		else if( $this->type == 'php' )
 			$this->data[ $key ] = $value;
-	}
-	
-	/**
-	 * Returns the view engine class
-	 *
-	 * @return ViewEngine view engine class
-	 */
-	static function engine()
-	{
-		if( !self::$engine )
-			self::$engine = new self();
-		
-		return self::$engine;
 	}
 	
 	/**

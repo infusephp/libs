@@ -11,6 +11,7 @@
 
 use infuse\AclRequester;
 use infuse\ErrorStack;
+use infuse\Locale;
 use infuse\Model;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
@@ -29,7 +30,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		// set up DI
 		self::$app = new \Pimple\Container;
-		self::$app[ 'errors' ] = new ErrorStack;
+		self::$app[ 'locale' ] = function() {
+			return new Locale;
+		};
+		self::$app[ 'errors' ] = function( $app ) {
+			return new ErrorStack( $app );
+		};
 		Model::inject( self::$app );
 	}
 

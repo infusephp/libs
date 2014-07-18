@@ -11,6 +11,8 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 class ErrorStack
 {
 	/////////////////////////////
@@ -19,7 +21,13 @@ class ErrorStack
 	
 	private $stack = [];
 	private $context = '';
-		
+	private $app;
+	
+	function __construct( Container $app )
+	{
+		$this->app = $app;
+	}
+
 	/**
 	 * Adds an error message to the stack
 	 *
@@ -85,7 +93,7 @@ class ErrorStack
 			{
 				// attempt to translate error into a message
 				if( !isset( $error[ 'message' ] ) )
-					$error[ 'message' ] = Locale::locale()->t( $error[ 'error' ], $error[ 'params' ], $locale );
+					$error[ 'message' ] = $this->app[ 'locale' ]->t( $error[ 'error' ], $error[ 'params' ], $locale );
 
 				$errors[] = $error;
 			}

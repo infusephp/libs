@@ -10,14 +10,24 @@
  */
 
 use infuse\ErrorStack;
+use infuse\Locale;
+use Pimple\Container;
 
 class ErrorStackTest extends \PHPUnit_Framework_TestCase
 {
+	static $app;
 	static $stack;
 
 	public static function setUpBeforeClass()
 	{
-		self::$stack = new ErrorStack;
+		self::$app = new Container;
+		self::$app[ 'locale' ] = new Locale;
+		self::$stack = new ErrorStack( self::$app );
+	}
+
+	public function testConstruct()
+	{
+		$stack = new ErrorStack( self::$app );
 	}
 
 	public function testPush()

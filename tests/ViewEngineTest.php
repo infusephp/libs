@@ -17,13 +17,7 @@ class ViewEngineTest extends \PHPUnit_Framework_TestCase
 
 	static function setUpBeforeClass()
 	{
-		self::$engine = ViewEngine::engine();
-	}
-
-	function testEngine()
-	{
-		$engine = ViewEngine::engine();
-		$this->assertInstanceOf( '\\infuse\\ViewEngine', $engine );
+		self::$engine = new ViewEngine;
 	}
 
 	function testSmarty()
@@ -33,26 +27,23 @@ class ViewEngineTest extends \PHPUnit_Framework_TestCase
 
 	function testAssetUrl()
 	{
-		ViewEngine::configure( [
+		$engine = new ViewEngine( [
 			'assetsBaseUrl' => 'http://localhost' ] );
-		self::$engine = ViewEngine::engine();
-		$this->assertEquals( 'http://localhost/test', self::$engine->asset_url( '/test' ) );
+		$this->assertEquals( 'http://localhost/test', $engine->asset_url( '/test' ) );
 	}
 
 	function testRenderSmarty()
 	{
-		ViewEngine::configure( [ 'engine' => 'smarty' ] );
-		self::$engine = ViewEngine::engine();
-		self::$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
+		$engine = new ViewEngine( [ 'engine' => 'smarty' ] );
+		$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
 
         // TODO
 	}
 
 	function testRenderPhp()
 	{
-		ViewEngine::configure( [ 'engine' => 'php' ] );
-		self::$engine = ViewEngine::engine();
-		self::$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
+		$engine = new ViewEngine( [ 'engine' => 'php' ] );
+		$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
 
         // TODO
 	}

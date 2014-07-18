@@ -37,17 +37,17 @@ class Router
 	 * @param array $routes
 	 * @param Request $req
 	 * @param Response $res
-	 * @param Container $container DI container
+	 * @param Container $app DI container
 	 *
 	 * @return boolean was a route match made?
 	 */
-	static function route( $routes, $req = null, $res = null, Container $container = null )
+	static function route( array $routes, Container $app, $req = null, $res = null )
 	{
 		if( !$req )
 			$req = new Request();
 		
 		if( !$res )
-			$res = new Response();
+			$res = new Response( $app );
 	
 		/*
 			Route Precedence:
@@ -71,11 +71,11 @@ class Router
 		
 		/* global static routes */						
 		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeMethodStr ], $req, $res, $container ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== -1 )
 			return true;
 		
 		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeGenericStr ], $req, $res, $container ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeGenericStr ], $app, $req, $res ) !== -1 )
 			return true;
 		
 		/* global dynamic routes */
@@ -83,7 +83,7 @@ class Router
 		foreach( $dynamicRoutes as $routeStr => $route )
 		{
 			if( self::matchRouteToRequest( $routeStr, $req ) &&
-				self::performRoute( $route, $req, $res, $container ) !== -1 )
+				self::performRoute( $route, $app, $req, $res ) !== -1 )
 				return true;
 		}
 		
@@ -101,11 +101,11 @@ class Router
 	 * or 'method'
 	 * @param Request $req
 	 * @param Response $res
-	 * @param Container $container optional DI container
+	 * @param Container $app optional DI container
 	 *
 	 * @return boolean
 	 */
-	private static function performRoute( $route, $req, $res, $container )
+	private static function performRoute( $route, Container $app, $req, $res )
 	{
 		// method name and controller supplied
 		if( is_string( $route ) && $req->params( 'controller' ) )
@@ -126,7 +126,7 @@ class Router
 		if( !class_exists( $controller ) )
 			return -1;
 
-		$controllerObj = new $controller( $container );
+		$controllerObj = new $controller( $app );
 		
 		$result = $controllerObj->$method( $req, $res );
 		

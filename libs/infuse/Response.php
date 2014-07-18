@@ -11,6 +11,8 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 class Response
 {
 	static $codes = [  
@@ -60,14 +62,16 @@ class Response
 	private $code;
 	private $contentType;
 	private $body;
+	private $app;
 	
 	/**
 	 * Constructs a new response
 	 *
 	 */
-	public function __construct()
+	public function __construct( Container $app )
 	{
 		$this->code = 200;
+		$this->app = $app;
 	}
 	
 	/**
@@ -148,9 +152,7 @@ class Response
 	 * @param array $parameters parameters to pass to the template
 	 */
 	public function render( $template, $parameters = [] )
-	{		
-		$engine = ViewEngine::engine();
-		
+	{	
 		// deal with relative paths when using modules
 		// TODO this is a hack
 		if( substr( $template, 0, 1 ) != '/' )
@@ -178,6 +180,7 @@ class Response
 			}
 		}
 		
+		$engine = $this->app[ 'view_engine' ];
 		$engine->assignData( $parameters );
 		
 		$this->body = $engine->render( $template );
