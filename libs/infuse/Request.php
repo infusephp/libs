@@ -163,6 +163,9 @@ class Request
 			}
 		}
 
+		if( !$this->request )
+			$this->request = [];
+
 		// DELETE and PUT requests can come through POST
 		$requestMethodFromPost = Util::array_value( (array)$this->request, 'method' );
 		if( $this->method() == 'POST' &&
