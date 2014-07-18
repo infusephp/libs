@@ -124,7 +124,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'type' => 'date',
 				'validate' => 'timestamp',
 				'required' => true,
-				'default' => 'today'
+				'default' => 'now'
 			],
 			'updated_at' => [
 				'type' => 'date',

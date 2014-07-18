@@ -163,7 +163,7 @@ abstract class Model extends Acl
 			'type' => 'date',
 			'validate' => 'timestamp',
 			'required' => true,
-			'default' => 'today'
+			'default' => 'now'
 		],
 		'updated_at' => [
 			'type' => 'date',
