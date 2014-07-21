@@ -15,15 +15,9 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 {
 	static $locale;
 
-	public static function setUpBeforeClass()
+	public function testConstruct()
 	{
-		self::$locale = Locale::locale();
-		self::$locale->setLocaleDataDir( 'tests/locales' );
-	}
-
-	protected function assertPreConditions()
-	{
-		$this->assertInstanceOf( '\\infuse\\Locale', self::$locale );
+		self::$locale = new Locale( 'en' );
 	}
 
 	public function testSetLocaleDataDir()

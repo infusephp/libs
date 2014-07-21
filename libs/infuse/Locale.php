@@ -13,24 +13,9 @@ namespace infuse;
 
 class Locale
 {
-	private static $localeInstance;
-
 	private $locale = 'en';
 	private $localeDir = false;
 	private $localeData;
-
-	/**
-	 * Gets an instance of the locale
-	 *
-	 * @return Locale
-	 */
-	static function locale()
-	{
-		if( !self::$localeInstance )
-			self::$localeInstance = new Locale();
-		
-		return self::$localeInstance;
-	}
 
 	function __construct( $locale = false )
 	{
