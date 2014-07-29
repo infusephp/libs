@@ -19,5 +19,5 @@ after_script:
 
 matrix:
   allow_failures:
-  	- php: hhvm
+  	- hhvm
   fast_finish: true
