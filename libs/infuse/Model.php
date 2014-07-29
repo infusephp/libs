@@ -138,8 +138,8 @@ abstract class Model extends Acl
 	protected static $config = [
 		'cache' => [
 			'strategies' => [
-				'local' => [
-					'prefix' => '' ] ] ],
+				'\\infuse\\Cache\\LocalStrategy' ],
+			'prefix' => '' ],
 		'database' => [
 			'enabled' => true ],
 		'requester' => false ];
@@ -202,7 +202,7 @@ abstract class Model extends Acl
 	}
 
 	/**
-	 * Injects a container for use by model instances
+	 * Injects a DI container
 	 *
 	 * @param Container $app
 	 */
@@ -1380,21 +1380,14 @@ abstract class Model extends Acl
 	{
 		if( !$this->sharedCache )
 		{
-			// generate caching prefix for this model
-			$class = strtolower( str_replace( '\\', '', get_class($this) ) );
-			$cachePrefix = $class . '.' . $this->_id . '.';
+			// generate cache prefix for this model
+			$cachePrefix = static::$config[ 'cache' ][ 'prefix' ];
+			$class = strtolower( static::modelName() );
+			$cachePrefix .= $class . '.' . $this->_id . '.';
 			
-			$parameters = (array)static::$config[ 'cache' ][ 'strategies' ];
-			$strategies = array_keys( $parameters );
+			$strategies = static::$config[ 'cache' ][ 'strategies' ];
 
-			foreach( $parameters as $strategy => $properties )
-			{
-				$prefix = Util::array_value( $properties, 'prefix' );
-				$parameters[ $strategy ][ 'prefix' ] = ((!empty($prefix))?$prefix.'.':'') . $cachePrefix;
-			}
-			
-			// setup our cache with the appropriate strategies
-			$this->sharedCache = new Cache( $strategies, $parameters );
+			$this->sharedCache = new Cache( $strategies, $cachePrefix, $this->app );
 		}
 
 		return $this->sharedCache;

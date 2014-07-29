@@ -29,7 +29,6 @@
 		"satooshi/php-coveralls": "dev-master",
 		"monolog/monolog": "1.7.0",
 		"smarty/smarty": "v3.1.18",
-		"predis/predis": "v0.8.4",
 		"mockery/mockery": "0.9.1",
 		"iron-io/iron_mq": "1.4.5"
 	},

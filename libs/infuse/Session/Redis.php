@@ -11,13 +11,16 @@
 
 namespace infuse\Session;
 
+use Pimple\Container;
+
 class Redis implements \SessionHandlerInterface
 {
+	private $app;
 	private $prefix;
 	
-	static function start( array $redisConf = [], $prefix = '' )
+	static function start( Container $app, $prefix = '' )
 	{
-		$obj = new self( $redisConf, $prefix );
+		$obj = new self( $app, $prefix );
 
 		session_set_save_handler( $obj, true );
 		session_start();
@@ -25,10 +28,10 @@ class Redis implements \SessionHandlerInterface
 		return $obj;
 	}
 	
-	function __construct( array $redisConf, $prefix )
+	function __construct( Container $app, $prefix = '' )
 	{
-		$this->prefix = 'php.session.' . $prefix . '.';
-		$this->redis = new \Predis\Client( $redisConf );
+		$this->app = $app;
+		$this->prefix = $prefix . 'php.session.';
 	}
 	
 	/**
@@ -38,7 +41,7 @@ class Redis implements \SessionHandlerInterface
 	 */
 	function read( $id )
 	{
-		return $this->redis->get( $this->prefix . $id );
+		return $this->app[ 'redis' ]->get( $this->prefix . $id );
 	}
 	
 	/**
@@ -49,14 +52,10 @@ class Redis implements \SessionHandlerInterface
 	 */
 	function write( $id, $data )
 	{
-		$id = $this->prefix . $id;
 		$ttl = ini_get( 'session.gc_maxlifetime' );
 		
-		$this->redis->pipeline( function( $r ) use ( &$id, &$ttl, &$data )
-		{
-			$r->setex( $id, $ttl, $data );
-		} );
-	}	
+		$this->app[ 'redis' ]->setex( $this->prefix . $id, $ttl, $data );
+	}
 	
 	/**
 	 * Destroys a session
@@ -65,7 +64,7 @@ class Redis implements \SessionHandlerInterface
 	 */
 	function destroy( $id )
 	{
-		$this->redis->del( $this->prefix . $id );
+		$this->app[ 'redis' ]->del( $this->prefix . $id );
 	}
 	
 	/**
