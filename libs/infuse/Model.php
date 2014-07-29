@@ -138,7 +138,7 @@ abstract class Model extends Acl
 	protected static $config = [
 		'cache' => [
 			'strategies' => [
-				'\\infuse\\Cache\\LocalStrategy' ],
+				'local' ],
 			'prefix' => '' ],
 		'database' => [
 			'enabled' => true ],
@@ -1380,14 +1380,13 @@ abstract class Model extends Acl
 	{
 		if( !$this->sharedCache )
 		{
-			// generate cache prefix for this model
-			$cachePrefix = static::$config[ 'cache' ][ 'prefix' ];
-			$class = strtolower( static::modelName() );
-			$cachePrefix .= $class . '.' . $this->_id . '.';
-			
 			$strategies = static::$config[ 'cache' ][ 'strategies' ];
 
-			$this->sharedCache = new Cache( $strategies, $cachePrefix, $this->app );
+			// generate cache prefix for this model
+			$prefix = static::$config[ 'cache' ][ 'prefix' ] .
+					  strtolower( static::modelName() ) . '.' . $this->_id . '.';
+			
+			$this->sharedCache = new Cache( $strategies, $prefix, $this->app );
 		}
 
 		return $this->sharedCache;
