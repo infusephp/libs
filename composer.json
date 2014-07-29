@@ -27,7 +27,6 @@
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
-		"monolog/monolog": "1.7.0",
 		"smarty/smarty": "v3.1.18",
 		"mockery/mockery": "0.9.1",
 		"iron-io/iron_mq": "1.4.5"
@@ -35,7 +34,6 @@
     "suggest": {
     	"leafo/lessphp": "Can compile LESS stylesheets",
     	"linkorb/jsmin-php": "Required for JS minification",
-    	"monolog/monolog": "Awesome logging library",
     	"predis/predis": "Need Redis connections?",
 		"phpunit/phpunit": "Used to run the unit tests"
     }
