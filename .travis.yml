@@ -16,3 +16,8 @@ script:
 
 after_script:
     - vendor/bin/coveralls
+
+matrix:
+  allow_failures:
+  	- php: hhvm
+  fast_finish: true
