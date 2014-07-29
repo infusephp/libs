@@ -34,7 +34,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 	{
 		$c = new Pimple\Container;
 
-		$cache = new Cache( [ '\\infuse\\Cache\\RedisStrategy', '\\infuse\\Cache\\MemcacheStrategy' ], '', $c );
+		$cache = new Cache( [ 'redis', 'memcache' ], '', $c );
 		$this->assertInstanceOf( '\\infuse\\Cache\\LocalStrategy', $cache->strategy() );
 	}
 

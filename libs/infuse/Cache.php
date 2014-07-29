@@ -20,13 +20,18 @@ namespace infuse;
 
 use Pimple\Container;
 
-define( 'CACHE_STRATEGY_REDIS', '\\infuse\\Cache\\RedisStrategy' );
-define( 'CACHE_STRATEGY_MEMCACHE', '\\infuse\\Cache\\Memcache' );
 define( 'CACHE_STRATEGY_LOCAL', '\\infuse\\Cache\\Local' );
+define( 'CACHE_STRATEGY_MEMCACHE', '\\infuse\\Cache\\Memcache' );
+define( 'CACHE_STRATEGY_REDIS', '\\infuse\\Cache\\RedisStrategy' );
  
 class Cache
 {
 	private $strategy;
+	private static $shortcuts = [
+		'local' => CACHE_STRATEGY_LOCAL,
+		'memcache' => CACHE_STRATEGY_MEMCACHE,
+		'redis' => CACHE_STRATEGY_REDIS
+	];
 
 	/**
 	 * Creates a new instance of the cache
@@ -40,6 +45,11 @@ class Cache
 	{
 		foreach( $strategies as $strategy )
 		{
+			// provide shortcuts for referencing built-in cache strategies
+			// by a keyword instead of the full class name
+			if( isset( self::$shortcuts[ $strategy ] ) )
+				$strategy = self::$shortcuts[ $strategy ];
+
 			if( class_exists( $strategy ) )
 			{
 				if( $app )
