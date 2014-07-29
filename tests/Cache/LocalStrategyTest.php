@@ -10,6 +10,7 @@
  */
 
 use infuse\Cache\LocalStrategy;
+use Pimple\Container;
 
 class LocalStrategyTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,6 +19,19 @@ class LocalStrategyTest extends \PHPUnit_Framework_TestCase
 	public static function setUpBeforeClass()
 	{
 		self::$strategy = new LocalStrategy( 'test:' );
+	}
+
+	function testConstruct()
+	{
+		$stategy = new LocalStrategy( 'test:' ); 
+	}
+
+	function testInit()
+	{
+		$app = new Container;
+		LocalStrategy::inject( $app );
+
+		$this->assertInstanceOf( '\\infuse\\Cache\\LocalStrategy', LocalStrategy::init( '' ) );
 	}
 
 	public function testSet()
