@@ -10,6 +10,8 @@
  */
  
 namespace infuse;
+
+use Pimple\Container;
  
 class Database
 {
@@ -31,6 +33,7 @@ class Database
 	private static $batch = false;
 	private static $batchQueue;
 	private static $initializeAttempted;
+	private static $injectedApp;
 	
 	/**
 	 * Sets up the settings used to interact with database
@@ -43,6 +46,16 @@ class Database
 
 		self::$initializeAttempted = false;
 		self::$PDO = null;
+	}
+
+	/**
+	 * Injects a DI container
+	 *
+	 * @param Container $app
+	 */
+	static function inject( Container $app )
+	{
+		self::$injectedApp = $app;
 	}
 
 	/**
@@ -76,7 +89,7 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::alert( $e );
+			self::$injectedApp[ 'logger' ]->alert( $e );
 
 			die( 'Could not connect to database.' );
 
@@ -187,8 +200,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -214,8 +227,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -250,7 +263,7 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -276,8 +289,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -305,8 +318,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -412,7 +425,7 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -434,7 +447,7 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -472,8 +485,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -535,8 +548,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -584,8 +597,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
@@ -617,8 +630,8 @@ class Database
 		}
 		catch( \PDOException $e )
 		{
-			Logger::error( 'PDOException with query: ' . $sql );
-			Logger::error( $e );
+			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
+			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
