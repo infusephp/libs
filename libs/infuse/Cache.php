@@ -4,14 +4,13 @@
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
  * @link http://jaredtking.com
- * @version 0.1.23
+ * @version 0.1.24
  * @copyright 2014 Jared King
  * @license MIT
  */
  
 /*
 	TODO possible strategies to add:
-	- redis
 	- file
 	- database
 */
