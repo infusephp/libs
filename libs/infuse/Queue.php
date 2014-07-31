@@ -23,7 +23,6 @@ class Queue
 	private static $config = [
 		'queues' => [],
 		'namespace' => '',
-		'container' => null,
 		// used for iron.io
 		'push_type' => 'unicast',
 		'token' => '',
@@ -119,7 +118,7 @@ class Queue
 			self::$queues[ $queue ][] = $json;
 
 			// since this is synchronous mode, notify all listeners that we have a new message
-			$this->receiveMessage( $queue, $json, self::$config[ 'container' ] );
+			$this->receiveMessage( $queue, $json );
 
 			return true;
 		}
@@ -224,9 +223,8 @@ class Queue
 	 *
 	 * @param string $queue queue name
 	 * @param string $message message
-	 * @param Container $container optional DI container
 	 */
-	function receiveMessage( $queue, $message, Container $container = null )
+	function receiveMessage( $queue, $message )
 	{
 		$success = true;
 
@@ -245,7 +243,7 @@ class Queue
 			if( !class_exists( $controller ) )
 				continue;
 
-			$controllerObj = new $controller( $container );
+			$controllerObj = new $controller( self::$app );
 
 			$controllerObj->$method( $this, $message );
 		}
