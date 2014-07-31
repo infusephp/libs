@@ -34,8 +34,7 @@ class Queue
 	private static $queues = [];
 	private static $idCounter = 1;
 
-	// used for iron.io
-	private static $ironmq;
+	private static $app;
 
 	private static $queueTypes = [
 		QUEUE_TYPE_IRON,
@@ -87,13 +86,19 @@ class Queue
 	{
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::ironmq();
-
 			// serialize arrays and objects stored in queue
 			if( is_array( $message ) || is_object( $message ) )
 				$message = json_encode( $message );
 			
-			return $ironmq->postMessage( $queue, $message, $parameters );
+			try
+			{
+				return self::$app[ 'ironmq' ]->postMessage( $queue, $message, $parameters );
+			}
+			catch( \Exception $e )
+			{
+				self::$app[ 'logger' ]->error( $e );
+				return false;
+			}
 		}
 		// synchronous queue
 		else
@@ -127,7 +132,7 @@ class Queue
 	 * @param string $queue queue name
 	 * @param int $n number of messages to dequeue
 	 *
-	 * @return array($n > 1)|object($n = 1)|null message(s)
+	 * @return array($n > 1)|object($n = 1)|null message(s) or not found
 	 */
 	function dequeue( $queue, $n = 1 )
 	{
@@ -135,9 +140,15 @@ class Queue
 
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::ironmq();
-
-			$messages = $ironmq->getMessages( $queue, $n );
+			try
+			{
+				$messages = self::$app[ 'ironmq' ]->getMessages( $queue, $n );
+			}
+			catch( \Exception $e )
+			{
+				self::$app[ 'logger' ]->error( $e );
+				return null;
+			}
 		}
 		// synchronous queue
 		else
@@ -175,9 +186,15 @@ class Queue
 		
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
-			$ironmq = self::ironmq();
-
-			return $ironmq->deleteMessage( $queue, $message->id );
+			try
+			{
+				return self::$app[ 'ironmq' ]->deleteMessage( $queue, $message->id );
+			}
+			catch( \Exception $e )
+			{
+				self::$app[ 'logger' ]->error( $e );
+				return false;
+			}
 		}
 		// synchronous queue
 		else
@@ -245,18 +262,23 @@ class Queue
 		if( $this->type == QUEUE_TYPE_IRON )
 		{
 			// setup push queues with iron.io
-			$ironmq = self::ironmq();
-
+			$ironmq = self::$app[ 'ironmq' ];
 			$subscribers = $this->pushQueueSubscribers();
 
 			$success = true;
-
 			foreach( $subscribers as $q => $subscribers )
 			{
-				if( !$ironmq->updateQueue( $q, [
+				try
+				{
+					$success = $ironmq->updateQueue( $q, [
 						'push_type' => self::$config[ 'push_type' ],
-						'subscribers' => $subscribers ] ) )
+						'subscribers' => $subscribers ] ) && $success;
+				}
+				catch( \Exception $e )
+				{
+					self::$app[ 'logger' ]->error( $e );
 					$success = false;
+				}
 			}
 
 			return $success;
@@ -299,24 +321,12 @@ class Queue
 	}
 
 	/**
-	 * Injects an instance of the iron.io MQ for testing
+	 * Injects a DI container
+	 *
+	 * @param Container $app
 	 */
-	static function injectIron( $ironmq )
+	static function inject( Container $app )
 	{
-		self::$ironmq = $ironmq;
-	}
-
-	//////////////////////////
-	// QUEUE PROVIDERS
-	//////////////////////////
-
-	static function ironmq()
-	{
-		if( !self::$ironmq )
-			self::$ironmq = new \IronMQ( [
-				'token' => self::$config[ 'token' ],
-				'project_id' => self::$config[ 'project' ] ] );
-
-		return self::$ironmq;
+		self::$app = $app;
 	}
 }

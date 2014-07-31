@@ -10,6 +10,7 @@
  */
 
 use infuse\Queue;
+use Pimple\Container;
 
 class QueueTest extends \PHPUnit_Framework_TestCase
 {
@@ -49,11 +50,29 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		$q = new Queue( QUEUE_TYPE_IRON );
 
+		$c = new Container;
 		$iron = Mockery::mock( 'IronMQ' );
 		$iron->shouldReceive( 'postMessage' )->with( 'test1', 'message', [] )->andReturn( true )->once();
-		Queue::injectIron( $iron );
+		$c[ 'ironmq' ] = $iron;
+		Queue::inject( $c );
 
 		$this->assertTrue( $q->enqueue( 'test1', 'message' ) );
+	}
+
+	public function testEnqueueIronException()
+	{
+		$q = new Queue( QUEUE_TYPE_IRON );
+
+		$c = new Container;
+		$iron = Mockery::mock( 'IronMQ' );
+		$iron->shouldReceive( 'postMessage' )->andThrow( new Exception );
+		$c[ 'ironmq' ] = $iron;
+		$logger = Mockery::mock( 'Monolog\Monolog' );
+		$logger->shouldReceive( 'error' )->once();
+		$c[ 'logger' ] = $logger;
+		Queue::inject( $c );
+
+		$this->assertFalse( $q->enqueue( 'test1', 'message' ) );
 	}
 
 	/**
@@ -92,14 +111,32 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		$q = new Queue( QUEUE_TYPE_IRON );
 
+		$c = new Container;
 		$iron = Mockery::mock( 'IronMQ' );
 		$iron->shouldReceive( 'getMessages' )->with( 'test1', 1 )->andReturn( [ [ 'id' => 'test', 'body' => 'message' ] ] )->once();
 		$iron->shouldReceive( 'getMessages' )->with( 'test2', 1 )->andReturn( [] )->once();
-		Queue::injectIron( $iron );
+		$c[ 'ironmq' ] = $iron;
+		Queue::inject( $c );
 
 		$this->assertEquals( [ 'id' => 'test', 'body' => 'message' ], $q->dequeue( 'test1' ) );
 
 		$this->assertEquals( null, $q->dequeue( 'test2' ) );
+	}
+
+	public function testDequeueIronException()
+	{
+		$q = new Queue( QUEUE_TYPE_IRON );
+
+		$c = new Container;
+		$iron = Mockery::mock( 'IronMQ' );
+		$iron->shouldReceive( 'getMessages' )->andThrow( new Exception );
+		$c[ 'ironmq' ] = $iron;
+		$logger = Mockery::mock( 'Monolog\Monolog' );
+		$logger->shouldReceive( 'error' )->once();
+		$c[ 'logger' ] = $logger;
+		Queue::inject( $c );
+
+		$this->assertNull( $q->dequeue( 'test1' ) );
 	}
 
 	/**
@@ -128,13 +165,33 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 	{
 		$q = new Queue( QUEUE_TYPE_IRON );
 
+		$c = new Container;
 		$iron = Mockery::mock( 'IronMQ' );
 		$iron->shouldReceive( 'deleteMessage' )->with( 'test1', 10 )->andReturn( true )->once();
-		Queue::injectIron( $iron );
+		$c[ 'ironmq' ] = $iron;
+		Queue::inject( $c );
 
 		$message = new stdClass;
 		$message->id = 10;
 		$this->assertTrue( $q->deleteMessage( 'test1', $message ) );
+	}
+
+	public function testDeleteMessageIronException()
+	{
+		$q = new Queue( QUEUE_TYPE_IRON );
+
+		$c = new Container;
+		$iron = Mockery::mock( 'IronMQ' );
+		$iron->shouldReceive( 'deleteMessage' )->andThrow( new Exception );
+		$c[ 'ironmq' ] = $iron;
+		$logger = Mockery::mock( 'Monolog\Monolog' );
+		$logger->shouldReceive( 'error' )->once();
+		$c[ 'logger' ] = $logger;
+		Queue::inject( $c );
+
+		$message = new stdClass;
+		$message->id = 10;
+		$this->assertFalse( $q->deleteMessage( 'test1', $message ) );
 	}
 
 	/**
@@ -199,6 +256,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 				'https://example.com/endpoint' ],
 			'auth_token' => 'testing' ] );
 
+		$c = new Container;
 		$iron = Mockery::mock( 'IronMQ' );
 		$iron->shouldReceive( 'updateQueue' )->with( 'test1', [
 			'push_type' => 'unicast',
@@ -210,7 +268,8 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 			'subscribers' => [
 				[ 'url' => 'https://example.com/?q=test2&auth_token=testing' ],
 				[ 'url' => 'https://example.com/endpoint?q=test2&auth_token=testing' ] ] ] )->andReturn( true )->once();
-		Queue::injectIron( $iron );
+		$c[ 'ironmq' ] = $iron;
+		Queue::inject( $c );
 
 		$q = new Queue( QUEUE_TYPE_IRON );
 
@@ -228,24 +287,40 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 				'https://example.com/endpoint' ],
 			'auth_token' => 'testing' ] );
 
+		$c = new Container;
 		$iron = Mockery::mock( 'IronMQ' );
 		$iron->shouldReceive( 'updateQueue' )->andReturn( false )->twice();
-		Queue::injectIron( $iron );
+		$c[ 'ironmq' ] = $iron;
+		Queue::inject( $c );
 
 		$q = new Queue( QUEUE_TYPE_IRON );
 
 		$this->assertFalse( $q->install() );
 	}
 
-	public function testIronmq()
+	public function testInstallIronException()
 	{
-		Queue::configure( [ 'token' => 'test', 'project' => 10 ] );
-		Queue::injectIron( false );
+		Queue::configure( [
+			'queues' => [
+				'test1',
+				'test2' ],
+			'push_subscribers' => [
+				'https://example.com/',
+				'https://example.com/endpoint' ],
+			'auth_token' => 'testing' ] );
 
-		$ironmq = Queue::ironmq();
+		$q = new Queue( QUEUE_TYPE_IRON );
 
-		$this->assertInstanceOf( '\IronMQ', $ironmq );
+		$c = new Container;
+		$iron = Mockery::mock( 'IronMQ' );
+		$iron->shouldReceive( 'updateQueue' )->andThrow( new Exception );
+		$c[ 'ironmq' ] = $iron;
+		$logger = Mockery::mock( 'Monolog\Monolog' );
+		$logger->shouldReceive( 'error' )->twice();
+		$c[ 'logger' ] = $logger;
+		Queue::inject( $c );
 
+		$this->assertFalse( $q->install() );
 	}
 }
 
