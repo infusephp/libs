@@ -103,6 +103,7 @@
 
 namespace infuse;
 
+use infuse\Model\Iterator;
 use Pimple\Container;
 
 if( !defined( 'ERROR_NO_PERMISSION' ) )
@@ -1032,7 +1033,7 @@ abstract class Model extends Acl
 
 	static function findAll( array $params = [] )
 	{
-		return new ModelIterator( get_called_class(), $params );
+		return new Iterator( get_called_class(), $params );
 	}
 	
 	/**

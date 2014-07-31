@@ -9,9 +9,9 @@
  * @license MIT
  */
 
-namespace infuse;
+namespace infuse\Model;
 
-class ModelIterator implements \Iterator
+class Iterator implements \Iterator
 {
 	private $modelClass;
 	private $start;

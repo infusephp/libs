@@ -10,9 +10,9 @@
  */
 
 use infuse\Model;
-use infuse\ModelIterator;
+use infuse\Model\Iterator;
 
-class ModelIteratorTest extends \PHPUnit_Framework_TestCase
+class IteratorTest extends \PHPUnit_Framework_TestCase
 {
 	static $iterator;
 	private $start = 10;
@@ -20,10 +20,10 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 
 	function testIterator()
 	{
-		self::$iterator = new ModelIterator( 'IteratorTestModel', [
+		self::$iterator = new Iterator( 'IteratorTestModel', [
 			'start' => $this->start,
 			'limit' => $this->limit ] );
-		$this->assertInstanceOf( '\\infuse\\ModelIterator', self::$iterator );
+		$this->assertInstanceOf( '\\infuse\\Model\\Iterator', self::$iterator );
 	}
 
 	/**
@@ -133,7 +133,7 @@ class ModelIteratorTest extends \PHPUnit_Framework_TestCase
 	{
 		$start = 0;
 		$limit = 101;
-		$iterator = new ModelIterator( 'IteratorTestModel', [
+		$iterator = new Iterator( 'IteratorTestModel', [
 			'start' => $start,
 			'limit' => $limit ] );
 		
