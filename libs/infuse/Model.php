@@ -751,7 +751,9 @@ abstract class Model extends Acl
 			$flatInc = is_array($subInc) ? array_keys( Util::array_dot( $subInc ) ) : [];
 			$flatExp = is_array($subExp) ? array_keys( Util::array_dot( $subExp ) ) : [];
 
-			$result[ $k ] = $this->relation( $k )->toArray( $flatExc, $flatInc, $flatExp );
+			$relation = $this->relation( $k );
+			if( $relation )
+				$result[ $k ] = $relation->toArray( $flatExc, $flatInc, $flatExp );
 		}
 
 		// apply hooks, if available

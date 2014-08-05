@@ -339,7 +339,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'relation.hidden',
 				'relation.person' ],
 			[
-				'relation.person' ] );
+				'relation.person',
+				'answer' ] );
 
 		$expected = [
 			'answer' => 42,
