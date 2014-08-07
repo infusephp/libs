@@ -31,8 +31,8 @@ class ViewEngine
 	private $viewsDir;
 	private $compileDir;
 	private $cacheDir;
-	private $assetVersionsFile;
-	private $assetVersionNumbers;
+	private $assetMapFile;
+	private $assetMap;
 	private $assetsBaseUrl;
 	
 	private $smarty;
@@ -52,7 +52,7 @@ class ViewEngine
 		$this->viewsDir = $options[ 'viewsDir' ];
 		$this->compileDir = $options[ 'compileDir' ];
 		$this->cacheDir = $options[ 'cacheDir' ];
-		$this->assetVersionsFile = $options[ 'assetVersionsFile' ];
+		$this->assetMapFile = $options[ 'assetVersionsFile' ];
 		$this->assetsBaseUrl = $options[ 'assetsBaseUrl' ];
 	}
 	
@@ -68,16 +68,16 @@ class ViewEngine
 	function asset_url( $location )
 	{
 		// load asset version numbers (if they exist)
-		if( !$this->assetVersionNumbers )
+		if( !$this->assetMap )
 		{
-			$versionNumbers = [];
-			if( file_exists( $this->assetVersionsFile ) )
-				$versionNumbers = json_decode( file_get_contents( $this->assetVersionsFile ), true );
-			$this->assetVersionNumbers = $versionNumbers;
+			$assetMap = [];
+			if( file_exists( $this->assetMapFile ) )
+				$assetMap = json_decode( file_get_contents( $this->assetMapFile ), true );
+			$this->assetMap = $assetMap;
 		}
 		
-		$v = Util::array_value( $this->assetVersionNumbers, $location );
-		return $this->assetsBaseUrl . $location . (($v)?'?v=' . $v : '') ;
+		$location = (isset($this->assetMap[$location])) ? $this->assetMap[ $location ] : $location;
+		return $this->assetsBaseUrl . $location;
 	}
 
 	/**
