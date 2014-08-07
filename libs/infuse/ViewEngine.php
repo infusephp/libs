@@ -18,7 +18,7 @@ class ViewEngine
 		'viewsDir' => 'views',
 		'compileDir' => 'temp/smarty',
 		'cacheDir' => 'temp/smarty/cache',
-		'assetVersionsFile' => 'temp/asset_version_numbers.json',
+		'assetMapFile' => 'assets/static.assets.json',
 		'assetsBaseUrl' => ''
 	];
 	
@@ -52,7 +52,7 @@ class ViewEngine
 		$this->viewsDir = $options[ 'viewsDir' ];
 		$this->compileDir = $options[ 'compileDir' ];
 		$this->cacheDir = $options[ 'cacheDir' ];
-		$this->assetMapFile = $options[ 'assetVersionsFile' ];
+		$this->assetMapFile = $options[ 'assetMapFile' ];
 		$this->assetsBaseUrl = $options[ 'assetsBaseUrl' ];
 	}
 	
