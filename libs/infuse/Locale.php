@@ -724,6 +724,10 @@ class Locale
 			'name' => 'Bahamas Dollar',
 			'symbol' => '$'
 		],
+		'BTC' => [
+			'name' => 'Bitcoin',
+			'symbol' => 'BTC'
+		],
 		'BTN' => [
 			'name' => 'Bhutan Ngultrum'
 		],
