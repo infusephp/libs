@@ -10,9 +10,9 @@ infuse/libs
 
 These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of node libraries like express.js.
 
-## Infuse Framework
+## Idealist Framework
 
-An MVC framework, called Infuse Framework, has been built using *infuse/libs*. Check it out at [https://github.com/jaredtking/infuse](https://github.com/jaredtking/infuse).
+An MVC framework, called Idealist Framework, has been built using *infuse/libs*. Check it out at [https://github.com/idealistsoft/framework](https://github.com/idealistsoft/framework).
 
 ## Tests
 
