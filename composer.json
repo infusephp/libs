@@ -27,13 +27,10 @@
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
-		"smarty/smarty": "v3.1.18",
-		"mockery/mockery": "0.9.1",
-		"iron-io/iron_mq": "1.4.5"
+		"smarty/smarty": "v3.1.19",
+		"mockery/mockery": "0.9.1"
 	},
     "suggest": {
-    	"leafo/lessphp": "Can compile LESS stylesheets",
-    	"linkorb/jsmin-php": "Required for JS minification",
     	"predis/predis": "Need Redis connections?",
 		"phpunit/phpunit": "Used to run the unit tests"
     }
