@@ -13,6 +13,9 @@ namespace infuse;
 
 use Pimple\Container;
 
+if( !defined( 'SKIP_ROUTE' ) )
+	define( 'SKIP_ROUTE', -1 );
+
 class Router
 {
 	private static $config = [
@@ -71,11 +74,11 @@ class Router
 		
 		/* global static routes */						
 		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== SKIP_ROUTE )
 			return true;
 		
 		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeGenericStr ], $app, $req, $res ) !== -1 )
+			self::performRoute( $staticRoutes[ $routeGenericStr ], $app, $req, $res ) !== SKIP_ROUTE )
 			return true;
 		
 		/* global dynamic routes */
@@ -83,7 +86,7 @@ class Router
 		foreach( $dynamicRoutes as $routeStr => $route )
 		{
 			if( self::matchRouteToRequest( $routeStr, $req ) &&
-				self::performRoute( $route, $app, $req, $res ) !== -1 )
+				self::performRoute( $route, $app, $req, $res ) !== SKIP_ROUTE )
 				return true;
 		}
 		
@@ -95,7 +98,7 @@ class Router
 	//////////////////////////
 	
 	/**
-	 * Executes a route. If the route returns -1 then failure is assumed.
+	 * Executes a route. If the route returns SKIP_ROUTE then failure is assumed.
 	 *
 	 * @param array|string $route array('controller','method') or array('controller')
 	 * or 'method'
@@ -107,31 +110,36 @@ class Router
 	 */
 	private static function performRoute( $route, Container $app, $req, $res )
 	{
-		// method name and controller supplied
-		if( is_string( $route ) && $req->params( 'controller' ) )
-			$route = [ $req->params( 'controller' ), $route ];
-		// method name supplied
-		if( is_string( $route ) )
-			$route = [ self::$config[ 'defaultController' ], $route ];
-		// no method name? fallback to the index() method
-		else if( count( $route ) == 1 )
-			$route[] = self::$config[ 'defaultAction' ];
-		
-		list( $controller, $method ) = $route;
-
 		$result = false;
-		
-		$controller = self::$config[ 'namespace' ] . '\\' . $controller;
-		
-		if( !class_exists( $controller ) )
-			return -1;
 
-		$controllerObj = new $controller( $app );
+		if( is_array( $route ) || is_string( $route ) )
+		{
+			// method name and controller supplied
+			if( is_string( $route ) && $req->params( 'controller' ) )
+				$route = [ $req->params( 'controller' ), $route ];
+			// method name supplied
+			else if( is_string( $route ) )
+				$route = [ self::$config[ 'defaultController' ], $route ];
+			// no method name? fallback to the index() method
+			else if( count( $route ) == 1 )
+				$route[] = self::$config[ 'defaultAction' ];
+			
+			list( $controller, $method ) = $route;
+			
+			$controller = self::$config[ 'namespace' ] . '\\' . $controller;
+			
+			if( !class_exists( $controller ) )
+				return SKIP_ROUTE;
+
+			$controllerObj = new $controller( $app );
+			
+			$result = $controllerObj->$method( $req, $res );
+		}
+		else if( is_callable( $route ) )
+			$result = $route( $req, $res );
 		
-		$result = $controllerObj->$method( $req, $res );
-		
-		if( $result === -1 )
-			return -1;
+		if( $result === SKIP_ROUTE )
+			return SKIP_ROUTE;
 
 		return true;
 	}
