@@ -163,6 +163,27 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue( MockController::$staticRouteCalled );
 	}
+
+	public function testClosure()
+	{
+		$test = false;
+
+		$testRoutes = [
+			'get /test' => function( $req, $res ) use ( &$test ) {
+				$test = true;
+			}
+		];
+
+		$server = $_SERVER;
+		$server[ 'REQUEST_METHOD' ] = 'GET';
+
+		$req = new Request( null, null, null, null, $server );
+		$req->setPath( '/test' );
+
+		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+
+		$this->assertTrue( $test );
+	}
 }
 
 class MockController

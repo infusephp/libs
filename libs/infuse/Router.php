@@ -72,7 +72,7 @@ class Router
 				$staticRoutes[ $routeStr ] = $route;
 		}
 		
-		/* global static routes */						
+		/* global static routes */
 		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
 			self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== SKIP_ROUTE )
 			return true;
@@ -136,7 +136,7 @@ class Router
 			$result = $controllerObj->$method( $req, $res );
 		}
 		else if( is_callable( $route ) )
-			$result = $route( $req, $res );
+			$result = call_user_func( $route, $req, $res );
 		
 		if( $result === SKIP_ROUTE )
 			return SKIP_ROUTE;
