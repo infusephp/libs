@@ -27,7 +27,7 @@ class ViewEngine
 		'php' => '.php'
 	];
 	
-	private $type;
+	private $type = 'php';
 	private $viewsDir;
 	private $compileDir;
 	private $cacheDir;
@@ -48,7 +48,9 @@ class ViewEngine
 	{
 		$options = array_replace( static::$defaultOptions, $options );
 		
-		$this->type = $options[ 'engine' ];
+		if( isset( $options[ 'engine' ] ) )
+			$this->type = $options[ 'engine' ];
+
 		$this->viewsDir = $options[ 'viewsDir' ];
 		$this->compileDir = $options[ 'compileDir' ];
 		$this->cacheDir = $options[ 'cacheDir' ];
