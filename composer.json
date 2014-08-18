@@ -1,7 +1,7 @@
 {
 	"name": "infuse/libs",
 	"version": "0.1.25",
-	"description": "Essential libraries for rapid PHP development",
+	"description": "Solid libraries for rapid PHP development",
 	"type": "library",
 	"keywords": ["infuse","libs"],
 	"homepage": "http://infuse.jaredtking.com",
@@ -31,7 +31,6 @@
 		"mockery/mockery": "0.9.1"
 	},
     "suggest": {
-    	"predis/predis": "Need Redis connections?",
-		"phpunit/phpunit": "Used to run the unit tests"
+    	"predis/predis": "Need Redis connections?"
     }
 }
