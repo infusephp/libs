@@ -262,6 +262,10 @@ abstract class Model extends Acl
 	 */
 	function __set( $name, $value )
 	{
+		// if changing property, remove relation model
+		if( isset( $this->relationModels[ $name ] ) )
+			unset( $this->relationModels[ $name ] );
+
 		$this->localCache[ $name ] = $value;
 	}
 
@@ -286,7 +290,13 @@ abstract class Model extends Acl
 	function __unset( $name )
 	{
 		if( array_key_exists( $name, $this->localCache ) )
+		{
+			// if changing property, remove relation model
+			if( isset( $this->relationModels[ $name ] ) )
+				unset( $this->relationModels[ $name ] );
+
 			unset( $this->localCache[ $name ] );
+		}
 	}
 
 	/////////////////////////////
@@ -1356,6 +1366,10 @@ abstract class Model extends Acl
 	 */
 	function invalidateCachedProperty( $property )
 	{
+		// if changing property, remove relation model
+		if( isset( $this->relationModels[ $property ] ) )
+			unset( $this->relationModels[ $property ] );
+
 		/* Local Cache */
 		unset( $this->localCache[ $property ] );
 
