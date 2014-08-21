@@ -351,10 +351,10 @@ abstract class Model extends Acl
 
 		$relationModelName = $properties[ $property ][ 'relation' ];
 
-		if( !isset( $this->relationModels[ $relationModelName ] ) )
-			$this->relationModels[ $relationModelName ] = new $relationModelName( $this->$property );
-
-		return $this->relationModels[ $relationModelName ];
+		if( !isset( $this->relationModels[ $property ] ) )
+			$this->relationModels[ $property ] = new $relationModelName( $this->$property );
+		
+		return $this->relationModels[ $property ];
 	}
 
 	/////////////////////////////
@@ -1323,6 +1323,10 @@ abstract class Model extends Acl
 	 */
 	function cacheProperty( $property, $value )
 	{
+		// if changing property, remove relation model
+		if( isset( $this->relationModels[ $property ] ) )
+			unset( $this->relationModels[ $property ] );
+
 		/* Local Cache */
 		$this->localCache[ $property ] = $value;
 
