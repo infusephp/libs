@@ -1,6 +1,5 @@
 {
 	"name": "infuse/libs",
-	"version": "0.1.25",
 	"description": "Solid libraries for rapid PHP development",
 	"type": "library",
 	"keywords": ["infuse","libs"],
@@ -23,14 +22,11 @@
 	"require": {
 		"php": ">=5.4.0",
 		"icanboogie/inflector": "v1.2",
-		"pimple/pimple": "v2.1.0"
+		"pimple/pimple": ">=v2.1.0"
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
-		"smarty/smarty": "v3.1.19",
+		"smarty/smarty": ">=v3.1.19",
 		"mockery/mockery": "0.9.1"
-	},
-    "suggest": {
-    	"predis/predis": "Need Redis connections?"
-    }
+	}
 }
