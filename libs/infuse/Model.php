@@ -597,12 +597,13 @@ abstract class Model extends Acl
 		if( !static::$config[ 'database' ][ 'enabled' ] ||
 			Database::insert( static::tablename(), $insertArray ) )
 		{
-			// derive the id for every property that is mutable
 			$ids = [];
 			$idProperty = (array)static::idProperty();
 			foreach( $idProperty as $property )
 			{
-				if( Util::array_value( $properties[ $property ], 'mutable' ) && isset( $data[ $property ] ) )
+				// attempt use the supplied value if the id property is mutable
+				$mutable = !isset( $properties[ $property ][ 'mutable' ] ) || $properties[ $property ][ 'mutable' ];
+				if( $mutable && isset( $data[ $property ] ) )
 					$ids[] = $data[ $property ];
 				else
 					$ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
