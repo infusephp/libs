@@ -11,6 +11,8 @@
 
 namespace infuse\Model;
 
+use infuse\Util;
+
 class Iterator implements \Iterator
 {
 	private $modelClass;
@@ -37,10 +39,10 @@ class Iterator implements \Iterator
 		if( !empty( $parameters[ 'search' ] ) )
 		{
 			$w = [];
-			$search = addslashes( $params[ 'search' ] );
-			foreach( $properties as $name => $property )
+			$search = addslashes( $parameters[ 'search' ] );
+			foreach( $modelClass::properties() as $name => $property )
 			{
-				if( !in_array( $name, $modelClass::$propertiesNotInDatabase ) )
+				if( Util::array_value( $property, 'searchable' ) )
 					$w[] = "`$name` LIKE '%$search%'";
 			}
 			

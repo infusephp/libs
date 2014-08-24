@@ -59,10 +59,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = [
 			'id' => [
-				'type' => 'id'
+				'type' => 'number',
+				'mutable' => false,
+				'admin_hidden_property' => true
 			],
 			'relation' => [
-				'type' => 'id',
+				'type' => 'number',
 				'relation' => 'TestModel2',
 				'null' => true
 			],
@@ -72,32 +74,47 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		];
 
 		$this->assertEquals( $expected, TestModel::properties() );
+	}
 
-		$this->assertEquals( [ 'type' => 'id' ], TestModel::properties( 'id' ) );
+	function testProperty()
+	{
+		$expected = [
+			'type' => 'number',
+			'mutable' => false,
+			'admin_hidden_property' => true
+		];
+		$this->assertEquals( $expected, TestModel::properties( 'id' ) );
+
+		$expected = [
+			'type' => 'number',
+			'relation' => 'TestModel2',
+			'null' => true
+		];
+		$this->assertEquals( $expected, TestModel::properties( 'relation' ) );
 	}
 
 	function testPropertiesAutoTimestamps()
 	{
 		$expected = [
 			'id' => [
-				'type' => 'id',
+				'type' => 'number',
 				'mutable' => true
 			],
 			'id2' => [
-				'type' => 'id',
+				'type' => 'number',
 				'mutable' => true
 			],
 			'default' => [
-				'type' => 'text',
+				'type' => 'string',
 				'default' => 'some default value'
 			],
 			'validate' => [
-				'type' => 'text',
+				'type' => 'string',
 				'validate' => 'email',
 				'null' => true
 			],
 			'unique' => [
-				'type' => 'text',
+				'type' => 'string',
 				'unique' => true
 			],
 			'required' => [
@@ -110,7 +127,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'hidden' => true
 			],
 			'person' => [
-				'type' => 'id',
+				'type' => 'number',
 				'relation' => 'Person',
 				'default' => 20,
 				'hidden' => true
@@ -124,12 +141,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 				'type' => 'date',
 				'validate' => 'timestamp',
 				'required' => true,
-				'default' => 'now'
+				'default' => 'now',
+				'admin_hidden_property' => true
 			],
 			'updated_at' => [
 				'type' => 'date',
 				'validate' => 'timestamp',
 				'null' => true,
+				'admin_hidden_property' => true
 			]
 		];
 
@@ -636,11 +655,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 class TestModel extends Model
 {
 	static $properties = [
-		'id' => [
-			'type' => 'id'
-		],
 		'relation' => [
-			'type' => 'id',
+			'type' => 'number',
 			'relation' => 'TestModel2',
 			'null' => true
 		],
@@ -700,24 +716,24 @@ class TestModel2 extends Model
 {
 	static $properties = [
 		'id' => [
-			'type' => 'id',
+			'type' => 'number',
 			'mutable' => true
 		],
 		'id2' => [
-			'type' => 'id',
+			'type' => 'number',
 			'mutable' => true
 		],
 		'default' => [
-			'type' => 'text',
+			'type' => 'string',
 			'default' => 'some default value'
 		],
 		'validate' => [
-			'type' => 'text',
+			'type' => 'string',
 			'validate' => 'email',
 			'null' => true
 		],
 		'unique' => [
-			'type' => 'text',
+			'type' => 'string',
 			'unique' => true
 		],
 		'required' => [
@@ -730,7 +746,7 @@ class TestModel2 extends Model
 			'hidden' => true
 		],
 		'person' => [
-			'type' => 'id',
+			'type' => 'number',
 			'relation' => 'Person',
 			'default' => 20,
 			'hidden' => true
@@ -800,15 +816,12 @@ class TestModelHookFail extends Model
 class Person extends Model
 {
 	static $properties = [
-		'id' => [
-			'type' => 'id'
-		],
 		'name' => [
-			'type' => 'text',
+			'type' => 'string',
 			'default' => 'Jared'
 		],
 		'address' => [
-			'type' => 'text'
+			'type' => 'string'
 		]
 	];
 

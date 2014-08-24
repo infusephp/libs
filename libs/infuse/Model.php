@@ -17,18 +17,11 @@
   		type:
   			The type of the property.
   			Accepted Types:
-  				id
-	  			text
-	  			longtext
-	  			json
-	  			number
-	  			boolean
-	  			enum
-	  			password
-	  			date
-	  			hidden
-	  			custom
-	  			html
+				string
+				number
+				boolean
+				date
+				json
 	  		String
 	  		Required
 	  	default:
@@ -39,13 +32,13 @@
   	Validation:
   	
   		mutable:
-  			The property can be set
+  			Specifies whether the property can be set (mutated)
   			Boolean
-  			Default: true, unless property type is `id`
+  			Default: true
   			Optional
  		validate:
- 			Validation string according to Validate::is()
- 			String
+ 			Validation string passed to Validate::is() or validation function
+ 			String or callable
  			Optional
  		required:
  			Specifies whether the field is required
@@ -53,7 +46,7 @@
  			Default: false
  			Optional
  		unique:
- 			Specified whether the field is required to be unique
+ 			Specifies whether the field is required to be unique
  			Boolean
  			Default: false
  			Optional
@@ -63,6 +56,15 @@
   			Default: false
   			Optional  			
 
+	Find:
+
+		searchable:
+			Specifies whether the property should be searched when
+			querying models
+			Boolean
+			Default: false
+			Optional
+
 	Meta:
 	
 	  	title:
@@ -70,10 +72,6 @@
   			String
   			Default: Derived from property `name`
   			Optional
-  		enum:
-  			A key-value map of acceptable values if property type is `enum`
-  			Array
-  			Required if specifying `enum` type  		
   		relation:
 			Model class name (including namespace) the property is related to
   			String
@@ -105,9 +103,7 @@ abstract class Model extends Acl
 	// Public variables
 	/////////////////////////////
 
-	public static $properties = [
-		'id' => [
-			'type' => 'id' ] ];
+	public static $properties = [];
 
 	/////////////////////////////
 	// Protected variables
@@ -143,17 +139,26 @@ abstract class Model extends Acl
 	// Private variables
 	/////////////////////////////
 
+	private static $idProperties = [
+		'id' => [
+			'type' => 'number',
+			'mutable' => false,
+			'admin_hidden_property' => true
+		]
+	];
 	private static $timestampProperties = [
 		'created_at' => [
 			'type' => 'date',
 			'validate' => 'timestamp',
 			'required' => true,
-			'default' => 'now'
+			'default' => 'now',
+			'admin_hidden_property' => true
 		],
 		'updated_at' => [
 			'type' => 'date',
 			'validate' => 'timestamp',
-			'null' => true
+			'null' => true,
+			'admin_hidden_property' => true
 		]
 	];
 	private static $cachedProperties = [];
@@ -433,6 +438,11 @@ abstract class Model extends Acl
 		if( !isset( self::$cachedProperties[ $k ] ) )
 		{
 			self::$cachedProperties[ $k ] = static::$properties;
+
+			// auto include id property by default
+			$idProperty = static::idProperty();
+			if( $idProperty == 'id' )
+				self::$cachedProperties[ $k ] = array_replace( self::$idProperties, self::$cachedProperties[ $k ] );
 
 			if( property_exists( get_called_class(), 'autoTimestamps' ) )
 				self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
@@ -948,7 +958,7 @@ abstract class Model extends Acl
 			$search = addslashes( $params[ 'search' ] );
 			foreach( $properties as $name => $property )
 			{
-				if( !in_array( $name, static::$propertiesNotInDatabase ) )
+				if( Util::array_value( $property, 'searchable' ) )
 					$w[] = "`$name` LIKE '%$search%'";
 			}
 			
@@ -1321,10 +1331,6 @@ abstract class Model extends Acl
 		// ensure numbers/dates are cast as numbers
 		// instead of strings by adding 0
 		if( in_array( $type, [ 'number', 'date' ] ) )
-			return $value + 0;
-
-		// represent numeric ids as numbers
-		if( $type == 'id' && is_numeric( $value ) )
 			return $value + 0;
 
 		if( $type == 'json' && is_string( $value ) )

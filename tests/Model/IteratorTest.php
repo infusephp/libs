@@ -15,63 +15,53 @@ use infuse\Model\Iterator;
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
 	static $iterator;
-	private $start = 10;
-	private $limit = 50;
+	static $start = 10;
+	static $limit = 50;
 
-	function testIterator()
+	static function setUpBeforeClass()
 	{
 		self::$iterator = new Iterator( 'IteratorTestModel', [
-			'start' => $this->start,
-			'limit' => $this->limit ] );
-		$this->assertInstanceOf( '\\infuse\\Model\\Iterator', self::$iterator );
+			'start' => self::$start,
+			'limit' => self::$limit ] );		
 	}
 
-	/**
-	 * @depends testIterator
-	 */
+	function testConstructSearch()
+	{
+		$iterator = new Iterator( 'IteratorTestModel', [
+			'search' => 'test' ] );
+	}
+
 	function testKey()
 	{
-		$this->assertEquals( $this->start, self::$iterator->key() );
+		$this->assertEquals( self::$start, self::$iterator->key() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testValid()
 	{
 		$this->assertTrue( self::$iterator->valid() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testNext()
 	{
-		for( $i = $this->start; $i < $this->limit + 1; $i++ )
+		for( $i = self::$start; $i < self::$limit + 1; $i++ )
 			self::$iterator->next();
 
-		$this->assertEquals( $this->limit + 1, self::$iterator->key() );
+		$this->assertEquals( self::$limit + 1, self::$iterator->key() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testRewind()
 	{
 		self::$iterator->rewind();
 
-		$this->assertEquals( $this->start, self::$iterator->key() );
+		$this->assertEquals( self::$start, self::$iterator->key() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testCurrent()
 	{
 		self::$iterator->rewind();
 
 		$count = IteratorTestModel::totalRecords();
-		for( $i = $this->start; $i < $count + 1; $i++ )
+		for( $i = self::$start; $i < $count + 1; $i++ )
 		{
 			$current = self::$iterator->current();
 			if( $i < $count )
@@ -83,24 +73,18 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 		}
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testNotValid()
 	{
 		self::$iterator->rewind();
-		for( $i = $this->start; $i < IteratorTestModel::totalRecords() + 1; $i++ )
+		for( $i = self::$start; $i < IteratorTestModel::totalRecords() + 1; $i++ )
 			self::$iterator->next();
 
 		$this->assertFalse( self::$iterator->valid() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testForeach()
 	{
-		$i = $this->start;
+		$i = self::$start;
 		foreach( self::$iterator as $k => $model )
 		{
 			$this->assertEquals( $i, $k );
@@ -111,9 +95,6 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $i, IteratorTestModel::totalRecords() );
 	}
 
-	/**
-	 * @depends testIterator
-	 */
 	function testFindAll()
 	{
 		$iterator = IteratorTestModel::findAll();
@@ -151,6 +132,16 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 
 class IteratorTestModel extends Model
 {
+	static $properties = [
+		'id' => [
+			'type' => 'number' ],
+		'id2' => [
+			'type' => 'number' ],
+		'name' => [
+			'type' => 'string',
+			'searchable' => true ]
+	];
+
 	static function idProperty()
 	{
 		return [ 'id', 'id2' ];
