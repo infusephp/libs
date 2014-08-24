@@ -232,12 +232,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testGetMultipleProperties()
 	{
 		$model = new TestModel( 3 );
-		$model->relation = 'test';
+		$model->relation = '10';
 		$model->answer = 42;
 
 		$expected = [
 			'id' => 3,
-			'relation' => 0,
+			'relation' => 10,
 			'answer' => 42 ];
 
 		$values = $model->get( [ 'id', 'relation', 'answer' ] );
@@ -268,11 +268,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testToArray()
 	{
 		$model = new TestModel( 5 );
-		$model->relation = 'test';
+		$model->relation = '10';
 
 		$expected = [
 			'id' => 5,
-			'relation' => 0,
+			'relation' => 10,
 			'answer' => null,
 			// this is tacked on in toArrayHook() below
 			'toArray' => true
@@ -363,9 +363,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	function testToJson()
 	{
 		$model = new TestModel( 5 );
-		$model->relation = 'test';
+		$model->relation = '10';
 
-		$this->assertEquals( '{"id":5,"relation":0,"answer":null}', $model->toJson( [ 'toArray' ] ) );
+		$this->assertEquals( '{"id":5,"relation":10,"answer":null}', $model->toJson( [ 'toArray' ] ) );
 	}
 
 	function testHasSchema()

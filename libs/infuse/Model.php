@@ -35,29 +35,13 @@
 	  		The default value to be used when creating new models.
 	  		String
 	  		Optional
-	  	db_type:
-	  		The type of field in the database, overrides the default type for a property, if a default exists
-	  		String
-	  		Default: int
-	  		Required|Optional Required if property is `enum` or `number`
-  		length:
-  			Overrides the default maximum length of the column values in the database. Use this when a different
-  			value is needed besides the one specified
-  			Integer|String
-  			Default: Chosen according to type
-  			Optional
-  		auto_increment:
-  			Auto increments the property when creating new models within the schema
-  			Boolean
-  			Default: true if property type is `id`, otherwise false
-  			Optional
   			
   	Validation:
   	
   		mutable:
   			The property can be set
   			Boolean
-  			Default: true, unless property type is `id` or `auto_increment` is true
+  			Default: true, unless property type is `id`
   			Optional
  		validate:
  			Validation string according to Validate::is()
@@ -603,8 +587,7 @@ abstract class Model extends Acl
 		if( !static::$config[ 'database' ][ 'enabled' ] ||
 			Database::insert( static::tablename(), $insertArray ) )
 		{
-			// derive the id for every property that is not auto_increment
-			// NOTE this does not handle the case where there is > 1 auto_increment primary key
+			// derive the id for every property that is mutable
 			$ids = [];
 			$idProperty = (array)static::idProperty();
 			foreach( $idProperty as $property )
@@ -1331,7 +1314,6 @@ abstract class Model extends Acl
 			return null;
 
 		$type = Util::array_value( $pData, 'type' );
-		$dbType = Util::array_value( $pData, 'db_type' );
 
 		if( $type == 'boolean' )
 			return ($value == '1') ? true : false;
@@ -1341,8 +1323,8 @@ abstract class Model extends Acl
 		if( in_array( $type, [ 'number', 'date' ] ) )
 			return $value + 0;
 
-		// by default, ids should also be numbers
-		if( $type == 'id' && !$dbType )
+		// represent numeric ids as numbers
+		if( $type == 'id' && is_numeric( $value ) )
 			return $value + 0;
 
 		if( $type == 'json' && is_string( $value ) )
