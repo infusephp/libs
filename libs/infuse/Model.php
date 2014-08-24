@@ -546,7 +546,7 @@ abstract class Model extends Acl
 			$property = $properties[ $field ];
 
 			// cannot insert keys, unless explicitly allowed
-			if( self::isIdProperty( $field ) && !Util::array_value( $property, 'mutable' ) )
+			if( isset( $property[ 'mutable' ] ) && !$property[ 'mutable' ] )
 				continue;
 			
 			if( is_array( $property ) )
