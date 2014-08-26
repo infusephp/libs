@@ -97,12 +97,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = [
 			'id' => [
-				'type' => 'number',
-				'mutable' => true
+				'type' => 'number'
 			],
 			'id2' => [
-				'type' => 'number',
-				'mutable' => true
+				'type' => 'number'
 			],
 			'default' => [
 				'type' => 'string',
@@ -716,12 +714,10 @@ class TestModel2 extends Model
 {
 	static $properties = [
 		'id' => [
-			'type' => 'number',
-			'mutable' => true
+			'type' => 'number'
 		],
 		'id2' => [
-			'type' => 'number',
-			'mutable' => true
+			'type' => 'number'
 		],
 		'default' => [
 			'type' => 'string',
