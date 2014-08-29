@@ -46,7 +46,8 @@ class Iterator implements \Iterator
 					$w[] = "`$name` LIKE '%$search%'";
 			}
 			
-			$this->where[] = '(' . implode( ' OR ', $w ) . ')';
+			if( count( $w ) > 0 )
+				$this->where[] = '(' . implode( ' OR ', $w ) . ')';
 		}
 
 		if( empty( $this->sort ) )

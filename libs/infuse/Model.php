@@ -963,7 +963,8 @@ abstract class Model extends Acl
 					$w[] = "`$name` LIKE '%$search%'";
 			}
 			
-			$params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
+			if( count( $w ) > 0 )
+				$params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
 		}
 
 		// verify sort
