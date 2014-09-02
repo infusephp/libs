@@ -13,59 +13,59 @@ use infuse\ViewEngine;
 
 class ViewEngineTest extends \PHPUnit_Framework_TestCase
 {
-	static $engine;
+    public static $engine;
 
-	static function setUpBeforeClass()
-	{
-		self::$engine = new ViewEngine;
-	}
+    public static function setUpBeforeClass()
+    {
+        self::$engine = new ViewEngine();
+    }
 
-	function testSmarty()
-	{
-		$this->assertInstanceOf( 'Smarty', self::$engine->smarty() );
-	}
+    public function testSmarty()
+    {
+        $this->assertInstanceOf( 'Smarty', self::$engine->smarty() );
+    }
 
-	function testAssetUrl()
-	{
-		$engine = new ViewEngine( [
-			'assetsBaseUrl' => 'http://localhost' ] );
-		$this->assertEquals( 'http://localhost/test', $engine->asset_url( '/test' ) );
-	}
+    public function testAssetUrl()
+    {
+        $engine = new ViewEngine( [
+            'assetsBaseUrl' => 'http://localhost' ] );
+        $this->assertEquals( 'http://localhost/test', $engine->asset_url( '/test' ) );
+    }
 
-	function testRenderSmarty()
-	{
-		$engine = new ViewEngine( [ 'engine' => 'smarty' ] );
-		$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
-
-        // TODO
-	}
-
-	function testRenderPhp()
-	{
-		$engine = new ViewEngine( [ 'engine' => 'php' ] );
-		$engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
+    public function testRenderSmarty()
+    {
+        $engine = new ViewEngine( [ 'engine' => 'smarty' ] );
+        $engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
 
         // TODO
-	}
+    }
 
-	function testCompileLess()
-	{
+    public function testRenderPhp()
+    {
+        $engine = new ViewEngine( [ 'engine' => 'php' ] );
+        $engine->assignData( [ 'param1' => 'hello', 'param2' => 'world' ] );
+
+        // TODO
+    }
+
+    public function testCompileLess()
+    {
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
-	}
+    }
 
-	function testCompileJs()
-	{
+    public function testCompileJs()
+    {
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
-	}
+    }
 
-	function testCompileAngularTemplates()
-	{
+    public function testCompileAngularTemplates()
+    {
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
-	}
+    }
 }

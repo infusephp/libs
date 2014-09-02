@@ -11,9 +11,9 @@
 
 /*
 	The following properties (of model properties) are available:
- 
+
  	Schema:
- 	
+
   		type:
   			The type of the property.
   			Accepted Types:
@@ -28,9 +28,9 @@
 	  		The default value to be used when creating new models.
 	  		String
 	  		Optional
-  			
+
   	Validation:
-  	
+
   		mutable:
   			Specifies whether the property can be set (mutated)
   			Boolean
@@ -54,7 +54,7 @@
   			Specifies whether the column is allowed to have null values
   			Boolean
   			Default: false
-  			Optional  			
+  			Optional
 
 	Find:
 
@@ -66,7 +66,7 @@
 			Optional
 
 	Meta:
-	
+
 	  	title:
   			Title of the property that shows up in admin panel
   			String
@@ -89,178 +89,178 @@ use infuse\Model\Iterator;
 use Pimple\Container;
 
 if( !defined( 'ERROR_NO_PERMISSION' ) )
-	define( 'ERROR_NO_PERMISSION', 'no_permission' );
+    define( 'ERROR_NO_PERMISSION', 'no_permission' );
 if( !defined( 'VALIDATION_REQUIRED_FIELD_MISSING' ) )
-	define( 'VALIDATION_REQUIRED_FIELD_MISSING', 'required_field_missing' );
+    define( 'VALIDATION_REQUIRED_FIELD_MISSING', 'required_field_missing' );
 if( !defined( 'VALIDATION_FAILED' ) )
-	define( 'VALIDATION_FAILED', 'validation_failed' );
+    define( 'VALIDATION_FAILED', 'validation_failed' );
 if( !defined( 'VALIDATION_NOT_UNIQUE' ) )
-	define( 'VALIDATION_NOT_UNIQUE', 'not_unique' );
+    define( 'VALIDATION_NOT_UNIQUE', 'not_unique' );
 
 abstract class Model extends Acl
 {
-	/////////////////////////////
-	// Public variables
-	/////////////////////////////
+    /////////////////////////////
+    // Public variables
+    /////////////////////////////
 
-	public static $properties = [];
+    public static $properties = [];
 
-	/////////////////////////////
-	// Protected variables
-	/////////////////////////////
+    /////////////////////////////
+    // Protected variables
+    /////////////////////////////
 
-	protected $_id;
-	protected $app;
+    protected $_id;
+    protected $app;
 
-	/* Property names that are excluded from the database */
-	protected static $propertiesNotInDatabase = [];
+    /* Property names that are excluded from the database */
+    protected static $propertiesNotInDatabase = [];
 
-	/* Default model configuration */
-	protected static $config = [
-		'cache' => [
-			'strategies' => [
-				'local' ],
-			'prefix' => '' ],
-		'database' => [
-			'enabled' => true ],
-		'requester' => false ];
+    /* Default model configuration */
+    protected static $config = [
+        'cache' => [
+            'strategies' => [
+                'local' ],
+            'prefix' => '' ],
+        'database' => [
+            'enabled' => true ],
+        'requester' => false ];
 
-	/* Default parameters for Model::find() queries */
-	protected static $defaultFindParameters = [
-		'where' => [],
-		'start' => 0,
-		'limit' => 100,
-		'search' => '',
-		'sort' => '' ];
+    /* Default parameters for Model::find() queries */
+    protected static $defaultFindParameters = [
+        'where' => [],
+        'start' => 0,
+        'limit' => 100,
+        'search' => '',
+        'sort' => '' ];
 
-	protected static $injectedApp;
+    protected static $injectedApp;
 
-	/////////////////////////////
-	// Private variables
-	/////////////////////////////
+    /////////////////////////////
+    // Private variables
+    /////////////////////////////
 
-	private static $idProperties = [
-		'id' => [
-			'type' => 'number',
-			'mutable' => false,
-			'admin_hidden_property' => true
-		]
-	];
-	private static $timestampProperties = [
-		'created_at' => [
-			'type' => 'date',
-			'validate' => 'timestamp',
-			'required' => true,
-			'default' => 'now',
-			'admin_hidden_property' => true,
-			'admin_type' => 'datepicker'
-		],
-		'updated_at' => [
-			'type' => 'date',
-			'validate' => 'timestamp',
-			'null' => true,
-			'admin_hidden_property' => true,
-			'admin_type' => 'datepicker'
-		]
-	];
-	private static $cachedProperties = [];
+    private static $idProperties = [
+        'id' => [
+            'type' => 'number',
+            'mutable' => false,
+            'admin_hidden_property' => true
+        ]
+    ];
+    private static $timestampProperties = [
+        'created_at' => [
+            'type' => 'date',
+            'validate' => 'timestamp',
+            'required' => true,
+            'default' => 'now',
+            'admin_hidden_property' => true,
+            'admin_type' => 'datepicker'
+        ],
+        'updated_at' => [
+            'type' => 'date',
+            'validate' => 'timestamp',
+            'null' => true,
+            'admin_hidden_property' => true,
+            'admin_type' => 'datepicker'
+        ]
+    ];
+    private static $cachedProperties = [];
 
-	private $localCache = [];
-	private $sharedCache;
-	private $relationModels;
+    private $localCache = [];
+    private $sharedCache;
+    private $relationModels;
 
-	/////////////////////////////
-	// GLOBAL CONFIGURATION
-	/////////////////////////////
+    /////////////////////////////
+    // GLOBAL CONFIGURATION
+    /////////////////////////////
 
-	/**
+    /**
 	 * Changes the default model settings
 	 *
 	 * @param array $config
 	 */
-	static function configure( array $config )
-	{
-		static::$config = array_replace( static::$config, $config );
-	}
+    public static function configure(array $config)
+    {
+        static::$config = array_replace( static::$config, $config );
+    }
 
-	/**
+    /**
 	 * Gets a config parameter
 	 *
 	 * @return mixed
 	 */
-	static function getConfigValue( $key )
-	{
-		return Util::array_value( static::$config, $key );
-	}
+    public static function getConfigValue($key)
+    {
+        return Util::array_value( static::$config, $key );
+    }
 
-	/**
+    /**
 	 * Injects a DI container
 	 *
 	 * @param Container $app
 	 */
-	static function inject( Container $app )
-	{
-		self::$injectedApp = $app;
-	}
+    public static function inject(Container $app)
+    {
+        self::$injectedApp = $app;
+    }
 
-	/////////////////////////////
-	// MAGIC METHODS
-	/////////////////////////////
+    /////////////////////////////
+    // MAGIC METHODS
+    /////////////////////////////
 
-	/**
+    /**
 	 * Creates a new model object
 	 *
 	 * @param array|string $id ordered array of ids or comma-separated id string
 	 */
-	function __construct( $id = false )
-	{
-		if( is_array( $id ) )
-			$id = implode( ',', $id );
+    public function __construct($id = false)
+    {
+        if( is_array( $id ) )
+            $id = implode( ',', $id );
 
-		$this->_id = $id;
+        $this->_id = $id;
 
-		$this->app = self::$injectedApp;
-	}
+        $this->app = self::$injectedApp;
+    }
 
-	/**
+    /**
 	 * Converts the model into a string
 	 *
 	 * @return string
 	 */
-	function __toString()
-	{
-		return get_called_class() . '(' . $this->_id . ')';
-	}
+    public function __toString()
+    {
+        return get_called_class() . '(' . $this->_id . ')';
+    }
 
-	/**
+    /**
 	 * Gets an inaccessible property by looking it up via get().
 	 *
 	 * @param string $name
 	 *
 	 * @return mixed
 	 */
-	function __get( $name )
-	{
-		return $this->get( $name );
-	}
+    public function __get($name)
+    {
+        return $this->get( $name );
+    }
 
-	/**
-	 * Sets an inaccessible property by changing the locally cached value. 
+    /**
+	 * Sets an inaccessible property by changing the locally cached value.
 	 * This method does not update the database or shared cache
 	 *
 	 * @param string $name
 	 * @param mixed $value
 	 */
-	function __set( $name, $value )
-	{
-		// if changing property, remove relation model
-		if( isset( $this->relationModels[ $name ] ) )
-			unset( $this->relationModels[ $name ] );
+    public function __set($name, $value)
+    {
+        // if changing property, remove relation model
+        if( isset( $this->relationModels[ $name ] ) )
+            unset( $this->relationModels[ $name ] );
 
-		$this->localCache[ $name ] = $value;
-	}
+        $this->localCache[ $name ] = $value;
+    }
 
-	/**
+    /**
 	 * Checks if an inaccessible property exists. Any property that is
 	 * in the schema or locally cached is considered to be set
 	 *
@@ -268,74 +268,73 @@ abstract class Model extends Acl
 	 *
 	 * @return bool
 	 */
-	function __isset( $name )
-	{
-		return array_key_exists( $name, $this->localCache ) || $this->hasProperty( $name );
-	}
+    public function __isset($name)
+    {
+        return array_key_exists( $name, $this->localCache ) || $this->hasProperty( $name );
+    }
 
-	/**
+    /**
 	 * Unsets an inaccessible property by invalidating it in the local cache.
 	 *
 	 * @param string $name
 	 */
-	function __unset( $name )
-	{
-		if( array_key_exists( $name, $this->localCache ) )
-		{
-			// if changing property, remove relation model
-			if( isset( $this->relationModels[ $name ] ) )
-				unset( $this->relationModels[ $name ] );
+    public function __unset($name)
+    {
+        if ( array_key_exists( $name, $this->localCache ) ) {
+            // if changing property, remove relation model
+            if( isset( $this->relationModels[ $name ] ) )
+                unset( $this->relationModels[ $name ] );
 
-			unset( $this->localCache[ $name ] );
-		}
-	}
+            unset( $this->localCache[ $name ] );
+        }
+    }
 
-	/////////////////////////////
-	// MODEL PROPERTIES
-	/////////////////////////////
+    /////////////////////////////
+    // MODEL PROPERTIES
+    /////////////////////////////
 
-	/**
+    /**
 	 * Gets the model identifier(s)
 	 *
 	 * @param boolean $keyValue return key-value array of id
 	 *
 	 * @return array|string key-value if specified, otherwise comma-separated id string
 	 */
-	function id( $keyValue = false )
-	{
-		if( !$keyValue )
-			return $this->_id;
-		
-		$idProperty = (array)static::idProperty();
-		
-		// get id(s) into key-value format
-		$return = [];
-		
-		// match up id values from comma-separated id string with property names
-		$ids = explode( ',', $this->_id );
-		$ids = array_reverse( $ids );
-		
-		foreach( $idProperty as $f )
-		{
-			$id = (count($ids)>0) ? array_pop( $ids ) : false;
+    public function id($keyValue = false)
+    {
+        if( !$keyValue )
 
-			$return[ $f ] = $id;
-		}
-		
-		return $return;
-	}
+            return $this->_id;
 
-	/**
+        $idProperty = (array) static::idProperty();
+
+        // get id(s) into key-value format
+        $return = [];
+
+        // match up id values from comma-separated id string with property names
+        $ids = explode( ',', $this->_id );
+        $ids = array_reverse( $ids );
+
+        foreach ($idProperty as $f) {
+            $id = (count($ids)>0) ? array_pop( $ids ) : false;
+
+            $return[ $f ] = $id;
+        }
+
+        return $return;
+    }
+
+    /**
 	 * Checks if the model exists in the database
 	 *
 	 * @return boolean
 	 */
-	function exists()
-	{
-		return static::totalRecords( $this->id( true ) ) == 1;
-	}
+    public function exists()
+    {
+        return static::totalRecords( $this->id( true ) ) == 1;
+    }
 
-	/**
+    /**
 	 * Gets the model object corresponding to a relation
 	 * WARNING no check is used to see if the model returned actually exists
 	 *
@@ -343,154 +342,158 @@ abstract class Model extends Acl
 	 *
 	 * @return Object|false model
 	 */
-	function relation( $property )
-	{
-		$properties = static::properties();
+    public function relation($property)
+    {
+        $properties = static::properties();
 
-		if( !static::hasProperty( $property ) || !isset( $properties[ $property ][ 'relation' ] ) )
-			return false;
+        if( !static::hasProperty( $property ) || !isset( $properties[ $property ][ 'relation' ] ) )
 
-		$relationModelName = $properties[ $property ][ 'relation' ];
+            return false;
 
-		if( !isset( $this->relationModels[ $property ] ) )
-			$this->relationModels[ $property ] = new $relationModelName( $this->$property );
-		
-		return $this->relationModels[ $property ];
-	}
+        $relationModelName = $properties[ $property ][ 'relation' ];
 
-	/////////////////////////////
-	// STATIC MODEL PROPERTIES
-	/////////////////////////////
+        if( !isset( $this->relationModels[ $property ] ) )
+            $this->relationModels[ $property ] = new $relationModelName( $this->$property );
 
-	/**
+        return $this->relationModels[ $property ];
+    }
+
+    /////////////////////////////
+    // STATIC MODEL PROPERTIES
+    /////////////////////////////
+
+    /**
 	 * Returns the id propert(ies) for the model
 	 *
 	 * @return array|string
 	 */
-	static function idProperty()
-	{
-		return 'id';
-	}
+    public static function idProperty()
+    {
+        return 'id';
+    }
 
-	/**
+    /**
 	 * Gets the name of the model without namespacing
 	 *
 	 * @return string
 	 */
-	static function modelName()
-	{
-		$class_name = get_called_class();
-		
-		// strip namespacing
-		$paths = explode( '\\', $class_name );
-		return end( $paths );
-	}
-	
-	/**
+    public static function modelName()
+    {
+        $class_name = get_called_class();
+
+        // strip namespacing
+        $paths = explode( '\\', $class_name );
+
+        return end( $paths );
+    }
+
+    /**
 	 * Generates metadata about the model
 	 *
 	 * @return array
 	 */
-	static function metadata()
-	{
-		$class_name = get_called_class();
-		$modelName = static::modelName();
-		
-		$singularKey = Inflector::underscore( $modelName );
-		$pluralKey = Inflector::pluralize( $singularKey );
+    public static function metadata()
+    {
+        $class_name = get_called_class();
+        $modelName = static::modelName();
 
-		return [
-			'model' => $modelName,
-			'class_name' => $class_name,
-			'singular_key' => $singularKey,
-			'plural_key' => $pluralKey,
-			'proper_name' => Inflector::titleize( $singularKey ),
-			'proper_name_plural' => Inflector::titleize( $pluralKey ) ];
-	}
+        $singularKey = Inflector::underscore( $modelName );
+        $pluralKey = Inflector::pluralize( $singularKey );
 
-	/**
+        return [
+            'model' => $modelName,
+            'class_name' => $class_name,
+            'singular_key' => $singularKey,
+            'plural_key' => $pluralKey,
+            'proper_name' => Inflector::titleize( $singularKey ),
+            'proper_name_plural' => Inflector::titleize( $pluralKey ) ];
+    }
+
+    /**
 	 * @deprecated
 	 */
-	static function info()
-	{
-		return static::metadata();
-	}
+    public static function info()
+    {
+        return static::metadata();
+    }
 
-	/**
+    /**
 	 * Generates the tablename for the model
 	 *
 	 * @return string
 	 */
-	static function tablename()
-	{
-		return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
-	}
+    public static function tablename()
+    {
+        return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
+    }
 
-	/**
+    /**
 	 * Gets the properties for the model
 	 *
 	 * @param string $property property to lookup
-	 * 
+	 *
 	 * @return array
 	 */
-	static function properties( $property = false )
-	{
-		$k = get_called_class();
+    public static function properties($property = false)
+    {
+        $k = get_called_class();
 
-		if( !isset( self::$cachedProperties[ $k ] ) )
-		{
-			self::$cachedProperties[ $k ] = static::$properties;
+        if ( !isset( self::$cachedProperties[ $k ] ) ) {
+            self::$cachedProperties[ $k ] = static::$properties;
 
-			// auto include id property by default
-			$idProperty = static::idProperty();
-			if( $idProperty == 'id' )
-				self::$cachedProperties[ $k ] = array_replace( self::$idProperties, self::$cachedProperties[ $k ] );
+            // auto include id property by default
+            $idProperty = static::idProperty();
+            if( $idProperty == 'id' )
+                self::$cachedProperties[ $k ] = array_replace( self::$idProperties, self::$cachedProperties[ $k ] );
 
-			if( property_exists( get_called_class(), 'autoTimestamps' ) )
-				self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
-		}
+            if( property_exists( get_called_class(), 'autoTimestamps' ) )
+                self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
+        }
 
-		if( $property )
-			return Util::array_value( self::$cachedProperties[ $k ], $property );
-		else
-			return self::$cachedProperties[ $k ];
-	}
+        if( $property )
 
-	/**
+            return Util::array_value( self::$cachedProperties[ $k ], $property );
+        else
+            return self::$cachedProperties[ $k ];
+    }
+
+    /**
 	 * Checks if the model has a property
 	 *
 	 * @param string $property property
 	 *
 	 * @return boolean has property
 	 */
-	static function hasProperty( $property )
-	{
-		$properties = static::properties();
-		return isset( $properties[ $property ] );
-	}
+    public static function hasProperty($property)
+    {
+        $properties = static::properties();
 
-	/**
+        return isset( $properties[ $property ] );
+    }
+
+    /**
 	 * Checks if a property name is an id property
 	 *
 	 * @return boolean
 	 */
-	static function isIdProperty( $property )
-	{
-		$idProperty = static::idProperty();
-		return ( is_array( $idProperty ) && in_array( $property, $idProperty ) ) ||
-			   $property == $idProperty;
-	}
+    public static function isIdProperty($property)
+    {
+        $idProperty = static::idProperty();
 
-	static function hasSchema()
-	{
-		return true;
-	}
+        return ( is_array( $idProperty ) && in_array( $property, $idProperty ) ) ||
+               $property == $idProperty;
+    }
 
-	/////////////////////////////
-	// CRUD OPERATIONS
-	/////////////////////////////
-	
-	/**
+    public static function hasSchema()
+    {
+        return true;
+    }
+
+    /////////////////////////////
+    // CRUD OPERATIONS
+    /////////////////////////////
+
+    /**
 	 * Creates a new model
 	 * WARNING: requires 'create' permission from the requester
 	 *
@@ -498,134 +501,129 @@ abstract class Model extends Acl
 	 *
 	 * @return boolean
 	 */
-	function create( array $data )
-	{
-		$errorStack = $this->app[ 'errors' ];
-		$errorStack->setCurrentContext( static::modelName() . '.create' );
+    public function create(array $data)
+    {
+        $errorStack = $this->app[ 'errors' ];
+        $errorStack->setCurrentContext( static::modelName() . '.create' );
 
-		if( $this->_id !== false )
-			return false;
+        if( $this->_id !== false )
 
-		// permission?
-		if( !$this->can( 'create', static::$config[ 'requester' ] ) )
-		{
-			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
-			return false;
-		}
+            return false;
 
-		// pre-hook
-		if( method_exists( $this, 'preCreateHook' ) && !$this->preCreateHook( $data ) )
-			return false;
+        // permission?
+        if ( !$this->can( 'create', static::$config[ 'requester' ] ) ) {
+            $errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 
-		$validated = true;
+            return false;
+        }
 
-		$properties = static::properties();
-		
-		// get the property names, and required properties
-		$propertyNames = [];
-		$requiredProperties = [];
-		foreach( $properties as $name => $property )
-		{
-			$propertyNames[] = $name;
-			if( Util::array_value( $property, 'required' ) )
-				$requiredProperties[] = $name;
-		}
-		
-		// add in default values
-		foreach( $properties as $name => $fieldInfo )
-		{
-			if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
-				$data[ $name ] = $fieldInfo[ 'default' ];
-		}
-				
-		// loop through each supplied field and validate
-		$insertArray = [];
-		foreach( $data as $field => $value )
-		{
-			if( !in_array( $field, $propertyNames ) )
-				continue;
+        // pre-hook
+        if( method_exists( $this, 'preCreateHook' ) && !$this->preCreateHook( $data ) )
 
-			$property = $properties[ $field ];
+            return false;
 
-			// cannot insert keys, unless explicitly allowed
-			if( isset( $property[ 'mutable' ] ) && !$property[ 'mutable' ] )
-				continue;
-			
-			if( is_array( $property ) )
-			{
-				// assume empty string is a null value for properties
-				// that are marked as optionally-null
-				if( Util::array_value( $property, 'null' ) && empty( $value ) )
-				{
-					$insertArray[ $field ] = null;
-					continue;
-				}
-				
-				// validate
-				$thisIsValid = $this->validate( $property, $field, $value );
-				
-				// unique?
-				if( $thisIsValid && Util::array_value( $property, 'unique' ) )
-					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
-				
-				$validated = $validated && $thisIsValid;
-				
-				// json
-				if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
-					$value = json_encode( $value );
+        $validated = true;
 
-				$insertArray[ $field ] = $value;
-			}
-		}
-		
-		// check for required fields
-		foreach( $requiredProperties as $name )
-		{
-			if( !isset( $insertArray[ $name ] ) )
-			{
-				$this->app[ 'errors' ]->push( [
-					'error' => VALIDATION_REQUIRED_FIELD_MISSING,
-					'params' => [
-						'field' => $name,
-						'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
+        $properties = static::properties();
 
-				$validated = false;
-			}
-		}
-		
-		if( !$validated )
-			return false;
+        // get the property names, and required properties
+        $propertyNames = [];
+        $requiredProperties = [];
+        foreach ($properties as $name => $property) {
+            $propertyNames[] = $name;
+            if( Util::array_value( $property, 'required' ) )
+                $requiredProperties[] = $name;
+        }
 
-		if( !static::$config[ 'database' ][ 'enabled' ] ||
-			Database::insert( static::tablename(), $insertArray ) )
-		{
-			$ids = [];
-			$idProperty = (array)static::idProperty();
-			foreach( $idProperty as $property )
-			{
-				// attempt use the supplied value if the id property is mutable
-				$mutable = !isset( $properties[ $property ][ 'mutable' ] ) || $properties[ $property ][ 'mutable' ];
-				if( $mutable && isset( $data[ $property ] ) )
-					$ids[] = $data[ $property ];
-				else
-					$ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
-			}
+        // add in default values
+        foreach ($properties as $name => $fieldInfo) {
+            if( isset( $fieldInfo[ 'default' ] ) && !isset( $data[ $name ] ) )
+                $data[ $name ] = $fieldInfo[ 'default' ];
+        }
 
-			// set id and cache properties
-			$this->_id = implode( ',', $ids );
-			$this->cacheProperties( $insertArray );
-			
-			// post-hook
-			if( method_exists( $this, 'postCreateHook' ) )
-				$this->postCreateHook();
-			
-			return true;
-		}
-		
-		return false;
-	}
+        // loop through each supplied field and validate
+        $insertArray = [];
+        foreach ($data as $field => $value) {
+            if( !in_array( $field, $propertyNames ) )
+                continue;
 
-	/**
+            $property = $properties[ $field ];
+
+            // cannot insert keys, unless explicitly allowed
+            if( isset( $property[ 'mutable' ] ) && !$property[ 'mutable' ] )
+                continue;
+
+            if ( is_array( $property ) ) {
+                // assume empty string is a null value for properties
+                // that are marked as optionally-null
+                if ( Util::array_value( $property, 'null' ) && empty( $value ) ) {
+                    $insertArray[ $field ] = null;
+                    continue;
+                }
+
+                // validate
+                $thisIsValid = $this->validate( $property, $field, $value );
+
+                // unique?
+                if( $thisIsValid && Util::array_value( $property, 'unique' ) )
+                    $thisIsValid = $this->checkUniqueness( $property, $field, $value );
+
+                $validated = $validated && $thisIsValid;
+
+                // json
+                if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
+                    $value = json_encode( $value );
+
+                $insertArray[ $field ] = $value;
+            }
+        }
+
+        // check for required fields
+        foreach ($requiredProperties as $name) {
+            if ( !isset( $insertArray[ $name ] ) ) {
+                $this->app[ 'errors' ]->push( [
+                    'error' => VALIDATION_REQUIRED_FIELD_MISSING,
+                    'params' => [
+                        'field' => $name,
+                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
+
+                $validated = false;
+            }
+        }
+
+        if( !$validated )
+
+            return false;
+
+        if( !static::$config[ 'database' ][ 'enabled' ] ||
+            Database::insert( static::tablename(), $insertArray ) )
+        {
+            $ids = [];
+            $idProperty = (array) static::idProperty();
+            foreach ($idProperty as $property) {
+                // attempt use the supplied value if the id property is mutable
+                $mutable = !isset( $properties[ $property ][ 'mutable' ] ) || $properties[ $property ][ 'mutable' ];
+                if( $mutable && isset( $data[ $property ] ) )
+                    $ids[] = $data[ $property ];
+                else
+                    $ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
+            }
+
+            // set id and cache properties
+            $this->_id = implode( ',', $ids );
+            $this->cacheProperties( $insertArray );
+
+            // post-hook
+            if( method_exists( $this, 'postCreateHook' ) )
+                $this->postCreateHook();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
 	 * Fetches property values from the model.
 	 *
 	 * This method utilizes a local and shared caching layer (i.e. redis), a database layer,
@@ -637,15 +635,15 @@ abstract class Model extends Acl
 	 *
 	 * @return mixed Returns value when only 1 found or an array when multiple values found
 	 */
-	function get( $properties, $skipLocalCache = false, $forceReturnArray = false )
-	{
-		$show = $properties == 'relation';
-		if( is_string( $properties ) )
-			$properties = explode( ',', $properties );
-		else
-			$properties = (array)$properties;
+    public function get($properties, $skipLocalCache = false, $forceReturnArray = false)
+    {
+        $show = $properties == 'relation';
+        if( is_string( $properties ) )
+            $properties = explode( ',', $properties );
+        else
+            $properties = (array) $properties;
 
-		/*
+        /*
 			Look up property values in this order:
 			i) Local Cache (unless explicitly skipped)
 			ii) Shared Cache
@@ -653,44 +651,43 @@ abstract class Model extends Acl
 			iv) Model Property Value Defaults
 		*/
 
-		// Make a copy of properties to keep track of what's remaining.
-		// Since this will be modified a copy must be made to prevent
-		// functional side effects
-		$remaining = $properties;
+        // Make a copy of properties to keep track of what's remaining.
+        // Since this will be modified a copy must be made to prevent
+        // functional side effects
+        $remaining = $properties;
 
-		$hasId = $this->_id !== false;
+        $hasId = $this->_id !== false;
 
-		$i = 1;
-		$values = [];
-		while( $i <= 4 && count( $remaining ) > 0 )
-		{
-			if( $i == 1 && !$skipLocalCache )
-				$this->getFromLocalCache( $remaining, $values );
-			else if( $i == 2 && $hasId )
-				$this->getFromSharedCache( $remaining, $values );
-			else if( $i == 3 && static::$config[ 'database' ][ 'enabled' ] && $hasId )
-				$this->getFromDatabase( $remaining, $values );
-			else if( $i == 4 )
-				$this->getFromDefaultValues( $remaining, $values );
+        $i = 1;
+        $values = [];
+        while ( $i <= 4 && count( $remaining ) > 0 ) {
+            if( $i == 1 && !$skipLocalCache )
+                $this->getFromLocalCache( $remaining, $values );
+            elseif( $i == 2 && $hasId )
+                $this->getFromSharedCache( $remaining, $values );
+            elseif( $i == 3 && static::$config[ 'database' ][ 'enabled' ] && $hasId )
+                $this->getFromDatabase( $remaining, $values );
+            elseif( $i == 4 )
+                $this->getFromDefaultValues( $remaining, $values );
 
-			$i++;
-		}
+            $i++;
+        }
 
-		if( count( $properties ) != count( $values ) )
-		{
-			// TODO should we throw a notice if one or more
-			// properties were not found?
-			if( !$forceReturnArray && count( $properties ) == 1 )
-				return null;
-			else
-				return $values;
-		}
+        if ( count( $properties ) != count( $values ) ) {
+            // TODO should we throw a notice if one or more
+            // properties were not found?
+            if( !$forceReturnArray && count( $properties ) == 1 )
 
-		return (!$forceReturnArray && count($values) == 1) ?
-			reset( $values ) : $values;
-	}
+                return null;
+            else
+                return $values;
+        }
 
-	/**
+        return (!$forceReturnArray && count($values) == 1) ?
+            reset( $values ) : $values;
+    }
+
+    /**
 	 * Converts the model to an array
 	 *
 	 * @param array $exclude properties to exclude
@@ -699,77 +696,75 @@ abstract class Model extends Acl
 	 *
 	 * @return array properties
 	 */
-	function toArray( array $exclude = [], array $include = [], array $expand = [] )
-	{
-		// TODO this method is ripe for some performance improvements
+    public function toArray(array $exclude = [], array $include = [], array $expand = [])
+    {
+        // TODO this method is ripe for some performance improvements
 
-		$properties = [];
+        $properties = [];
 
-		// apply namespacing to $exclude
-		$namedExc = [];
-		foreach( $exclude as $e )
-			Util::array_set( $namedExc, $e, true );
+        // apply namespacing to $exclude
+        $namedExc = [];
+        foreach( $exclude as $e )
+            Util::array_set( $namedExc, $e, true );
 
-		// apply namespacing to $include
-		$namedInc = [];
-		foreach( $include as $e )
-			Util::array_set( $namedInc, $e, true );
+        // apply namespacing to $include
+        $namedInc = [];
+        foreach( $include as $e )
+            Util::array_set( $namedInc, $e, true );
 
-		// apply namespacing to $expand
-		$namedExp = [];
-		foreach( $expand as $e )
-			Util::array_set( $namedExp, $e, true );
-		
-		// get the list of appropriate properties
-		foreach( static::properties() as $property => $pData )
-		{
-			// skip excluded properties
-			if( isset( $namedExc[ $property ] ) && !is_array( $namedExc[ $property ] ) )
-				continue;
+        // apply namespacing to $expand
+        $namedExp = [];
+        foreach( $expand as $e )
+            Util::array_set( $namedExp, $e, true );
 
-			// skip hidden properties that are not explicitly included
-			if( Util::array_value( $pData, 'hidden' ) &&
-				!isset( $namedInc[ $property ] ) )
-				continue;
+        // get the list of appropriate properties
+        foreach ( static::properties() as $property => $pData ) {
+            // skip excluded properties
+            if( isset( $namedExc[ $property ] ) && !is_array( $namedExc[ $property ] ) )
+                continue;
 
-			$properties[] = $property;
-		}
+            // skip hidden properties that are not explicitly included
+            if( Util::array_value( $pData, 'hidden' ) &&
+                !isset( $namedInc[ $property ] ) )
+                continue;
 
-		// make sure each property key at least has a null value
-		// and then get the value for each property
-		$result = array_replace( array_fill_keys( $properties, null ),
-								 $this->get( $properties, false, true ) );
+            $properties[] = $property;
+        }
 
-		// expand properties
-		foreach( $namedExp as $k => $subExp )
-		{
-			// if the property is null, excluded, or not included
-			// then we are not going to expand it
-			if( !isset( $result[ $k ] ) || !$result[ $k ] )
-				continue;
+        // make sure each property key at least has a null value
+        // and then get the value for each property
+        $result = array_replace( array_fill_keys( $properties, null ),
+                                 $this->get( $properties, false, true ) );
 
-			$subExc = Util::array_value( $namedExc, $k );
-			$subInc = Util::array_value( $namedInc, $k );
+        // expand properties
+        foreach ($namedExp as $k => $subExp) {
+            // if the property is null, excluded, or not included
+            // then we are not going to expand it
+            if( !isset( $result[ $k ] ) || !$result[ $k ] )
+                continue;
 
-			// convert exclude, include, and expand into dot notation
-			// then take the keys for a flattened dot notation
-			$flatExc = is_array($subExc) ? array_keys( Util::array_dot( $subExc ) ) : [];
-			$flatInc = is_array($subInc) ? array_keys( Util::array_dot( $subInc ) ) : [];
-			$flatExp = is_array($subExp) ? array_keys( Util::array_dot( $subExp ) ) : [];
+            $subExc = Util::array_value( $namedExc, $k );
+            $subInc = Util::array_value( $namedInc, $k );
 
-			$relation = $this->relation( $k );
-			if( $relation )
-				$result[ $k ] = $relation->toArray( $flatExc, $flatInc, $flatExp );
-		}
+            // convert exclude, include, and expand into dot notation
+            // then take the keys for a flattened dot notation
+            $flatExc = is_array($subExc) ? array_keys( Util::array_dot( $subExc ) ) : [];
+            $flatInc = is_array($subInc) ? array_keys( Util::array_dot( $subInc ) ) : [];
+            $flatExp = is_array($subExp) ? array_keys( Util::array_dot( $subExp ) ) : [];
 
-		// apply hooks, if available
-		if( method_exists( $this, 'toArrayHook' ) )
-			$this->toArrayHook( $result, $namedExc, $namedInc, $namedExp );
+            $relation = $this->relation( $k );
+            if( $relation )
+                $result[ $k ] = $relation->toArray( $flatExc, $flatInc, $flatExp );
+        }
 
-		return $result;
-	}
-	
-	/**
+        // apply hooks, if available
+        if( method_exists( $this, 'toArrayHook' ) )
+            $this->toArrayHook( $result, $namedExc, $namedInc, $namedExp );
+
+        return $result;
+    }
+
+    /**
 	 * Converts the object to JSON format
 	 *
 	 * @param array $exclude properties to exclude
@@ -778,12 +773,12 @@ abstract class Model extends Acl
 	 *
 	 * @return string json
 	 */
-	function toJson( array $exclude = [], array $include = [], array $expand = [] )
-	{
-		return json_encode( $this->toArray( $exclude, $include, $expand ) );
-	}
-	
-	/**
+    public function toJson(array $exclude = [], array $include = [], array $expand = [])
+    {
+        return json_encode( $this->toArray( $exclude, $include, $expand ) );
+    }
+
+    /**
 	 * Updates the model
 	 * WARNING: requires 'edit' permission from the requester
 	 *
@@ -792,149 +787,152 @@ abstract class Model extends Acl
 	 *
 	 * @return boolean
 	 */
-	function set( $data, $value = false )
-	{
-		$errorStack = $this->app[ 'errors' ];
-		$errorStack->setCurrentContext( static::modelName() . '.set' );
-	
-		if( $this->_id === false )
-			return false;
+    public function set($data, $value = false)
+    {
+        $errorStack = $this->app[ 'errors' ];
+        $errorStack->setCurrentContext( static::modelName() . '.set' );
 
-		// permission?
-		if( !$this->can( 'edit', static::$config[ 'requester' ] ) )
-		{
-			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
-			return false;
-		}
-		
-		if( !is_array( $data ) )
-			$data = [ $data => $value ];
-		
-		// not updating anything?
-		if( count( $data ) == 0 )
-			return true;
+        if( $this->_id === false )
 
-		// update timestamp
-		if( property_exists( get_called_class(), 'autoTimestamps' ) )
-			$data[ 'updated_at' ] = time();
-		
-		// pre-hook
-		if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
-			return false;
+            return false;
 
-		$validated = true;
-		$updateArray = $this->id( true );
-		$updateKeys = array_keys( $updateArray );
-		$properties = static::properties();
-		
-		// get the property names
-		$propertyNames = array_keys( $properties );
-		
-		// loop through each supplied field and validate
-		foreach( $data as $field => $value )
-		{
-			// cannot change keys
-			if( in_array( $field, $updateKeys ) )
-				continue;
-			
-			// exclude if field does not map to a property
-			if( !in_array( $field, $propertyNames ) )
-				continue;
+        // permission?
+        if ( !$this->can( 'edit', static::$config[ 'requester' ] ) ) {
+            $errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 
-			$property = $properties[ $field ];
+            return false;
+        }
 
-			if( is_array( $property ) )
-			{
-				// assume empty string is a null value for properties
-				// that are marked as optionally-null
-				if( Util::array_value( $property, 'null' ) && empty( $value ) )
-				{
-					$updateArray[ $field ] = null;
-					continue;
-				}
+        if( !is_array( $data ) )
+            $data = [ $data => $value ];
 
-				// validate
-				$thisIsValid = $this->validate( $property, $field, $value );
+        // not updating anything?
+        if( count( $data ) == 0 )
 
-				// unique?
-				if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
-					$thisIsValid = $this->checkUniqueness( $property, $field, $value );
-				
-				$validated = $validated && $thisIsValid;
-				
-				// json
-				if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
-					$value = json_encode( $value );
+            return true;
 
-				$updateArray[ $field ] = $value;
-			}
-		}
+        // update timestamp
+        if( property_exists( get_called_class(), 'autoTimestamps' ) )
+            $data[ 'updated_at' ] = time();
 
-		if( !$validated )
-			return false;
+        // pre-hook
+        if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
 
-		if( !static::$config[ 'database' ][ 'enabled' ] ||
-			Database::update( static::tablename(), $updateArray, $updateKeys ) )
-		{
-			// update the cache with our new values
-			$this->cacheProperties( $updateArray );
-			// post-hook
-			if( method_exists( $this, 'postSetHook' ) )
-				$this->postSetHook();
+            return false;
 
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
+        $validated = true;
+        $updateArray = $this->id( true );
+        $updateKeys = array_keys( $updateArray );
+        $properties = static::properties();
+
+        // get the property names
+        $propertyNames = array_keys( $properties );
+
+        // loop through each supplied field and validate
+        foreach ($data as $field => $value) {
+            // cannot change keys
+            if( in_array( $field, $updateKeys ) )
+                continue;
+
+            // exclude if field does not map to a property
+            if( !in_array( $field, $propertyNames ) )
+                continue;
+
+            $property = $properties[ $field ];
+
+            if ( is_array( $property ) ) {
+                // assume empty string is a null value for properties
+                // that are marked as optionally-null
+                if ( Util::array_value( $property, 'null' ) && empty( $value ) ) {
+                    $updateArray[ $field ] = null;
+                    continue;
+                }
+
+                // validate
+                $thisIsValid = $this->validate( $property, $field, $value );
+
+                // unique?
+                if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
+                    $thisIsValid = $this->checkUniqueness( $property, $field, $value );
+
+                $validated = $validated && $thisIsValid;
+
+                // json
+                if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
+                    $value = json_encode( $value );
+
+                $updateArray[ $field ] = $value;
+            }
+        }
+
+        if( !$validated )
+
+            return false;
+
+        if( !static::$config[ 'database' ][ 'enabled' ] ||
+            Database::update( static::tablename(), $updateArray, $updateKeys ) )
+        {
+            // update the cache with our new values
+            $this->cacheProperties( $updateArray );
+            // post-hook
+            if( method_exists( $this, 'postSetHook' ) )
+                $this->postSetHook();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
 	 * Delete the model
 	 * WARNING: requires 'delete' permission from the requester
 	 *
 	 * @return boolean success
 	 */
-	function delete()
-	{
-		$errorStack = $this->app[ 'errors' ];
-		$errorStack->setCurrentContext( static::modelName() . '.delete' );
+    public function delete()
+    {
+        $errorStack = $this->app[ 'errors' ];
+        $errorStack->setCurrentContext( static::modelName() . '.delete' );
 
-		if( $this->_id === false )
-			return false;
+        if( $this->_id === false )
 
-		// permission?
-		if( !$this->can( 'delete', static::$config[ 'requester' ] ) )
-		{
-			$errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
-			return false;
-		}
-		
-		// pre-hook
-		if( method_exists( $this, 'preDeleteHook' ) && !$this->preDeleteHook() )
-			return false;
-		
-		// delete the model
-		if( !static::$config[ 'database' ][ 'enabled' ] ||
-			Database::delete( static::tablename(), $this->id( true ) ) )
-		{
-			// clear the cache
-			$this->emptyCache();
+            return false;
 
-			// post-hook
-			if( method_exists( $this, 'postDeleteHook' ) )
-				$this->postDeleteHook();
-			
-			return true;
-		}
-		else
-			return false;
-	}
-	
-	/////////////////////////////
-	// MODEL LOOKUPS
-	/////////////////////////////
+        // permission?
+        if ( !$this->can( 'delete', static::$config[ 'requester' ] ) ) {
+            $errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 
-	/**
+            return false;
+        }
+
+        // pre-hook
+        if( method_exists( $this, 'preDeleteHook' ) && !$this->preDeleteHook() )
+
+            return false;
+
+        // delete the model
+        if( !static::$config[ 'database' ][ 'enabled' ] ||
+            Database::delete( static::tablename(), $this->id( true ) ) )
+        {
+            // clear the cache
+            $this->emptyCache();
+
+            // post-hook
+            if( method_exists( $this, 'postDeleteHook' ) )
+                $this->postDeleteHook();
+
+            return true;
+        } else
+
+            return false;
+    }
+
+    /////////////////////////////
+    // MODEL LOOKUPS
+    /////////////////////////////
+
+    /**
 	 * Fetches models with pagination support
 	 *
 	 * @param array key-value parameters
@@ -942,171 +940,164 @@ abstract class Model extends Acl
 	 * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
 	 *
 	 * @return array array( 'models' => models, 'count' => 'total found' )
-	 */ 
-	static function find( array $params = [] )
-	{
-		$params = array_replace( static::$defaultFindParameters, $params );
-	
-		$params[ 'start' ] = max( $params[ 'start' ], 0 );
-		$params[ 'limit' ] = min( $params[ 'limit' ], 1000 );
+	 */
+    public static function find(array $params = [])
+    {
+        $params = array_replace( static::$defaultFindParameters, $params );
 
-		$modelName = get_called_class();
-		$properties = static::properties();
-		
-		// WARNING: using MYSQL LIKE for search, this is very inefficient
-		
-		if( !empty( $params[ 'search' ] ) )
-		{
-			$w = [];
-			$search = addslashes( $params[ 'search' ] );
-			foreach( $properties as $name => $property )
-			{
-				if( Util::array_value( $property, 'searchable' ) )
-					$w[] = "`$name` LIKE '%$search%'";
-			}
-			
-			if( count( $w ) > 0 )
-				$params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
-		}
+        $params[ 'start' ] = max( $params[ 'start' ], 0 );
+        $params[ 'limit' ] = min( $params[ 'limit' ], 1000 );
 
-		// verify sort
-		$sortParams = [];
+        $modelName = get_called_class();
+        $properties = static::properties();
 
-		$columns = explode( ',', $params[ 'sort' ] );
-		foreach( $columns as $column )
-		{
-			$c = explode( ' ', trim( $column ) );
-			
-			if( count( $c ) != 2 )
-				continue;
-			
-			$propertyName = $c[ 0 ];
-			
-			// validate property
-			if( !isset( $properties[ $propertyName ] ) )
-				continue;
+        // WARNING: using MYSQL LIKE for search, this is very inefficient
 
-			// validate direction
-			$direction = strtolower( $c[ 1 ] );
-			if( !in_array( $direction, [ 'asc', 'desc' ] ) )
-				continue;
-			
-			$sortParams[] = "$propertyName $direction";
-		}
-		
-		$return = [
-			'count' => static::totalRecords( $params[ 'where' ] ),
-			'models' => [] ];
-		
-		$filter = [
-			'where' => $params[ 'where' ],
-			'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] ];
-		
-		$sortStr = implode( ',', $sortParams );
-		if( $sortStr )
-			$filter[ 'orderBy' ] = $sortStr;
+        if ( !empty( $params[ 'search' ] ) ) {
+            $w = [];
+            $search = addslashes( $params[ 'search' ] );
+            foreach ($properties as $name => $property) {
+                if( Util::array_value( $property, 'searchable' ) )
+                    $w[] = "`$name` LIKE '%$search%'";
+            }
 
-		// load models
-		$models = Database::select(
-			static::tablename(),
-			'*',
-			$filter );
-		
-		if( is_array( $models ) )
-		{
-			foreach( $models as $info )
-			{
-				$id = false;
-				
-				$idProperty = static::idProperty();
-				if( is_array( $idProperty ) )
-				{
-					$id = [];
-					
-					foreach( $idProperty as $f )
-						$id[] = $info[ $f ];
-				}
-				else
-				{
-					$id = $info[ $idProperty ];
-				}
-				
-				$model = new $modelName( $id );
-				$model->cacheProperties( $info );
-				$return[ 'models' ][] = $model;
-			}
-		}
-		
-		return $return;
-	}
+            if( count( $w ) > 0 )
+                $params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
+        }
 
-	static function findAll( array $params = [] )
-	{
-		return new Iterator( get_called_class(), $params );
-	}
-	
-	/**
+        // verify sort
+        $sortParams = [];
+
+        $columns = explode( ',', $params[ 'sort' ] );
+        foreach ($columns as $column) {
+            $c = explode( ' ', trim( $column ) );
+
+            if( count( $c ) != 2 )
+                continue;
+
+            $propertyName = $c[ 0 ];
+
+            // validate property
+            if( !isset( $properties[ $propertyName ] ) )
+                continue;
+
+            // validate direction
+            $direction = strtolower( $c[ 1 ] );
+            if( !in_array( $direction, [ 'asc', 'desc' ] ) )
+                continue;
+
+            $sortParams[] = "$propertyName $direction";
+        }
+
+        $return = [
+            'count' => static::totalRecords( $params[ 'where' ] ),
+            'models' => [] ];
+
+        $filter = [
+            'where' => $params[ 'where' ],
+            'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] ];
+
+        $sortStr = implode( ',', $sortParams );
+        if( $sortStr )
+            $filter[ 'orderBy' ] = $sortStr;
+
+        // load models
+        $models = Database::select(
+            static::tablename(),
+            '*',
+            $filter );
+
+        if ( is_array( $models ) ) {
+            foreach ($models as $info) {
+                $id = false;
+
+                $idProperty = static::idProperty();
+                if ( is_array( $idProperty ) ) {
+                    $id = [];
+
+                    foreach( $idProperty as $f )
+                        $id[] = $info[ $f ];
+                } else {
+                    $id = $info[ $idProperty ];
+                }
+
+                $model = new $modelName( $id );
+                $model->cacheProperties( $info );
+                $return[ 'models' ][] = $model;
+            }
+        }
+
+        return $return;
+    }
+
+    public static function findAll(array $params = [])
+    {
+        return new Iterator( get_called_class(), $params );
+    }
+
+    /**
 	 * Fetches a single model according to criteria
 	 *
 	 * @param array $params array( start, limit, sort, search, where )
 	 *
 	 * @return Model|false
 	 */
-	static function findOne( array $params )
-	{
-		$models = static::find( $params );
-		
-		return ( $models[ 'count' ] > 0 ) ? reset( $models[ 'models' ] ) : false;
-	}
-	
-	/**
+    public static function findOne(array $params)
+    {
+        $models = static::find( $params );
+
+        return ( $models[ 'count' ] > 0 ) ? reset( $models[ 'models' ] ) : false;
+    }
+
+    /**
 	 * Gets the toal number of records matching an optional criteria
 	 *
 	 * @param array $where criteria
 	 *
 	 * @return int total
 	 */
-	static function totalRecords( array $where = [] )
-	{
-		return (int)Database::select(
-			static::tablename(),
-			'count(*)',
-			[
-				'where' => $where,
-				'single' => true ] );
-	}
-	
-	/////////////////////////////
-	// CACHE
-	/////////////////////////////
-	
-	/**
+    public static function totalRecords(array $where = [])
+    {
+        return (int) Database::select(
+            static::tablename(),
+            'count(*)',
+            [
+                'where' => $where,
+                'single' => true ] );
+    }
+
+    /////////////////////////////
+    // CACHE
+    /////////////////////////////
+
+    /**
 	 * Loads and caches all of the properties from the database layer
 	 * IMPORTANT: this should be called before getting properties
 	 * any time a model *might* have been updated from an outside source
 	 *
 	 * @return void
 	 */
-	function load()
-	{
-		if( $this->_id === false || !static::$config[ 'database' ][ 'enabled' ] )
-			return;
-		
-		$info = (array)Database::select(
-			static::tablename(),
-			'*',
-			[
-				'where' => $this->id( true ),
-				'singleRow' => true ] );
+    public function load()
+    {
+        if( $this->_id === false || !static::$config[ 'database' ][ 'enabled' ] )
 
-		// marshal values from database
-		foreach( $info as $k => $v )
-			$info[ $k ] = $this->marshalValue( $k, $v );
-		
-		$this->cacheProperties( $info );
-	}
-	
-	/**
+            return;
+
+        $info = (array) Database::select(
+            static::tablename(),
+            '*',
+            [
+                'where' => $this->id( true ),
+                'singleRow' => true ] );
+
+        // marshal values from database
+        foreach( $info as $k => $v )
+            $info[ $k ] = $this->marshalValue( $k, $v );
+
+        $this->cacheProperties( $info );
+    }
+
+    /**
 	 * Updates the local and shared cache with the new value for a property
 	 *
 	 * @param string $property property name
@@ -1114,232 +1105,228 @@ abstract class Model extends Acl
 	 *
 	 * @return void
 	 */
-	function cacheProperty( $property, $value )
-	{
-		// if changing property, remove relation model
-		if( isset( $this->relationModels[ $property ] ) )
-			unset( $this->relationModels[ $property ] );
+    public function cacheProperty($property, $value)
+    {
+        // if changing property, remove relation model
+        if( isset( $this->relationModels[ $property ] ) )
+            unset( $this->relationModels[ $property ] );
 
-		/* Local Cache */
-		$this->localCache[ $property ] = $value;
+        /* Local Cache */
+        $this->localCache[ $property ] = $value;
 
-		/* Shared Cache */
-		$this->cache()->set( $property, $value );
-	}
-	
-	/**
+        /* Shared Cache */
+        $this->cache()->set( $property, $value );
+    }
+
+    /**
 	 * Cache data inside of the local and shared cache
 	 *
 	 * @param array $data data to be cached
 	 *
 	 * @return void
 	 */
-	function cacheProperties( array $data )
-	{
-		foreach( $data as $property => $value )
-			$this->cacheProperty( $property, $value );
-	}
-	
-	/**
+    public function cacheProperties(array $data)
+    {
+        foreach( $data as $property => $value )
+            $this->cacheProperty( $property, $value );
+    }
+
+    /**
 	 * Invalidates a single property in the local and shared caches
 	 *
 	 * @param string $property property name
 	 *
 	 * @return void
 	 */
-	function invalidateCachedProperty( $property )
-	{
-		// if changing property, remove relation model
-		if( isset( $this->relationModels[ $property ] ) )
-			unset( $this->relationModels[ $property ] );
+    public function invalidateCachedProperty($property)
+    {
+        // if changing property, remove relation model
+        if( isset( $this->relationModels[ $property ] ) )
+            unset( $this->relationModels[ $property ] );
 
-		/* Local Cache */
-		unset( $this->localCache[ $property ] );
+        /* Local Cache */
+        unset( $this->localCache[ $property ] );
 
-		/* Shared Cache */
-		$this->cache()->delete( $property );
-	}
-	
-	/**
+        /* Shared Cache */
+        $this->cache()->delete( $property );
+    }
+
+    /**
 	 * Invalidates all cached properties for this model
 	 *
 	 * @return void
 	 */
-	function emptyCache()
-	{
-		// explicitly clear all properties and any other values in cache
-		$properties = array_unique( array_merge(
-			array_keys( static::properties() ),
-			array_keys( $this->localCache ) ) );
+    public function emptyCache()
+    {
+        // explicitly clear all properties and any other values in cache
+        $properties = array_unique( array_merge(
+            array_keys( static::properties() ),
+            array_keys( $this->localCache ) ) );
 
-		foreach( $properties as $property )
-			$this->invalidateCachedProperty( $property );
-	}
+        foreach( $properties as $property )
+            $this->invalidateCachedProperty( $property );
+    }
 
-	/////////////////////////////
-	// PROTECTED METHODS
-	/////////////////////////////
+    /////////////////////////////
+    // PROTECTED METHODS
+    /////////////////////////////
 
-	protected function cache()
-	{
-		if( !$this->sharedCache )
-		{
-			$strategies = static::$config[ 'cache' ][ 'strategies' ];
+    protected function cache()
+    {
+        if (!$this->sharedCache) {
+            $strategies = static::$config[ 'cache' ][ 'strategies' ];
 
-			// generate cache prefix for this model
-			$prefix = static::$config[ 'cache' ][ 'prefix' ] .
-					  strtolower( static::modelName() ) . '.' . $this->_id . '.';
-			
-			$this->sharedCache = new Cache( $strategies, $prefix, $this->app );
-		}
+            // generate cache prefix for this model
+            $prefix = static::$config[ 'cache' ][ 'prefix' ] .
+                      strtolower( static::modelName() ) . '.' . $this->_id . '.';
 
-		return $this->sharedCache;
-	}
+            $this->sharedCache = new Cache( $strategies, $prefix, $this->app );
+        }
 
-	/////////////////////////////
-	// PRIVATE METHODS
-	/////////////////////////////
+        return $this->sharedCache;
+    }
 
-	private function getFromLocalCache( &$properties, &$values )
-	{
-		$idProperties = $this->id( true );
-		$remove = [];
+    /////////////////////////////
+    // PRIVATE METHODS
+    /////////////////////////////
 
-		foreach( $properties as $property )
-		{
-			if( array_key_exists( $property, $this->localCache ) )
-				$values[ $property ] = $this->marshalValue( $property, $this->localCache[ $property ] );
-			else if( static::isIdProperty( $property ) )
-				$values[ $property ] = $this->marshalValue( $property, $idProperties[ $property ] );
+    private function getFromLocalCache(&$properties, &$values)
+    {
+        $idProperties = $this->id( true );
+        $remove = [];
 
-			// mark index of property to remove from list of properties
-			if( isset( $values[ $property ] ) )
-				$remove[] = $property;
-		}
+        foreach ($properties as $property) {
+            if( array_key_exists( $property, $this->localCache ) )
+                $values[ $property ] = $this->marshalValue( $property, $this->localCache[ $property ] );
+            elseif( static::isIdProperty( $property ) )
+                $values[ $property ] = $this->marshalValue( $property, $idProperties[ $property ] );
 
-		foreach( $remove as $property )
-		{
-			$index = array_search( $property, $properties );
-			unset( $properties[ $index ] );
-		}
-	}
+            // mark index of property to remove from list of properties
+            if( isset( $values[ $property ] ) )
+                $remove[] = $property;
+        }
 
-	private function getFromSharedCache( &$properties, &$values )
-	{
-		$cached = $this->cache()->get( $properties, true );
-		
-		foreach( $cached as $property => $value )
-		{
-			$values[ $property ] = $this->marshalValue( $property, $value );
+        foreach ($remove as $property) {
+            $index = array_search( $property, $properties );
+            unset( $properties[ $index ] );
+        }
+    }
 
-			// remove property from list of remaining
-			$index = array_search( $property, $properties );
-			unset( $properties[ $index ] );
-		}
-	}
+    private function getFromSharedCache(&$properties, &$values)
+    {
+        $cached = $this->cache()->get( $properties, true );
 
-	private function getFromDatabase( &$properties, &$values )
-	{
-		$dbValues = Database::select(
-			static::tablename(),
-			implode(',', $properties),
-			[
-				'where' => $this->id( true ),
-				'singleRow' => true ] );
+        foreach ($cached as $property => $value) {
+            $values[ $property ] = $this->marshalValue( $property, $value );
 
-		foreach( (array)$dbValues as $property => $value )
-		{
-			$values[ $property ] = $this->marshalValue( $property, $value );
-			$this->cacheProperty( $property, $value );
+            // remove property from list of remaining
+            $index = array_search( $property, $properties );
+            unset( $properties[ $index ] );
+        }
+    }
 
-			// remove property from list of remaining
-			$index = array_search( $property, $properties );
-			unset( $properties[ $index ] );
-		}
-	}
+    private function getFromDatabase(&$properties, &$values)
+    {
+        $dbValues = Database::select(
+            static::tablename(),
+            implode(',', $properties),
+            [
+                'where' => $this->id( true ),
+                'singleRow' => true ] );
 
-	private function getFromDefaultValues( &$properties, &$values )
-	{
-		$remove = [];
+        foreach ( (array) $dbValues as $property => $value ) {
+            $values[ $property ] = $this->marshalValue( $property, $value );
+            $this->cacheProperty( $property, $value );
 
-		$availableProperties = static::properties();
+            // remove property from list of remaining
+            $index = array_search( $property, $properties );
+            unset( $properties[ $index ] );
+        }
+    }
 
-		foreach( $properties as $property )
-		{
-			if( isset( $availableProperties[ $property ] ) && isset( $availableProperties[ $property ][ 'default' ] ) )
-			{
-				$values[ $property ] = $this->marshalValue( $property, $availableProperties[ $property ][ 'default' ] );
+    private function getFromDefaultValues(&$properties, &$values)
+    {
+        $remove = [];
 
-				// mark index of property to remove from list of properties
-				$remove[] = $property;
-			}
-		}
+        $availableProperties = static::properties();
 
-		foreach( $remove as $property )
-		{
-			$index = array_search( $property, $properties );
-			unset( $properties[ $index ] );
-		}
-	}
+        foreach ($properties as $property) {
+            if ( isset( $availableProperties[ $property ] ) && isset( $availableProperties[ $property ][ 'default' ] ) ) {
+                $values[ $property ] = $this->marshalValue( $property, $availableProperties[ $property ][ 'default' ] );
 
-	private function validate( $property, $field, &$value )
-	{
-		$valid = true;
+                // mark index of property to remove from list of properties
+                $remove[] = $property;
+            }
+        }
 
-		if( isset( $property[ 'validate' ] ) && is_callable( $property[ 'validate' ] ) )
-			$valid = call_user_func_array( $property[ 'validate' ], [ $value ] );
-		else if( isset( $property[ 'validate' ] ) )
-			$valid = Validate::is( $value, $property[ 'validate' ] );
-		
-		if( !$valid )
-			$this->app[ 'errors' ]->push( [
-				'error' => VALIDATION_FAILED,
-				'params' => [
-					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
+        foreach ($remove as $property) {
+            $index = array_search( $property, $properties );
+            unset( $properties[ $index ] );
+        }
+    }
 
-		return $valid;
-	}
+    private function validate($property, $field, &$value)
+    {
+        $valid = true;
 
-	private function checkUniqueness( $property, $field, $value )
-	{
-		if( static::totalRecords( [ $field => $value ] ) > 0 )
-		{
-			$this->app[ 'errors' ]->push( [
-				'error' => VALIDATION_NOT_UNIQUE,
-				'params' => [
-					'field' => $field,
-					'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
-			
-			return false;
-		}
+        if( isset( $property[ 'validate' ] ) && is_callable( $property[ 'validate' ] ) )
+            $valid = call_user_func_array( $property[ 'validate' ], [ $value ] );
+        elseif( isset( $property[ 'validate' ] ) )
+            $valid = Validate::is( $value, $property[ 'validate' ] );
 
-		return true;
-	}
+        if( !$valid )
+            $this->app[ 'errors' ]->push( [
+                'error' => VALIDATION_FAILED,
+                'params' => [
+                    'field' => $field,
+                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
 
-	private function marshalValue( $property, $value )
-	{
-		// look up property (if it exists)
-		$pData = static::properties( $property );
-		if( !$pData )
-			return $value;
+        return $valid;
+    }
 
-		if( Util::array_value( $pData, 'null' ) && $value == '' )
-			return null;
+    private function checkUniqueness($property, $field, $value)
+    {
+        if ( static::totalRecords( [ $field => $value ] ) > 0 ) {
+            $this->app[ 'errors' ]->push( [
+                'error' => VALIDATION_NOT_UNIQUE,
+                'params' => [
+                    'field' => $field,
+                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
 
-		$type = Util::array_value( $pData, 'type' );
+            return false;
+        }
 
-		if( $type == 'boolean' )
-			return ($value == '1') ? true : false;
+        return true;
+    }
 
-		// ensure numbers/dates are cast as numbers
-		// instead of strings by adding 0
-		if( in_array( $type, [ 'number', 'date' ] ) )
-			return $value + 0;
+    private function marshalValue($property, $value)
+    {
+        // look up property (if it exists)
+        $pData = static::properties( $property );
+        if( !$pData )
 
-		if( $type == 'json' && is_string( $value ) )
-			return (array)json_decode( $value, true );
+            return $value;
 
-		return $value;
-	}
+        if( Util::array_value( $pData, 'null' ) && $value == '' )
+
+            return null;
+
+        $type = Util::array_value( $pData, 'type' );
+
+        if( $type == 'boolean' )
+
+            return ($value == '1') ? true : false;
+
+        // ensure numbers/dates are cast as numbers
+        // instead of strings by adding 0
+        if( in_array( $type, [ 'number', 'date' ] ) )
+
+            return $value + 0;
+
+        if( $type == 'json' && is_string( $value ) )
+
+            return (array) json_decode( $value, true );
+
+        return $value;
+    }
 }

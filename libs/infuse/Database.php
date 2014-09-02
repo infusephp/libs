@@ -8,17 +8,17 @@
  * @copyright 2014 Jared King
  * @license MIT
  */
- 
+
 namespace infuse;
 
 use Pimple\Container;
- 
+
 class Database
 {
 	/////////////////////////////
-	// Private class variables
-	/////////////////////////////
-	
+    // Private class variables
+    /////////////////////////////
+
 	private static $config = [
 		'type' => '',
 		'host' => '',
@@ -27,20 +27,20 @@ class Database
 		'password' => '',
 		'productionLevel' => false
 	];
-	
+
 	private static $PDO;
 	private static $numrows;
 	private static $batch = false;
 	private static $batchQueue;
 	private static $initializeAttempted;
 	private static $injectedApp;
-	
+
 	/**
 	 * Sets up the settings used to interact with database
 	 *
 	 * @param array $config
 	 */
-	static function configure( array $config )
+	public static function configure(array $config)
 	{
 		self::$config = array_replace( self::$config, $config );
 
@@ -53,7 +53,7 @@ class Database
 	 *
 	 * @param Container $app
 	 */
-	static function inject( Container $app )
+	public static function inject(Container $app)
 	{
 		self::$injectedApp = $app;
 	}
@@ -63,45 +63,41 @@ class Database
 	*
 	* @return boolean true if successful
 	*/
-	static function initialize()
+	public static function initialize()
 	{
 		if( self::$initializeAttempted )
 			return self::$PDO instanceof \PDO;
-		
+
 		self::$initializeAttempted = true;
-		
-		try
-		{
+
+		try {
 			// Initialize database
-			if( self::$PDO == null )
-			{
+            if (self::$PDO == null) {
 				$dsn = '';
 
 				if( strpos( self::$config[ 'type' ], 'sqlite' ) === 0 )
 					// i.e. sqlite:memory:
-					$dsn = self::$config[ 'type' ] . ':' . self::$config[ 'host' ];
+                    $dsn = self::$config[ 'type' ] . ':' . self::$config[ 'host' ];
 				else
 					// i.e. mysql:host=localhost;dbname=test
-					$dsn = self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ];
+                    $dsn = self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ];
 
 				self::$PDO = new \PDO( $dsn, Util::array_value( self::$config, 'user' ), Util::array_value( self::$config, 'password' ) );
 			}
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->alert( $e );
 
 			die( 'Could not connect to database.' );
 
 			return false;
 		}
-		
+
 		// Set error level
-		if( self::$config[ 'productionLevel' ] )
+        if( self::$config[ 'productionLevel' ] )
 			self::$PDO->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
 		else
 			self::$PDO->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-						
+
 		return true;
 	}
 
@@ -110,11 +106,11 @@ class Database
 	 *
 	 * @return string
 	 */
-	static function type()
+	public static function type()
 	{
 		return Util::array_value( self::$config, 'type' );
 	}
-	
+
 	/**
 	* Generates and executes a select query.
 	*
@@ -135,56 +131,51 @@ class Database
 	*
 	* @return boolean success
 	*/
-	static function select( $tablename, $fields, $parameters = [] )
+	public static function select($tablename, $fields, $parameters = [])
 	{
 		if( !self::initialize() )
 			return false;
-	
-		if( Util::array_value( $parameters, 'single' ) )
-		{
+
+		if ( Util::array_value( $parameters, 'single' ) ) {
 			$parameters[ 'singleRow' ] = true;
 			$parameters[ 'fetchStyle' ] = 'singleColumn';
-		}
-		else if( Util::array_value( $parameters, 'singleColumn' ) )
+		} elseif( Util::array_value( $parameters, 'singleColumn' ) )
 			$parameters[ 'fetchStyle' ] = 'singleColumn';
 
 		// escape identifiers in field list
-		$escapedFields = implode( ',', array_map( function( $field ) {
+        $escapedFields = implode( ',', array_map( function ($field) {
 			return self::escapeIdentifier( $field );
 		}, explode( ',', $fields ) ) );
 
 		// add backticks to table name, unless a space is found
-		// in which case, the developer is responsible for adding backticks where needed
-		$tablename = self::escapeIdentifier( $tablename );
+        // in which case, the developer is responsible for adding backticks where needed
+        $tablename = self::escapeIdentifier( $tablename );
 
 		$sql = "SELECT $escapedFields FROM $tablename";
-		
+
 		$whereData = (isset($parameters['where'])) ? $parameters[ 'where' ] : [];
 		$sql .= ' ' . self::generateWhereString( $whereData );
-		
+
 		if( isset( $parameters[ 'groupBy' ] ) )
 			$sql .= ' GROUP BY ' . $parameters[ 'groupBy' ];
 
 		if( isset( $parameters[ 'orderBy' ] ) )
 			$sql .= ' ORDER BY ' . $parameters[ 'orderBy' ];
-		
+
 		if( isset( $parameters[ 'limit' ] ) )
 			$sql .= ' LIMIT ' . $parameters[ 'limit' ];
-		
+
 		$fetchStyle = \PDO::FETCH_ASSOC;
-		if( isset( $parameters[ 'fetchStyle' ] ) )
-		{
-			switch( $parameters[ 'fetchStyle' ] )
-			{
-				case 'assoc':			$fetchStyle = \PDO::FETCH_ASSOC; 	break;
-				case 'num':				$fetchStyle = \PDO::FETCH_NUM; 		break;
-				case 'singleColumn':	$fetchStyle = \PDO::FETCH_COLUMN; 	break;
-				default:				$fetchStyle = \PDO::FETCH_ASSOC; 	break;
+		if ( isset( $parameters[ 'fetchStyle' ] ) ) {
+			switch ($parameters[ 'fetchStyle' ]) {
+				case 'assoc':            $fetchStyle = \PDO::FETCH_ASSOC;    break;
+				case 'num':                $fetchStyle = \PDO::FETCH_NUM;        break;
+				case 'singleColumn':    $fetchStyle = \PDO::FETCH_COLUMN;    break;
+				default:                $fetchStyle = \PDO::FETCH_ASSOC;    break;
 			}
 		}
-		
-		try
-		{
+
+		try {
 			$statement = self::$PDO->prepare( $sql );
 			$statement->execute( $whereData );
 
@@ -193,20 +184,18 @@ class Database
 				$result = $statement->fetch( $fetchStyle );
 			else
 				$result = $statement->fetchAll( $fetchStyle );
-			
+
 			self::$numrows = $statement->rowCount();
 
 	        return $result;
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Executes a SQL query on the database
 	*
@@ -216,35 +205,32 @@ class Database
 	*
 	* @return mixed result
 	*/
-	static function sql( $sql )
+	public static function sql($sql)
 	{
 		if( !self::initialize() )
 			return false;
 
-		try
-		{
+		try {
 			return self::$PDO->query( $sql );
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Gets the number of rows affected by the last query
 	*
 	* @return int number of rows affected by last query
 	*/
-	static function numrows()
+	public static function numrows()
 	{
 		if( !self::initialize() )
 			return false;
 
-		return (int)self::$numrows;
+		return (int) self::$numrows;
 	}
 
 	/**
@@ -252,79 +238,70 @@ class Database
 	*
 	* @return int last inserted ID
 	*/
-	static function lastInsertId()
+	public static function lastInsertId()
 	{
 		if( !self::initialize() )
 			return false;
 
-		try
-		{
+		try {
 			return self::$PDO->lastInsertId();
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Gets a listing of the tables in the database
 	*
 	* @return array tables
 	*/
-	static function listTables()
+	public static function listTables()
 	{
 		if( !self::initialize() )
 			return false;
-	
+
 		$sql = 'SHOW TABLES';
 
-		try
-		{
+		try {
 			$result = self::$PDO->query( $sql );
-		
+
 			return ($result) ? $result->fetchAll( \PDO::FETCH_COLUMN ) : [];
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Gets a listing of the columns in a table
 	*
 	* @return array columns
 	*/
-	static function listColumns( $tablename )
+	public static function listColumns($tablename)
 	{
 		if( !self::initialize() )
 			return false;
-	
+
 		$tablename = self::escapeIdentifier( $tablename );
 
 		$sql = "SHOW COLUMNS FROM $tablename";
 
-		try
-		{
+		try {
 			$result = self::$PDO->query( $sql );
-			
+
 			return ($result) ? $result->fetchAll( \PDO::FETCH_ASSOC ) : [];
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Converts a schema into SQL statements
 	 *
@@ -334,11 +311,11 @@ class Database
 	 *
 	 * @return string sql
 	 */
-	static function schemaToSql( $tablename, $schema, $newTable = true )
+	public static function schemaToSql($tablename, $schema, $newTable = true)
 	{
 		if( !$schema || count( $schema ) == 0 )
 			return false;
-			
+
 		$tablename = self::escapeIdentifier( $tablename );
 
 		$sql = "ALTER TABLE $tablename\n";
@@ -349,8 +326,7 @@ class Database
 		$primaryKeys = [];
 
 		$cols = [];
-		foreach( $schema as $column )
-		{
+		foreach ($schema as $column) {
 			$col = "\t";
 
 			if( !$newTable )
@@ -359,18 +335,17 @@ class Database
 			$col .= $tablename = self::escapeIdentifier( $column[ 'Field' ] ) . ' ' . $column[ 'Type' ] . ' ';
 
 			$col .= ( strtolower( $column['Null'] ) == 'yes' ) ? 'NULL' : 'NOT NULL';
-			
+
 			if( $column[ 'Default' ] )
 				$col .= " DEFAULT '{$column['Default']}'";
 
 			if( $column['Extra'] )
 				$col .= " {$column['Extra']}";
 
-			if( $column['Key'] )
-			{
+			if ($column['Key']) {
 				if( $column['Key'] == 'PRI' )
 					$primaryKeys[] = $column[ 'Field' ];
-				else if( $newTable )
+				elseif( $newTable )
 					$col .= ' ' . $column['Key'];
 			}
 
@@ -378,19 +353,16 @@ class Database
 		}
 
 		// TODO
-		// index
-		// unique index
-		
+        // index
+        // unique index
+
 		// quote primary keys
-		$primaryKeys = array_map( function( $field ) { return self::escapeIdentifier( $field ); }, $primaryKeys );
+        $primaryKeys = array_map( function ($field) { return self::escapeIdentifier( $field ); }, $primaryKeys );
 
 		// primary key
-		if( $newTable )
-		{
-			$cols[] = "\t" . 'PRIMARY KEY(' . implode( ',', $primaryKeys ) . ')';		
-		}
-		else
-		{
+        if ($newTable) {
+			$cols[] = "\t" . 'PRIMARY KEY(' . implode( ',', $primaryKeys ) . ')';
+		} else {
 			$cols[] = "\t" . 'DROP PRIMARY KEY';
 			$cols[] = "\t" . 'ADD PRIMARY KEY(' . implode( ',', $primaryKeys ) . ')';
 		}
@@ -403,56 +375,50 @@ class Database
 			$sql .= "\n ;";
 
 		return $sql;
-	}	
-		
+	}
+
 	////////////////////////////////
-	// SETTERS	
-	////////////////////////////////
-	
+    // SETTERS
+    ////////////////////////////////
+
 	/**
 	 * Notifies the class to start batching insert, update, delete queries
 	 *
 	 * @return boolean success
 	 */
-	static function startBatch()
+	public static function startBatch()
 	{
 		if( !self::initialize() )
 			return false;
-	
-		try
-		{
+
+		try {
 			return self::$PDO->beginTransaction();
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Executes all of the queries in the batch queue
 	 *
 	 * @return boolean success
 	 */
-	static function executeBatch()
+	public static function executeBatch()
 	{
 		if( !self::initialize() )
 			return false;
-	
-		try
-		{
+
+		try {
 			return self::$PDO->commit();
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Inserts a row into the database
 	*
@@ -461,7 +427,7 @@ class Database
 	*
 	* @return boolean true if successful
 	*/
-	static function insert( $tablename, array $data )
+	public static function insert($tablename, array $data)
 	{
 		if( !self::initialize() )
 			return false;
@@ -472,26 +438,23 @@ class Database
 
 		$sql .= ' (' . self::implodeKeys( ',', $data, true ) . ')';
 		$sql .= ' VALUES (:' . self::implodeKeys( ',:', $data, false, true ) . ')';
-		
-		// strip periods from named parameters, MySQL does not like this
-		// i.e. 'u.uid' => 'uuid'
-		$data = self::stripCharactersFromKeys( [ '.' ], $data );
 
-		try
-		{
+		// strip periods from named parameters, MySQL does not like this
+        // i.e. 'u.uid' => 'uuid'
+        $data = self::stripCharactersFromKeys( [ '.' ], $data );
+
+		try {
 			$statement = self::$PDO->prepare( $sql );
-			
+
 			return $statement->execute($data);
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Inserts multiple rows at a time
 	 *
@@ -503,58 +466,54 @@ class Database
 	 *
 	 * @return boolean succeess
 	 */
-	static function insertBatch( $tablename, array $fields, array $data )
+	public static function insertBatch($tablename, array $fields, array $data)
 	{
 		if( !self::initialize() )
 			return false;
-	
+
 		if( count( $data ) == 0 )
 			return true;
 
 		$success = true;
-	
+
 		// quote fields
-		$fields = array_map( function( $field ) { return self::escapeIdentifier( $field ); }, $fields );
-		
+        $fields = array_map( function ($field) { return self::escapeIdentifier( $field ); }, $fields );
+
 		// prepare the values to be inserted
-		$insert_values = [];
+        $insert_values = [];
 		$question_marks = [];
-		foreach( $data as $d )
-		{
+		foreach ($data as $d) {
 			// build the question marks
-		    $result = [];
+            $result = [];
 	        for( $x=0; $x < count( $d ); $x++ )
 	            $result[] = '?';
 			$question_marks[] = '(' . implode( ',', $result ) . ')';
-			
+
 			// get the insert values
-			$insert_values = array_merge( $insert_values, array_values( $d ) );
+            $insert_values = array_merge( $insert_values, array_values( $d ) );
 		}
-		
+
 		// generate the SQL
-		$tablename = self::escapeIdentifier( $tablename );
+        $tablename = self::escapeIdentifier( $tablename );
 		$sql = "INSERT INTO $tablename";
 		$sql .= ' (' . implode( ",", $fields ) . ')';
 		$sql .= ' VALUES ' . implode( ',', $question_marks );
-		
-		try
-		{
+
+		try {
 			self::$PDO->beginTransaction();
 
 			$statement = self::$PDO->prepare( $sql );
 			$statement->execute( $insert_values );
-			
+
 			return self::$PDO->commit();
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Builds and executes an update query
 	*
@@ -564,7 +523,7 @@ class Database
 	*
 	* @return boolean true if successful
 	*/
-	static function update( $tablename, array $data, array $where = [] )
+	public static function update($tablename, array $data, array $where = [])
 	{
 		if( !self::initialize() )
 			return false;
@@ -574,36 +533,33 @@ class Database
 		$sql = "UPDATE $tablename";
 
 		// generate named update parameters from input data
-		$sql .= ' SET ' . implode( ',', self::generateNamedParametersStrings( $data ) );
+        $sql .= ' SET ' . implode( ',', self::generateNamedParametersStrings( $data ) );
 
 		// generate where string using named parameters
-		// TODO this is a hack to format the where parameters to look like
-		// the input generateWhereString() expects
-		// the values are not used, which is why they are set to empty strings
-		$whereData = [];
+        // TODO this is a hack to format the where parameters to look like
+        // the input generateWhereString() expects
+        // the values are not used, which is why they are set to empty strings
+        $whereData = [];
 		foreach( $where as $key )
 			$whereData[ $key ] = '';
 		$sql .= ' ' . self::generateWhereString( $whereData );
 
 		// strip periods from named parameters, MySQL does not like this
-		// i.e. 'u.uid' => 'uuid'
-		$data = self::stripCharactersFromKeys( [ '.' ], $data );
-		
-		try
-		{
+        // i.e. 'u.uid' => 'uuid'
+        $data = self::stripCharactersFromKeys( [ '.' ], $data );
+
+		try {
 			$statement = self::$PDO->prepare( $sql );
 
 			return $statement->execute( $data );
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	/**
 	* Builds and executes a delete query
 	*
@@ -612,7 +568,7 @@ class Database
 	*
 	* @return boolean true if successful
 	*/
-	static function delete( $tablename, array $where )
+	public static function delete($tablename, array $where)
 	{
 		if( !self::initialize() )
 			return false;
@@ -620,26 +576,23 @@ class Database
 		$sql = "DELETE FROM $tablename";
 
 		// generate where string using named parameters
-		$sql .= ' ' . self::generateWhereString( $where );
+        $sql .= ' ' . self::generateWhereString( $where );
 
-		try
-		{
+		try {
 			$statement = self::$PDO->prepare( $sql );
 
 			return $statement->execute( $where );
-		}
-		catch( \PDOException $e )
-		{
+		} catch ( \PDOException $e ) {
 			self::$injectedApp[ 'logger' ]->error( 'PDOException with query: ' . $sql );
 			self::$injectedApp[ 'logger' ]->error( $e );
 
 			return false;
 		}
 	}
-	
+
 	////////////////////////////
-	// Private Class Functions
-	////////////////////////////
+    // Private Class Functions
+    ////////////////////////////
 
 	/**
 	 * Produces a SQL where string using PDO named parameters from input data
@@ -648,33 +601,30 @@ class Database
 	 *
 	 * @return string SQL
 	 */
-	private static function generateWhereString( array &$where )
+	private static function generateWhereString(array &$where)
 	{
 		$whereComposition = [];
 
-		foreach( $where as $key => $value )
-		{
+		foreach ($where as $key => $value) {
 			// If the index is numeric, then it is not a named parameter. Instead,
-			// it must be a SQL string containing other operators besides equality.
-			//		i.e. 'uid > 5'
-			// Thus, it should not be parameterized like the other where parameters
-			if( is_numeric( $key ) )
-			{
+            // it must be a SQL string containing other operators besides equality.
+            //		i.e. 'uid > 5'
+            // Thus, it should not be parameterized like the other where parameters
+            if ( is_numeric( $key ) ) {
 				if( !empty( $value ) )
 					$whereComposition[] = $value;
-				
+
 				unset( $where[ $key ] );
 			}
 		}
-		
+
 		$namedParameters = self::generateNamedParametersStrings( $where );
-		if( count( $namedParameters ) > 0 )
-		{
+		if ( count( $namedParameters ) > 0 ) {
 			$whereComposition = array_merge( $whereComposition, $namedParameters );
 
 			// strip periods from named parameters, MySQL does not like this
-			// i.e. 'u.uid' => 'uuid'
-			$where = self::stripCharactersFromKeys( [ '.' ], $where );
+            // i.e. 'u.uid' => 'uuid'
+            $where = self::stripCharactersFromKeys( [ '.' ], $where );
 		}
 
 		if( count( $whereComposition ) > 0 )
@@ -688,12 +638,12 @@ class Database
 	 * from an array of input data
 	 *
 	 * @param array $data input data
-	 * 
+	 *
 	 * @return array named parameters
 	 */
-	private static function generateNamedParametersStrings( array $data )
+	private static function generateNamedParametersStrings(array $data)
 	{
-		return array_map( function( $key ) {
+		return array_map( function ($key) {
 			$escapedKey = self::escapeIdentifier( $key );
 			$sanitizedKey = str_replace( '.', '', $key );
 			return "$escapedKey = :$sanitizedKey";
@@ -708,10 +658,9 @@ class Database
 	 *
 	 * @return array data with modified keys
 	 */
-	private static function stripCharactersFromKeys( array $characters, array $data )
+	private static function stripCharactersFromKeys(array $characters, array $data)
 	{
-		foreach( $data as $oldKey => $value )
-		{
+		foreach ($data as $oldKey => $value) {
 			unset( $data[ $oldKey ] );
 			$newKey = str_replace( $characters, array_fill( 0, count( $characters ), '' ), $oldKey );
 			$data[ $newKey ] = $value;
@@ -719,7 +668,7 @@ class Database
 
 		return $data;
 	}
-	
+
 	/**
 	 * Implodes the keys of input data
 	 *
@@ -730,12 +679,12 @@ class Database
 	 *
 	 * @return string flattened keys
 	 */
-	private static function implodeKeys( $glue, array $data, $escapeIdentifier = false, $stripPeriods = false )
+	private static function implodeKeys($glue, array $data, $escapeIdentifier = false, $stripPeriods = false)
 	{
 	    $keys = array_keys( $data );
 
 	    if( $escapeIdentifier )
-	    	$keys = array_map( function( $k ) {
+	    	$keys = array_map( function ($k) {
 	    		return self::escapeIdentifier( $k );
 	    	}, $keys );
 
@@ -754,11 +703,11 @@ class Database
 	 *
 	 * @return string escaped identifier
 	 */
-	private static function escapeIdentifier( $word, $escapeChar = '`' )
+	private static function escapeIdentifier($word, $escapeChar = '`')
 	{
 		// currently this only wraps words containing only letters
-		// anything else (i.e. '.' or ' ') will not be touched
-		if( preg_match( '/^[A-Za-z]*$/', $word ) )
+        // anything else (i.e. '.' or ' ') will not be touched
+        if( preg_match( '/^[A-Za-z]*$/', $word ) )
 			return $escapeChar . $word . $escapeChar;
 
 		return $word;

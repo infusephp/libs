@@ -15,20 +15,20 @@ use Pimple\Container;
 
 class ErrorStack
 {
-	/////////////////////////////
-	// Private Class Variables
-	/////////////////////////////
-	
-	private $stack = [];
-	private $context = '';
-	private $app;
-	
-	function __construct( Container $app )
-	{
-		$this->app = $app;
-	}
+    /////////////////////////////
+    // Private Class Variables
+    /////////////////////////////
 
-	/**
+    private $stack = [];
+    private $context = '';
+    private $app;
+
+    public function __construct(Container $app)
+    {
+        $this->app = $app;
+    }
+
+    /**
 	 * Adds an error message to the stack
 	 *
 	 * @param array $error
@@ -40,41 +40,42 @@ class ErrorStack
 	 *
 	 * @return boolean was error valid?
 	 */
-	function push( array $error )
-	{
-		if( !isset( $error[ 'context' ] ) )
-			$error[ 'context' ] = $this->context;
-			
-		if( !isset( $error[ 'params' ] ) )
-			$error[ 'params' ] = [];
-		
-		if( !Util::array_value( $error, 'error' ) )
-			return false;
-		
-		$this->stack[] = $error;
-		
-		return true;
-	}
+    public function push(array $error)
+    {
+        if( !isset( $error[ 'context' ] ) )
+            $error[ 'context' ] = $this->context;
 
-	/**
+        if( !isset( $error[ 'params' ] ) )
+            $error[ 'params' ] = [];
+
+        if( !Util::array_value( $error, 'error' ) )
+
+            return false;
+
+        $this->stack[] = $error;
+
+        return true;
+    }
+
+    /**
 	 * Sets the current default error context
 	 *
 	 * @param string $context
 	 */
-	function setCurrentContext( $context = '' )
-	{
-		$this->context = $context;
-	}
-	
-	/**
+    public function setCurrentContext($context = '')
+    {
+        $this->context = $context;
+    }
+
+    /**
 	 * Clears the current default error context
 	 */
-	function clearCurrentContext( )
-	{
-		$this->context = '';
-	}
-	
-	/**
+    public function clearCurrentContext()
+    {
+        $this->context = '';
+    }
+
+    /**
 	 * Gets all of the errors on the stack and also attempts
 	 * translation using the Locale class
 	 *
@@ -83,26 +84,24 @@ class ErrorStack
 	 *
 	 * @return array errors
 	 */
-	function errors( $context = false, $locale = false )
-	{
-		$errors = [];
-		
-		foreach( $this->stack as $error )
-		{
-			if( !$context || $error[ 'context' ] == $context )
-			{
-				// attempt to translate error into a message
-				if( !isset( $error[ 'message' ] ) )
-					$error[ 'message' ] = $this->app[ 'locale' ]->t( $error[ 'error' ], $error[ 'params' ], $locale );
+    public function errors($context = false, $locale = false)
+    {
+        $errors = [];
 
-				$errors[] = $error;
-			}
-		}
-		
-		return $errors;
-	}
-	
-	/**
+        foreach ($this->stack as $error) {
+            if (!$context || $error[ 'context' ] == $context) {
+                // attempt to translate error into a message
+                if( !isset( $error[ 'message' ] ) )
+                    $error[ 'message' ] = $this->app[ 'locale' ]->t( $error[ 'error' ], $error[ 'params' ], $locale );
+
+                $errors[] = $error;
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
 	 * Gets the messages of errors on the stack
 	 *
 	 * @param string $context optional context
@@ -110,38 +109,38 @@ class ErrorStack
 	 *
 	 * @return array errors
 	 */
-	function messages( $context = null, $locale = false )
-	{
-		$errors = $this->errors( $context );
-		
-		$messages = [];
-		
-		foreach( $errors as $error )
-			$messages[] = $error[ 'message' ];
-		
-		return $messages;
-	}
-	
-	/**
+    public function messages($context = null, $locale = false)
+    {
+        $errors = $this->errors( $context );
+
+        $messages = [];
+
+        foreach( $errors as $error )
+            $messages[] = $error[ 'message' ];
+
+        return $messages;
+    }
+
+    /**
 	 * Gets an error for a specific parameter on the stack
 	 *
 	 * @param string $value value we are searching for
 	 * @param string $param parameter name
 	 *
 	 * @return array|false
-	 */	
-	function find( $value, $param = 'field' )
-	{
-		foreach( $this->stack as $error )
-		{
-			if( Util::array_value( $error[ 'params' ], $param ) === $value )
-				return $error;
-		}
-		
-		return false;
-	}
+	 */
+    public function find($value, $param = 'field')
+    {
+        foreach ($this->stack as $error) {
+            if( Util::array_value( $error[ 'params' ], $param ) === $value )
 
-	/**
+                return $error;
+        }
+
+        return false;
+    }
+
+    /**
 	 * Checks if an error exists with a specific parameter on the stack
 	 *
 	 * @param string $value value we are searching for
@@ -149,16 +148,16 @@ class ErrorStack
 	 *
 	 * @return boolean
 	 */
-	function has( $value, $param = 'field' )
-	{
-		return $this->find( $value, $param ) !== false;
-	}
+    public function has($value, $param = 'field')
+    {
+        return $this->find( $value, $param ) !== false;
+    }
 
-	/**
+    /**
 	 * Clears the error stack
 	 */
-	function clear()
-	{
-		$this->stack = [];
-	}
+    public function clear()
+    {
+        $this->stack = [];
+    }
 }

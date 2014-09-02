@@ -15,202 +15,202 @@ use Pimple\Container;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
-	static $app;
+    public static $app;
 
-	public static function setUpBeforeClass()
-	{
-		self::$app = new Container;
-	}
-	
-	public function setUp()
-	{
-		Router::configure( [
-			'namespace' => '',
-			'defaultController' => 'MockController' ] );
+    public static function setUpBeforeClass()
+    {
+        self::$app = new Container();
+    }
 
-		MockController::$staticRouteCalled = false;
-		MockController::$dynamicRouteCalled = false;
-		MockController::$dynamicRouteParams = [];
-		MockController::$indexRouteCalled = false;
-	}
+    public function setUp()
+    {
+        Router::configure( [
+            'namespace' => '',
+            'defaultController' => 'MockController' ] );
 
-	public function testStaticRoute()
-	{
-		$testRoutes = [
-			'get /this/is/a' => [ 'MockController', 'fail' ],
-			'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
-			'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
-			'post /this/is/a/test/route' => [ 'MockController', 'staticRoute' ],
-			'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
-			'get /this/is/a/test/route/' => [ 'MockController', 'fail' ],
-		];
+        MockController::$staticRouteCalled = false;
+        MockController::$dynamicRouteCalled = false;
+        MockController::$dynamicRouteParams = [];
+        MockController::$indexRouteCalled = false;
+    }
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'POST';
+    public function testStaticRoute()
+    {
+        $testRoutes = [
+            'get /this/is/a' => [ 'MockController', 'fail' ],
+            'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
+            'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
+            'post /this/is/a/test/route' => [ 'MockController', 'staticRoute' ],
+            'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
+            'get /this/is/a/test/route/' => [ 'MockController', 'fail' ],
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/this/is/a/test/route' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'POST';
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( MockController::$staticRouteCalled );
-	}
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
-	public function testDynamicRoute()
-	{
-		$testRoutes = [
-			'get /this/is/a' => 'fail',
-			'get /this/is/a/test/route' => 'fail',
-			'post /:a1/:a2/:a3/:a4/:a5' => 'fail',
-			'put /dynamic/:a1/:a2/:a3/:a4' => 'dynamicRoute',
-			'delete /this/is/a/test/route' => 'fail',
-			'get /this/is/a/test/route/' => 'fail',
-		];
+        $this->assertTrue( MockController::$staticRouteCalled );
+    }
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'PUT';
+    public function testDynamicRoute()
+    {
+        $testRoutes = [
+            'get /this/is/a' => 'fail',
+            'get /this/is/a/test/route' => 'fail',
+            'post /:a1/:a2/:a3/:a4/:a5' => 'fail',
+            'put /dynamic/:a1/:a2/:a3/:a4' => 'dynamicRoute',
+            'delete /this/is/a/test/route' => 'fail',
+            'get /this/is/a/test/route/' => 'fail',
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/dynamic/1/2/3/4' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'PUT';
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/dynamic/1/2/3/4' );
 
-		$this->assertTrue( MockController::$dynamicRouteCalled );
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
-		// test route params
-		$expected = [ 'a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4 ];
-		$this->assertEquals( MockController::$dynamicRouteParams, $expected );
-	}
+        $this->assertTrue( MockController::$dynamicRouteCalled );
 
-	public function testSingleAction()
-	{
-		$testRoutes = [
-			'get /this/is/a/test/route' => 'fail',
-			'post /this/is/a/test/route/:test' => 'fail',
-			'post /this/is/a/test/route' => 'staticRoute',
-			'delete /this/is/a/test/route' => 'fail',
-			'post /this/is/a/test/route/' => 'fail',
-		];
+        // test route params
+        $expected = [ 'a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4 ];
+        $this->assertEquals( MockController::$dynamicRouteParams, $expected );
+    }
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'POST';
+    public function testSingleAction()
+    {
+        $testRoutes = [
+            'get /this/is/a/test/route' => 'fail',
+            'post /this/is/a/test/route/:test' => 'fail',
+            'post /this/is/a/test/route' => 'staticRoute',
+            'delete /this/is/a/test/route' => 'fail',
+            'post /this/is/a/test/route/' => 'fail',
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/this/is/a/test/route' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'POST';
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( MockController::$staticRouteCalled );
-	}
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
-	public function testIndex()
-	{
-		// testing to see if index is appended when a method is not specified
-		$testRoutes = [
-			'get /this/is/a' => [ 'MockController', 'fail' ],
-			'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
-			'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
-			'post /this/is/a/test/route' => [ 'MockController' ],
-			'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
-			'post /this/is/a/test/route/' => [ 'MockController', 'fail' ],
-		];
+        $this->assertTrue( MockController::$staticRouteCalled );
+    }
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'POST';
+    public function testIndex()
+    {
+        // testing to see if index is appended when a method is not specified
+        $testRoutes = [
+            'get /this/is/a' => [ 'MockController', 'fail' ],
+            'get /this/is/a/test/route' => [ 'MockController', 'fail' ],
+            'post /this/is/a/test/route/:test' => [ 'MockController', 'fail' ],
+            'post /this/is/a/test/route' => [ 'MockController' ],
+            'delete /this/is/a/test/route' => [ 'MockController', 'fail' ],
+            'post /this/is/a/test/route/' => [ 'MockController', 'fail' ],
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/this/is/a/test/route' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'POST';
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( MockController::$indexRouteCalled );
-	}
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
-	public function testNonExistentController()
-	{
-		// call a route with a bogus controller
-		$testRoutes = [
-			'post /this/is/a/test/route' => [ 'BogusController', 'who_cares' ],
-		];
+        $this->assertTrue( MockController::$indexRouteCalled );
+    }
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'POST';
+    public function testNonExistentController()
+    {
+        // call a route with a bogus controller
+        $testRoutes = [
+            'post /this/is/a/test/route' => [ 'BogusController', 'who_cares' ],
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/this/is/a/test/route' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'POST';
 
-		$this->assertFalse( Router::route( $testRoutes, self::$app, $req ) );
-	}
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/this/is/a/test/route' );
 
-	public function testRouterControllerParam()
-	{
-		Router::configure( [ 'defaultController' => 'BogusController' ] );
+        $this->assertFalse( Router::route( $testRoutes, self::$app, $req ) );
+    }
 
-		$testRoutes = [
-			'post /this/is/a/test/route' => 'staticRoute',
-			'get /not/it' => 'fail'
-		];
+    public function testRouterControllerParam()
+    {
+        Router::configure( [ 'defaultController' => 'BogusController' ] );
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'POST';
+        $testRoutes = [
+            'post /this/is/a/test/route' => 'staticRoute',
+            'get /not/it' => 'fail'
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/this/is/a/test/route' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'POST';
 
-		$req->setParams( [ 'controller' => 'MockController' ] );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/this/is/a/test/route' );
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req->setParams( [ 'controller' => 'MockController' ] );
 
-		$this->assertTrue( MockController::$staticRouteCalled );
-	}
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
 
-	public function testClosure()
-	{
-		$test = false;
+        $this->assertTrue( MockController::$staticRouteCalled );
+    }
 
-		$testRoutes = [
-			'get /test' => function( $req, $res ) use ( &$test ) {
-				$test = true;
-			}
-		];
+    public function testClosure()
+    {
+        $test = false;
 
-		$server = $_SERVER;
-		$server[ 'REQUEST_METHOD' ] = 'GET';
+        $testRoutes = [
+            'get /test' => function ($req, $res) use (&$test) {
+                $test = true;
+            }
+        ];
 
-		$req = new Request( null, null, null, null, $server );
-		$req->setPath( '/test' );
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'GET';
 
-		$this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $req = new Request( null, null, null, null, $server );
+        $req->setPath( '/test' );
 
-		$this->assertTrue( $test );
-	}
+        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+
+        $this->assertTrue( $test );
+    }
 }
 
 class MockController
 {
-	public static $staticRouteCalled = false;
-	public static $dynamicRouteCalled = false;
-	public static $dynamicRouteParams = [];
-	public static $indexRouteCalled = false;
+    public static $staticRouteCalled = false;
+    public static $dynamicRouteCalled = false;
+    public static $dynamicRouteParams = [];
+    public static $indexRouteCalled = false;
 
-	public function staticRoute( $req, $res )
-	{
-		self::$staticRouteCalled = true;
-	}
+    public function staticRoute($req, $res)
+    {
+        self::$staticRouteCalled = true;
+    }
 
-	public function dynamicRoute( $req, $res )
-	{
-		self::$dynamicRouteCalled = true;
-		self::$dynamicRouteParams = $req->params();
-	}
+    public function dynamicRoute($req, $res)
+    {
+        self::$dynamicRouteCalled = true;
+        self::$dynamicRouteParams = $req->params();
+    }
 
-	public function index( $req, $res )
-	{
-		self::$indexRouteCalled = true;
-	}
+    public function index($req, $res)
+    {
+        self::$indexRouteCalled = true;
+    }
 
-	public function fail( $req, $res )
-	{
-		// FAIL
-	}
+    public function fail($req, $res)
+    {
+        // FAIL
+    }
 }

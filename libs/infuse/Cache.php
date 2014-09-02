@@ -8,13 +8,13 @@
  * @copyright 2014 Jared King
  * @license MIT
  */
- 
+
 /*
 	TODO possible strategies to add:
 	- file
 	- database
 */
- 
+
 namespace infuse;
 
 use Pimple\Container;
@@ -22,17 +22,17 @@ use Pimple\Container;
 define( 'CACHE_STRATEGY_LOCAL', '\\infuse\\Cache\\Local' );
 define( 'CACHE_STRATEGY_MEMCACHE', '\\infuse\\Cache\\Memcache' );
 define( 'CACHE_STRATEGY_REDIS', '\\infuse\\Cache\\RedisStrategy' );
- 
+
 class Cache
 {
-	private $strategy;
-	private static $shortcuts = [
-		'local' => CACHE_STRATEGY_LOCAL,
-		'memcache' => CACHE_STRATEGY_MEMCACHE,
-		'redis' => CACHE_STRATEGY_REDIS
-	];
+    private $strategy;
+    private static $shortcuts = [
+        'local' => CACHE_STRATEGY_LOCAL,
+        'memcache' => CACHE_STRATEGY_MEMCACHE,
+        'redis' => CACHE_STRATEGY_REDIS
+    ];
 
-	/**
+    /**
 	 * Creates a new instance of the cache
 	 * Uses the first strategy supplied that does not fail
 	 *
@@ -40,41 +40,39 @@ class Cache
 	 * @param string $prefix cache key prefix
 	 * @param Container DI container
 	 */
-	function __construct( array $strategies = [], $prefix = '', Container $app = null )
-	{
-		foreach( $strategies as $strategy )
-		{
-			// provide shortcuts for referencing built-in cache strategies
-			// by a keyword instead of the full class name
-			if( isset( self::$shortcuts[ $strategy ] ) )
-				$strategy = self::$shortcuts[ $strategy ];
+    public function __construct(array $strategies = [], $prefix = '', Container $app = null)
+    {
+        foreach ($strategies as $strategy) {
+            // provide shortcuts for referencing built-in cache strategies
+            // by a keyword instead of the full class name
+            if( isset( self::$shortcuts[ $strategy ] ) )
+                $strategy = self::$shortcuts[ $strategy ];
 
-			if( class_exists( $strategy ) )
-			{
-				if( $app )
-					$strategy::inject( $app );
+            if ( class_exists( $strategy ) ) {
+                if( $app )
+                    $strategy::inject( $app );
 
-				if( $this->strategy = $strategy::init( $prefix ) )
-					break;
-			}
-		}
+                if( $this->strategy = $strategy::init( $prefix ) )
+                    break;
+            }
+        }
 
-		// fall back to local strategy
-		if( !$this->strategy )
-			$this->strategy = Cache\LocalStrategy::init( $prefix );
-	}
+        // fall back to local strategy
+        if( !$this->strategy )
+            $this->strategy = Cache\LocalStrategy::init( $prefix );
+    }
 
-	/**
+    /**
 	 * Gets the cache strategy being used
 	 *
 	 * @return object strategy
 	 */
-	function strategy()
-	{
-		return $this->strategy;
-	}
-	
-	/**
+    public function strategy()
+    {
+        return $this->strategy;
+    }
+
+    /**
 	 * Gets a cached value according to the strategy.
 	 *
 	 * NOTE: If a value is not found, it will not be bundled in the array returned.
@@ -89,37 +87,37 @@ class Cache
 	 *
 	 * @return array|mixed values or value
 	 */
-	function get( $keys, $forceArray = false )
-	{
-		// force the array keys to renumber sequentially starting at 0
-		$keys = array_values( (array)$keys );
-		
-		$return = $this->strategy->get( $keys );
+    public function get($keys, $forceArray = false)
+    {
+        // force the array keys to renumber sequentially starting at 0
+        $keys = array_values( (array) $keys );
 
-		if( !$forceArray && count( $return ) <= 1 )
-		{
-			if( count( $return ) == 0 )
-				return null;
+        $return = $this->strategy->get( $keys );
 
-			return reset( $return );
-		}
+        if ( !$forceArray && count( $return ) <= 1 ) {
+            if( count( $return ) == 0 )
 
-		return $return;
-	}
-	
-	/**
+                return null;
+
+            return reset( $return );
+        }
+
+        return $return;
+    }
+
+    /**
 	 * Checks if a key exists in the cache
 	 *
 	 * @param string $key
 	 *
 	 * @return boolean
 	 */
-	function has( $key )
-	{
-		return $this->strategy->has( $key );
-	}
-	
-	/**
+    public function has($key)
+    {
+        return $this->strategy->has( $key );
+    }
+
+    /**
 	 * Sets a value in the cache for a given key
 	 *
 	 * @param string $key
@@ -128,17 +126,17 @@ class Cache
 	 *
 	 * @return boolean
 	 */
-	function set( $key, $value, $expires = 0 )
-	{
-		// encode objects/arrays as JSON for consistency
-		// amongst various strategies
-		if( is_array( $value ) || is_object( $value ) )
-			$value = json_encode( $value );
+    public function set($key, $value, $expires = 0)
+    {
+        // encode objects/arrays as JSON for consistency
+        // amongst various strategies
+        if( is_array( $value ) || is_object( $value ) )
+            $value = json_encode( $value );
 
-		return $this->strategy->set( $key, $value, $expires );
-	}
-	
-	/**
+        return $this->strategy->set( $key, $value, $expires );
+    }
+
+    /**
 	 * Increments the value stored in a key
 	 *
 	 * @param string $key
@@ -146,12 +144,12 @@ class Cache
 	 *
 	 * @return number
 	 */
-	function increment( $key, $amount = 1 )
-	{
-		return $this->strategy->increment( $key, $amount );
-	}
-	
-	/**
+    public function increment($key, $amount = 1)
+    {
+        return $this->strategy->increment( $key, $amount );
+    }
+
+    /**
 	 * Decrements the value stored in a key
 	 *
 	 * @param string $key
@@ -159,20 +157,20 @@ class Cache
 	 *
 	 * @return number
 	 */
-	function decrement( $key, $amount = 1 )
-	{
-		return $this->strategy->decrement( $key, $amount );
-	}
-	
-	/**
+    public function decrement($key, $amount = 1)
+    {
+        return $this->strategy->decrement( $key, $amount );
+    }
+
+    /**
 	 * Deletes a value stored in the cache
 	 *
 	 * @param string $key
 	 *
 	 * @return boolean
 	 */
-	function delete( $key )
-	{
-		return $this->strategy->delete( $key );
-	}
+    public function delete($key)
+    {
+        return $this->strategy->delete( $key );
+    }
 }

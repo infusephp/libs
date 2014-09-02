@@ -13,8 +13,8 @@ use infuse\Session\Database as DatabaseSession;
 
 class DatabaseSessionTest extends \PHPUnit_Framework_TestCase
 {
-	public function testConstruct()
-	{
-		$session = new DatabaseSession();
-	}
+    public function testConstruct()
+    {
+        $session = new DatabaseSession();
+    }
 }

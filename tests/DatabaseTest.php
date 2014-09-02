@@ -13,12 +13,12 @@ use infuse\Database;
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase
 {
-	public function testTodo()
-	{
-		Database::configure( [] );
-		
+    public function testTodo()
+    {
+        Database::configure( [] );
+
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
-	}
+    }
 }

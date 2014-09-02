@@ -14,162 +14,159 @@ use infuse\Model\Iterator;
 
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
-	static $iterator;
-	static $start = 10;
-	static $limit = 50;
+    public static $iterator;
+    public static $start = 10;
+    public static $limit = 50;
 
-	static function setUpBeforeClass()
-	{
-		self::$iterator = new Iterator( 'IteratorTestModel', [
-			'start' => self::$start,
-			'limit' => self::$limit ] );		
-	}
+    public static function setUpBeforeClass()
+    {
+        self::$iterator = new Iterator( 'IteratorTestModel', [
+            'start' => self::$start,
+            'limit' => self::$limit ] );
+    }
 
-	function testConstructSearch()
-	{
-		$iterator = new Iterator( 'IteratorTestModel', [
-			'search' => 'test' ] );
-	}
+    public function testConstructSearch()
+    {
+        $iterator = new Iterator( 'IteratorTestModel', [
+            'search' => 'test' ] );
+    }
 
-	function testKey()
-	{
-		$this->assertEquals( self::$start, self::$iterator->key() );
-	}
+    public function testKey()
+    {
+        $this->assertEquals( self::$start, self::$iterator->key() );
+    }
 
-	function testValid()
-	{
-		$this->assertTrue( self::$iterator->valid() );
-	}
+    public function testValid()
+    {
+        $this->assertTrue( self::$iterator->valid() );
+    }
 
-	function testNext()
-	{
-		for( $i = self::$start; $i < self::$limit + 1; $i++ )
-			self::$iterator->next();
+    public function testNext()
+    {
+        for( $i = self::$start; $i < self::$limit + 1; $i++ )
+            self::$iterator->next();
 
-		$this->assertEquals( self::$limit + 1, self::$iterator->key() );
-	}
+        $this->assertEquals( self::$limit + 1, self::$iterator->key() );
+    }
 
-	function testRewind()
-	{
-		self::$iterator->rewind();
+    public function testRewind()
+    {
+        self::$iterator->rewind();
 
-		$this->assertEquals( self::$start, self::$iterator->key() );
-	}
+        $this->assertEquals( self::$start, self::$iterator->key() );
+    }
 
-	function testCurrent()
-	{
-		self::$iterator->rewind();
+    public function testCurrent()
+    {
+        self::$iterator->rewind();
 
-		$count = IteratorTestModel::totalRecords();
-		for( $i = self::$start; $i < $count + 1; $i++ )
-		{
-			$current = self::$iterator->current();
-			if( $i < $count )
-				$this->assertEquals( $i, $current->id() );
-			else
-				$this->assertEquals( null, $current );
+        $count = IteratorTestModel::totalRecords();
+        for ($i = self::$start; $i < $count + 1; $i++) {
+            $current = self::$iterator->current();
+            if( $i < $count )
+                $this->assertEquals( $i, $current->id() );
+            else
+                $this->assertEquals( null, $current );
 
-			self::$iterator->next();
-		}
-	}
+            self::$iterator->next();
+        }
+    }
 
-	function testNotValid()
-	{
-		self::$iterator->rewind();
-		for( $i = self::$start; $i < IteratorTestModel::totalRecords() + 1; $i++ )
-			self::$iterator->next();
+    public function testNotValid()
+    {
+        self::$iterator->rewind();
+        for( $i = self::$start; $i < IteratorTestModel::totalRecords() + 1; $i++ )
+            self::$iterator->next();
 
-		$this->assertFalse( self::$iterator->valid() );
-	}
+        $this->assertFalse( self::$iterator->valid() );
+    }
 
-	function testForeach()
-	{
-		$i = self::$start;
-		foreach( self::$iterator as $k => $model )
-		{
-			$this->assertEquals( $i, $k );
-			$this->assertEquals( $i, $model->id() );
-			$i++;
-		}
+    public function testForeach()
+    {
+        $i = self::$start;
+        foreach (self::$iterator as $k => $model) {
+            $this->assertEquals( $i, $k );
+            $this->assertEquals( $i, $model->id() );
+            $i++;
+        }
 
-		$this->assertEquals( $i, IteratorTestModel::totalRecords() );
-	}
+        $this->assertEquals( $i, IteratorTestModel::totalRecords() );
+    }
 
-	function testFindAll()
-	{
-		$iterator = IteratorTestModel::findAll();
+    public function testFindAll()
+    {
+        $iterator = IteratorTestModel::findAll();
 
-		$i = 0;
-		foreach( $iterator as $k => $model )
-		{
-			$this->assertEquals( $i, $k );
-			$this->assertEquals( $i, $model->id() );
-			$i++;
-		}
+        $i = 0;
+        foreach ($iterator as $k => $model) {
+            $this->assertEquals( $i, $k );
+            $this->assertEquals( $i, $model->id() );
+            $i++;
+        }
 
-		$this->assertEquals( $i, IteratorTestModel::totalRecords() );
-	}
+        $this->assertEquals( $i, IteratorTestModel::totalRecords() );
+    }
 
-	function testFromZero()
-	{
-		$start = 0;
-		$limit = 101;
-		$iterator = new Iterator( 'IteratorTestModel', [
-			'start' => $start,
-			'limit' => $limit ] );
-		
-		$i = $start;
-		foreach( $iterator as $k => $model )
-		{
-			$this->assertEquals( $i, $k );
-			$this->assertEquals( $i, $model->id() );
-			$i++;
-		}
+    public function testFromZero()
+    {
+        $start = 0;
+        $limit = 101;
+        $iterator = new Iterator( 'IteratorTestModel', [
+            'start' => $start,
+            'limit' => $limit ] );
 
-		$this->assertEquals( $i, IteratorTestModel::totalRecords()	 );
-	}
+        $i = $start;
+        foreach ($iterator as $k => $model) {
+            $this->assertEquals( $i, $k );
+            $this->assertEquals( $i, $model->id() );
+            $i++;
+        }
+
+        $this->assertEquals( $i, IteratorTestModel::totalRecords()     );
+    }
 }
 
 class IteratorTestModel extends Model
 {
-	static $properties = [
-		'id' => [
-			'type' => 'number' ],
-		'id2' => [
-			'type' => 'number' ],
-		'name' => [
-			'type' => 'string',
-			'searchable' => true ]
-	];
+    static $properties = [
+        'id' => [
+            'type' => 'number' ],
+        'id2' => [
+            'type' => 'number' ],
+        'name' => [
+            'type' => 'string',
+            'searchable' => true ]
+    ];
 
-	static function idProperty()
-	{
-		return [ 'id', 'id2' ];
-	}
-	protected function hasPermission( $permission, Model $requester )
-	{
-		return true;
-	}
+    public static function idProperty()
+    {
+        return [ 'id', 'id2' ];
+    }
+    protected function hasPermission($permission, Model $requester)
+    {
+        return true;
+    }
 
-	static function totalRecords( array $where = [] )
-	{
-		return 123;
-	}
+    public static function totalRecords(array $where = [])
+    {
+        return 123;
+    }
 
-	static function find( array $params = [] )
-	{
-		if( $params[ 'sort' ] != 'id ASC,id2 ASC')
-			return [ 'models' => [], 'count' => 0 ];
+    public static function find(array $params = [])
+    {
+        if( $params[ 'sort' ] != 'id ASC,id2 ASC')
 
-		$range = range( $params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1 );
-		$models = [];
-		$modelClass = get_called_class();
+            return [ 'models' => [], 'count' => 0 ];
 
-		foreach( $range as $k )
-			$models[] = new $modelClass( $k );
+        $range = range( $params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1 );
+        $models = [];
+        $modelClass = get_called_class();
 
-		return [
-			'models' => $models,
-			'count' => self::totalRecords() ];
-	}
+        foreach( $range as $k )
+            $models[] = new $modelClass( $k );
+
+        return [
+            'models' => $models,
+            'count' => self::totalRecords() ];
+    }
 }

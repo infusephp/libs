@@ -14,8 +14,8 @@ namespace infuse;
 class Config
 {
 	private $values = [];
-	
-	function __construct( array $values = [] )
+
+	public function __construct(array $values = [])
 	{
 		$this->values = array_replace( $this->values, $values );
 	}
@@ -27,21 +27,21 @@ class Config
 	 *
 	 * @return mixed value
 	 */
-	function get( $property = false )
+	public function get($property = false)
 	{
 		if( !$property )
 			return $this->values;
-		
+
 		return Util::array_value( $this->values, $property );
 	}
-	
-	/** 
+
+	/**
 	 * Sets a configuration value (only persists for the duration of the script)
 	 *
 	 * @param string $property dot value property name
 	 * @param string $value value to set
 	 */
-	function set( $property, $value )
+	public function set($property, $value)
 	{
 		Util::array_set( $this->values, $property, $value );
 	}

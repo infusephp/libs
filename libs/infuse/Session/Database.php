@@ -22,7 +22,7 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return boolean success
 	 */
-	static function install()
+	public static function install()
 	{
 		return Db::sql( 'CREATE TABLE IF NOT EXISTS `' . self::$tablename . '` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
 	}
@@ -32,7 +32,7 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return DatabaseSession
 	 */
-	static function start()
+	public static function start()
 	{
 		$obj = new self();
 
@@ -50,7 +50,7 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return boolean success
 	 */
-	function read( $id )
+	public function read($id)
 	{
 		return Db::select(
 			self::$tablename,
@@ -72,7 +72,7 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return boolean success
 	 */
-	function write( $id, $data )
+	public function write($id, $data)
 	{
 		Db::delete( 'Sessions', [ 'id' => $id ] );
 
@@ -91,7 +91,7 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return boolean success
 	 */
-	function destroy( $id )
+	public function destroy($id)
 	{
 		return Db::delete( self::$tablename, [ 'id' => $id ] );
 	}
@@ -103,11 +103,11 @@ class Database implements \SessionHandlerInterface
 	 *
 	 * @return boolean success
 	 */
-	function gc( $max )
+	public function gc($max)
 	{
 		// delete sessions older than max TTL
-		Db::delete( self::$tablename, [ 'access < ' . (time() - $max) ] );
-		
+        Db::delete( self::$tablename, [ 'access < ' . (time() - $max) ] );
+
 		return true;
 	}
 
@@ -115,6 +115,6 @@ class Database implements \SessionHandlerInterface
 	 * These functions are all noops for various reasons...
 	 * open() and close() have no practical meaning in terms of database connections
 	 */
-	function open( $path, $name ) { return true; }
-	function close() { return true; }
+	public function open($path, $name) { return true; }
+	public function close() { return true; }
 }

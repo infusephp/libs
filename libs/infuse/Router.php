@@ -14,27 +14,27 @@ namespace infuse;
 use Pimple\Container;
 
 if( !defined( 'SKIP_ROUTE' ) )
-	define( 'SKIP_ROUTE', -1 );
+    define( 'SKIP_ROUTE', -1 );
 
 class Router
 {
-	private static $config = [
-		'namespace' => '',
-		'defaultController' => '',
-		'defaultAction' => 'index'
-	];
-	
-	/**
+    private static $config = [
+        'namespace' => '',
+        'defaultController' => '',
+        'defaultAction' => 'index'
+    ];
+
+    /**
 	 * Changes the router settings
 	 *
 	 * @param array $config
 	 */
-	static function configure( $config )
-	{
-		self::$config = array_replace( self::$config, (array)$config );
-	}
+    public static function configure($config)
+    {
+        self::$config = array_replace( self::$config, (array) $config );
+    }
 
-	/**
+    /**
 	 * Routes a request and resopnse to the appropriate controller.
 	 *
 	 * @param array $routes
@@ -44,60 +44,61 @@ class Router
 	 *
 	 * @return boolean was a route match made?
 	 */
-	static function route( array $routes, Container $app, $req = null, $res = null )
-	{
-		if( !$req )
-			$req = new Request();
-		
-		if( !$res )
-			$res = new Response( $app );
-	
-		/*
+    public static function route(array $routes, Container $app, $req = null, $res = null)
+    {
+        if( !$req )
+            $req = new Request();
+
+        if( !$res )
+            $res = new Response( $app );
+
+        /*
 			Route Precedence:
 			1) global static routes (i.e. /about)
 			2) global dynamic routes (i.e. /browse/:category)
 		*/
-		
-		$routeMethodStr = strtolower( $req->method() ) . ' ' . $req->path();
-		$routeGenericStr = $req->path();
 
-		$staticRoutes = [];
-		$dynamicRoutes = [];
-		
-		foreach( $routes as $routeStr => $route )
-		{
-			if( strpos( $routeStr, ':' ) )
-				$dynamicRoutes[ $routeStr ] = $route;
-			else
-				$staticRoutes[ $routeStr ] = $route;
-		}
-		
-		/* global static routes */
-		if( isset( $staticRoutes[ $routeMethodStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== SKIP_ROUTE )
-			return true;
-		
-		if( isset( $staticRoutes[ $routeGenericStr ] ) &&
-			self::performRoute( $staticRoutes[ $routeGenericStr ], $app, $req, $res ) !== SKIP_ROUTE )
-			return true;
-		
-		/* global dynamic routes */
-		
-		foreach( $dynamicRoutes as $routeStr => $route )
-		{
-			if( self::matchRouteToRequest( $routeStr, $req ) &&
-				self::performRoute( $route, $app, $req, $res ) !== SKIP_ROUTE )
-				return true;
-		}
-		
-		return false;
-	}
+        $routeMethodStr = strtolower( $req->method() ) . ' ' . $req->path();
+        $routeGenericStr = $req->path();
 
-	//////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////
-	
-	/**
+        $staticRoutes = [];
+        $dynamicRoutes = [];
+
+        foreach ($routes as $routeStr => $route) {
+            if( strpos( $routeStr, ':' ) )
+                $dynamicRoutes[ $routeStr ] = $route;
+            else
+                $staticRoutes[ $routeStr ] = $route;
+        }
+
+        /* global static routes */
+        if( isset( $staticRoutes[ $routeMethodStr ] ) &&
+            self::performRoute( $staticRoutes[ $routeMethodStr ], $app, $req, $res ) !== SKIP_ROUTE )
+
+            return true;
+
+        if( isset( $staticRoutes[ $routeGenericStr ] ) &&
+            self::performRoute( $staticRoutes[ $routeGenericStr ], $app, $req, $res ) !== SKIP_ROUTE )
+
+            return true;
+
+        /* global dynamic routes */
+
+        foreach ($dynamicRoutes as $routeStr => $route) {
+            if( self::matchRouteToRequest( $routeStr, $req ) &&
+                self::performRoute( $route, $app, $req, $res ) !== SKIP_ROUTE )
+
+                return true;
+        }
+
+        return false;
+    }
+
+    //////////////////////////
+    // PRIVATE METHODS
+    //////////////////////////
+
+    /**
 	 * Executes a route. If the route returns SKIP_ROUTE then failure is assumed.
 	 *
 	 * @param array|string $route array('controller','method') or array('controller')
@@ -108,43 +109,43 @@ class Router
 	 *
 	 * @return boolean
 	 */
-	private static function performRoute( $route, Container $app, $req, $res )
-	{
-		$result = false;
+    private static function performRoute($route, Container $app, $req, $res)
+    {
+        $result = false;
 
-		if( is_array( $route ) || is_string( $route ) )
-		{
-			// method name and controller supplied
-			if( is_string( $route ) && $req->params( 'controller' ) )
-				$route = [ $req->params( 'controller' ), $route ];
-			// method name supplied
-			else if( is_string( $route ) )
-				$route = [ self::$config[ 'defaultController' ], $route ];
-			// no method name? fallback to the index() method
-			else if( count( $route ) == 1 )
-				$route[] = self::$config[ 'defaultAction' ];
-			
-			list( $controller, $method ) = $route;
-			
-			$controller = self::$config[ 'namespace' ] . '\\' . $controller;
-			
-			if( !class_exists( $controller ) )
-				return SKIP_ROUTE;
+        if ( is_array( $route ) || is_string( $route ) ) {
+            // method name and controller supplied
+            if( is_string( $route ) && $req->params( 'controller' ) )
+                $route = [ $req->params( 'controller' ), $route ];
+            // method name supplied
+            elseif( is_string( $route ) )
+                $route = [ self::$config[ 'defaultController' ], $route ];
+            // no method name? fallback to the index() method
+            elseif( count( $route ) == 1 )
+                $route[] = self::$config[ 'defaultAction' ];
 
-			$controllerObj = new $controller( $app );
-			
-			$result = $controllerObj->$method( $req, $res );
-		}
-		else if( is_callable( $route ) )
-			$result = call_user_func( $route, $req, $res );
-		
-		if( $result === SKIP_ROUTE )
-			return SKIP_ROUTE;
+            list( $controller, $method ) = $route;
 
-		return true;
-	}
-	
-	/**
+            $controller = self::$config[ 'namespace' ] . '\\' . $controller;
+
+            if( !class_exists( $controller ) )
+
+                return SKIP_ROUTE;
+
+            $controllerObj = new $controller( $app );
+
+            $result = $controllerObj->$method( $req, $res );
+        } elseif( is_callable( $route ) )
+            $result = call_user_func( $route, $req, $res );
+
+        if( $result === SKIP_ROUTE )
+
+            return SKIP_ROUTE;
+
+        return true;
+    }
+
+    /**
 	 * Checks if a request matches a given route. If so, the parameters will
 	 * be extracted and returned
 	 *
@@ -153,43 +154,42 @@ class Router
 	 *
 	 * @return boolean
 	 */
-	private static function matchRouteToRequest( $route, $req )
-	{
-		$routeParts = explode( ' ', $route );
-		
-		// verify that the method matches
-		if( count( $routeParts ) != 1 && $routeParts[ 0 ] != strtolower( $req->method() ) )
-			return false;
-		
-		// break the url into components
-		$reqPaths = $req->paths();
-		$routePaths = explode( '/', end( $routeParts ) );
-		if( $routePaths[ 0 ] == '' )
-			array_splice( $routePaths, 0, 1 );
-		
-		// check that the number of components match
-		if( count( $reqPaths ) != count( $routePaths ) )
-			return false;
-		
-		// compare each component of url, grab parameters along the way
-		$params = [];
-		foreach( $routePaths as $i => $path )
-		{
-			// is this a parameter
-			if( substr( $path, 0, 1 ) == ':' )
-			{
-				$key = substr_replace( $path, '', 0, 1 );
-				$params[ $key ] = $reqPaths[ $i ];
-			}
-			else
-			{
-				if( $reqPaths[ $i ] != $path )
-					return false;
-			}
-		}
-		
-		$req->setParams( $params );
-		
-		return true;
-	}
+    private static function matchRouteToRequest($route, $req)
+    {
+        $routeParts = explode( ' ', $route );
+
+        // verify that the method matches
+        if( count( $routeParts ) != 1 && $routeParts[ 0 ] != strtolower( $req->method() ) )
+
+            return false;
+
+        // break the url into components
+        $reqPaths = $req->paths();
+        $routePaths = explode( '/', end( $routeParts ) );
+        if( $routePaths[ 0 ] == '' )
+            array_splice( $routePaths, 0, 1 );
+
+        // check that the number of components match
+        if( count( $reqPaths ) != count( $routePaths ) )
+
+            return false;
+
+        // compare each component of url, grab parameters along the way
+        $params = [];
+        foreach ($routePaths as $i => $path) {
+            // is this a parameter
+            if ( substr( $path, 0, 1 ) == ':' ) {
+                $key = substr_replace( $path, '', 0, 1 );
+                $params[ $key ] = $reqPaths[ $i ];
+            } else {
+                if( $reqPaths[ $i ] != $path )
+
+                    return false;
+            }
+        }
+
+        $req->setParams( $params );
+
+        return true;
+    }
 }

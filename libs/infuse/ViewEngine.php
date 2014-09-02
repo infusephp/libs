@@ -12,7 +12,7 @@
 namespace infuse;
 
 class ViewEngine
-{		
+{
 	private static $defaultOptions = [
 		'engine' => 'smarty',
 		'viewsDir' => 'views',
@@ -21,12 +21,12 @@ class ViewEngine
 		'assetMapFile' => 'assets/static.assets.json',
 		'assetsBaseUrl' => ''
 	];
-	
+
 	private static $extensionMap = [
 		'smarty' => '.tpl',
 		'php' => '.php'
 	];
-	
+
 	private $type = 'php';
 	private $viewsDir;
 	private $compileDir;
@@ -34,20 +34,20 @@ class ViewEngine
 	private $assetMapFile;
 	private $assetMap;
 	private $assetsBaseUrl;
-	
+
 	private $smarty;
 
 	private $data;
-	
+
 	/**
 	 * Creates a new instance
 	 *
 	 * @param array $options
 	 */
-	function __construct( array $options = [] )
+	public function __construct(array $options = [])
 	{
 		$options = array_replace( static::$defaultOptions, $options );
-		
+
 		if( isset( $options[ 'engine' ] ) )
 			$this->type = $options[ 'engine' ];
 
@@ -57,7 +57,7 @@ class ViewEngine
 		$this->assetMapFile = $options[ 'assetMapFile' ];
 		$this->assetsBaseUrl = $options[ 'assetsBaseUrl' ];
 	}
-	
+
 	/**
 	 * Generates the complete URL for a given asset with a version number
 	 * if available. Requires config assets.base_url to be set.
@@ -67,17 +67,16 @@ class ViewEngine
 	 *
 	 * @return string
 	 */
-	function asset_url( $location )
+	public function asset_url($location)
 	{
 		// load asset version numbers (if they exist)
-		if( !$this->assetMap )
-		{
+        if (!$this->assetMap) {
 			$assetMap = [];
 			if( file_exists( $this->assetMapFile ) )
 				$assetMap = json_decode( file_get_contents( $this->assetMapFile ), true );
 			$this->assetMap = $assetMap;
 		}
-		
+
 		$location = (isset($this->assetMap[$location])) ? $this->assetMap[ $location ] : $location;
 		return $this->assetsBaseUrl . $location;
 	}
@@ -90,30 +89,27 @@ class ViewEngine
 	 *
 	 * @return string rendered template
 	 */
-	function render( $template, $parameters = [] )
+	public function render($template, $parameters = [])
 	{
 		$extension = self::$extensionMap[ $this->type ];
-		
+
 		// add extension if left off
-		$len = strlen( $extension );
+        $len = strlen( $extension );
 		if( substr( $template, -$len, $len ) != $extension )
 			$template .= $extension;
-			
-		$this->assignData( $parameters );			
-		
-		if( $this->type == 'smarty' )
-		{
+
+		$this->assignData( $parameters );
+
+		if ($this->type == 'smarty') {
 			return $this->smarty()->fetch( $template );
-		}
-		else if( $this->type == 'php' )
-		{
+		} elseif ($this->type == 'php') {
 			extract( $this->data );
-			
+
 			ob_start();
 			include $this->viewsDir . '/' . $template;
 			$theTemplateRenderedString = ob_get_contents();
 			ob_end_clean();
-			
+
 			return $theTemplateRenderedString;
 		}
 	}
@@ -123,43 +119,42 @@ class ViewEngine
 	 *
 	 * @param array $data key-value array
 	 */
-	function assignData( array $data )
+	public function assignData(array $data)
 	{
 		foreach( $data as $key => $value )
-			$this->assign( $key, $value );	
+			$this->assign( $key, $value );
 	}
-	
+
 	/**
 	 * Sets a variable to be passed to the template
 	 *
 	 * @param string $key
 	 * @param mixed $value
 	 */
-	function assign( $key, $value )
+	public function assign($key, $value)
 	{
 		if( $this->type == 'smarty' )
 			$this->smarty()->assign( $key, $value );
-		else if( $this->type == 'php' )
+		elseif( $this->type == 'php' )
 			$this->data[ $key ] = $value;
 	}
-	
+
 	/**
 	 * Gets (and creates) the Smarty instance used by this clsas
 	 *
 	 * @return Smarty
 	 */
-	function smarty()
+	public function smarty()
 	{
-		if( !$this->smarty )
-		{
-			$this->smarty = new \Smarty;
-			
+		if (!$this->smarty) {
+			$this->smarty = new \Smarty();
+
 			$this->smarty->muteExpectedErrors();
 			$this->smarty->setTemplateDir( $this->viewsDir )
 						 ->setCompileDir( $this->compileDir )
 						 ->setCacheDir( $this->cacheDir );
 		}
-		
+
 		return $this->smarty;
 	}
 }
