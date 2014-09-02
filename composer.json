@@ -17,7 +17,7 @@
 		"source": "https://github.com/jaredtking/infuse-libs"
 	},
     "autoload": {
-        "psr-0": {"infuse\\": "libs/"}
+        "psr-4": {"infuse\\": "src/"}
     },
 	"require": {
 		"php": ">=5.4.0",
