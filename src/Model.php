@@ -451,7 +451,7 @@ abstract class Model extends Acl
 
             self::$cachedProperties[ $k ] = array_replace( self::$cachedProperties[ $k ], static::$properties );
         }
-
+eff;
         if( $property )
             return Util::array_value( self::$cachedProperties[ $k ], $property );
         else
