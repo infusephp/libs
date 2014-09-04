@@ -1,5 +1,5 @@
 <?php
-bla
+
 /**
  * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
@@ -451,8 +451,9 @@ abstract class Model extends Acl
 
             self::$cachedProperties[ $k ] = array_replace( self::$cachedProperties[ $k ], static::$properties );
         }
-        
+
         if( $property )
+
             return Util::array_value( self::$cachedProperties[ $k ], $property );
         else
             return self::$cachedProperties[ $k ];
