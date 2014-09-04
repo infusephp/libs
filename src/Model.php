@@ -446,10 +446,10 @@ abstract class Model extends Acl
             if( $idProperty == 'id' )
                 self::$cachedProperties[ $k ] = self::$idProperties;
 
-            self::$cachedProperties[ $k ] = array_replace( self::$cachedProperties[ $k ], static::$properties );
-
             if( property_exists( get_called_class(), 'autoTimestamps' ) )
                 self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
+
+            self::$cachedProperties[ $k ] = array_replace( self::$cachedProperties[ $k ], static::$properties );
         }
 
         if( $property )
