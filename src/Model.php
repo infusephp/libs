@@ -453,7 +453,6 @@ abstract class Model extends Acl
         }
 
         if( $property )
-
             return Util::array_value( self::$cachedProperties[ $k ], $property );
         else
             return self::$cachedProperties[ $k ];
