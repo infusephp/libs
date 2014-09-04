@@ -75,6 +75,13 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( $expected, TestModel::properties() );
     }
 
+    public function testPropertiesIdOverwrite()
+    {
+        $expected = [ 'type' => 'string' ];
+
+        $this->assertEquals( $expected, Person::properties( 'id' ) );
+    }
+
     public function testProperty()
     {
         $expected = [
@@ -816,6 +823,9 @@ class TestModelHookFail extends Model
 class Person extends Model
 {
     static $properties = [
+        'id' => [
+            'type' => 'string'
+        ],
         'name' => [
             'type' => 'string',
             'default' => 'Jared'
