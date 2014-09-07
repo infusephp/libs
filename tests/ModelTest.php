@@ -69,6 +69,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ],
             'answer' => [
                 'type' => 'string'
+            ],
+            'test_hook' => [
+                'type' => 'string',
+                'null' => true
             ]
         ];
 
@@ -299,6 +303,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'id' => 5,
             'relation' => 10,
             'answer' => null,
+            'test_hook' => null,
             // this is tacked on in toArrayHook() below
             'toArray' => true
         ];
@@ -315,7 +320,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'relation' => 100
         ];
 
-        $this->assertEquals( $expected, $model->toArray( [ 'id', 'answer', 'toArray' ] ) );
+        $this->assertEquals( $expected, $model->toArray( [ 'id', 'answer', 'toArray', 'test_hook' ] ) );
     }
 
     public function testToArrayAutoTimestamps()
@@ -355,6 +360,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             [
                 'id',
                 'toArray',
+                'test_hook',
                 'relation.created_at',
                 'relation.updated_at',
                 'relation.validate',
@@ -390,7 +396,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model = new TestModel( 5 );
         $model->relation = '10';
 
-        $this->assertEquals( '{"id":5,"relation":10,"answer":null}', $model->toJson( [ 'toArray' ] ) );
+        $this->assertEquals( '{"id":5,"test_hook":null,"relation":10,"answer":null}', $model->toJson( [ 'toArray' ] ) );
     }
 
     public function testHasSchema()
@@ -672,6 +678,17 @@ class TestModel extends Model
     ];
     public $preDelete;
     public $postDelete;
+
+    protected static function propertiesHook()
+    {
+        $properties = parent::propertiesHook();
+
+        $properties[ 'test_hook' ] = [
+            'type' => 'string',
+            'null' => true ];
+
+        return $properties;
+    }
 
     protected function hasPermission($permission, Model $requester)
     {

@@ -1,0 +1,140 @@
+<?php
+
+/**
+ * @package infuse\libs
+ * @author Jared King <j@jaredtking.com>
+ * @link http://jaredtking.com
+ * @version 0.1.18
+ * @copyright 2013 Jared King
+ * @license MIT
+ */
+
+namespace infuse\Session;
+
+class Database
+{
+	private $tablename = 'Sessions';
+
+	/**
+	 * Starts the session using this handler
+	 *
+	 * @return DatabaseSession
+	 */
+	public static function start()
+	{
+		$obj = new self();
+
+		session_set_save_handler(
+			array( $obj, 'open' ),
+			array( $obj, 'close' ),
+			array( $obj, 'read' ),
+			array( $obj, 'write' ),
+			array( $obj, 'destroy' ),
+			array( $obj, 'gc' ) );
+
+		session_start();
+
+		return $obj;
+	}
+
+	/**
+	 * Opens a session
+	 *
+	 * @return boolean success
+	 */
+	public function open()
+	{
+		return true;
+	}
+
+	/**
+	 * Closes a session
+	 *
+	 * @return boolean success
+	 */
+	public function close()
+	{
+		return true;
+	}
+
+	/**
+	 * Reads a session
+	 *
+	 * @param int $id session ID
+	 *
+	 * @return boolean success
+	 */
+	public function read($id)
+	{
+		return Database::select(
+			$this->tablename,
+			'session_data',
+			array(
+				'where' => array(
+					'id' => $id
+				),
+				'single' => true
+			)
+		);
+	}
+
+	/**
+	 * Writes a session
+	 *
+	 * @param int $id session ID
+	 * @param string $data session data
+	 *
+	 * @return boolean success
+	 */
+	public function write($id, $data)
+	{
+		Database::delete( 'Sessions', array( 'id' => $id ) );
+
+		return Database::insert(
+			$this->tablename,
+			array(
+				'id' => $id,
+				'access' => time(),
+				'session_data' => $data ) );
+	}
+
+	/**
+	 * Destroys a session
+	 *
+	 * @param int $id session ID
+	 *
+	 * @return boolean success
+	 */
+	public function destroy($id)
+	{
+		return Database::delete( $this->tablename, array( 'id' => $id ) );
+	}
+
+	/**
+	 * Performs garbage collection on sessions.
+	 *
+	 * @param int $max maximum number of seconds a session can live
+	 *
+	 * @return boolean success
+	 */
+	public function gc($max)
+	{
+		// delete sessions older than max TTL
+        Database::delete( $this->tablename, array( 'access < ' . (time() - $max) ) );
+
+		return true;
+	}
+
+	/**
+	 * Installs schema for handling sessions in a database
+	 *
+	 * @return boolean success
+	 */
+	public static function install()
+	{
+		return \infuse\Database::sql( 'CREATE TABLE IF NOT EXISTS `Sessions` (`id` varchar(32) NOT NULL, PRIMARY KEY (`id`), `session_data` longtext NULL, `access` int(10) NULL);' );
+	}
+}
+
+// the following prevents unexpected effects when using objects as save handlers
+register_shutdown_function( 'session_write_close' );

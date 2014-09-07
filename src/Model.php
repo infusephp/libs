@@ -438,25 +438,35 @@ abstract class Model extends Acl
     {
         $k = get_called_class();
 
-        if ( !isset( self::$cachedProperties[ $k ] ) ) {
-            self::$cachedProperties[ $k ] = [];
-
-            // auto include id property by default
-            $idProperty = static::idProperty();
-            if( $idProperty == 'id' )
-                self::$cachedProperties[ $k ] = self::$idProperties;
-
-            if( property_exists( get_called_class(), 'autoTimestamps' ) )
-                self::$cachedProperties[ $k ] = array_replace( self::$timestampProperties, self::$cachedProperties[ $k ] );
-
-            self::$cachedProperties[ $k ] = array_replace( self::$cachedProperties[ $k ], static::$properties );
-        }
+        if ( !isset( self::$cachedProperties[ $k ] ) )
+            self::$cachedProperties[ $k ] = array_replace( static::propertiesHook(), static::$properties );
 
         if( $property )
 
             return Util::array_value( self::$cachedProperties[ $k ], $property );
         else
             return self::$cachedProperties[ $k ];
+    }
+
+    /**
+     * Adds extra properties that have not been explicitly defined.
+     * If overriding, be sure to extend parent::propertiesHook()
+     *
+     * @return array
+     */
+    protected static function propertiesHook()
+    {
+        $properties = [];
+
+        $idProperty = static::idProperty();
+        if( $idProperty == 'id' )
+            $properties = self::$idProperties;
+
+        if( property_exists( get_called_class(), 'autoTimestamps' ) )
+
+            return array_replace( self::$timestampProperties, $properties );
+
+        return $properties;
     }
 
     /**
