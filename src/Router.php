@@ -132,7 +132,10 @@ class Router
 
                 return SKIP_ROUTE;
 
-            $controllerObj = new $controller( $app );
+            $controllerObj = new $controller();
+
+            if (method_exists($controllerObj, 'injectApp'))
+                $controllerObj->injectApp($app);
 
             $result = $controllerObj->$method( $req, $res );
         } elseif( is_callable( $route ) )

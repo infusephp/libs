@@ -231,7 +231,10 @@ class Queue
             if( !class_exists( $controller ) )
                 continue;
 
-            $controllerObj = new $controller( self::$app );
+            $controllerObj = new $controller();
+
+            if (method_exists($controllerObj, 'injectApp'))
+                $controllerObj->injectApp(self::$app);
 
             $controllerObj->$method( $this, $message );
         }
