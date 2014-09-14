@@ -160,7 +160,7 @@ class Response
             $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
 
             if ( isset( $backtrace[ 1 ] ) ) {
-                $class = Util::array_value( $backtrace[ 1 ], 'class' );
+                $class = Utility::array_value( $backtrace[ 1 ], 'class' );
                 if ( strpos( $class, 'app\\' ) !== false && defined( 'INFUSE_APP_DIR' ) ) {
                     $parts = explode( '\\', $class );
                     $module = $parts[ 1 ];

@@ -11,7 +11,7 @@
 
 namespace infuse\Model;
 
-use infuse\Util;
+use infuse\Utility as U;
 
 class Iterator implements \Iterator
 {
@@ -40,7 +40,7 @@ class Iterator implements \Iterator
             $w = [];
             $search = addslashes( $parameters[ 'search' ] );
             foreach ( $modelClass::properties() as $name => $property ) {
-                if( Util::array_value( $property, 'searchable' ) )
+                if( U::array_value( $property, 'searchable' ) )
                     $w[] = "`$name` LIKE '%$search%'";
             }
 

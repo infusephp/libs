@@ -11,7 +11,7 @@
 
 namespace infuse;
 
-class Util
+class Utility
 {
     /**
 	 * Looks up a key in an array. If the key follows dot-notation then a nested lookup will be performed.

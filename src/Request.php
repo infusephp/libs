@@ -84,7 +84,7 @@ class Request
         ], $server );
 
         // remove slash in front of requested url
-        $this->server[ 'REQUEST_URI' ] = substr_replace( Util::array_value( $this->server, 'REQUEST_URI' ), '', 0, 1 );
+        $this->server[ 'REQUEST_URI' ] = substr_replace( Utility::array_value( $this->server, 'REQUEST_URI' ), '', 0, 1 );
 
         // figure out the base path and REQUEST_URI
         $this->basePath = '/';
@@ -120,19 +120,19 @@ class Request
         }
 
         // parse url
-        $this->setPath( Util::array_value( $this->server, 'REQUEST_URI' ) );
+        $this->setPath( Utility::array_value( $this->server, 'REQUEST_URI' ) );
 
         // parse headers
         $this->headers = $this->parseHeaders( $this->server );
 
         // accept header
-        $this->accept = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT' ) );
+        $this->accept = $this->parseAcceptHeader( Utility::array_value( $this->headers, 'ACCEPT' ) );
 
         // accept charsets header
-        $this->charsets = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_CHARSET' ) );
+        $this->charsets = $this->parseAcceptHeader( Utility::array_value( $this->headers, 'ACCEPT_CHARSET' ) );
 
         // accept language header
-        $this->languages = $this->parseAcceptHeader( Util::array_value( $this->headers, 'ACCEPT_LANGUAGE' ) );
+        $this->languages = $this->parseAcceptHeader( Utility::array_value( $this->headers, 'ACCEPT_LANGUAGE' ) );
 
         // parse request body
         $this->request = $request;
@@ -162,7 +162,7 @@ class Request
             $this->request = [];
 
         // DELETE and PUT requests can come through POST
-        $requestMethodFromPost = Util::array_value( (array) $this->request, 'method' );
+        $requestMethodFromPost = Utility::array_value( (array) $this->request, 'method' );
         if( $this->method() == 'POST' &&
             in_array( $requestMethodFromPost, [ 'PUT', 'DELETE' ] ) )
         {
@@ -195,7 +195,7 @@ class Request
 	 */
     public function ip()
     {
-        return Util::array_value( $this->server, 'REMOTE_ADDR' );
+        return Utility::array_value( $this->server, 'REMOTE_ADDR' );
     }
 
     /**
@@ -205,7 +205,7 @@ class Request
 	 */
     public function protocol()
     {
-        $https = Util::array_value( $this->server, 'HTTPS' );
+        $https = Utility::array_value( $this->server, 'HTTPS' );
         if( $https && $https !== 'off' )
 
             return 'https';
@@ -230,7 +230,7 @@ class Request
 	 */
     public function port()
     {
-        return Util::array_value( $this->server, 'SERVER_PORT' );
+        return Utility::array_value( $this->server, 'SERVER_PORT' );
     }
 
     /**
@@ -242,7 +242,7 @@ class Request
 	 */
     public function headers($index = false)
     {
-        return ($index) ? Util::array_value( $this->headers, strtoupper( $index ) ) : $this->headers;
+        return ($index) ? Utility::array_value( $this->headers, strtoupper( $index ) ) : $this->headers;
     }
 
     /**
@@ -260,7 +260,7 @@ class Request
 	 */
     public function user()
     {
-        return Util::array_value( $this->headers, 'PHP_AUTH_USER' );
+        return Utility::array_value( $this->headers, 'PHP_AUTH_USER' );
     }
 
     /**
@@ -270,7 +270,7 @@ class Request
 	 */
     public function password()
     {
-        return Util::array_value( $this->headers, 'PHP_AUTH_PW' );
+        return Utility::array_value( $this->headers, 'PHP_AUTH_PW' );
     }
 
     /**
@@ -280,9 +280,9 @@ class Request
 	 */
     public function host()
     {
-        if ( !$host = Util::array_value( $this->headers, 'HOST' ) ) {
-            if( !$host = Util::array_value( $this->server, 'SERVER_NAME' ) )
-                $host = Util::array_value( $this->server, 'SERVER_ADDR', '' );
+        if ( !$host = Utility::array_value( $this->headers, 'HOST' ) ) {
+            if( !$host = Utility::array_value( $this->server, 'SERVER_NAME' ) )
+                $host = Utility::array_value( $this->server, 'SERVER_ADDR', '' );
         }
 
         // trim and remove port number from host
@@ -317,7 +317,7 @@ class Request
 	 */
     public function paths($index = false)
     {
-        return (is_numeric($index)) ? Util::array_value( $this->paths, $index ) : $this->paths;
+        return (is_numeric($index)) ? Utility::array_value( $this->paths, $index ) : $this->paths;
     }
 
     /**
@@ -348,7 +348,7 @@ class Request
 	 */
     public function method()
     {
-        return Util::array_value( $this->server, 'REQUEST_METHOD' );
+        return Utility::array_value( $this->server, 'REQUEST_METHOD' );
     }
 
     /**
@@ -358,7 +358,7 @@ class Request
 	 */
     public function contentType()
     {
-        return Util::array_value( $this->server, 'CONTENT_TYPE' );
+        return Utility::array_value( $this->server, 'CONTENT_TYPE' );
     }
 
     /**
@@ -398,7 +398,7 @@ class Request
 	 */
     public function agent()
     {
-        return Util::array_value( $this->server, 'HTTP_USER_AGENT' );
+        return Utility::array_value( $this->server, 'HTTP_USER_AGENT' );
     }
 
     /**
@@ -456,7 +456,7 @@ class Request
 	 */
     public function isXhr()
     {
-        return Util::array_value( $this->headers, 'X-Requested-With' ) == 'XMLHttpRequest';
+        return Utility::array_value( $this->headers, 'X-Requested-With' ) == 'XMLHttpRequest';
     }
 
     /**
@@ -491,7 +491,7 @@ class Request
 	 */
     public function params($index = false)
     {
-        return ($index) ? Util::array_value( $this->params, $index ) : $this->params;
+        return ($index) ? Utility::array_value( $this->params, $index ) : $this->params;
     }
 
     /**
@@ -513,7 +513,7 @@ class Request
 	 */
     public function query($index = false)
     {
-        return ($index) ? Util::array_value( $this->query, $index ) : $this->query;
+        return ($index) ? Utility::array_value( $this->query, $index ) : $this->query;
     }
 
     /**
@@ -525,7 +525,7 @@ class Request
 	 */
     public function request($index = false)
     {
-        return ($index) ? Util::array_value( $this->request, $index ) : $this->request;
+        return ($index) ? Utility::array_value( $this->request, $index ) : $this->request;
     }
 
     /**
@@ -537,7 +537,7 @@ class Request
 	 */
     public function cookies($index = false)
     {
-        return ($index) ? Util::array_value( $this->cookies, $index ) : $this->cookies;
+        return ($index) ? Utility::array_value( $this->cookies, $index ) : $this->cookies;
     }
 
     /**
@@ -580,7 +580,7 @@ class Request
 	 */
     public function files($index = false)
     {
-        return ($index) ? Util::array_value( $this->files, $index ) : $this->files;
+        return ($index) ? Utility::array_value( $this->files, $index ) : $this->files;
     }
 
     /**
@@ -592,7 +592,7 @@ class Request
 	 */
     public function session($index = false)
     {
-        return ($index) ? Util::array_value( $this->session, $index ) : $this->session;
+        return ($index) ? Utility::array_value( $this->session, $index ) : $this->session;
     }
 
     /**
@@ -636,7 +636,7 @@ class Request
 
             return false;
 
-        return ($index) ? Util::array_value( $this->server, "argv.$index" ) : Util::array_value( $this->server, 'argv' );
+        return ($index) ? Utility::array_value( $this->server, "argv.$index" ) : Utility::array_value( $this->server, 'argv' );
     }
 
     ////////////////////////////////////
@@ -738,7 +738,7 @@ class Request
             if ($option[0] == 'q') {
                 $precedence = $option[1];
             } else {
-                $tokens[$option[0]] = Util::array_value( $option, 1 );
+                $tokens[$option[0]] = Utility::array_value( $option, 1 );
             }
         }
         $tokens = count ($tokens) ? $tokens : false;

@@ -13,21 +13,21 @@ namespace infuse;
 
 class Validate
 {
-	private static $config = [
-		'salt' => ''
-	];
+    private static $config = [
+        'salt' => ''
+    ];
 
-	/**
+    /**
 	 * Changes settings for the validator
 	 *
 	 * @param array $config
 	 */
-	public static function configure($config)
-	{
-		self::$config = array_replace( self::$config, (array) $config );
-	}
+    public static function configure($config)
+    {
+        self::$config = array_replace( self::$config, (array) $config );
+    }
 
-	/**
+    /**
 	 * Validates one or more fields based upon certain filters. Filters may be chained and will be executed in order
 	 * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' )
 	 *
@@ -36,23 +36,24 @@ class Validate
 	 * @param array|mixed $data can be key-value array matching requirements or a single value
 	 * @param array|string $requirements can be key-value array matching data or a string
 	 */
-	public static function is(&$data, $requirements)
-	{
-		if( !is_array( $requirements ) )
-			return self::processRequirement( $data, $requirements );
-		else {
-			$validated = true;
+    public static function is(&$data, $requirements)
+    {
+        if( !is_array( $requirements ) )
 
-			foreach ($requirements as $key => $requirement) {
-				$result = self::processRequirement( $data[ $key ], $requirement );
-				$validated = $validated && $result;
-			}
+            return self::processRequirement( $data, $requirements );
+        else {
+            $validated = true;
 
-			return $validated;
-		}
-	}
+            foreach ($requirements as $key => $requirement) {
+                $result = self::processRequirement( $data[ $key ], $requirement );
+                $validated = $validated && $result;
+            }
 
-	/**
+            return $validated;
+        }
+    }
+
+    /**
 	 * Validates a value according to its requirement
 	 *
 	 * @param mixed $value
@@ -60,26 +61,26 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function processRequirement(&$value, $requirement)
-	{
-		$validated = true;
+    private static function processRequirement(&$value, $requirement)
+    {
+        $validated = true;
 
-		$filters = explode( '|', $requirement );
+        $filters = explode( '|', $requirement );
 
-		foreach ($filters as $filterStr) {
-			$exp = explode( ':', $filterStr );
-			$filter = $exp[ 0 ];
-			$validated = $validated && self::$filter( $value, array_slice( $exp, 1 ) );
-		}
+        foreach ($filters as $filterStr) {
+            $exp = explode( ':', $filterStr );
+            $filter = $exp[ 0 ];
+            $validated = $validated && self::$filter( $value, array_slice( $exp, 1 ) );
+        }
 
-		return $validated;
-	}
+        return $validated;
+    }
 
-	////////////////////////////////
+    ////////////////////////////////
     // FILTERS
     ////////////////////////////////
 
-	/**
+    /**
 	 * Validates an alpha string.
 	 * OPTIONAL alpha:5 can specify minimum length
 	 *
@@ -88,12 +89,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function alpha(&$value, $parameters)
-	{
-		return preg_match( '/^[A-Za-z]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
-	}
+    private static function alpha(&$value, $parameters)
+    {
+        return preg_match( '/^[A-Za-z]*$/', $value ) && strlen( $value ) >= Utility::array_value( $parameters, 0 );
+    }
 
-	/**
+    /**
 	 * Validates an alpha-numeric string
 	 * OPTIONAL alpha_numeric:6 can specify minimum length
 	 *
@@ -102,12 +103,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function alpha_numeric(&$value, $parameters)
-	{
-		return preg_match( '/^[A-Za-z0-9]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
-	}
+    private static function alpha_numeric(&$value, $parameters)
+    {
+        return preg_match( '/^[A-Za-z0-9]*$/', $value ) && strlen( $value ) >= Utility::array_value( $parameters, 0 );
+    }
 
-	/**
+    /**
 	 * Validates an alpha-numeric string with dashes and underscores
 	 * OPTIONAL alpha_dash:7 can specify minimum length
 	 *
@@ -116,12 +117,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function alpha_dash(&$value, $parameters)
-	{
-		return preg_match( '/^[A-Za-z0-9_-]*$/', $value ) && strlen( $value ) >= Util::array_value( $parameters, 0 );
-	}
+    private static function alpha_dash(&$value, $parameters)
+    {
+        return preg_match( '/^[A-Za-z0-9_-]*$/', $value ) && strlen( $value ) >= Utility::array_value( $parameters, 0 );
+    }
 
-	/**
+    /**
 	 * Validates a boolean value
 	 *
 	 * @param $value
@@ -129,14 +130,14 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function boolean(&$value, $parameters)
-	{
-		$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+    private static function boolean(&$value, $parameters)
+    {
+        $value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
+    /**
 	* Validates an e-mail address
 	*
 	* @param string $email e-mail address
@@ -144,14 +145,14 @@ class Validate
 	*
 	* @return boolean success
 	*/
-	private static function email(&$value, $parameters)
-	{
-		$value = trim( strtolower( $value ) );
+    private static function email(&$value, $parameters)
+    {
+        $value = trim( strtolower( $value ) );
 
-		return filter_var( $value, FILTER_VALIDATE_EMAIL );
-	}
+        return filter_var( $value, FILTER_VALIDATE_EMAIL );
+    }
 
-	/**
+    /**
 	 * Validates a value exists in an array. i.e. enum:blue,red,green,yellow
 	 *
 	 * @param $value
@@ -159,14 +160,14 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function enum(&$value, $parameters)
-	{
-		$enum = explode( ',', Util::array_value( $parameters, 0 ) );
+    private static function enum(&$value, $parameters)
+    {
+        $enum = explode( ',', Utility::array_value( $parameters, 0 ) );
 
-		return in_array( $value, $enum );
-	}
+        return in_array( $value, $enum );
+    }
 
-	/**
+    /**
 	 * Validates a date string
 	 *
 	 * @param $value
@@ -174,12 +175,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function date(&$value, $parameters)
-	{
-		return strtotime( $value );
-	}
+    private static function date(&$value, $parameters)
+    {
+        return strtotime( $value );
+    }
 
-	/**
+    /**
 	 * Validates an IP address
 	 *
 	 * @param $value
@@ -187,12 +188,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function ip(&$value, $parameters)
-	{
-		return filter_var( $value, FILTER_VALIDATE_IP );
-	}
+    private static function ip(&$value, $parameters)
+    {
+        return filter_var( $value, FILTER_VALIDATE_IP );
+    }
 
-	/**
+    /**
 	 * Validates that an array of values matches. The array will
 	 * be flattened to a single value if it matches.
 	 *
@@ -201,25 +202,26 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function matching(&$value, $parameters)
-	{
-		if( !is_array( $value ) )
-			return true;
+    private static function matching(&$value, $parameters)
+    {
+        if( !is_array( $value ) )
 
-		$matches = true;
-		$cur = reset( $value );
-		foreach ($value as $v) {
-			$matches = ($v == $cur) && $matches;
-			$cur = $v;
-		}
+            return true;
 
-		if( $matches )
-			$value = $cur;
+        $matches = true;
+        $cur = reset( $value );
+        foreach ($value as $v) {
+            $matches = ($v == $cur) && $matches;
+            $cur = $v;
+        }
 
-		return $matches;
-	}
+        if( $matches )
+            $value = $cur;
 
-	/**
+        return $matches;
+    }
+
+    /**
 	 * Validates a number.
 	 * OPTIONAL numeric:int specifies a type
 	 *
@@ -228,14 +230,14 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function numeric(&$value, $parameters)
-	{
-		$check = 'is_' . Util::array_value( $parameters, 0 );
+    private static function numeric(&$value, $parameters)
+    {
+        $check = 'is_' . Utility::array_value( $parameters, 0 );
 
-		return (!isset($parameters[0])) ? is_numeric( $value ) : $check( $value );
-	}
+        return (!isset($parameters[0])) ? is_numeric( $value ) : $check( $value );
+    }
 
-	/**
+    /**
 	 * Validates a password and hashes the value.
 	 * OPTIONAL password:10 sets the minimum length
 	 *
@@ -244,19 +246,20 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function password(&$value, $parameters)
-	{
-		$minimumPasswordLength = (isset($parameters[0])) ? $parameters[0] : 8;
+    private static function password(&$value, $parameters)
+    {
+        $minimumPasswordLength = (isset($parameters[0])) ? $parameters[0] : 8;
 
-		if( strlen( $value ) < $minimumPasswordLength )
-			return false;
+        if( strlen( $value ) < $minimumPasswordLength )
 
-		$value = Util::encrypt_password( $value, self::$config[ 'salt' ] );
+            return false;
 
-		return true;
-	}
+        $value = Utility::encrypt_password( $value, self::$config[ 'salt' ] );
 
-	/**
+        return true;
+    }
+
+    /**
 	 * Makes sure that a variable is not empty
 	 *
 	 * @param $value
@@ -264,12 +267,12 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function required(&$value, $parameters)
-	{
-		return !empty( $value );
-	}
+    private static function required(&$value, $parameters)
+    {
+        return !empty( $value );
+    }
 
-	/**
+    /**
 	 * Validates a string.
 	 * OPTIONAL string:5 supplies a minimum length
 	 * 			string:1:5 supplies a minimum and maximum length
@@ -279,19 +282,20 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function string(&$value, $parameters)
-	{
-		if( !is_string( $value ) )
-			return false;
+    private static function string(&$value, $parameters)
+    {
+        if( !is_string( $value ) )
 
-		$len = strlen( $value );
-		$min = Util::array_value( $parameters, 0 );
-		$max = Util::array_value( $parameters, 1 );
+            return false;
 
-		return $len >= $min && ( !$max || $len <= $max );
-	}
+        $len = strlen( $value );
+        $min = Utility::array_value( $parameters, 0 );
+        $max = Utility::array_value( $parameters, 1 );
 
-	/**
+        return $len >= $min && ( !$max || $len <= $max );
+    }
+
+    /**
 	 * Validates a PHP time zone identifier
 	 *
 	 * @param $value
@@ -299,19 +303,20 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function time_zone(&$value, $parameters)
-	{
-		// thanks to http://stackoverflow.com/questions/5816960/how-to-check-is-timezone-identifier-valid-from-code
+    private static function time_zone(&$value, $parameters)
+    {
+        // thanks to http://stackoverflow.com/questions/5816960/how-to-check-is-timezone-identifier-valid-from-code
         $valid = [];
-		$tza = timezone_abbreviations_list();
-		foreach( $tza as $zone )
-			foreach( $zone as $item )
-				$valid[ $item[ 'timezone_id' ] ] = true;
-		unset( $valid[ '' ] );
-		return !!Util::array_value( $valid, $value );
-	}
+        $tza = timezone_abbreviations_list();
+        foreach( $tza as $zone )
+            foreach( $zone as $item )
+                $valid[ $item[ 'timezone_id' ] ] = true;
+        unset( $valid[ '' ] );
 
-	/**
+        return !!Utility::array_value( $valid, $value );
+    }
+
+    /**
 	 * Validates a Unix timestamp. If the value is not a timestamp it will be
 	 * converted to one with strtotime()
 	 *
@@ -320,17 +325,18 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function timestamp(&$value, $parameters)
-	{
-		if( ctype_digit( $value ) )
-			return true;
+    private static function timestamp(&$value, $parameters)
+    {
+        if( ctype_digit( $value ) )
 
-		$value = strtotime( $value );
+            return true;
 
-		return !!$value;
-	}
+        $value = strtotime( $value );
 
-	/**
+        return !!$value;
+    }
+
+    /**
 	 * Validates a URL
 	 *
 	 * @param $value
@@ -338,8 +344,8 @@ class Validate
 	 *
 	 * @return boolean
 	 */
-	private static function url(&$value, $parameters)
-	{
-		return filter_var( $value, FILTER_VALIDATE_URL );
-	}
+    private static function url(&$value, $parameters)
+    {
+        return filter_var( $value, FILTER_VALIDATE_URL );
+    }
 }

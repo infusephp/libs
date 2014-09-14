@@ -48,7 +48,7 @@ class ErrorStack
         if( !isset( $error[ 'params' ] ) )
             $error[ 'params' ] = [];
 
-        if( !Util::array_value( $error, 'error' ) )
+        if( !Utility::array_value( $error, 'error' ) )
 
             return false;
 
@@ -132,7 +132,7 @@ class ErrorStack
     public function find($value, $param = 'field')
     {
         foreach ($this->stack as $error) {
-            if( Util::array_value( $error[ 'params' ], $param ) === $value )
+            if( Utility::array_value( $error[ 'params' ], $param ) === $value )
 
                 return $error;
         }

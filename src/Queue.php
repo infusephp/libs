@@ -220,7 +220,7 @@ class Queue
         if( is_string( $message ) )
             $message = json_decode( $message );
 
-        $listeners = (array) Util::array_value( $this->listeners, $queue );
+        $listeners = (array) Utility::array_value( $this->listeners, $queue );
 
         // notify all listeners that we have a new message
         foreach ($listeners as $route) {
@@ -281,12 +281,12 @@ class Queue
     {
         $subscribers = [];
 
-        $authToken = Util::array_value( self::$config, 'auth_token' );
+        $authToken = Utility::array_value( self::$config, 'auth_token' );
 
         foreach (self::$config[ 'queues' ] as $q) {
             // setup each push subscriber url with an auth token (if used)
 
-            foreach ( (array) Util::array_value( self::$config, 'push_subscribers' ) as $s ) {
+            foreach ( (array) Utility::array_value( self::$config, 'push_subscribers' ) as $s ) {
                 $url = $s . "?q=$q";
 
                 if( !empty( $authToken ) )

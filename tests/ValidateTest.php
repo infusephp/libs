@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-use infuse\Util;
+use infuse\Utility as U;
 use infuse\Validate;
 
 class ValidateTest extends \PHPUnit_Framework_TestCase
@@ -131,7 +131,7 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
         $password = 'testpassword';
         $this->assertTrue( Validate::is( $password, 'password:8' ) );
-        $this->assertEquals( Util::encrypt_password( 'testpassword' , $salt ), $password );
+        $this->assertEquals( U::encrypt_password( 'testpassword' , $salt ), $password );
 
         $invalid = '...';
         $this->assertFalse( Validate::is( $invalid, 'password:8' ) );

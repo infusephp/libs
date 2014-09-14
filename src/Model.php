@@ -190,7 +190,7 @@ abstract class Model extends Acl
 	 */
     public static function getConfigValue($key)
     {
-        return Util::array_value( static::$config, $key );
+        return Utility::array_value( static::$config, $key );
     }
 
     /**
@@ -443,7 +443,7 @@ abstract class Model extends Acl
 
         if( $property )
 
-            return Util::array_value( self::$cachedProperties[ $k ], $property );
+            return Utility::array_value( self::$cachedProperties[ $k ], $property );
         else
             return self::$cachedProperties[ $k ];
     }
@@ -543,7 +543,7 @@ abstract class Model extends Acl
         $requiredProperties = [];
         foreach ($properties as $name => $property) {
             $propertyNames[] = $name;
-            if( Util::array_value( $property, 'required' ) )
+            if( Utility::array_value( $property, 'required' ) )
                 $requiredProperties[] = $name;
         }
 
@@ -568,7 +568,7 @@ abstract class Model extends Acl
             if ( is_array( $property ) ) {
                 // assume empty string is a null value for properties
                 // that are marked as optionally-null
-                if ( Util::array_value( $property, 'null' ) && empty( $value ) ) {
+                if ( Utility::array_value( $property, 'null' ) && empty( $value ) ) {
                     $insertArray[ $field ] = null;
                     continue;
                 }
@@ -577,13 +577,13 @@ abstract class Model extends Acl
                 $thisIsValid = $this->validate( $property, $field, $value );
 
                 // unique?
-                if( $thisIsValid && Util::array_value( $property, 'unique' ) )
+                if( $thisIsValid && Utility::array_value( $property, 'unique' ) )
                     $thisIsValid = $this->checkUniqueness( $property, $field, $value );
 
                 $validated = $validated && $thisIsValid;
 
                 // json
-                if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
+                if( Utility::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
                     $value = json_encode( $value );
 
                 $insertArray[ $field ] = $value;
@@ -717,17 +717,17 @@ abstract class Model extends Acl
         // apply namespacing to $exclude
         $namedExc = [];
         foreach( $exclude as $e )
-            Util::array_set( $namedExc, $e, true );
+            Utility::array_set( $namedExc, $e, true );
 
         // apply namespacing to $include
         $namedInc = [];
         foreach( $include as $e )
-            Util::array_set( $namedInc, $e, true );
+            Utility::array_set( $namedInc, $e, true );
 
         // apply namespacing to $expand
         $namedExp = [];
         foreach( $expand as $e )
-            Util::array_set( $namedExp, $e, true );
+            Utility::array_set( $namedExp, $e, true );
 
         // get the list of appropriate properties
         foreach ( static::properties() as $property => $pData ) {
@@ -736,7 +736,7 @@ abstract class Model extends Acl
                 continue;
 
             // skip hidden properties that are not explicitly included
-            if( Util::array_value( $pData, 'hidden' ) &&
+            if( Utility::array_value( $pData, 'hidden' ) &&
                 !isset( $namedInc[ $property ] ) )
                 continue;
 
@@ -755,14 +755,14 @@ abstract class Model extends Acl
             if( !isset( $result[ $k ] ) || !$result[ $k ] )
                 continue;
 
-            $subExc = Util::array_value( $namedExc, $k );
-            $subInc = Util::array_value( $namedInc, $k );
+            $subExc = Utility::array_value( $namedExc, $k );
+            $subInc = Utility::array_value( $namedInc, $k );
 
             // convert exclude, include, and expand into dot notation
             // then take the keys for a flattened dot notation
-            $flatExc = is_array($subExc) ? array_keys( Util::array_dot( $subExc ) ) : [];
-            $flatInc = is_array($subInc) ? array_keys( Util::array_dot( $subInc ) ) : [];
-            $flatExp = is_array($subExp) ? array_keys( Util::array_dot( $subExp ) ) : [];
+            $flatExc = is_array($subExc) ? array_keys( Utility::array_dot( $subExc ) ) : [];
+            $flatInc = is_array($subInc) ? array_keys( Utility::array_dot( $subInc ) ) : [];
+            $flatExp = is_array($subExp) ? array_keys( Utility::array_dot( $subExp ) ) : [];
 
             $relation = $this->relation( $k );
             if( $relation )
@@ -855,7 +855,7 @@ abstract class Model extends Acl
             if ( is_array( $property ) ) {
                 // assume empty string is a null value for properties
                 // that are marked as optionally-null
-                if ( Util::array_value( $property, 'null' ) && empty( $value ) ) {
+                if ( Utility::array_value( $property, 'null' ) && empty( $value ) ) {
                     $updateArray[ $field ] = null;
                     continue;
                 }
@@ -864,13 +864,13 @@ abstract class Model extends Acl
                 $thisIsValid = $this->validate( $property, $field, $value );
 
                 // unique?
-                if( $thisIsValid && Util::array_value( $property, 'unique' ) && $value != $this->$field )
+                if( $thisIsValid && Utility::array_value( $property, 'unique' ) && $value != $this->$field )
                     $thisIsValid = $this->checkUniqueness( $property, $field, $value );
 
                 $validated = $validated && $thisIsValid;
 
                 // json
-                if( Util::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
+                if( Utility::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
                     $value = json_encode( $value );
 
                 $updateArray[ $field ] = $value;
@@ -969,7 +969,7 @@ abstract class Model extends Acl
             $w = [];
             $search = addslashes( $params[ 'search' ] );
             foreach ($properties as $name => $property) {
-                if( Util::array_value( $property, 'searchable' ) )
+                if( Utility::array_value( $property, 'searchable' ) )
                     $w[] = "`$name` LIKE '%$search%'";
             }
 
@@ -1319,11 +1319,11 @@ abstract class Model extends Acl
 
             return $value;
 
-        if( Util::array_value( $pData, 'null' ) && $value == '' )
+        if( Utility::array_value( $pData, 'null' ) && $value == '' )
 
             return null;
 
-        $type = Util::array_value( $pData, 'type' );
+        $type = Utility::array_value( $pData, 'type' );
 
         if( $type == 'boolean' )
 

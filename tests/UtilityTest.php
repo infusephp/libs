@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-use infuse\Util;
+use infuse\Utility as U;
 
 class UtilTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,27 +27,27 @@ class UtilTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $this->assertEquals( Util::array_value( $a, 'test' ), 2 );
-        $this->assertEquals( Util::array_value( $a, 'test2.3.4' ), [ 'asldfj' ] );
-        $this->assertEquals( Util::array_value( $a, 'test2.5' ), 1234 );
+        $this->assertEquals( U::array_value( $a, 'test' ), 2 );
+        $this->assertEquals( U::array_value( $a, 'test2.3.4' ), [ 'asldfj' ] );
+        $this->assertEquals( U::array_value( $a, 'test2.5' ), 1234 );
 
-        $this->assertNull( Util::array_value( $a, 'nonexistent' ) );
-        $this->assertNull( Util::array_value( $a, 'some.nonexistent.property' ) );
+        $this->assertNull( U::array_value( $a, 'nonexistent' ) );
+        $this->assertNull( U::array_value( $a, 'some.nonexistent.property' ) );
     }
 
     public function testArraySet()
     {
         $a = [];
 
-        Util::array_set( $a, '1.2.3.4.5', 'test' );
+        U::array_set( $a, '1.2.3.4.5', 'test' );
         $expected = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
         $this->assertEquals( $expected, $a );
 
-        Util::array_set( $a, 'test', 'ok?' );
+        U::array_set( $a, 'test', 'ok?' );
         $expected[ 'test' ] = 'ok?';
         $this->assertEquals( $expected, $a );
 
-        Util::array_set( $a, '1.2.3', 'test' );
+        U::array_set( $a, '1.2.3', 'test' );
         $expected[ '1' ][ '2' ][ '3' ] = 'test';
         $this->assertEquals( $expected, $a );
     }
@@ -57,7 +57,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
         $a = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
         $expected = [ '1.2.3.4.5' => 'test' ];
 
-        $this->assertEquals( $expected, Util::array_dot( $a ) );
+        $this->assertEquals( $expected, U::array_dot( $a ) );
 
         $a = [
             'fruit' => [
@@ -80,7 +80,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
             'test' => true
         ];
 
-        $this->assertEquals( $expected, Util::array_dot( $a ) );
+        $this->assertEquals( $expected, U::array_dot( $a ) );
     }
 
     public function testEncryptPassword()
@@ -89,9 +89,9 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
         $test = [
             $password,
-            Util::encrypt_password( $password, 'salt should not be empty' ),
-            Util::encrypt_password( $password, 'this is our salt' ),
-            Util::encrypt_password( $password, 'this is our salt', 123456 ) ];
+            U::encrypt_password( $password, 'salt should not be empty' ),
+            U::encrypt_password( $password, 'this is our salt' ),
+            U::encrypt_password( $password, 'this is our salt', 123456 ) ];
 
         // test each combination once to ensure they are not equal
         for ( $i = 0; $i < count( $test ); $i++ ) {
@@ -102,15 +102,15 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
     public function testGuid()
     {
-        $guid1 = Util::guid();
-        $guid2 = Util::guid();
+        $guid1 = U::guid();
+        $guid2 = U::guid();
 
         $this->assertEquals( 36, strlen( $guid1 ) );
         $this->assertEquals( 36, strlen( $guid2 ) );
         $this->assertTrue( $guid1 != $guid2 );
 
-        $guid1 = Util::guid( false );
-        $guid2 = Util::guid( false );
+        $guid1 = U::guid( false );
+        $guid2 = U::guid( false );
 
         $this->assertEquals( 32, strlen( $guid1 ) );
         $this->assertEquals( 32, strlen( $guid2 ) );
@@ -119,32 +119,32 @@ class UtilTest extends \PHPUnit_Framework_TestCase
 
     public function testSeoify()
     {
-        $this->assertEquals( 'some-test-string', Util::seoify( 'some test string' ) );
-        $this->assertEquals( 'meh', Util::seoify( '*)#%*^&--meh' ) );
-        $this->assertEquals( 'already-seoified-string', Util::seoify( 'already-seoified-string' ) );
+        $this->assertEquals( 'some-test-string', U::seoify( 'some test string' ) );
+        $this->assertEquals( 'meh', U::seoify( '*)#%*^&--meh' ) );
+        $this->assertEquals( 'already-seoified-string', U::seoify( 'already-seoified-string' ) );
     }
 
     public function testParseMetricStr()
     {
-        $this->assertEquals( 1000000000000, Util::parse_metric_str( '1T' ) );
-        $this->assertEquals( 50000000000, Util::parse_metric_str( '50G' ) );
-        $this->assertEquals( 1400000, Util::parse_metric_str( '1.4M' ) );
-        $this->assertEquals( 2000, Util::parse_metric_str( '2K' ) );
+        $this->assertEquals( 1000000000000, U::parse_metric_str( '1T' ) );
+        $this->assertEquals( 50000000000, U::parse_metric_str( '50G' ) );
+        $this->assertEquals( 1400000, U::parse_metric_str( '1.4M' ) );
+        $this->assertEquals( 2000, U::parse_metric_str( '2K' ) );
 
-        $this->assertEquals( 1073741824, Util::parse_metric_str( '1GBytes', true ) );
+        $this->assertEquals( 1073741824, U::parse_metric_str( '1GBytes', true ) );
     }
 
     public function testNumberAbbreviate()
     {
-        $this->assertEquals( '12.3K', Util::number_abbreviate( 12345 ) );
-        $this->assertEquals( '1M', Util::number_abbreviate( 1000000, 2 ) );
+        $this->assertEquals( '12.3K', U::number_abbreviate( 12345 ) );
+        $this->assertEquals( '1M', U::number_abbreviate( 1000000, 2 ) );
 
-        $this->assertEquals( '-1234', Util::number_abbreviate( -1234, 2 ) );
-        $this->assertEquals( '123', Util::number_abbreviate( 123, 3 ) );
-        $this->assertEquals( '12.345K', Util::number_abbreviate( 12345, 3 ) );
-        $this->assertEquals( '12.345M', Util::number_abbreviate( 12345000, 3 ) );
-        $this->assertEquals( '1.23G', Util::number_abbreviate( 1234567890, 2 ) );
-        $this->assertEquals( '1.23T', Util::number_abbreviate( 1234567890123, 2 ) );
+        $this->assertEquals( '-1234', U::number_abbreviate( -1234, 2 ) );
+        $this->assertEquals( '123', U::number_abbreviate( 123, 3 ) );
+        $this->assertEquals( '12.345K', U::number_abbreviate( 12345, 3 ) );
+        $this->assertEquals( '12.345M', U::number_abbreviate( 12345000, 3 ) );
+        $this->assertEquals( '1.23G', U::number_abbreviate( 1234567890, 2 ) );
+        $this->assertEquals( '1.23T', U::number_abbreviate( 1234567890123, 2 ) );
     }
 
     public function testSetCookieFixDomain()
@@ -157,7 +157,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
         $secure = true;
         $httponly = true;
 
-        $cookieStr = Util::set_cookie_fix_domain(
+        $cookieStr = U::set_cookie_fix_domain(
             $name,
             $value,
             $expire,
@@ -177,7 +177,7 @@ class UtilTest extends \PHPUnit_Framework_TestCase
         $test = [ 'test' => [ 'who' => 'dat' ] ];
 
         ob_start();
-        Util::print_pre( $test );
+        U::print_pre( $test );
         $output = ob_get_clean();
 
         $this->assertEquals( '<pre>' . print_r( $test, true ) . '</pre>', $output );

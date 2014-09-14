@@ -103,9 +103,9 @@ class Router
 	 *
 	 * @param array|string $route array('controller','method') or array('controller')
 	 * or 'method'
+     * @param Container DI container
 	 * @param Request $req
 	 * @param Response $res
-	 * @param Container $app optional DI container
 	 *
 	 * @return boolean
 	 */
