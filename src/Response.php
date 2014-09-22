@@ -59,29 +59,84 @@ class Response
         505 => 'HTTP Version Not Supported'
     ];
 
-    private $code;
-    private $contentType;
-    private $body;
     private $app;
+    private $version = '1.1';
+    private $code = 200;
+    private $contentType = 'text/html';
+    private $headers = [];
+    private $body;
 
     /**
 	 * Constructs a new response
-	 *
 	 */
     public function __construct(Container $app)
     {
-        $this->code = 200;
         $this->app = $app;
+    }
+
+    /**
+     * Gets one or all headers
+     *
+     * @param string $index optional header to look up
+     *
+     * @return string|null
+     */
+    public function headers($index = null)
+    {
+        return ($index) ? Utility::array_value($this->headers, $index) : $this->headers;
+    }
+
+    /**
+     * Sets a specific header
+     *
+     * @param string $header
+     * @param string $value
+     *
+     * @return Response
+     */
+    public function setHeader($header, $value)
+    {
+        $this->headers[$header] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the HTTP version
+     *
+     * @param string $version HTTP version
+     *
+     * @return Response
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+
+        return $this;
+    }
+
+    /**
+     * Gets the HTTP version
+     *
+     * @return string version
+     */
+    public function getVersion()
+    {
+        return $this->version;
     }
 
     /**
 	 * Sets the HTTP status code for the response
 	 *
 	 * @param int $code
+     *
+     * @return Response
 	 */
     public function setCode($code)
     {
         $this->code = $code;
+
+        return $this;
     }
 
     /**
@@ -95,13 +150,41 @@ class Response
     }
 
     /**
+     * Gets the content type of the response.
+     *
+     * @return string content type
+     */
+    public function getContentType()
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * Sets the content type of the request.
+     *
+     * @param string $contentType content type
+     *
+     * @return Response
+     */
+    public function setContentType($contentType)
+    {
+        $this->contentType = $contentType;
+
+        return $this->setHeader('Content-type', $contentType . '; charset=utf-8');
+    }
+
+    /**
 	 * Sets the response body.
 	 *
 	 * @param string $body
+     *
+     * @return Response
 	 */
     public function setBody($body)
     {
         $this->body = $body;
+
+        return $this;
     }
 
     /**
@@ -115,47 +198,18 @@ class Response
     }
 
     /**
-	 * Convenience method to send a JSON response.
-	 *
-	 * @param object $obj object to be encoded
-	 */
-    public function setBodyJson($obj)
-    {
-        $this->setBody( json_encode( $obj ) );
-        $this->contentType = 'application/json';
-    }
-
-    /**
-	 * Gets the content type of the response.
-	 *
-	 * @return string content type
-	 */
-    public function getContentType()
-    {
-        return $this->contentType;
-    }
-
-    /**
-	 * Sets the content type of the request.
-	 *
-	 * @param string $contentType content type
-	 */
-    public function setContentType($contentType)
-    {
-        $this->contentType = $contentType;
-    }
-
-    /**
 	 * Renders a template using the view engine and puts the result in the body.
 	 *
 	 * @param string $template template to render
 	 * @param array $parameters parameters to pass to the template
+     *
+     * @return Response
 	 */
     public function render($template, $parameters = [])
     {
         // deal with relative paths when using modules
-        // TODO this is a hack
-        if ( substr( $template, 0, 1 ) != '/' ) {
+        // TODO this does not belong here
+        if (substr($template, 0, 1) != '/') {
             // check if called from a controller
             $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
 
@@ -176,140 +230,114 @@ class Response
             }
         }
 
-        $engine = $this->app[ 'view_engine' ];
+        $engine = $this->app['view_engine'];
         $engine->assignData( $parameters );
 
-        $this->body = $engine->render( $template );
-
-        return true;
+        return $this->setBody($engine->render($template));
     }
 
     /**
-	 * Performs a 302 redirect to a given URL.
-	 * NOTE: this will exit the script if the exitAndSetHeaders flag is set
+     * Convenience method to send a JSON response.
+     *
+     * @param object|array $obj object to be encoded
+     *
+     * @return Response
+     */
+    public function json($obj)
+    {
+        return $this->setContentType('application/json')
+                    ->setBody(json_encode($obj));
+    }
+
+    /**
+	 * Convenience method to send a redirect response.
 	 *
 	 * @param string $url URL we redirect to
-	 * @param Request $req
-	 * @param boolean $exitAndSetHeaders set the header and exit?
+     * @param int $code HTTP status code to send
 	 *
-	 * @return string location header (if exitAndSetHeaders is false)
+	 * @return Response
 	 */
-    public function redirect($url, Request $req = null, $exitAndSetHeaders = true)
+    public function redirect($url, $code = 302)
     {
-        if( !$req )
-            $req = new Request();
+        // handle relative URL redirects
+        if (substr($url, 0, 7) != 'http://' && substr($url, 0, 8) != 'https://' && substr($url, 0, 2) != '//') {
+            $req = $this->app['req'];
+            $url = $req->headers('host') . '/' . $req->basePath() . '/' . urldecode($url);
 
-        // handle relative urls
-        if ( substr( $url, 0, 7 ) != 'http://' && substr( $url, 0, 8 ) != 'https://' && substr( $url, 0, 2 ) != '//' ) {
-            // redirect relative to the requested host name
-            // and not the host name php thinks we are (HTTP_HOST vs SERVER_NAME)
-            $url = $req->headers( 'host' ) . '/' . $req->basePath() . '/' . urldecode( $url );
-
-            // protocol-agnostic
-            $url = '//' . preg_replace( '/\/{2,}/', '/', $url );
+            // here we use a protocol-agnostic URL
+            $url = '//' . preg_replace('/\/{2,}/', '/', $url);
         }
 
-        $loc = 'Location: ' . $url;
+        $eUrl = htmlspecialchars($url);
+        $body = '<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="refresh" content="1;url=' . $eUrl . '" />
+        <title>Redirecting to ' . $eUrl . '</title>
+    </head>
+    <body>
+        Redirecting to <a href="' . $eUrl . '">' . $eUrl . '</a>.
+    </body>
+</html>';
 
-        if( !$exitAndSetHeaders )
+        return $this->setCode($code)
+             ->setHeader('Location', $url)
+             ->setBody($body);
+    }
 
-            return $loc;
+    /**
+     * Sends the headers
+     *
+     * @return Response
+     */
+    public function sendHeaders()
+    {
+        // check if headers have already been sent
+        if (headers_sent())
+            return $this;
 
-        header( 'X-Powered-By: infuse' );
-        header( $loc );
+        // send status code
+        header('HTTP/' . $this->version . ' ' . $this->code . ' ' . self::$codes[$this->code], true, $this->code);
 
-        exit;
+        // send other headers
+        foreach ($this->headers as $header => $value)
+            header("$header: $value", false, $this->code);
+
+        return $this;
+    }
+
+    /**
+     * Sends the content
+     *
+     * @return Response
+     */
+    public function sendBody()
+    {
+        if (empty($this->body))
+            $this->body = self::$codes[$this->code];
+
+        echo $this->body;
+
+        return $this;
     }
 
     /**
 	 * Sends the response using the given information.
-	 * NOTE: this will exit the script if the exit flag is set
 	 *
-	 * @param Request $req request object associated with the response
-	 * @param boolean $exit
-	 * @param boolean $setHeaders
+	 * @return Response
 	 */
-    public function send($req = null, $exit = true, $setHeaders = true)
+    public function send()
     {
-        if( !$req )
-            $req = new Request();
+        return $this->sendHeaders()
+                    ->sendBody();
+    }
 
-        if ( $req->isCli() ) {
-            echo $this->body;
-
-            if( $exit )
-                exit;
-
-            return;
-        }
-
-        $contentType = $this->contentType;
-
-        if ( empty( $contentType ) ) {
-            // send back the first content type requested
-            $accept = $req->accepts();
-
-            $contentType = 'text/html';
-            if( $req->isJson() )
-                $contentType = 'application/json';
-            elseif( $req->isHtml() )
-                $contentType = 'text/html';
-            elseif( $req->isXml() )
-                $contentType = 'application/xml';
-        }
-
-        $headers = [
-            'HTTP/1.1 ' . $this->code . ' ' . self::$codes[$this->code],
-            'Content-type: ' . $contentType . '; charset=utf-8',
-            'X-Powered-By: infuse' ];
-
-        if ($setHeaders) {
-            foreach( $headers as $header )
-                header( $header );
-        }
-
-        if ( !empty( $this->body ) ) {
-            // send the body
-            echo $this->body;
-        }
-        // we need to create the body if none is passed
-        elseif ($this->code != 200) {
-            // create some body messages
-            $message = '';
-
-            // this is purely optional, but makes the pages a little nicer to read
-            // for your users.  Since you won't likely send a lot of different status codes,
-            // this also shouldn't be too ponderous to maintain
-            switch ($this->code) {
-                case 401:
-                    $message = 'You must be authorized to view this page.';
-                break;
-                case 404:
-                    $message = 'The requested URL was not found.';
-                break;
-                case 500:
-                    $message = 'The server encountered an error processing your request.';
-                break;
-                case 501:
-                    $message = 'The requested method is not implemented.';
-                break;
-                default:
-                    $message = self::$codes[ $this->code ];
-                break;
-            }
-
-            if ($contentType == 'text/html') {
-                $this->render( 'error', [
-                    'message' => $message,
-                    'errorCode' => $this->code,
-                    'title' => $this->code,
-                    'errorMessage' => $message ] );
-
-                echo $this->body;
-            }
-        }
-
-        if( $exit )
-            exit;
+    /**
+     * @deprecated use json()
+     */
+    public function setBodyJson($obj)
+    {
+        return $this->json($obj);
     }
 }

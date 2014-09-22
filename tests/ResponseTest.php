@@ -11,126 +11,113 @@
 
 use infuse\Response;
 use infuse\Request;
-use infuse\ViewEngine;
 use Pimple\Container;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
-    public static $app;
     public static $res;
 
     public static function setUpBeforeClass()
     {
-        self::$app = new Container();
-        self::$app[ 'view_engine' ] = new ViewEngine();
-        self::$res = new Response( self::$app );
+        self::$res = new Response(new Container());
     }
 
-    public function assertPreConditions()
+    public function testHeaders()
     {
-        $this->assertInstanceOf( '\\infuse\\Response', self::$res );
+        $this->assertEquals(self::$res, self::$res->setHeader('Test', 'test'));
+        $this->assertEquals('test', self::$res->headers('Test'));
+
+        $this->assertEquals(['Test'=>'test'], self::$res->headers());
     }
 
-    public function testConstruct()
+    public function testVersion()
     {
-        $res = new Response( self::$app );
+        $this->assertEquals(self::$res, self::$res->setVersion('1.0'));
+        $this->assertEquals('1.0', self::$res->getVersion());
     }
 
-    public function testSetCode()
+    public function testCode()
     {
-        self::$res->setCode( 502 );
+        $this->assertEquals(self::$res, self::$res->setCode(502));
+        $this->assertEquals(502, self::$res->getCode());
     }
 
-    /**
-	 * @depends testSetCode
-	 */
-    public function testGetCode()
+    public function testBody()
     {
-        $this->assertEquals( 502, self::$res->getCode() );
+        $this->assertEquals(self::$res, self::$res->setBody('test'));
+        $this->assertEquals('test', self::$res->getBody());
     }
 
-    public function testSetBody()
+    public function testContentType()
     {
-        self::$res->setBody( 'test' );
+        $this->assertEquals(self::$res, self::$res->setContentType('application/pdf'));
+        $this->assertEquals('application/pdf', self::$res->getContentType());
     }
 
-    /**
-	 * @depends testSetBody
-	 */
-    public function testGetBody()
-    {
-        $this->assertEquals( 'test', self::$res->getBody() );
-    }
-
-    public function testSetContentType()
-    {
-        self::$res->setContentType( 'application/pdf' );
-    }
-
-    /**
-	 * @depends testSetContentType
-	 */
-    public function testGetContentType()
-    {
-        $this->assertEquals( 'application/pdf', self::$res->getContentType() );
-    }
-
-    /**
-	 * @depends testGetBody
-	 * @depends testGetContentType
-	 */
-    public function testSetBodyJson()
+    public function testJson()
     {
         $body = [
             'test' => [
                 'meh',
                 'blah' ] ];
 
-        self::$res->setBodyJson( $body );
+        $this->assertEquals(self::$res, self::$res->json($body));
 
-        $this->assertEquals( json_encode( $body ), self::$res->getBody() );
-        $this->assertEquals( 'application/json', self::$res->getContentType() );
+        $this->assertEquals(json_encode($body), self::$res->getBody());
+        $this->assertEquals('application/json', self::$res->getContentType());
     }
 
     public function testRedirect()
     {
-        $req = new Request( null, null, null, null, [
+        $container = new Container();
+        $container['req'] = new Request( null, null, null, null, [
             'HTTP_HOST' => 'example.com',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php' ] );
+        $res = new Response($container);
 
-        $this->assertEquals( 'Location: //example.com/some/start/', self::$res->redirect( '/', $req, false ) );
-        $this->assertEquals( 'Location: //example.com/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
+        $this->assertEquals($res, $res->redirect('/'));
+        $this->assertEquals('//example.com/some/start/', $res->headers('Location'));
 
-        $this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', $req, false ) );
-        $this->assertEquals( 'Location: http://test.com', self::$res->redirect( 'http://test.com', null, false ) );
+        $this->assertEquals($res, $res->redirect('/test/url', 301));
+        $this->assertEquals('//example.com/some/start/test/url', $res->headers('Location'));
+        $this->assertEquals(301, $res->getCode());
+
+        $this->assertEquals($res, $res->redirect('http://test.com'));
+        $this->assertEquals('http://test.com', $res->headers('Location'));
+
+        $this->assertEquals($res, $res->redirect('http://test.com'));
+        $this->assertEquals('http://test.com', $res->headers('Location'));
     }
 
     public function testRedirectNonStandardPort()
     {
-        $req = new Request( null, null, null, null, [
+        $container = new Container();
+        $container['req'] = new Request( null, null, null, null, [
             'HTTP_HOST' => 'example.com:1234',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php',
             'SERVER_PORT' => 5000 ] );
+        $res = new Response($container);
 
-        $this->assertEquals( 'Location: //example.com:1234/some/start/', self::$res->redirect( '/', $req, false ) );
-        $this->assertEquals( 'Location: //example.com:1234/some/start/test/url', self::$res->redirect( '/test/url', $req, false ) );
+        $this->assertEquals($res, $res->redirect('/'));
+        $this->assertEquals('//example.com:1234/some/start/', $res->headers('Location'));
+
+        $this->assertEquals($res, $res->redirect( '/test/url'));
+        $this->assertEquals('//example.com:1234/some/start/test/url', $res->headers('Location'));
     }
 
     public function testSend()
     {
-        $req = new Request( null, null, null, null, [] );
-
-        self::$res->setBody( 'test' );
+        self::$res->setBody('test');
 
         ob_start();
 
-        self::$res->send( $req, false, false );
+        $this->assertEquals(self::$res, self::$res->send());
 
         $output = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals( 'test', $output );
+        $this->assertEquals('test', $output);
     }
 }
