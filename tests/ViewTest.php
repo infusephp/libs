@@ -11,6 +11,7 @@
 
 use infuse\View;
 use infuse\ViewEngine;
+use Pimple\Container;
 
 class ViewTest extends \PHPUnit_Framework_TestCase
 {
@@ -21,7 +22,9 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\\infuse\\ViewEngine\\PHP', View::defaultEngine());
 
         $engine = new ViewEngine\PHP();
-        View::setDefaultEngine($engine);
+        $container = new Container();
+        $container['view_engine'] = $engine;
+        View::inject($container);
         $this->assertEquals($engine, View::defaultEngine());
     }
 

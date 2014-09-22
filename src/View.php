@@ -11,8 +11,11 @@
 
 namespace infuse;
 
+use Pimple\Container;
+
 class View
 {
+    private static $container;
     private static $defaultEngine;
 
     private $template;
@@ -24,9 +27,10 @@ class View
 	 *
 	 * @param ViewEngine $engine
 	 */
-    public static function setDefaultEngine(ViewEngine $engine)
+    public static function inject(Container $container)
     {
-        self::$defaultEngine = $engine;
+        self::$container = $container;
+        self::$defaultEngine = false;
     }
 
     /**
@@ -37,8 +41,11 @@ class View
     public static function defaultEngine()
     {
         if (!self::$defaultEngine) {
-            // default to php view engine
-            self::$defaultEngine = new ViewEngine\PHP();
+            if (self::$container && isset(self::$container['view_engine']))
+                self::$defaultEngine = self::$container['view_engine'];
+            else
+                // default to php view engine
+                self::$defaultEngine = new ViewEngine\PHP();
         }
 
         return self::$defaultEngine;
