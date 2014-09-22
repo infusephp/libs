@@ -247,8 +247,8 @@ class Response
 </html>';
 
         return $this->setCode($code)
-             ->setHeader('Location', $url)
-             ->setBody($body);
+                    ->setHeader('Location', $url)
+                    ->setBody($body);
     }
 
     /**

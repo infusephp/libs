@@ -14,6 +14,8 @@ use infuse\ViewEngine;
 
 class ViewTest extends \PHPUnit_Framework_TestCase
 {
+    public static $viewsDir;
+
     public function testDefaultEngine()
     {
         $this->assertInstanceOf('\\infuse\\ViewEngine\\PHP', View::defaultEngine());
@@ -27,6 +29,13 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     {
         $view = new View('test');
         $this->assertEquals('test', $view->template());
+    }
+
+    public function testTemplateWithViewsDir()
+    {
+        self::$viewsDir = 'BLAH';
+        $view = new View('test');
+        $this->assertEquals('BLAH/test', $view->template());
     }
 
     public function testParameters()
