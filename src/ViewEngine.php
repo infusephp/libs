@@ -32,6 +32,7 @@ abstract class ViewEngine
     public function setAssetMapFile($filename)
     {
         $this->assetMapFile = $filename;
+        $this->assetMap = false;
 
         return $this;
     }

@@ -24,6 +24,8 @@ class SmartyViewEngineTest extends \PHPUnit_Framework_TestCase
     public function testAssetUrl()
     {
         $this->assertEquals(self::$engine, self::$engine->setAssetBaseUrl('http://localhost'));
+        $this->assertEquals('http://localhost/test', self::$engine->asset_url('/test'));
+
         $this->assertEquals(self::$engine, self::$engine->setAssetMapFile(__DIR__ . '/static_assets.json'));
 
         $this->assertEquals('http://localhost/img/logo.2v80s34k.png', self::$engine->asset_url('/img/logo.png'));
