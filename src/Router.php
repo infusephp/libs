@@ -44,14 +44,8 @@ class Router
 	 *
 	 * @return boolean was a route match made?
 	 */
-    public static function route(array $routes, Container $app, $req = null, $res = null)
+    public static function route(array $routes, Container $app, Request $req, Response $res)
     {
-        if( !$req )
-            $req = new Request();
-
-        if( !$res )
-            $res = new Response( $app );
-
         /*
 			Route Precedence:
 			1) global static routes (i.e. /about)

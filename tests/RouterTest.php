@@ -10,6 +10,7 @@
  */
 
 use infuse\Request;
+use infuse\Response;
 use infuse\Router;
 use infuse\View;
 use Pimple\Container;
@@ -52,7 +53,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/this/is/a/test/route' );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( MockController::$staticRouteCalled );
     }
@@ -74,7 +77,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/dynamic/1/2/3/4' );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( MockController::$dynamicRouteCalled );
 
@@ -99,7 +104,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/this/is/a/test/route' );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( MockController::$staticRouteCalled );
     }
@@ -122,7 +129,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/this/is/a/test/route' );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( MockController::$indexRouteCalled );
     }
@@ -132,11 +141,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $view = new View('test');
         MockController::$view = $view;
 
-        $res = Mockery::mock('\\infuse\\Response');
-        $res->shouldReceive('render')->withArgs([$view])->once();
-
         $req = new Request();
         $req->setPath( '/view' );
+
+        $res = Mockery::mock('\\infuse\\Response');
+        $res->shouldReceive('render')->withArgs([$view])->once();
 
         $this->assertTrue(Router::route(['/view' => ['MockController', 'view']], self::$app, $req, $res));
     }
@@ -154,7 +163,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/this/is/a/test/route' );
 
-        $this->assertFalse( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertFalse(Router::route($testRoutes, self::$app, $req, $res));
     }
 
     public function testRouterControllerParam()
@@ -174,7 +185,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $req->setParams( [ 'controller' => 'MockController' ] );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( MockController::$staticRouteCalled );
     }
@@ -195,7 +208,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $req = new Request( null, null, null, null, $server );
         $req->setPath( '/test' );
 
-        $this->assertTrue( Router::route( $testRoutes, self::$app, $req ) );
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue( $test );
     }
