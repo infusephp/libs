@@ -145,6 +145,9 @@ class Router
 
             return SKIP_ROUTE;
 
+        elseif ($result instanceof View)
+            $res->render($result);
+
         return true;
     }
 

@@ -11,6 +11,7 @@
 
 use infuse\Request;
 use infuse\Router;
+use infuse\View;
 use Pimple\Container;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
@@ -126,6 +127,20 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue( MockController::$indexRouteCalled );
     }
 
+    public function testView()
+    {
+        $view = new View('test');
+        MockController::$view = $view;
+
+        $res = Mockery::mock('\\infuse\\Response');
+        $res->shouldReceive('render')->withArgs([$view])->once();
+
+        $req = new Request();
+        $req->setPath( '/view' );
+
+        $this->assertTrue(Router::route(['/view' => ['MockController', 'view']], self::$app, $req, $res));
+    }
+
     public function testNonExistentController()
     {
         // call a route with a bogus controller
@@ -192,6 +207,7 @@ class MockController
     public static $dynamicRouteCalled = false;
     public static $dynamicRouteParams = [];
     public static $indexRouteCalled = false;
+    public static $view;
 
     public function staticRoute($req, $res)
     {
@@ -207,6 +223,11 @@ class MockController
     public function index($req, $res)
     {
         self::$indexRouteCalled = true;
+    }
+
+    public function view($req, $res)
+    {
+        return self::$view;
     }
 
     public function fail($req, $res)
