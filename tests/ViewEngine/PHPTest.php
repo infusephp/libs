@@ -46,6 +46,6 @@ class PHPViewEngineTest extends \PHPUnit_Framework_TestCase
             'to' => 'should_be_overwritten',
             'greeting' => 'Hello']);
 
-        $this->assertEquals('Hello, world!', self::$engine->renderView($view));
+        $this->assertEquals("Hello, world!\n", self::$engine->renderView($view));
     }
 }
