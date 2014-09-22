@@ -11,7 +11,7 @@
 
 use infuse\Utility as U;
 
-class UtilTest extends \PHPUnit_Framework_TestCase
+class UtilityTest extends \PHPUnit_Framework_TestCase
 {
     public function testArrayValue()
     {

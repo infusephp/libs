@@ -466,7 +466,9 @@ class Request
 	 */
     public function isApi()
     {
-        return isset( $this->headers[ 'AUTHORIZATION' ] );
+        return isset($this->headers['AUTHORIZATION']) ||
+            strlen($this->request('access_token')) > 0 ||
+            strlen($this->query('access_token')) > 0;
     }
 
     /**

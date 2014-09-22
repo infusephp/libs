@@ -294,13 +294,28 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse( $req->isXhr() );
     }
 
-    public function testIsApi()
+    public function testIsNotApi()
     {
-        $this->assertTrue( self::$req->isApi() );
+        $req = new Request(null, null, null, null, []);
+        $this->assertFalse($req->isApi());
+    }
 
-        $req = new Request( null, null, null, null, [] );
-        $this->assertFalse( $req->isApi() );
+    public function testIsApiHeader()
+    {
+        $req = new Request(null, null, null, null, ['HTTP_AUTHORIZATION' => 'test']);
+        $this->assertTrue($req->isApi());
+    }
 
+    public function testIsApiRequestBody()
+    {
+        $req = new Request(['access_token' => 'test']);
+        $this->assertTrue($req->isApi());
+    }
+
+    public function testIsApiQuery()
+    {
+        $req = new Request(null, ['access_token' => 'test']);
+        $this->assertTrue($req->isApi());
     }
 
     public function testIsCli()
