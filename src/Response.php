@@ -11,8 +11,6 @@
 
 namespace infuse;
 
-use Pimple\Container;
-
 class Response
 {
     static $codes = [
@@ -59,20 +57,11 @@ class Response
         505 => 'HTTP Version Not Supported'
     ];
 
-    private $app;
     private $version = '1.1';
     private $code = 200;
     private $contentType = 'text/html';
     private $headers = [];
     private $body;
-
-    /**
-	 * Constructs a new response
-	 */
-    public function __construct(Container $app)
-    {
-        $this->app = $app;
-    }
 
     /**
      * Gets one or all headers
@@ -198,42 +187,16 @@ class Response
     }
 
     /**
-	 * Renders a template using the view engine and puts the result in the body.
+	 * Convenience method to render a View and set the body to the result.
 	 *
 	 * @param string $template template to render
 	 * @param array $parameters parameters to pass to the template
      *
      * @return Response
 	 */
-    public function render($template, $parameters = [])
+    public function render(View $view)
     {
-        // deal with relative paths when using modules
-        // TODO this does not belong here
-        if (substr($template, 0, 1) != '/') {
-            // check if called from a controller
-            $backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
-
-            if ( isset( $backtrace[ 1 ] ) ) {
-                $class = Utility::array_value( $backtrace[ 1 ], 'class' );
-                if ( strpos( $class, 'app\\' ) !== false && defined( 'INFUSE_APP_DIR' ) ) {
-                    $parts = explode( '\\', $class );
-                    $module = $parts[ 1 ];
-
-                    $moduleViewsDir = INFUSE_APP_DIR . '/' . $module . '/views';
-
-                    $newTemplate = $moduleViewsDir . '/' . $template . '.tpl';
-                    if ( file_exists( $newTemplate ) ) {
-                        $parameters[ 'moduleViewsDir' ] = $moduleViewsDir;
-                        $template = $newTemplate;
-                    }
-                }
-            }
-        }
-
-        $engine = $this->app['view_engine'];
-        $engine->assignData( $parameters );
-
-        return $this->setBody($engine->render($template));
+        return $this->setBody($view->render());
     }
 
     /**
@@ -253,15 +216,17 @@ class Response
 	 * Convenience method to send a redirect response.
 	 *
 	 * @param string $url URL we redirect to
-     * @param int $code HTTP status code to send
+     * @param int     $code HTTP status code to send
+     * @param Request $req  request object for getting requested host information
 	 *
 	 * @return Response
 	 */
-    public function redirect($url, $code = 302)
+    public function redirect($url, $code = 302, Request $req = null)
     {
         // handle relative URL redirects
         if (substr($url, 0, 7) != 'http://' && substr($url, 0, 8) != 'https://' && substr($url, 0, 2) != '//') {
-            $req = $this->app['req'];
+            if (!$req)
+                $req = new Request();
             $url = $req->headers('host') . '/' . $req->basePath() . '/' . urldecode($url);
 
             // here we use a protocol-agnostic URL

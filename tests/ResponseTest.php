@@ -9,17 +9,31 @@
  * @license MIT
  */
 
-use infuse\Response;
-use infuse\Request;
-use Pimple\Container;
+namespace infuse;
+
+function headers_sent()
+{
+    return ResponseTest::$mock ? ResponseTest::$mock->headers_sent() : \headers_sent();
+}
+
+function header($arg1, $arg2 = true, $arg3 = 200)
+{
+    return ResponseTest::$mock ? ResponseTest::$mock->header($arg1, $arg2, $arg3) : \header($arg1, $arg2, $arg3);
+}
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
     public static $res;
+    public static $mock;
 
     public static function setUpBeforeClass()
     {
-        self::$res = new Response(new Container());
+        self::$res = new Response();
+    }
+
+    public function tearDown()
+    {
+        self::$mock = false;
     }
 
     public function testHeaders()
@@ -54,6 +68,15 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('application/pdf', self::$res->getContentType());
     }
 
+    public function testRender()
+    {
+        $view = \Mockery::mock('infuse\\View');
+        $view->shouldReceive('render')->andReturn('Hello, world!')->once();
+
+        $this->assertEquals(self::$res, self::$res->render($view));
+        $this->assertEquals('Hello, world!', self::$res->getBody());
+    }
+
     public function testJson()
     {
         $body = [
@@ -67,24 +90,39 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('application/json', self::$res->getContentType());
     }
 
+    public function testJsonDeprecated()
+    {
+        // DEPRECATED
+
+        $body = [
+            'test' => [
+                'meh',
+                'blah' ] ];
+
+        $this->assertEquals(self::$res, self::$res->setBodyJson($body));
+
+        $this->assertEquals(json_encode($body), self::$res->getBody());
+        $this->assertEquals('application/json', self::$res->getContentType());
+    }
+
     public function testRedirect()
     {
-        $container = new Container();
-        $container['req'] = new Request( null, null, null, null, [
+        $req = new Request( null, null, null, null, [
             'HTTP_HOST' => 'example.com',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php' ] );
-        $res = new Response($container);
+        $res = new Response();
 
-        $this->assertEquals($res, $res->redirect('/'));
+        $this->assertEquals($res, $res->redirect('/', 302, $req));
         $this->assertEquals('//example.com/some/start/', $res->headers('Location'));
 
-        $this->assertEquals($res, $res->redirect('/test/url', 301));
+        $this->assertEquals($res, $res->redirect('/test/url', 301, $req));
         $this->assertEquals('//example.com/some/start/test/url', $res->headers('Location'));
         $this->assertEquals(301, $res->getCode());
 
         $this->assertEquals($res, $res->redirect('http://test.com'));
         $this->assertEquals('http://test.com', $res->headers('Location'));
+        $this->assertEquals(302, $res->getCode());
 
         $this->assertEquals($res, $res->redirect('http://test.com'));
         $this->assertEquals('http://test.com', $res->headers('Location'));
@@ -92,19 +130,48 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testRedirectNonStandardPort()
     {
-        $container = new Container();
-        $container['req'] = new Request( null, null, null, null, [
+        $req = new Request( null, null, null, null, [
             'HTTP_HOST' => 'example.com:1234',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php',
             'SERVER_PORT' => 5000 ] );
-        $res = new Response($container);
+        $res = new Response();
 
-        $this->assertEquals($res, $res->redirect('/'));
+        $this->assertEquals($res, $res->redirect('/', 302, $req));
         $this->assertEquals('//example.com:1234/some/start/', $res->headers('Location'));
 
-        $this->assertEquals($res, $res->redirect( '/test/url'));
+        $this->assertEquals($res, $res->redirect( '/test/url', 302, $req));
         $this->assertEquals('//example.com:1234/some/start/test/url', $res->headers('Location'));
+    }
+
+    public function testSendHeaders()
+    {
+        self::$mock = \Mockery::mock('php');
+        self::$mock->shouldReceive('headers_sent')->andReturn(false)->once();
+        self::$mock->shouldReceive('header')->withArgs(['HTTP/1.0 401 Unauthorized', true, 401])->once();
+        self::$mock->shouldReceive('header')->withArgs(['Content-type: application/json; charset=utf-8', false, 401])->once();
+        self::$mock->shouldReceive('header')->withArgs(['Test: hello', false, 401])->once();
+
+        $res = new Response();
+        $res->setVersion('1.0');
+        $res->setCode(401);
+        $res->setContentType('application/json');
+        $res->setHeader('Test', 'hello');
+        $res->sendHeaders();
+    }
+
+    public function testSendBody()
+    {
+        self::$res->setBody('test');
+
+        ob_start();
+
+        $this->assertEquals(self::$res, self::$res->sendBody());
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('test', $output);
     }
 
     public function testSend()

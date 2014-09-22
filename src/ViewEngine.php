@@ -11,150 +11,101 @@
 
 namespace infuse;
 
-class ViewEngine
+abstract class ViewEngine
 {
-	private static $defaultOptions = [
-		'engine' => 'smarty',
-		'viewsDir' => 'views',
-		'compileDir' => 'temp/smarty',
-		'cacheDir' => 'temp/smarty/cache',
-		'assetMapFile' => 'assets/static.assets.json',
-		'assetsBaseUrl' => ''
-	];
+    private $assetMapFile = 'assets/static.assets.json';
+    private $assetMap;
+    private $assetsBaseUrl;
+    private $templateParameters = [];
 
-	private static $extensionMap = [
-		'smarty' => '.tpl',
-		'php' => '.php'
-	];
+    ///////////////////////
+    // ASSET URLS
+    ///////////////////////
 
-	private $type = 'php';
-	private $viewsDir;
-	private $compileDir;
-	private $cacheDir;
-	private $assetMapFile;
-	private $assetMap;
-	private $assetsBaseUrl;
-
-	private $smarty;
-
-	private $data;
-
-	/**
-	 * Creates a new instance
+    /**
+	 * Sets the file where static assets can be located
 	 *
-	 * @param array $options
+	 * @param string $filename
+	 *
+	 * @return ViewEngine
 	 */
-	public function __construct(array $options = [])
-	{
-		$options = array_replace( static::$defaultOptions, $options );
+    public function setAssetMapFile($filename)
+    {
+        $this->assetMapFile = $filename;
 
-		if( isset( $options[ 'engine' ] ) )
-			$this->type = $options[ 'engine' ];
+        return $this;
+    }
 
-		$this->viewsDir = $options[ 'viewsDir' ];
-		$this->compileDir = $options[ 'compileDir' ];
-		$this->cacheDir = $options[ 'cacheDir' ];
-		$this->assetMapFile = $options[ 'assetMapFile' ];
-		$this->assetsBaseUrl = $options[ 'assetsBaseUrl' ];
-	}
-
-	/**
-	 * Generates the complete URL for a given asset with a version number
-	 * if available. Requires config assets.base_url to be set.
-	 * i.e. asset_url( '/img/logo.png' ) -> http://cdn.example.com/img/logo.png?v=2d82lf9sd8f
+    /**
+	 * Sets the base URL to be prepended to static assets
 	 *
-	 * @param string $location path portion of url (everything after host name beginning with /)
+	 * @param string $url
+	 *
+	 * @return ViewEngine
+	 */
+    public function setAssetBaseUrl($url)
+    {
+        $this->assetsBaseUrl = $url;
+
+        return $this;
+    }
+
+    /**
+	 * Attempts to look up the versioned URL for a given asset in the asset map if available.
+	 * If not found in the asset map, the original URL will be returned.
+	 * i.e. asset_url( '/img/logo.png' ) -> http://cdn.example.com/img/logo.2d82lf9sd8f.png
+	 *
+	 * @param string $path path portion of URL (everything after host name beginning with /)
 	 *
 	 * @return string
 	 */
-	public function asset_url($location)
-	{
-		// load asset version numbers (if they exist)
+    public function asset_url($path)
+    {
+        // load asset version numbers (if they exist)
         if (!$this->assetMap) {
-			$assetMap = [];
-			if( file_exists( $this->assetMapFile ) )
-				$assetMap = json_decode( file_get_contents( $this->assetMapFile ), true );
-			$this->assetMap = $assetMap;
-		}
+            if (file_exists($this->assetMapFile))
+                $this->assetMap = json_decode(file_get_contents($this->assetMapFile), true);
+            else
+                $this->assetMap = [];
+        }
 
-		$location = (isset($this->assetMap[$location])) ? $this->assetMap[ $location ] : $location;
-		return $this->assetsBaseUrl . $location;
-	}
+        $path = (isset($this->assetMap[$path])) ? $this->assetMap[$path] : $path;
 
-	/**
-	 * Renders a template with optional parameters
+        return $this->assetsBaseUrl . $path;
+    }
+
+    ///////////////////////
+    // TEMPLATING
+    ///////////////////////
+
+    /**
+	 * Updates the global template parameters for views rendered with this engine
 	 *
-	 * @param string $template
 	 * @param array $parameters
 	 *
-	 * @return string rendered template
+	 * @return ViewEngine
 	 */
-	public function render($template, $parameters = [])
-	{
-		$extension = self::$extensionMap[ $this->type ];
+    public function setGlobalParameters(array $parameters)
+    {
+        $this->templateParameters = array_replace($this->templateParameters, $parameters);
 
-		// add extension if left off
-        $len = strlen( $extension );
-		if( substr( $template, -$len, $len ) != $extension )
-			$template .= $extension;
+        return $this;
+    }
 
-		$this->assignData( $parameters );
-
-		if ($this->type == 'smarty') {
-			return $this->smarty()->fetch( $template );
-		} elseif ($this->type == 'php') {
-			extract( $this->data );
-
-			ob_start();
-			include $this->viewsDir . '/' . $template;
-			$theTemplateRenderedString = ob_get_contents();
-			ob_end_clean();
-
-			return $theTemplateRenderedString;
-		}
-	}
-
-	/**
-	 * Passes a key-value map of variables to the template
+    /**
+	 * Gets the global template parameters
 	 *
-	 * @param array $data key-value array
+	 * @return array
 	 */
-	public function assignData(array $data)
-	{
-		foreach( $data as $key => $value )
-			$this->assign( $key, $value );
-	}
+    public function getGlobalParameters()
+    {
+        return $this->templateParameters;
+    }
 
-	/**
-	 * Sets a variable to be passed to the template
+    /**
+	 * Renders a view into a string
 	 *
-	 * @param string $key
-	 * @param mixed $value
+	 * @return string
 	 */
-	public function assign($key, $value)
-	{
-		if( $this->type == 'smarty' )
-			$this->smarty()->assign( $key, $value );
-		elseif( $this->type == 'php' )
-			$this->data[ $key ] = $value;
-	}
-
-	/**
-	 * Gets (and creates) the Smarty instance used by this clsas
-	 *
-	 * @return Smarty
-	 */
-	public function smarty()
-	{
-		if (!$this->smarty) {
-			$this->smarty = new \Smarty();
-
-			$this->smarty->muteExpectedErrors();
-			$this->smarty->setTemplateDir( $this->viewsDir )
-						 ->setCompileDir( $this->compileDir )
-						 ->setCacheDir( $this->cacheDir );
-		}
-
-		return $this->smarty;
-	}
+    abstract public function renderView(View $view);
 }
