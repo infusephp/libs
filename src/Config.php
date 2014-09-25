@@ -17,7 +17,7 @@ class Config
 
     public function __construct(array $values = [])
     {
-        $this->values = array_replace( $this->values, $values );
+        $this->values = array_replace($this->values, $values);
     }
 
     /**
@@ -29,11 +29,10 @@ class Config
 	 */
     public function get($property = false)
     {
-        if( !$property )
-
+        if (!$property)
             return $this->values;
 
-        return Utility::array_value( $this->values, $property );
+        return Utility::array_value($this->values, $property);
     }
 
     /**
@@ -44,6 +43,6 @@ class Config
 	 */
     public function set($property, $value)
     {
-        Utility::array_set( $this->values, $property, $value );
+        Utility::array_set($this->values, $property, $value);
     }
 }
