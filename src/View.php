@@ -67,7 +67,7 @@ class View
 
             if (isset($backtrace[1])) {
                 $class = Utility::array_value($backtrace[1], 'class');
-                if (!empty($class) && property_exists($class, 'viewsDir') && $class::$viewsDir) {
+                if (class_exists($class) && property_exists($class, 'viewsDir') && $class::$viewsDir) {
                     $template = $class::$viewsDir . '/' . $template;
                     $templateParameters['viewsDir'] = $class::$viewsDir;
                 }
