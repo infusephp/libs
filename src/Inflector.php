@@ -33,7 +33,7 @@ class Inflector
 	 */
     public static function pluralize($word)
     {
-        return self::inflector()->pluralize( $word );
+        return self::inflector()->pluralize($word);
     }
 
     /**
@@ -45,7 +45,7 @@ class Inflector
 	 */
     public static function singularize($word)
     {
-        return self::inflector()->singularize( $word );
+        return self::inflector()->singularize($word);
     }
 
     /**
@@ -58,7 +58,7 @@ class Inflector
 	 */
     public static function camelize($word, $variable = false)
     {
-        return self::inflector()->camelize( $word, $variable );
+        return self::inflector()->camelize($word, $variable);
     }
 
     /**
@@ -70,7 +70,7 @@ class Inflector
 	 */
     public static function underscore($word)
     {
-        return self::inflector()->underscore( $word );
+        return self::inflector()->underscore($word);
     }
 
     /**
@@ -82,7 +82,7 @@ class Inflector
 	 */
     public static function humanize($word)
     {
-        return self::inflector()->humanize( $word );
+        return self::inflector()->humanize($word);
     }
 
     /**
@@ -94,7 +94,7 @@ class Inflector
 	 */
     public static function titleize($word)
     {
-        return self::inflector()->titleize( $word );
+        return self::inflector()->titleize($word);
     }
 
     /**
@@ -106,7 +106,7 @@ class Inflector
 	 */
     public static function ordinal($n)
     {
-        return self::inflector()->ordinal( $n );
+        return self::inflector()->ordinal($n);
     }
 
     /**
@@ -118,7 +118,7 @@ class Inflector
 	 */
     public static function ordinalize($n)
     {
-        return self::inflector()->ordinalize( $n );
+        return self::inflector()->ordinalize($n);
     }
 
     private static function inflector()
