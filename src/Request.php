@@ -527,7 +527,7 @@ class Request
 	 */
     public function request($index = false)
     {
-        return ($index) ? Utility::array_value( $this->request, $index ) : $this->request;
+        return ($index) ? Utility::array_value((array) $this->request, $index) : $this->request;
     }
 
     /**

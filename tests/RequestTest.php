@@ -360,6 +360,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertNull( self::$req->request( 'non-existent' ) );
     }
 
+    public function testRequestPlainText()
+    {
+        $req = new Request(null, 'test', null, null, ['CONTENT_TYPE' => 'plain/text']);
+
+        $this->assertEquals('test', $req->request());
+        $this->assertEquals(null, $req->request('some_index'));
+    }
+
     public function testSetCookie()
     {
         $this->assertTrue( self::$req->setCookie( 'test', 'testValue', time() + 3600, '/', 'example.com', true, true, true ) );
