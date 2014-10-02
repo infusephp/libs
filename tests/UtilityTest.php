@@ -182,4 +182,16 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals( '<pre>' . print_r( $test, true ) . '</pre>', $output );
     }
+
+    public function testTimeAgo()
+    {
+        $this->assertEquals('10 seconds ago', U::timeAgo(time() - 10));
+        $this->assertEquals('5 minutes ago', U::timeAgo(time() - 300));
+        $this->assertEquals('1 day ago', U::timeAgo(time() - 86401));
+        $this->assertEquals('1 week ago', U::timeAgo(time() - 86400 * 7));
+        $this->assertEquals('1 month ago', U::timeAgo(time() - 86400 * 30));
+        $this->assertEquals('1 year ago', U::timeAgo(time() - 86400 * 365));
+
+        $this->assertEquals('1 day, 1 minute, 40 seconds ago', U::timeAgo(time() - 86500, true));
+    }
 }
