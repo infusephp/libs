@@ -295,7 +295,6 @@ class Utility
     /**
      * Generates a string for how long ago a timestamp happened.
      * i.e. '2 minutes ago' or 'just now'
-     * Borrowed from http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
      *
      * @param int     $timestamp timestamp
      * @param boolean $full      true: time ago has every granularity, false: time ago has biggest granularity only
@@ -307,7 +306,44 @@ class Utility
         $now = new \DateTime();
         $ago = new \DateTime();
         $ago->setTimestamp($timestamp);
-        $diff = $now->diff($ago);
+
+        $string = self::timeDiff($now, $ago);
+
+        if (!$full) $string = array_slice($string, 0, 1);
+        return $string ? implode(', ', $string) . ' ago' : 'just now';
+    }
+
+    /**
+     * Generates a string for how long until a timestamp will happen
+     * i.e. '2 days' or 'now'
+     *
+     * @param int $timestamp timestamp
+     *
+     * @return string computed time until
+     */
+    public static function timeUntil($timestamp, $full = false)
+    {
+        $now = new \DateTime();
+        $then = new \DateTime();
+        $then->setTimestamp($timestamp);
+
+        $string = self::timeDiff($then, $now);
+
+        if (!$full) $string = array_slice($string, 0, 1);
+        return $string ? implode(', ', $string) : 'now';
+    }
+
+    /**
+     * Calculates the time difference between two DateTime objects
+     * Borrowed from http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
+     *
+     * @param array $t time until
+     *
+     * @return string
+     */
+    private static function timeDiff(\DateTime $a, \DateTime $b)
+    {
+        $diff = $a->diff($b);
 
         $diff->w = floor($diff->d / 7);
         $diff->d -= $diff->w * 7;
@@ -329,7 +365,6 @@ class Utility
             }
         }
 
-        if (!$full) $string = array_slice($string, 0, 1);
-        return $string ? implode(', ', $string) . ' ago' : 'just now';
+        return $string;
     }
 }
