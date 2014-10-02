@@ -415,14 +415,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'hello',
                 'anyone there?' ] ];
 
-        $model->cacheProperties( [
+        $this->assertEquals($model, $model->cacheProperties( [
             'validate' => '',
             'hidden' => '1',
             'default' => 'testing',
             'test2' => 'hello',
             'person' => '30',
             'required' => '50',
-            'json' => $json ] );
+            'json' => $json ] ));
+
         $this->assertEquals( '', $model->validate );
         $this->assertEquals( '1', $model->hidden );
         $this->assertEquals( '50', $model->required );
@@ -450,7 +451,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue( isset( $model->answer ) );
         $this->assertTrue( isset( $model->test ) );
 
-        $model->emptyCache();
+        $this->assertEquals($model, $model->emptyCache());
 
         $this->assertNotEquals( 42, $model->answer );
         $this->assertFalse( isset( $model->test ) );

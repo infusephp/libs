@@ -1087,7 +1087,7 @@ abstract class Model extends Acl
 	 * IMPORTANT: this should be called before getting properties
 	 * any time a model *might* have been updated from an outside source
 	 *
-	 * @return void
+	 * @return Model
 	 */
     public function load()
     {
@@ -1107,6 +1107,8 @@ abstract class Model extends Acl
             $info[ $k ] = $this->marshalValue( $k, $v );
 
         $this->cacheProperties( $info );
+
+        return $this;
     }
 
     /**
@@ -1115,7 +1117,7 @@ abstract class Model extends Acl
 	 * @param string $property property name
 	 * @param string $value new value
 	 *
-	 * @return void
+	 * @return Model
 	 */
     public function cacheProperty($property, $value)
     {
@@ -1128,6 +1130,8 @@ abstract class Model extends Acl
 
         /* Shared Cache */
         $this->cache()->set( $property, $value );
+
+        return $this;
     }
 
     /**
@@ -1135,12 +1139,14 @@ abstract class Model extends Acl
 	 *
 	 * @param array $data data to be cached
 	 *
-	 * @return void
+	 * @return Model
 	 */
     public function cacheProperties(array $data)
     {
         foreach( $data as $property => $value )
             $this->cacheProperty( $property, $value );
+
+        return $this;
     }
 
     /**
@@ -1148,7 +1154,7 @@ abstract class Model extends Acl
 	 *
 	 * @param string $property property name
 	 *
-	 * @return void
+	 * @return Model
 	 */
     public function invalidateCachedProperty($property)
     {
@@ -1161,12 +1167,14 @@ abstract class Model extends Acl
 
         /* Shared Cache */
         $this->cache()->delete( $property );
+
+        return $this;
     }
 
     /**
 	 * Invalidates all cached properties for this model
 	 *
-	 * @return void
+	 * @return Model
 	 */
     public function emptyCache()
     {
@@ -1177,6 +1185,8 @@ abstract class Model extends Acl
 
         foreach( $properties as $property )
             $this->invalidateCachedProperty( $property );
+
+        return $this;
     }
 
     /////////////////////////////
