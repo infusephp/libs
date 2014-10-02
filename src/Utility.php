@@ -317,7 +317,8 @@ class Utility
      * Generates a string for how long until a timestamp will happen
      * i.e. '2 days' or 'now'
      *
-     * @param int $timestamp timestamp
+     * @param int     $timestamp timestamp
+     * @param boolean $full      true: time ago has every granularity, false: time ago has biggest granularity only
      *
      * @return string computed time until
      */
@@ -337,9 +338,10 @@ class Utility
      * Calculates the time difference between two DateTime objects
      * Borrowed from http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
      *
-     * @param array $t time until
+     * @param DateTime $a "now"
+     * @param DateTime $b "then"
      *
-     * @return string
+     * @return array delta at time each granularity
      */
     private static function timeDiff(\DateTime $a, \DateTime $b)
     {
