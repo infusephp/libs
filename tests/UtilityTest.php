@@ -172,17 +172,6 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( $expected, $cookieStr );
     }
 
-    public function testPrintPre()
-    {
-        $test = [ 'test' => [ 'who' => 'dat' ] ];
-
-        ob_start();
-        U::print_pre( $test );
-        $output = ob_get_clean();
-
-        $this->assertEquals( '<pre>' . print_r( $test, true ) . '</pre>', $output );
-    }
-
     public function testTimeAgo()
     {
         $this->assertEquals('10 seconds ago', U::timeAgo(time() - 10));

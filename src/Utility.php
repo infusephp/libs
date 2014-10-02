@@ -283,16 +283,6 @@ class Utility
     }
 
     /**
-	 * Useful for debugging
-	 *
-	 * @param mixed $element
-	 */
-    public static function print_pre($element)
-    {
-        echo '<pre>' . print_r( $element, true ) . '</pre>';
-    }
-
-    /**
      * Generates a string for how long ago a timestamp happened.
      * i.e. '2 minutes ago' or 'just now'
      *
