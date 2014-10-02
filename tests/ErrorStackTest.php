@@ -36,7 +36,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
             'error' => 'some_error',
             'message' => 'Something is wrong' ];
 
-        $this->assertTrue( self::$stack->push( $error1 ) );
+        $this->assertEquals(self::$stack, self::$stack->push($error1));
 
         $error2 = [
             'error' => 'username_invalid',
@@ -45,13 +45,13 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
             'params' => [
                 'field' => 'username' ] ];
 
-        $this->assertTrue( self::$stack->push( $error2 ) );
+        $this->assertEquals(self::$stack, self::$stack->push($error2));
 
-        $this->assertFalse( self::$stack->push( [
+        $this->assertEquals(self::$stack, self::$stack->push([
             'message' => 'Username is invalid',
-            'context' => 'user.create' ] ) );
+            'context' => 'user.create']));
 
-        $this->assertTrue( self::$stack->push( [ 'error' => 'some_error' ] ) );
+        $this->assertEquals(self::$stack, self::$stack->push(['error' => 'some_error']));
     }
 
     /**
@@ -144,9 +144,9 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
     public function testSetCurrentContext()
     {
-        self::$stack->setCurrentContext( 'test.context' );
+        $this->assertEquals(self::$stack, self::$stack->setCurrentContext('test.context'));
 
-        self::$stack->push( [ 'error' => 'test_error' ] );
+        $this->assertEquals(self::$stack, self::$stack->push(['error' => 'test_error']));
 
         $expected = [
             'error' => 'test_error',
@@ -162,9 +162,9 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
     public function testClearCurrentContext()
     {
-        self::$stack->clearCurrentContext();
+        $this->assertEquals(self::$stack, self::$stack->clearCurrentContext());
 
-        self::$stack->push( [ 'error' => 'test_error' ] );
+        $this->assertEquals(self::$stack, self::$stack->push(['error' => 'test_error']));
 
         $expected = [
             'error' => 'test_error',
@@ -180,7 +180,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 	 */
     public function testClear()
     {
-        self::$stack->clear();
+        $this->assertEquals(self::$stack, self::$stack->clear());
         $this->assertCount( 0, self::$stack->errors() );
     }
 }

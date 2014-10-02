@@ -48,13 +48,11 @@ class ErrorStack
         if( !isset( $error[ 'params' ] ) )
             $error[ 'params' ] = [];
 
-        if( !Utility::array_value( $error, 'error' ) )
+        if (Utility::array_value($error, 'error')) {
+            $this->stack[] = $error;
+        }
 
-            return false;
-
-        $this->stack[] = $error;
-
-        return true;
+        return $this;
     }
 
     /**
@@ -65,6 +63,8 @@ class ErrorStack
     public function setCurrentContext($context = '')
     {
         $this->context = $context;
+
+        return $this;
     }
 
     /**
@@ -73,6 +73,8 @@ class ErrorStack
     public function clearCurrentContext()
     {
         $this->context = '';
+
+        return $this;
     }
 
     /**
@@ -159,5 +161,7 @@ class ErrorStack
     public function clear()
     {
         $this->stack = [];
+
+        return $this;
     }
 }
