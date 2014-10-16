@@ -120,7 +120,8 @@ abstract class Model extends Acl
         'cache' => [
             'strategies' => [
                 'local' ],
-            'prefix' => '' ],
+            'prefix' => '',
+            'expires' => 0 ],
         'database' => [
             'enabled' => true ],
         'requester' => false ];
@@ -1129,7 +1130,7 @@ abstract class Model extends Acl
         $this->localCache[ $property ] = $value;
 
         /* Shared Cache */
-        $this->cache()->set( $property, $value );
+        $this->cache()->set($property, $value, static::$config['cache']['expires']);
 
         return $this;
     }
