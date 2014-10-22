@@ -496,6 +496,7 @@ class Locale
         'Eritrea',
         'Estonia',
         'Ethiopia',
+        'Faroe Islands',
         'Fiji',
         'Finland',
         'France',
