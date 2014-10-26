@@ -14,14 +14,14 @@ namespace infuse\Database;
 class UpdateQuery extends Query
 {
     /**
-	 * @var string
+	 * @var FromStatement
 	 */
     protected $table;
 
     /**
 	 * @var array
 	 */
-    protected $values = [];
+    protected $updateValues = [];
 
     /**
 	 * @var WhereStatement
@@ -38,27 +38,33 @@ class UpdateQuery extends Query
      */
     protected $liimt;
 
+    /**
+     * @var array
+     */
+    protected $values = [];
+
     public function initialize()
     {
+        $this->table = new Statements\FromStatement(false);
         $this->where = new Statements\WhereStatement();
         $this->orderBy = new Statements\OrderStatement();
     }
 
     /**
-	 * Sets the table for the query
-	 *
-	 * @param string $table table name
-	 *
-	 * @return self
-	 */
-    public function table($table = false)
+     * Sets the table for the query
+     *
+     * @param string $table table name
+     *
+     * @return self
+     */
+    public function table($table)
     {
-        $this->table = $table;
+        $this->table->addTable($table);
 
         return $this;
     }
 
-    public function where($where, $condition = false, $operator = false)
+    public function where($where, $condition = false, $operator = '=')
     {
         $this->where->addCondition($where, $condition, $operator);
 
@@ -74,7 +80,7 @@ class UpdateQuery extends Query
      */
     public function values(array $values)
     {
-        $this->values = $values;
+        $this->updateValues = $values;
 
         return $this;
     }
@@ -88,8 +94,9 @@ class UpdateQuery extends Query
      */
     public function limit($limit)
     {
-        $this->limit = (string) $limit;
-        $this->offset = (string) $offset;
+        if (is_numeric($limit)) {
+            $this->limit = (string) $limit;
+        }
 
         return $this;
     }
@@ -112,7 +119,7 @@ class UpdateQuery extends Query
     /**
 	 * Gets the table name for the query
 	 *
-	 * @return string table name
+	 * @return FromStatement
 	 */
     public function getTable()
     {
@@ -124,7 +131,7 @@ class UpdateQuery extends Query
      *
      * @return array
      */
-    public function getValues()
+    public function getUpdateValues()
     {
         return $this->values;
     }
@@ -166,14 +173,21 @@ class UpdateQuery extends Query
 	 */
     public function sql()
     {
-        $sql = ['UPDATE ' . $this->table];
+        $sql = [
+            'UPDATE',
+            $this->table->build() ]; // table
+
+        $this->values = [];
 
         // TODO values
+        $this->values = array_merge($this->values, $this->updateValues);
 
         // where
         $where = $this->where->build();
-        if (!empty($where))
+        if (!empty($where)) {
             $sql[] = $where;
+            $this->values = array_merge($this->values, $this->where->getValues());
+        }
 
         // order by
         $orderBy = $this->orderBy->build();
@@ -185,5 +199,15 @@ class UpdateQuery extends Query
             $sql[] = 'LIMIT ' . $this->limit;
 
         return implode(' ', $sql);
+    }
+
+    /**
+     * Gets the values associated with this query
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
     }
 }

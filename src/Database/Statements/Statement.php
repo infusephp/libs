@@ -25,6 +25,11 @@ abstract class Statement
 	 */
     abstract public function build();
 
+    /**
+     * Gets the values associated with this statement
+     *
+     * @return array
+     */
     public function getValues()
     {
         return $this->values;

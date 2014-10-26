@@ -13,8 +13,6 @@ namespace infuse\Database;
 
 class DeleteQuery extends Query
 {
-    protected $table;
-
     /**
      * @var FromStatement
      */
@@ -35,6 +33,11 @@ class DeleteQuery extends Query
      */
     protected $liimt;
 
+    /**
+     * @var array
+     */
+    protected $values = [];
+
     public function initialize()
     {
         $this->from = new Statements\FromStatement();
@@ -51,12 +54,12 @@ class DeleteQuery extends Query
      */
     public function from($table)
     {
-        $this->from->addFields($table);
+        $this->from->addTable($table);
 
         return $this;
     }
 
-    public function where($where, $condition = false, $operator = false)
+    public function where($where, $condition = false, $operator = '=')
     {
         $this->where->addCondition($where, $condition, $operator);
 
@@ -72,8 +75,9 @@ class DeleteQuery extends Query
      */
     public function limit($limit)
     {
-        $this->limit = (string) $limit;
-        $this->offset = (string) $offset;
+        if (is_numeric($limit)) {
+            $this->limit = (string) $limit;
+        }
 
         return $this;
     }
@@ -144,10 +148,14 @@ class DeleteQuery extends Query
             'DELETE',
             $this->from->build() ]; // from
 
+        $this->values = [];
+
         // where
         $where = $this->where->build();
-        if (!empty($where))
+        if (!empty($where)) {
             $sql[] = $where;
+            $this->values = array_merge($this->values, $this->where->getValues());
+        }
 
         // order by
         $orderBy = $this->orderBy->build();
@@ -159,5 +167,15 @@ class DeleteQuery extends Query
             $sql[] = 'LIMIT ' . $this->limit;
 
         return implode(' ', $sql);
+    }
+
+    /**
+     * Gets the values associated with this query
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
     }
 }

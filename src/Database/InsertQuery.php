@@ -13,8 +13,20 @@ namespace infuse\Database;
 
 class InsertQuery extends Query
 {
+    /**
+     * @var FromStatement
+     */
     protected $table;
+
+    /**
+     * @var array
+     */
     protected $values = [];
+
+    public function initialize()
+    {
+        $this->table = new Statements\FromStatement(false);
+    }
 
     /**
 	 * Sets the table for the query
@@ -25,7 +37,7 @@ class InsertQuery extends Query
 	 */
     public function into($table)
     {
-        $this->table = $table;
+        $this->table->addTable($table);
 
         return $this;
     }
@@ -71,7 +83,9 @@ class InsertQuery extends Query
      */
     public function sql()
     {
-        $sql = ['INSERT INTO ' . $this->table]; // into,
+        $sql = [
+            'INSERT INTO',
+            $this->table->build() ]; // into,
 
         // values TODO
         return implode(' ', $sql);

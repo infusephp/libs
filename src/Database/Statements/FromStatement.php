@@ -13,7 +13,33 @@ namespace infuse\Database\Statements;
 
 class FromStatement extends Statement
 {
+    /**
+     * @var boolean
+     */
+    protected $hasFrom;
+
+    /**
+     * @var array
+     */
     protected $tables = [];
+
+    /**
+     * @param boolean $hasFrom when true, statement is prefixed with `FROM`
+     */
+    public function __construct($hasFrom = true)
+    {
+        $this->hasFrom = $hasFrom;
+    }
+
+    /**
+     * Tells whether this statement is prefixed with FROM
+     *
+     * @return boolean true: has FROM, false: no FROM
+     */
+    public function hasFrom()
+    {
+        return $this->hasFrom;
+    }
 
     /**
 	 * Adds one or more tables to this statement.
@@ -62,6 +88,6 @@ class FromStatement extends Statement
         foreach ($tables as &$table)
             $table = $this->escapeIdentifier($table);
 
-        return 'FROM ' . implode(',', $tables);
+        return (($this->hasFrom) ? 'FROM ' : '') . implode(',', $tables);
     }
 }

@@ -53,14 +53,19 @@ class SelectQuery extends Query
 	 */
     protected $offset = '0';
 
+    /**
+     * @var array
+     */
+    protected $values = [];
+
     public function initialize()
     {
         $this->select = new Statements\SelectStatement();
         $this->from = new Statements\FromStatement();
         $this->where = new Statements\WhereStatement();
-        $this->having = new Statements\WhereStatement();
+        $this->having = new Statements\WhereStatement(true);
         $this->orderBy = new Statements\OrderStatement();
-        $this->groupBy = new Statements\OrderStatement();
+        $this->groupBy = new Statements\OrderStatement(true);
     }
 
     /**
@@ -124,7 +129,7 @@ class SelectQuery extends Query
         return $this;
     }
 
-    public function where($where, $condition = false, $operator = false)
+    public function where($where, $condition = false, $operator = '=')
     {
         $this->where->addCondition($where, $condition, $operator);
 
@@ -141,8 +146,10 @@ class SelectQuery extends Query
 	 */
     public function limit($limit, $offset = 0)
     {
-        $this->limit = (string) $limit;
-        $this->offset = (string) $offset;
+        if (is_numeric($limit) && is_numeric($offset)) {
+            $this->limit = (string) $limit;
+            $this->offset = (string) $offset;
+        }
 
         return $this;
     }
@@ -162,7 +169,7 @@ class SelectQuery extends Query
         return $this;
     }
 
-    public function having($where, $condition = false, $operator = false)
+    public function having($where, $condition = false, $operator = '=')
     {
         $this->having->addCondition($where, $condition, $operator);
 
@@ -265,10 +272,14 @@ class SelectQuery extends Query
             $this->select->build(), // select
             $this->from->build() ]; // from
 
+        $this->values = [];
+
         // where
         $where = $this->where->build();
-        if (!empty($where))
+        if (!empty($where)) {
             $sql[] = $where;
+            $this->values = array_merge($this->values, $this->where->getValues());
+        }
 
         // group by
         $groupBy = $this->groupBy->build();
@@ -277,8 +288,10 @@ class SelectQuery extends Query
 
         // having
         $having = $this->having->build();
-        if (!empty($having))
+        if (!empty($having)) {
             $sql[] = $having;
+            $this->values = array_merge($this->values, $this->having->getValues());
+        }
 
         // order by
         $orderBy = $this->orderBy->build();
@@ -290,5 +303,15 @@ class SelectQuery extends Query
             $sql[] = 'LIMIT ' . $this->offset . ',' . $this->limit;
 
         return implode(' ', $sql);
+    }
+
+    /**
+     * Gets the values associated with this query
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
     }
 }

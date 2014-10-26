@@ -33,26 +33,73 @@ class SelectQueryTest extends \PHPUnit_Framework_TestCase
 
     public function testWhere()
     {
-        $this->markTestIncomplete();
+        $query = new SelectQuery();
+
+        $this->assertEquals($query, $query->where('balance', 10, '>'));
+        $where = $query->getWhere();
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\WhereStatement', $where);
+        $this->assertFalse($where->isHaving());
+        $this->assertEquals([['balance', '>', 10]], $where->getConditions());
     }
 
     public function testLimit()
     {
-        $this->markTestIncomplete();
+        $query = new SelectQuery();
+
+        $this->assertEquals($query, $query->limit(10));
+        $this->assertEquals(['10', '0'], $query->getLimit());
+
+        $this->assertEquals($query, $query->limit(100, 200));
+        $this->assertEquals(['100', '200'], $query->getLimit());
+
+        $this->assertEquals($query, $query->limit('hello'));
+        $this->assertEquals(['100', '200'], $query->getLimit());
     }
 
     public function testGroupBy()
     {
-        $this->markTestIncomplete();
+        $query = new SelectQuery();
+
+        $this->assertEquals($query, $query->groupBy('uid'));
+        $groupBy = $query->getGroupBy();
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\OrderStatement', $groupBy);
+        $this->assertTrue($groupBy->isGroupBy());
+        $this->assertEquals([['uid']], $groupBy->getFields());
     }
 
     public function testHaving()
     {
-        $this->markTestIncomplete();
+        $query = new SelectQuery();
+
+        $this->assertEquals($query, $query->having('balance', 10, '>'));
+        $having = $query->getHaving();
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\WhereStatement', $having);
+        $this->assertTrue($having->isHaving());
+        $this->assertEquals([['balance', '>', 10]], $having->getConditions());
     }
 
     public function testOrderBy()
     {
-        $this->markTestIncomplete();
+        $query = new SelectQuery();
+
+        $this->assertEquals($query, $query->orderBy('uid', 'ASC'));
+        $orderBy = $query->getOrderBy();
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\OrderStatement', $orderBy);
+        $this->assertFalse($orderBy->isGroupBy());
+        $this->assertEquals([['uid', 'ASC']], $orderBy->getFields());
+    }
+
+    public function testBuild()
+    {
+        $query = new SelectQuery();
+
+        $query->from('Users')->where('uid', 10)->having('first_name', 'something')
+              ->groupBy('last_name')->orderBy('first_name', 'ASC')
+              ->limit(100, 10);
+
+        $this->assertEquals('SELECT * FROM `Users` WHERE `uid`=? GROUP BY `last_name` HAVING `first_name`=? ORDER BY `first_name` ASC LIMIT 10,100', $query->build());
+
+        // test values
+        $this->assertEquals([10, 'something'], $query->getValues());
     }
 }
