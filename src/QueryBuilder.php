@@ -25,6 +25,13 @@ class QueryBuilder
         return $this->pdo;
     }
 
+    /**
+     * Creates a SELECT query
+     *
+     * @param string|array $fields select fields
+     *
+     * @return SelectQuery
+     */
     public function select($fields = '*')
     {
         $query = new Database\SelectQuery($this);
@@ -32,13 +39,27 @@ class QueryBuilder
         return $query->select($fields);
     }
 
-    public function insert($values)
+    /**
+     * Creates an INSERT query
+     *
+     * @param array $values insert values
+     *
+     * @return InsertQuery
+     */
+    public function insert(array $values)
     {
         $query = new Database\InsertQuery($this);
 
         return $query->values($values);
     }
 
+    /**
+     * Creates an UPDATE query
+     *
+     * @param string|array $table update table
+     *
+     * @return UpdateQuery
+     */
     public function update($table)
     {
         $query = new Database\UpdateQuery($this);
@@ -46,17 +67,31 @@ class QueryBuilder
         return $query->table($table);
     }
 
-    public function delete($fields)
+    /**
+     * Creates a DELETE query
+     *
+     * @param string $from delete table
+     *
+     * @return DeleteQuery
+     */
+    public function delete($from)
     {
         $query = new Database\DeleteQuery($this);
 
-        return $query->fields($fields);
+        return $query->from($from);
     }
 
+    /**
+     * Creates a raw SQL query
+     *
+     * @param string $sql SQL statement
+     *
+     * @return SqlQuery
+     */
     public function raw($sql)
     {
         $query = new Database\SqlQuery($this);
 
-        return $query->sql($sql);
+        return $query->raw($sql);
     }
 }

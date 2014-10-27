@@ -55,7 +55,7 @@ class SetStatement extends Statement
             $values[] = $this->escapeIdentifier($key) . '=?';
         }
 
-        // creates: SET `col1`=?,`col2`=?,`col3`=?
+        // generates SET `col1`=?,`col2`=?,`col3`=?
         return 'SET ' . implode(',', $values);
     }
 }

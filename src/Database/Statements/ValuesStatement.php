@@ -55,7 +55,7 @@ class ValuesStatement extends Statement
             $key = $this->escapeIdentifier($key);
         }
 
-        // creates: (`col1`,`col2`,`col3`) VALUES (?,?,?)
+        // generates (`col1`,`col2`,`col3`) VALUES (?,?,?)
         return '(' . implode(',', $keys) . ') VALUES (' .
             implode(',', array_fill(0, count($keys), '?')) . ')';
     }

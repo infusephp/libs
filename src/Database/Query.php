@@ -11,6 +11,8 @@
 
 namespace infuse\Database;
 
+use infuse\QueryBuilder;
+
 abstract class Query
 {
     /**
