@@ -16,7 +16,7 @@ class SqlQueryTest extends \PHPUnit_Framework_TestCase
     public function testRaw()
     {
         $query = new SqlQuery();
-        $query->raw('SHOW COLUMNS FROM test');
+        $this->assertEquals($query, $query->raw('SHOW COLUMNS FROM test'));
         $this->assertEquals('SHOW COLUMNS FROM test', $query->build());
     }
 }

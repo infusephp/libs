@@ -25,8 +25,12 @@ class UpdateQueryTest extends \PHPUnit_Framework_TestCase
 
     public function testValues()
     {
-        // TODO values
-        $this->markTestIncomplete();
+        $query = new UpdateQuery();
+
+        $this->assertEquals($query, $query->values(['test1' => 1, 'test2' => 2]));
+        $this->assertEquals($query, $query->values(['test3' => 3]));
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\SetStatement', $query->getSet());
+        $this->assertEquals(['test1' => 1, 'test2' => 2, 'test3' => 3], $query->getSet()->getValues());
     }
 
     public function testWhere()
@@ -66,13 +70,12 @@ class UpdateQueryTest extends \PHPUnit_Framework_TestCase
     {
         $query = new UpdateQuery();
 
-        // TODO values
+        $query->table('Users')->where('uid', 10)->values(['test' => 'hello', 'test2' => 'field'])
+              ->orderBy('uid', 'ASC')->limit(100);
 
-        $query->table('Users')->where('uid', 10)->limit(100)->orderBy('uid', 'ASC');
-
-        $this->assertEquals('UPDATE `Users` WHERE `uid`=? ORDER BY `uid` ASC LIMIT 100', $query->build());
+        $this->assertEquals('UPDATE `Users` SET `test`=?,`test2`=? WHERE `uid`=? ORDER BY `uid` ASC LIMIT 100', $query->build());
 
         // test values
-        $this->assertEquals([10], $query->getValues());
+        $this->assertEquals(['hello', 'field', 10], $query->getValues());
     }
 }

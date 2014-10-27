@@ -19,6 +19,11 @@ class InsertQuery extends Query
     protected $table;
 
     /**
+    * @var ValuesStatement
+    */
+    protected $insertValues;
+
+    /**
      * @var array
      */
     protected $values = [];
@@ -26,6 +31,7 @@ class InsertQuery extends Query
     public function initialize()
     {
         $this->table = new Statements\FromStatement(false);
+        $this->insertValues = new Statements\ValuesStatement();
     }
 
     /**
@@ -51,7 +57,7 @@ class InsertQuery extends Query
      */
     public function values(array $values)
     {
-        $this->values = $values;
+        $this->insertValues->addValues($values);
 
         return $this;
     }
@@ -67,13 +73,13 @@ class InsertQuery extends Query
     }
 
     /**
-     * Gets the values for the query
+     * Gets the insert values for the query
      *
-     * @return array
+     * @return InsertStatement
      */
-    public function getValues()
+    public function getInsertValues()
     {
-        return $this->values;
+        return $this->insertValues;
     }
 
     /**
@@ -81,13 +87,21 @@ class InsertQuery extends Query
      *
      * @return string
      */
-    public function sql()
+    public function build()
     {
         $sql = [
             'INSERT INTO',
-            $this->table->build() ]; // into,
+            $this->table->build() ]; // into
 
-        // values TODO
+        $this->values = [];
+
+        // insert values
+        $values = $this->insertValues->build();
+        if (!empty($values)) {
+            $sql[] = $values;
+            $this->values = array_merge($this->values, array_values($this->insertValues->getValues()));
+        }
+
         return implode(' ', $sql);
     }
 }

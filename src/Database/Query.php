@@ -19,9 +19,9 @@ abstract class Query
     protected $qb;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $sql;
+    protected $values = [];
 
     /**
      * @var array
@@ -35,42 +35,20 @@ abstract class Query
             $this->initialize();
     }
 
-    public function __get($name)
-    {
-        // invalidate the cached SQL string
-        $this->sql = false;
-
-        return $this->$name;
-    }
-
-    public function __set($name, $value)
-    {
-        // invalidate the cached SQL string
-        $this->sql = false;
-
-        $this->$name = $value;
-    }
-
     /**
-	 * Builds and caches a SQL string for the query
+	 * Builds a SQL string for the query
 	 *
 	 * @return string SQL
 	 */
-    public function build()
-    {
-        if (!$this->sql)
-            $this->sql = $this->sql();
-
-        return $this->sql;
-    }
+    abstract public function build();
 
     /**
-	 * Generates the raw SQL string for the query
-	 *
-	 * @return string
-	 */
-    protected function sql()
+     * Gets the values associated with this query
+     *
+     * @return array
+     */
+    public function getValues()
     {
-        return '';
+        return $this->values;
     }
 }

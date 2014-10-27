@@ -11,5 +11,28 @@
 
 class QueryBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    public function testSelect()
+    {
+        $this->markTestIncomplete();
+    }
 
+    public function testInsert()
+    {
+        $this->markTestIncomplete();
+    }
+
+    public function testUpdate()
+    {
+        $this->markTestIncomplete();
+    }
+
+    public function testDelete()
+    {
+        $this->markTestIncomplete();
+    }
+
+    public function testRaw()
+    {
+        $this->markTestIncomplete();
+    }
 }

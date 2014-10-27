@@ -99,5 +99,12 @@ class WhereStatementTest extends \PHPUnit_Framework_TestCase
     {
         $stmt = new WhereStatement();
         $this->assertEquals('', $stmt->build());
+
+        $stmt->addCondition('field1', 'value')->addCondition('field2', 'value2');
+        $this->assertEquals('WHERE `field1`=? AND `field2`=?', $stmt->build());
+
+        $stmt = new WhereStatement(true);
+        $stmt->addCondition('field1', 'value')->addCondition('field2', 'value2');
+        $this->assertEquals('HAVING `field1`=? AND `field2`=?', $stmt->build());
     }
 }

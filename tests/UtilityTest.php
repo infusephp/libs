@@ -189,7 +189,7 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('10 seconds', U::timeUntil(time() + 10));
         $this->assertEquals('5 minutes', U::timeUntil(time() + 300));
         $this->assertEquals('1 day', U::timeUntil(time() + 86401));
-        $this->assertEquals('1 week', U::timeUntil(time() + 86400 * 7));
+        $this->assertEquals('1 week', U::timeUntil(time() + 86400 * 8));
         $this->assertEquals('1 month', U::timeUntil(time() + 86400 * 32));
         $this->assertEquals('1 year', U::timeUntil(time() + 86400 * 365));
 

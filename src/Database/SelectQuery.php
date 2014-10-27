@@ -53,11 +53,6 @@ class SelectQuery extends Query
 	 */
     protected $offset = '0';
 
-    /**
-     * @var array
-     */
-    protected $values = [];
-
     public function initialize()
     {
         $this->select = new Statements\SelectStatement();
@@ -266,7 +261,7 @@ class SelectQuery extends Query
 	 *
 	 * @return string
 	 */
-    public function sql()
+    public function build()
     {
         $sql = [
             $this->select->build(), // select
@@ -303,15 +298,5 @@ class SelectQuery extends Query
             $sql[] = 'LIMIT ' . $this->offset . ',' . $this->limit;
 
         return implode(' ', $sql);
-    }
-
-    /**
-     * Gets the values associated with this query
-     *
-     * @return array
-     */
-    public function getValues()
-    {
-        return $this->values;
     }
 }

@@ -70,6 +70,10 @@ abstract class Statement
 	 */
     protected function escapeIdentifier($word, $escapeChar = '`')
     {
+        if (is_array($word) || is_object($word) || is_numeric($word)) {
+            return '';
+        }
+
         $spaces = explode(' ', $word);
         foreach ($spaces as &$space) {
             if (strtolower($space) == 'as') {

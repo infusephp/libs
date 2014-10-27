@@ -25,22 +25,23 @@ class InsertQueryTest extends \PHPUnit_Framework_TestCase
 
     public function testValues()
     {
-        // TODO values
+        $query = new InsertQuery();
 
-        $this->markTestIncomplete();
+        $this->assertEquals($query, $query->values(['test1' => 1, 'test2' => 2]));
+        $this->assertEquals($query, $query->values(['test3' => 3]));
+        $this->assertInstanceOf('\\infuse\\Database\\Statements\\ValuesStatement', $query->getInsertValues());
+        $this->assertEquals(['test1' => 1, 'test2' => 2, 'test3' => 3], $query->getInsertValues()->getValues());
     }
 
     public function testBuild()
     {
         $query = new InsertQuery();
 
-        // TODO values
+        $query->into('Users')->values(['field1' => 'what', 'field2' => 'test']);
 
-        $query->into('Users');
-
-        $this->assertEquals('INSERT INTO `Users`', $query->build());
+        $this->assertEquals('INSERT INTO `Users` (`field1`,`field2`) VALUES (?,?)', $query->build());
 
         // test values
-        $this->assertEquals([], $query->getValues());
+        $this->assertEquals(['what', 'test'], $query->getValues());
     }
 }

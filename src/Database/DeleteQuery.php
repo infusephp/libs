@@ -33,11 +33,6 @@ class DeleteQuery extends Query
      */
     protected $liimt;
 
-    /**
-     * @var array
-     */
-    protected $values = [];
-
     public function initialize()
     {
         $this->from = new Statements\FromStatement();
@@ -142,7 +137,7 @@ class DeleteQuery extends Query
      *
      * @return string
      */
-    public function sql()
+    public function build()
     {
         $sql = [
             'DELETE',
@@ -167,15 +162,5 @@ class DeleteQuery extends Query
             $sql[] = 'LIMIT ' . $this->limit;
 
         return implode(' ', $sql);
-    }
-
-    /**
-     * Gets the values associated with this query
-     *
-     * @return array
-     */
-    public function getValues()
-    {
-        return $this->values;
     }
 }

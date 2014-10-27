@@ -19,9 +19,9 @@ class UpdateQuery extends Query
     protected $table;
 
     /**
-	 * @var array
+	 * @var SetStatement
 	 */
-    protected $updateValues = [];
+    protected $set;
 
     /**
 	 * @var WhereStatement
@@ -38,14 +38,10 @@ class UpdateQuery extends Query
      */
     protected $liimt;
 
-    /**
-     * @var array
-     */
-    protected $values = [];
-
     public function initialize()
     {
         $this->table = new Statements\FromStatement(false);
+        $this->set = new Statements\SetStatement();
         $this->where = new Statements\WhereStatement();
         $this->orderBy = new Statements\OrderStatement();
     }
@@ -80,7 +76,7 @@ class UpdateQuery extends Query
      */
     public function values(array $values)
     {
-        $this->updateValues = $values;
+        $this->set->addValues($values);
 
         return $this;
     }
@@ -131,9 +127,9 @@ class UpdateQuery extends Query
      *
      * @return array
      */
-    public function getUpdateValues()
+    public function getSet()
     {
-        return $this->values;
+        return $this->set;
     }
 
     /**
@@ -171,7 +167,7 @@ class UpdateQuery extends Query
 	 *
 	 * @return string
 	 */
-    public function sql()
+    public function build()
     {
         $sql = [
             'UPDATE',
@@ -179,8 +175,12 @@ class UpdateQuery extends Query
 
         $this->values = [];
 
-        // TODO values
-        $this->values = array_merge($this->values, $this->updateValues);
+        // set values
+        $set = $this->set->build();
+        if (!empty($set)) {
+            $sql[] = $set;
+            $this->values = array_merge($this->values, array_values($this->set->getValues()));
+        }
 
         // where
         $where = $this->where->build();
@@ -199,15 +199,5 @@ class UpdateQuery extends Query
             $sql[] = 'LIMIT ' . $this->limit;
 
         return implode(' ', $sql);
-    }
-
-    /**
-     * Gets the values associated with this query
-     *
-     * @return array
-     */
-    public function getValues()
-    {
-        return $this->values;
     }
 }

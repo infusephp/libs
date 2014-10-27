@@ -14,6 +14,11 @@ namespace infuse\Database;
 class SqlQuery extends Query
 {
     /**
+     * @var string
+     */
+    protected $sql;
+
+    /**
 	 * Sets the SQL for the query
 	 *
 	 * @param string $sql
@@ -24,6 +29,11 @@ class SqlQuery extends Query
     {
         $this->sql = $sql;
 
+        return $this;
+    }
+
+    public function build()
+    {
         return $this->sql;
     }
 }
