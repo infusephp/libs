@@ -32,6 +32,19 @@ class SqlQuery extends Query
         return $this;
     }
 
+    /**
+     * Sets the parameters for this query to be injected into
+     * the prepared statement
+     *
+     * @return self
+     */
+    public function parameters(array $values)
+    {
+        $this->values = $values;
+
+        return $this;
+    }
+
     public function build()
     {
         return $this->sql;

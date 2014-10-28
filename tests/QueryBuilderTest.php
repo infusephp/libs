@@ -13,6 +13,13 @@ use infuse\QueryBuilder;
 
 class QueryBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    public function testPDO()
+    {
+        $pdo = new stdClass();
+        $qb = new QueryBuilder($pdo);
+        $this->assertEquals($pdo, $qb->getPDO());
+    }
+
     public function testSelect()
     {
         $qb = new QueryBuilder();

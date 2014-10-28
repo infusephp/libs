@@ -13,13 +13,24 @@ namespace infuse;
 
 class QueryBuilder
 {
-    private $pdo;
+    /**
+     * @var PDO
+     */
+    protected $pdo;
 
-    public function __construct(\PDO $pdo = null)
+    /**
+     * @param PDO $pdo
+     */
+    public function __construct($pdo = null)
     {
         $this->pdo = $pdo;
     }
 
+    /**
+     * Returns the PDO instance
+     *
+     * @return PDO
+     */
     public function getPDO()
     {
         return $this->pdo;
@@ -34,7 +45,7 @@ class QueryBuilder
      */
     public function select($fields = '*')
     {
-        $query = new Database\SelectQuery($this);
+        $query = new Database\SelectQuery($this->pdo);
 
         return $query->select($fields);
     }
@@ -48,7 +59,7 @@ class QueryBuilder
      */
     public function insert(array $values)
     {
-        $query = new Database\InsertQuery($this);
+        $query = new Database\InsertQuery($this->pdo);
 
         return $query->values($values);
     }
@@ -62,7 +73,7 @@ class QueryBuilder
      */
     public function update($table)
     {
-        $query = new Database\UpdateQuery($this);
+        $query = new Database\UpdateQuery($this->pdo);
 
         return $query->table($table);
     }
@@ -76,7 +87,7 @@ class QueryBuilder
      */
     public function delete($from)
     {
-        $query = new Database\DeleteQuery($this);
+        $query = new Database\DeleteQuery($this->pdo);
 
         return $query->from($from);
     }
@@ -90,7 +101,7 @@ class QueryBuilder
      */
     public function raw($sql)
     {
-        $query = new Database\SqlQuery($this);
+        $query = new Database\SqlQuery($this->pdo);
 
         return $query->raw($sql);
     }

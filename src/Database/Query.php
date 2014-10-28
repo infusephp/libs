@@ -11,14 +11,12 @@
 
 namespace infuse\Database;
 
-use infuse\QueryBuilder;
-
 abstract class Query
 {
     /**
-     * @var QueryBuilder
+     * @var PDO
      */
-    protected $qb;
+    protected $pdo;
 
     /**
      * @var array
@@ -26,13 +24,17 @@ abstract class Query
     protected $values = [];
 
     /**
-     * @var array
+     * @var int
      */
-    protected $clauses = [];
+    protected $rowCount;
 
-    public function __construct(QueryBuilder $qb = null)
+    /**
+     * @param PDO $pdo
+     */
+    public function __construct($pdo = null)
     {
-        $this->qb = $qb;
+        $this->pdo = $pdo;
+
         if (method_exists($this, 'initialize'))
             $this->initialize();
     }
@@ -52,5 +54,104 @@ abstract class Query
     public function getValues()
     {
         return $this->values;
+    }
+
+    /**
+     * Executes a query
+     *
+     * @return PDOStatement|false result
+     */
+    public function execute()
+    {
+        $stmt = $this->pdo->prepare($this->build());
+
+        if ($stmt->execute($query->getValues())) {
+            $this->rowCount = $stmt->rowCount();
+
+            return $stmt;
+        } else
+
+            return false;
+    }
+
+    /**
+     * Executes a query and returns the first row
+     *
+     * @param int $style PDO fetch style
+     *
+     * @return mixed|false result
+     */
+    public function one($style = PDO::FETCH_ASSOC)
+    {
+        $stmt = $this->execute($this->build());
+
+        if ($stmt)
+            return $stmt->fetch($style);
+        else
+            return false;
+    }
+
+    /**
+     * Executes a query and returns all of the rows
+     *
+     * @param Query $query
+     * @param int   $style PDO fetch style
+     *
+     * @return mixed|false result
+     */
+    public function all(Query $query, $style = PDO::FETCH_ASSOC)
+    {
+        $stmt = $this->execute($this->build());
+
+        if ($stmt)
+            return $stmt->fetchAll($style);
+        else
+            return false;
+    }
+
+    /**
+     * Executes a query and returns a column from all rows
+     *
+     * @param Query $query
+     * @param int   $index zero-indexed column to fetch
+     *
+     * @return mixed|false result
+     */
+    public function column(Query $query, $index = 0)
+    {
+        $stmt = $this->execute($this->build());
+
+        if ($stmt)
+            return $stmt->fetchAll(PDO::FETCH_COLUMN, $index);
+        else
+            return false;
+    }
+
+    /**
+     * Executes a query and returns a value from the first row
+     *
+     * @param Query $query
+     * @param int   $index zero-indexed column to fetch
+     *
+     * @return mixed|false result
+     */
+    public function scalar(Query $query, $index = 0)
+    {
+        $stmt = $this->execute($this->build());
+
+        if ($stmt)
+            return $stmt->fetchColumn($index);
+        else
+            return false;
+    }
+
+    /**
+     * Returns the number of rows affected by the last executed statement
+     *
+     * @return int
+     */
+    public function rowCount()
+    {
+        return $this->rowCount;
     }
 }
