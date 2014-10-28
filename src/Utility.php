@@ -246,7 +246,7 @@ class Utility
 	 *
 	 * @param string $name
 	 * @param string $value
-	 * @param int $expire
+	 * @param int $expires
 	 * @param string $path
 	 * @param string $domain
 	 * @param boolean $secure
@@ -255,7 +255,7 @@ class Utility
 	 *
 	 * @return string
 	 */
-    public static function set_cookie_fix_domain($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
+    public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
     {
         if ( !empty( $domain ) ) {
           // Fix the domain to accept domains with and without 'www.'
