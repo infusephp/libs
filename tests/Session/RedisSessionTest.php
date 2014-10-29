@@ -9,26 +9,31 @@
  * @license MIT
  */
 
+namespace infuse\Session;
+
 use infuse\Session\Redis as RedisSession;
+use Mockery;
 use Pimple\Container;
+
+function session_start()
+{
+    return RedisSessionTest::$mock ? RedisSessionTest::$mock->session_start() : \session_start();
+}
 
 class RedisSessionTest extends \PHPUnit_Framework_TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        // prevent php session functions from sending headers
-        ini_set( 'session.use_cookies', 0 );
-        session_cache_limiter( '' );
-    }
+    public static $mock;
 
-    public function assertPostConditions()
+    public function tearDown()
     {
-        // if (session_status() == PHP_SESSION_ACTIVE)
-        //     session_write_close();
+        self::$mock = false;
     }
 
     public function testStart()
     {
+        self::$mock = \Mockery::mock('php');
+        self::$mock->shouldReceive('session_start')->once();
+
         $app = new Container();
         $redis = Mockery::mock( 'Predis\Client' );
         $redis->shouldReceive( 'setex' );
