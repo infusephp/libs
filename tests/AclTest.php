@@ -44,8 +44,8 @@ class AclTest extends \PHPUnit_Framework_TestCase
     {
         $acl = new AclObject();
 
-        $acl->grantAllPermissions();
-        $acl->enforcePermissions();
+        $this->assertEquals($acl, $acl->grantAllPermissions());
+        $this->assertEquals($acl, $acl->enforcePermissions());
 
         $this->assertFalse( $acl->can( 'whatever', new SomeModel() ) );
     }
