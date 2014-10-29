@@ -29,7 +29,8 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testInit()
     {
         $app = new Container();
-        $app[ 'memcache' ] = true;
+        $memcache = Mockery::mock();
+        $app[ 'memcache' ] = $memcache;
         MemcacheStrategy::inject( $app );
 
         $this->assertInstanceOf( '\\infuse\\Cache\\MemcacheStrategy', MemcacheStrategy::init( '' ) );
@@ -38,7 +39,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testSet()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'set' )->with( 'test:test.key', 100, 0 )->andReturn( true )->once();
         $memcache->shouldReceive( 'set' )->with( 'test:test.key.2', 101, 500 )->andReturn( true )->once();
         $app[ 'memcache' ] = $memcache;
@@ -51,7 +52,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testGet()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'get' )->with( [ 'test:test.key', 'test:test.key.2' ] )->andReturn( [ 'test.key' => 100, 'test.key.2' => 101 ] )->once();
         $memcache->shouldReceive( 'get' )->with( [ 'test:does.not.exist' ] )->andReturn( [] )->once();
         $app[ 'memcache' ] = $memcache;
@@ -66,7 +67,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testHas()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'set' )->with( 'test:test.has', null )->andReturn( false )->once();
         $app[ 'memcache' ] = $memcache;
         MemcacheStrategy::inject( $app );
@@ -77,7 +78,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testHasNot()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'set' )->with( 'test:test.has', null )->andReturn( true )->once();
         $memcache->shouldReceive( 'delete' )->with( 'test:test.has' )->once();
         $app[ 'memcache' ] = $memcache;
@@ -89,7 +90,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testIncrement()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'increment' )->with( 'test:test.inc', 4 )->andReturn( 104 )->once();
         $app[ 'memcache' ] = $memcache;
         MemcacheStrategy::inject( $app );
@@ -100,7 +101,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testDecrement()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'decrement' )->with( 'test:test.dec', 4 )->andReturn( 100 )->once();
         $app[ 'memcache' ] = $memcache;
         MemcacheStrategy::inject( $app );
@@ -111,7 +112,7 @@ class MemcacheStrategyTest extends \PHPUnit_Framework_TestCase
     public function testDelete()
     {
         $app = new Container();
-        $memcache = Mockery::mock( 'Memcache' );
+        $memcache = Mockery::mock();
         $memcache->shouldReceive( 'delete' )->with( 'test:test.delete' )->andReturn( true )->once();
         $app[ 'memcache' ] = $memcache;
         MemcacheStrategy::inject( $app );
