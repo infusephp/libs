@@ -23,7 +23,8 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
 
     public function assertPostConditions()
     {
-        session_write_close();
+        if (session_status() == PHP_SESSION_ACTIVE)
+            session_write_close();
     }
 
     public function testStart()
