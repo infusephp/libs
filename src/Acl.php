@@ -41,17 +41,25 @@ abstract class Acl
 	 * Disables all permissions checking in can() for this object
 	 * DANGER: this should only be used when objects are mutated from application code
 	 * Granting all permissions to anyone else, i.e. HTTP requests is dangerous
+     *
+     * @return self
 	 */
     public function grantAllPermissions()
     {
         $this->permissionsDisabled = true;
+
+        return $this;
     }
 
     /**
 	 * Ensures that permissions are enforced for this object
+     *
+     * @return self
 	 */
     public function enforcePermissions()
     {
         $this->permissionsDisabled = false;
+
+        return $this;
     }
 }

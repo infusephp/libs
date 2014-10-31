@@ -151,7 +151,7 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
     {
         $name = 'session.name';
         $value = rand();
-        $expire = time() + 3600;
+        $expires = time() + 3600;
         $path = '/test/path';
         $domain = 'www.example.com';
         $secure = true;
@@ -160,14 +160,16 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $cookieStr = U::set_cookie_fix_domain(
             $name,
             $value,
-            $expire,
+            $expires,
             $path,
             $domain,
             $secure,
             $httponly,
             false );
 
-        $expected = "Set-Cookie: $name=$value; path=$path; domain=.example.com; secure; HttpOnly";
+        $expiresStr = gmdate('D, d-M-Y H:i:s T', $expires);
+
+        $expected = "Set-Cookie: $name=$value; expires=$expiresStr; path=$path; domain=.example.com; secure; HttpOnly";
 
         $this->assertEquals( $expected, $cookieStr );
     }

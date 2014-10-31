@@ -27,6 +27,6 @@
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
 		"smarty/smarty": ">=v3.1.19",
-		"mockery/mockery": "0.9.1"
+		"mockery/mockery": "~0.9"
 	}
 }

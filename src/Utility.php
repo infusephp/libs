@@ -246,7 +246,7 @@ class Utility
 	 *
 	 * @param string $name
 	 * @param string $value
-	 * @param int $expire
+	 * @param int $expires
 	 * @param string $path
 	 * @param string $domain
 	 * @param boolean $secure
@@ -255,7 +255,7 @@ class Utility
 	 *
 	 * @return string
 	 */
-    public static function set_cookie_fix_domain($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
+    public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
     {
         if ( !empty( $domain ) ) {
           // Fix the domain to accept domains with and without 'www.'
@@ -335,10 +335,19 @@ class Utility
      */
     private static function timeDiff(\DateTime $a, \DateTime $b)
     {
-        $diff = $a->diff($b);
+        $interval = $a->diff($b);
 
-        $diff->w = floor($diff->d / 7);
-        $diff->d -= $diff->w * 7;
+        $w = floor($interval->d / 7);
+        $interval->d -= $w * 7;
+
+        $diff = [
+            'y' => $interval->y,
+            'm' => $interval->m,
+            'w' => $w,
+            'd' => $interval->d,
+            'h' => $interval->h,
+            'i' => $interval->i,
+            's' => $interval->s ];
 
         $string = [
             'y' => 'year',
@@ -350,8 +359,8 @@ class Utility
             's' => 'second',
         ];
         foreach ($string as $k => &$v) {
-            if ($diff->$k) {
-                $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+            if ($diff[$k]) {
+                $v = $diff[$k] . ' ' . $v . ($diff[$k] > 1 ? 's' : '');
             } else {
                 unset($string[$k]);
             }

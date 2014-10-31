@@ -971,7 +971,8 @@ class Locale
             'symbol' => 'Ls'
         ],
         'LYD' => [
-            'name' => 'Libya Dinar'
+            'name' => 'Libya Dinar',
+            'symbol' => 'LD'
         ],
         'MAD' => [
             'name' => 'Morocco Dirham'
