@@ -176,25 +176,25 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
 
     public function testTimeAgo()
     {
-        $this->assertEquals('10 seconds ago', U::timeAgo(time() - 10));
-        $this->assertEquals('5 minutes ago', U::timeAgo(time() - 300));
-        $this->assertEquals('1 day ago', U::timeAgo(time() - 86401));
-        $this->assertEquals('1 week ago', U::timeAgo(time() - 86400 * 7));
-        $this->assertEquals('1 month ago', U::timeAgo(time() - 86400 * 31));
-        $this->assertEquals('1 year ago', U::timeAgo(time() - 86400 * 365));
+        $this->assertEquals('10 seconds ago', U::timeAgo(strtotime('-10 seconds')));
+        $this->assertEquals('5 minutes ago', U::timeAgo(strtotime('- 5 minutes')));
+        $this->assertEquals('1 day ago', U::timeAgo(strtotime('- 1 day')));
+        $this->assertEquals('1 week ago', U::timeAgo(strtotime('-1 week')));
+        $this->assertEquals('1 month ago', U::timeAgo(strtotime('- 1 month')));
+        $this->assertEquals('1 year ago', U::timeAgo(strtotime('-1 year')));
 
-        $this->assertEquals('1 day, 1 minute, 40 seconds ago', U::timeAgo(time() - 86500, true));
+        $this->assertEquals('1 day, 1 minute, 40 seconds ago', U::timeAgo(strtotime('-86500 seconds'), true));
     }
 
     public function testTimeUntil()
     {
-        $this->assertEquals('10 seconds', U::timeUntil(time() + 10));
-        $this->assertEquals('5 minutes', U::timeUntil(time() + 300));
-        $this->assertEquals('1 day', U::timeUntil(time() + 86401));
-        $this->assertEquals('1 week', U::timeUntil(time() + 86400 * 8));
-        $this->assertEquals('1 month', U::timeUntil(time() + 86400 * 32));
-        $this->assertEquals('1 year', U::timeUntil(time() + 86400 * 365));
+        $this->assertEquals('10 seconds', U::timeUntil(strtotime('+10 seconds')));
+        $this->assertEquals('5 minutes', U::timeUntil(strtotime('+5 minutes')));
+        $this->assertEquals('1 day', U::timeUntil(strtotime('+1 day')));
+        $this->assertEquals('1 week', U::timeUntil(strtotime('+1 week')));
+        $this->assertEquals('1 month', U::timeUntil(strtotime('+1 month')));
+        $this->assertEquals('1 year', U::timeUntil(strtotime('+ 1 year')));
 
-        $this->assertEquals('1 day, 1 minute, 40 seconds', U::timeUntil(time() + 86500, true));
+        $this->assertEquals('1 day, 1 minute, 40 seconds', U::timeUntil(strtotime('+86500 seconds'), true));
     }
 }
