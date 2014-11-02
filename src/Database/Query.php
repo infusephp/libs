@@ -67,7 +67,7 @@ abstract class Query
     {
         $stmt = $this->pdo->prepare($this->build());
 
-            if ($stmt->execute($this->getValues())) {
+        if ($stmt->execute($this->getValues())) {
             $this->rowCount = $stmt->rowCount();
 
             return $stmt;
