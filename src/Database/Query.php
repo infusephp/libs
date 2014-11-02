@@ -11,6 +11,8 @@
 
 namespace infuse\Database;
 
+use PDO;
+
 abstract class Query
 {
     /**
@@ -65,7 +67,7 @@ abstract class Query
     {
         $stmt = $this->pdo->prepare($this->build());
 
-        if ($stmt->execute($query->getValues())) {
+            if ($stmt->execute($this->getValues())) {
             $this->rowCount = $stmt->rowCount();
 
             return $stmt;
@@ -94,12 +96,11 @@ abstract class Query
     /**
      * Executes a query and returns all of the rows
      *
-     * @param Query $query
-     * @param int   $style PDO fetch style
+     * @param int $style PDO fetch style
      *
      * @return mixed|false result
      */
-    public function all(Query $query, $style = PDO::FETCH_ASSOC)
+    public function all($style = PDO::FETCH_ASSOC)
     {
         $stmt = $this->execute($this->build());
 
@@ -112,12 +113,11 @@ abstract class Query
     /**
      * Executes a query and returns a column from all rows
      *
-     * @param Query $query
-     * @param int   $index zero-indexed column to fetch
+     * @param int $index zero-indexed column to fetch
      *
      * @return mixed|false result
      */
-    public function column(Query $query, $index = 0)
+    public function column($index = 0)
     {
         $stmt = $this->execute($this->build());
 
@@ -130,12 +130,11 @@ abstract class Query
     /**
      * Executes a query and returns a value from the first row
      *
-     * @param Query $query
-     * @param int   $index zero-indexed column to fetch
+     * @param int $index zero-indexed column to fetch
      *
      * @return mixed|false result
      */
-    public function scalar(Query $query, $index = 0)
+    public function scalar($index = 0)
     {
         $stmt = $this->execute($this->build());
 

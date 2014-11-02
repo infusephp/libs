@@ -9,18 +9,46 @@
  * @license MIT
  */
 
+use infuse\Database\SelectQuery;
+
 // using the select query implementation, although these tests should
 // apply to any class extending Query
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
     public function testExecute()
     {
-        $this->markTestIncomplete();
+        $stmt = Mockery::mock();
+        $stmt->shouldReceive('rowCount')->andReturn(10);
+        $stmt->shouldReceive('execute')->andReturn(true);
+
+        $pdo = Mockery::mock();
+        $pdo->shouldReceive('prepare')->withArgs(["SELECT * FROM `Test` WHERE `id`=?"])
+            ->andReturn($stmt);
+
+        $query = new SelectQuery($pdo);
+        $query->from('Test')->where('id', 'test');
+
+        $this->assertEquals($stmt, $query->execute());
+        $this->assertEquals(10, $query->rowCount());
     }
 
     public function testOne()
     {
-        $this->markTestIncomplete();
+        $stmt = Mockery::mock();
+        $stmt->shouldReceive('rowCount')->andReturn(10);
+        $stmt->shouldReceive('execute')->andReturn(true);
+        $stmt->shouldReceive('fetch')->withArgs([PDO::FETCH_ASSOC])
+             ->andReturn(['result']);
+
+        $pdo = Mockery::mock();
+        $pdo->shouldReceive('prepare')->withArgs(["SELECT * FROM `Test` WHERE `id`=?"])
+            ->andReturn($stmt);
+
+        $query = new SelectQuery($pdo);
+        $query->from('Test')->where('id', 'test');
+
+        $this->assertEquals(['result'], $query->one());
+        $this->assertEquals(10, $query->rowCount());
     }
 
     public function testAll()

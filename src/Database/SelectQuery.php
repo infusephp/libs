@@ -46,7 +46,7 @@ class SelectQuery extends Query
     /**
 	 * @var string
 	 */
-    protected $liimt;
+    protected $limit;
 
     /**
 	 * @var string
