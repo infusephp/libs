@@ -73,7 +73,7 @@ class WhereStatement extends Statement
             $condition = [$field];
 
             // handles #1 and #2
-            if (func_num_args($value) >= 2) {
+            if (func_num_args() >= 2) {
                 $condition[] = $operator;
                 $condition[] = $value;
             }
