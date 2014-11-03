@@ -85,7 +85,7 @@ abstract class Query
      */
     public function one($style = PDO::FETCH_ASSOC)
     {
-        $stmt = $this->execute($this->build());
+        $stmt = $this->execute();
 
         if ($stmt)
             return $stmt->fetch($style);
@@ -102,7 +102,7 @@ abstract class Query
      */
     public function all($style = PDO::FETCH_ASSOC)
     {
-        $stmt = $this->execute($this->build());
+        $stmt = $this->execute();
 
         if ($stmt)
             return $stmt->fetchAll($style);
@@ -119,7 +119,7 @@ abstract class Query
      */
     public function column($index = 0)
     {
-        $stmt = $this->execute($this->build());
+        $stmt = $this->execute();
 
         if ($stmt)
             return $stmt->fetchAll(PDO::FETCH_COLUMN, $index);
@@ -136,7 +136,7 @@ abstract class Query
      */
     public function scalar($index = 0)
     {
-        $stmt = $this->execute($this->build());
+        $stmt = $this->execute();
 
         if ($stmt)
             return $stmt->fetchColumn($index);
