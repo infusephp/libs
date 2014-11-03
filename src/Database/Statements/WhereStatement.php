@@ -42,7 +42,6 @@ class WhereStatement extends Statement
     }
 
     /**
-	 *
 	 * Accepts the following forms:
 	 * 1. addCondition('username', 'john')
 	 * 2. addCondition('balance', 100, '>')

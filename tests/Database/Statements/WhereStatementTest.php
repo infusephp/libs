@@ -56,11 +56,11 @@ class WhereStatementTest extends \PHPUnit_Framework_TestCase
     public function testAddConditionKeyValue()
     {
         $stmt = new WhereStatement();
-        $this->assertEquals($stmt, $stmt->addCondition(['field1' => 'value', 'field2' => 'value2']));
-        $this->assertEquals([['field1', '=', 'value'], ['field2', '=', 'value2']], $stmt->getConditions());
+        $this->assertEquals($stmt, $stmt->addCondition(['field1' => 'value', 'field2' => false]));
+        $this->assertEquals([['field1', '=', 'value'], ['field2', '=', false]], $stmt->getConditions());
 
         $this->assertEquals('WHERE `field1`=? AND `field2`=?', $stmt->build());
-        $this->assertEquals(['value', 'value2'], $stmt->getValues());
+        $this->assertEquals(['value', false], $stmt->getValues());
     }
 
     public function testAddConditionArray()

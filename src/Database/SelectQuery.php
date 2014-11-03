@@ -124,9 +124,22 @@ class SelectQuery extends Query
         return $this;
     }
 
-    public function where($where, $condition = false, $operator = '=')
+    /**
+     * Sets the where conditions for the query
+     *
+     * @param array|string $field
+     * @param string       $value    condition value (optional)
+     * @param string       $operator operator (optional)
+     *
+     * @return self
+     */
+    public function where($field, $condition = false, $operator = '=')
     {
-        $this->where->addCondition($where, $condition, $operator);
+        if (func_num_args() >= 2) {
+            $this->where->addCondition($field, $condition, $operator);
+        } else {
+            $this->where->addCondition($field);
+        }
 
         return $this;
     }
@@ -164,9 +177,22 @@ class SelectQuery extends Query
         return $this;
     }
 
-    public function having($where, $condition = false, $operator = '=')
+    /**
+     * Sets the having conditions for the query
+     *
+     * @param array|string $field
+     * @param string       $value    condition value (optional)
+     * @param string       $operator operator (optional)
+     *
+     * @return self
+     */
+    public function having($field, $condition = false, $operator = '=')
     {
-        $this->having->addCondition($where, $condition, $operator);
+        if (func_num_args() >= 2) {
+            $this->having->addCondition($field, $condition, $operator);
+        } else {
+            $this->having->addCondition($field);
+        }
 
         return $this;
     }

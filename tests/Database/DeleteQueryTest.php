@@ -27,10 +27,11 @@ class DeleteQueryTest extends \PHPUnit_Framework_TestCase
         $query = new DeleteQuery();
 
         $this->assertEquals($query, $query->where('balance', 10, '>'));
+        $this->assertEquals($query, $query->where('notes IS NULL'));
         $where = $query->getWhere();
         $this->assertInstanceOf('\\infuse\\Database\\Statements\\WhereStatement', $where);
         $this->assertFalse($where->isHaving());
-        $this->assertEquals([['balance', '>', 10]], $where->getConditions());
+        $this->assertEquals([['balance', '>', 10], ['notes IS NULL']], $where->getConditions());
     }
 
     public function testOrderBy()
