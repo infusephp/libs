@@ -37,7 +37,7 @@ class FromStatementTest extends \PHPUnit_Framework_TestCase
     public function testBuild()
     {
         $stmt = new FromStatement();
-        $this->assertEquals($stmt, $stmt->addTable('test,test2'));
+        $this->assertEquals($stmt, $stmt->addTable('test,test2,should"_not===_work'));
         $this->assertEquals('FROM `test`,`test2`', $stmt->build());
 
         $stmt = new FromStatement();

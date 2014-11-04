@@ -26,7 +26,7 @@ class ValuesStatementTest extends \PHPUnit_Framework_TestCase
         $stmt = new ValuesStatement();
         $this->assertEquals('', $stmt->build());
 
-        $stmt->addValues(['test' => 1]);
+        $stmt->addValues(['test' => 1, 'should"_not===_work' => 'fail']);
         $this->assertEquals('(`test`) VALUES (?)', $stmt->build());
 
         $stmt->addValues(['test2' => 2]);

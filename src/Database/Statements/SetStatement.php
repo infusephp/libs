@@ -47,13 +47,15 @@ class SetStatement extends Statement
 	 */
     public function build()
     {
-        if (count($this->values) == 0)
-            return '';
-
         $values = [];
         foreach ($this->values as $key => $value) {
-            $values[] = $this->escapeIdentifier($key) . '=?';
+            if ($id = $this->escapeIdentifier($key)) {
+                $values[] = $id . '=?';
+            }
         }
+
+        if (count($values) == 0)
+            return '';
 
         // generates SET `col1`=?,`col2`=?,`col3`=?
         return 'SET ' . implode(',', $values);

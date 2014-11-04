@@ -43,7 +43,7 @@ class SelectStatementTest extends \PHPUnit_Framework_TestCase
     public function testBuild()
     {
         $stmt = new SelectStatement();
-        $this->assertEquals($stmt, $stmt->addFields('test,test2 AS blah'));
+        $this->assertEquals($stmt, $stmt->addFields('test,test2 AS blah,should"_not===_work'));
         $this->assertEquals('SELECT `test`,`test2` AS `blah`', $stmt->build());
 
         $stmt = new SelectStatement();

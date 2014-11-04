@@ -85,14 +85,17 @@ class OrderStatement extends Statement
 	 */
     public function build()
     {
-        if (count($this->fields) == 0)
-            return '';
-
         $fields = $this->fields;
         foreach ($fields as &$field) {
             $field[0] = $this->escapeIdentifier($field[0]);
             $field = implode(' ', $field);
         }
+
+        // remove empty values
+        $fields = array_filter($fields);
+
+        if (count($fields) == 0)
+            return '';
 
         return ((!$this->groupBy) ? 'ORDER BY ' : 'GROUP BY ') .
             implode(',', $fields);

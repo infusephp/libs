@@ -60,6 +60,9 @@ class SelectStatement extends Statement
         foreach ($fields as &$field)
             $field = $this->escapeIdentifier($field);
 
+        // remove empty values
+        $fields = array_filter($fields);
+
         return 'SELECT ' . implode(',', $fields);
     }
 }

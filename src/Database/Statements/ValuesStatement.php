@@ -47,13 +47,16 @@ class ValuesStatement extends Statement
 	 */
     public function build()
     {
-        if (count($this->values) == 0)
-            return '';
-
         $keys = array_keys($this->values);
         foreach ($keys as &$key) {
             $key = $this->escapeIdentifier($key);
         }
+
+        // remove empty values
+        $keys = array_filter($keys);
+
+        if (count($keys) == 0)
+            return '';
 
         // generates (`col1`,`col2`,`col3`) VALUES (?,?,?)
         return '(' . implode(',', $keys) . ') VALUES (' .

@@ -26,7 +26,7 @@ class SetStatementTest extends \PHPUnit_Framework_TestCase
         $stmt = new SetStatement();
         $this->assertEquals('', $stmt->build());
 
-        $stmt->addValues(['test' => 1]);
+        $stmt->addValues(['test' => 1, 'should"_not===_work' => 'fail']);
         $this->assertEquals('SET `test`=?', $stmt->build());
 
         $stmt->addValues(['test2' => 2]);

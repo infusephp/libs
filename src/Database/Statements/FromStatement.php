@@ -81,12 +81,15 @@ class FromStatement extends Statement
 	 */
     public function build()
     {
-        if (count($this->tables) == 0)
-            return '';
-
         $tables = $this->tables;
         foreach ($tables as &$table)
             $table = $this->escapeIdentifier($table);
+
+        // remove empty values
+        $tables = array_filter($tables);
+
+        if (count($tables) == 0)
+            return '';
 
         return (($this->hasFrom) ? 'FROM ' : '') . implode(',', $tables);
     }

@@ -101,15 +101,18 @@ class WhereStatement extends Statement
 	 */
     public function build()
     {
-        if (count($this->conditions) == 0)
-            return '';
-
         $sql = (!$this->having) ? 'WHERE ' : 'HAVING ';
 
         $clauses = [];
         foreach ($this->conditions as $clause) {
             $clauses[] = $this->buildClause($clause, $sql);
         }
+
+        // remove empty values
+        $clauses = array_filter($clauses);
+
+        if (count($clauses) == 0)
+            return '';
 
         return $sql . implode(' AND ', $clauses);
     }

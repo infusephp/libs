@@ -100,7 +100,8 @@ class WhereStatementTest extends \PHPUnit_Framework_TestCase
         $stmt = new WhereStatement();
         $this->assertEquals('', $stmt->build());
 
-        $stmt->addCondition('field1', 'value')->addCondition('field2', 'value2');
+        $stmt->addCondition('field1', 'value')->addCondition('field2', 'value2')
+             ->addCondition(['should"_not===_work' => 'fail']);
         $this->assertEquals('WHERE `field1`=? AND `field2`=?', $stmt->build());
 
         $stmt = new WhereStatement(true);

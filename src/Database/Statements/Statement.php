@@ -35,24 +35,26 @@ abstract class Statement
         return $this->values;
     }
 
-    protected function buildClause(array $clause, $base)
+    protected function buildClause(array $clause)
     {
         // handle pure SQL clauses
         if (count($clause) == 1)
             return $clause[0];
 
-        $base .= '_';
-
         foreach ($clause as $k => &$value) {
             // handles nested conditions
             if (is_array($value)) {
-                $this->buildClause($value, $base);
+                $this->buildClause($value);
             // escape the identifier
             } elseif ($k == 0) {
                 $value = $this->escapeIdentifier($value);
+
+                if (empty($value)) {
+                    return '';
+                }
             // parameterize the value
             } elseif ($k == 2) {
-                $value = $this->parameterize($base . $clause[0], $value);
+                $value = $this->parameterize($value);
             }
         }
 
@@ -81,8 +83,14 @@ abstract class Statement
             } else {
                 $periods = explode('.', $space);
                 foreach ($periods as &$period) {
-                    if (preg_match('/^[A-Za-z0-9_]*$/', $period))
+                    // escape identifiers that are: [0-9,a-z,A-Z$_]
+                    if (preg_match('/^[A-Za-z0-9_$]*$/', $period)) {
                         $period = $escapeChar . $period . $escapeChar;
+                    // do not use an identifier that contains something other than:
+                    //      alpha-numeric, _, $, *, (, )
+                    } elseif (!preg_match('/^[A-Za-z0-9_$\*\(\)]*$/', $period)) {
+                        $period = '';
+                    }
                 }
 
                 $space = implode('.', $periods);
@@ -92,17 +100,18 @@ abstract class Statement
         return implode(' ', $spaces);
     }
 
-    protected function parameterize($key, $value)
+    /**
+     * Parameterizes a function using indexed placeholders
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    protected function parameterize($value)
     {
         // numbered parameters
         $this->values[] = $value;
 
         return '?';
-
-        // named parameters
-        $key = ':' . preg_replace('/[^a-z0-9_]/', '', strtolower($key));
-        $this->values[$key] = $value;
-
-        return $key;
     }
 }

@@ -68,11 +68,11 @@ class OrderStatementTest extends \PHPUnit_Framework_TestCase
     public function testBuildInvalidIdentifier()
     {
         $stmt = new OrderStatement();
-        $stmt->addFields([[['test']]]);
-        $this->assertEquals('ORDER BY ', $stmt->build());
+        $stmt->addFields([[['test']]])->addFields('should"_not===_work');
+        $this->assertEquals('', $stmt->build());
 
         $stmt = new OrderStatement();
         $stmt->addFields(1);
-        $this->assertEquals('ORDER BY ', $stmt->build());
+        $this->assertEquals('', $stmt->build());
     }
 }
