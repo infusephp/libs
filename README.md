@@ -1,10 +1,10 @@
-infuse/libs 
+infuse/libs [![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs)
 ===========
 
-[![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs) [![Coverage Status](https://coveralls.io/repos/jaredtking/infuse-libs/badge.png)](https://coveralls.io/r/jaredtking/infuse-libs)
-
+[![Coverage Status](https://coveralls.io/repos/jaredtking/infuse-libs/badge.png)](https://coveralls.io/r/jaredtking/infuse-libs)
 [![Latest Stable Version](https://poser.pugx.org/infuse/libs/v/stable.png)](https://packagist.org/packages/infuse/libs)
 [![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.png)](https://packagist.org/packages/infuse/libs)
+[![HHVM Status](http://hhvm.h4cc.de/badge/infuse/libs.svg)](http://hhvm.h4cc.de/package/infuse/libs)
 
 *infuse/libs* is a set of libraries designed for rapid PHP development.
 
