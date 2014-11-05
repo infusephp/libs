@@ -29,11 +29,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         // set up DI
         self::$app = new \Pimple\Container();
-        self::$app[ 'locale' ] = function () {
+        self::$app['locale'] = function () {
             return new Locale();
         };
-        self::$app[ 'errors' ] = function ($app) {
-            return new ErrorStack( $app );
+        self::$app['errors'] = function ($app) {
+            return new ErrorStack($app);
         };
         Model::inject( self::$app );
     }

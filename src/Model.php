@@ -85,6 +85,7 @@
 
 namespace infuse;
 
+use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
 use Pimple\Container;
 
@@ -398,16 +399,17 @@ abstract class Model extends Acl
         $class_name = get_called_class();
         $modelName = static::modelName();
 
-        $singularKey = Inflector::underscore( $modelName );
-        $pluralKey = Inflector::pluralize( $singularKey );
+        $inflector = Inflector::get();
+        $singularKey = $inflector->underscore( $modelName );
+        $pluralKey = $inflector->pluralize( $singularKey );
 
         return [
             'model' => $modelName,
             'class_name' => $class_name,
             'singular_key' => $singularKey,
             'plural_key' => $pluralKey,
-            'proper_name' => Inflector::titleize( $singularKey ),
-            'proper_name_plural' => Inflector::titleize( $pluralKey ) ];
+            'proper_name' => $inflector->titleize( $singularKey ),
+            'proper_name_plural' => $inflector->titleize( $pluralKey ) ];
     }
 
     /**
@@ -425,7 +427,9 @@ abstract class Model extends Acl
 	 */
     public static function tablename()
     {
-        return Inflector::camelize( Inflector::pluralize( static::modelName() ) );
+        $inflector = Inflector::get();
+
+        return $inflector->camelize($inflector->pluralize(static::modelName()));
     }
 
     /**
@@ -598,7 +602,7 @@ abstract class Model extends Acl
                     'error' => VALIDATION_REQUIRED_FIELD_MISSING,
                     'params' => [
                         'field' => $name,
-                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::titleize( $name ) ] ] );
+                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::get()->titleize( $name ) ] ] );
 
                 $validated = false;
             }
@@ -1302,7 +1306,7 @@ abstract class Model extends Acl
                 'error' => VALIDATION_FAILED,
                 'params' => [
                     'field' => $field,
-                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
+                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize( $field ) ] ] );
 
         return $valid;
     }
@@ -1314,7 +1318,7 @@ abstract class Model extends Acl
                 'error' => VALIDATION_NOT_UNIQUE,
                 'params' => [
                     'field' => $field,
-                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::titleize( $field ) ] ] );
+                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize( $field ) ] ] );
 
             return false;
         }
