@@ -25,8 +25,7 @@ phpunit
 
 ## Requirements
 
-- PHP 5.4+
-- HHVM 3.3+
+- PHP 5.4+ or HHVM 3.3+
 
 ## Contributing
 
