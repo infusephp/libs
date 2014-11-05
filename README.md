@@ -7,7 +7,7 @@ infuse/libs
 [![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.png)](https://packagist.org/packages/infuse/libs)
 [![HHVM Status](http://hhvm.h4cc.de/badge/infuse/libs.svg)](http://hhvm.h4cc.de/package/infuse/libs)
 
-*infuse/libs* is a set of libraries designed for rapid PHP development.
+*infuse/libs* is a collection of libraries designed for rapid PHP development.
 
 These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of node libraries like express.js.
 
@@ -17,7 +17,7 @@ An MVC framework, called Idealist Framework, has been built using *infuse/libs*.
 
 ## Tests
 
-Use phpunit to run the included tests (more tests coming later):
+Use phpunit to run the included tests:
 
 ```
 phpunit
@@ -26,6 +26,7 @@ phpunit
 ## Requirements
 
 - PHP 5.4+
+- HHVM 3.3+
 
 ## Contributing
 
