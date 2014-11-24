@@ -611,7 +611,8 @@ abstract class Model extends Acl
         }
 
         try {
-            if ($this->app['db']->insert($insertArray)->into(static::tablename())) {
+            if ($this->app['db']->insert($insertArray)
+                ->into(static::tablename())->execute()) {
                 $ids = [];
                 $idProperty = (array) static::idProperty();
                 foreach ($idProperty as $property) {
@@ -890,7 +891,7 @@ abstract class Model extends Acl
 
         try {
             if ($this->app['db']->update(static::tablename())
-                ->values($updateArray)->where($updateKeys)) {
+                ->values($updateArray)->where($updateKeys)->execute()) {
                 // update the cache with our new values
                 $this->cacheProperties( $updateArray );
                 // post-hook
@@ -935,7 +936,8 @@ abstract class Model extends Acl
 
         try {
             // delete the model
-            if ($this->app['db']->delete(static::tablename())->where($this->id(true))) {
+            if ($this->app['db']->delete(static::tablename())
+                ->where($this->id(true))->execute()) {
                 // clear the cache
                 $this->emptyCache();
 
