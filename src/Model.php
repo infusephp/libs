@@ -123,8 +123,6 @@ abstract class Model extends Acl
                 'local' ],
             'prefix' => '',
             'expires' => 0 ],
-        'database' => [
-            'enabled' => true ],
         'requester' => false ];
 
     /* Default parameters for Model::find() queries */
@@ -333,7 +331,7 @@ abstract class Model extends Acl
 	 */
     public function exists()
     {
-        return static::totalRecords( $this->id( true ) ) == 1;
+        return static::totalRecords($this->id(true)) == 1;
     }
 
     /**
@@ -608,33 +606,37 @@ abstract class Model extends Acl
             }
         }
 
-        if( !$validated )
-
+        if (!$validated) {
             return false;
+        }
 
-        if( !static::$config[ 'database' ][ 'enabled' ] ||
-            Database::insert( static::tablename(), $insertArray ) )
-        {
-            $ids = [];
-            $idProperty = (array) static::idProperty();
-            foreach ($idProperty as $property) {
-                // attempt use the supplied value if the id property is mutable
-                $mutable = !isset( $properties[ $property ][ 'mutable' ] ) || $properties[ $property ][ 'mutable' ];
-                if( $mutable && isset( $data[ $property ] ) )
-                    $ids[] = $data[ $property ];
-                else
-                    $ids[] = (static::$config['database']['enabled']) ? Database::lastInsertID() : mt_rand();
+        try {
+            if ($this->app['db']->insert($insertArray)->into(static::tablename())) {
+                $ids = [];
+                $idProperty = (array) static::idProperty();
+                foreach ($idProperty as $property) {
+                    // attempt use the supplied value if the id property is mutable
+                    $mutable = !isset($properties[$property]['mutable'] ) ||
+                                $properties[$property ]['mutable'];
+
+                    if ($mutable && isset($data[$property]))
+                        $ids[] = $data[$property];
+                    else
+                        $ids[] = $this->app['pdo']->lastInsertId();
+                }
+
+                // set id and cache properties
+                $this->_id = implode( ',', $ids );
+                $this->cacheProperties( $insertArray );
+
+                // post-hook
+                if( method_exists( $this, 'postCreateHook' ) )
+                    $this->postCreateHook();
+
+                return true;
             }
-
-            // set id and cache properties
-            $this->_id = implode( ',', $ids );
-            $this->cacheProperties( $insertArray );
-
-            // post-hook
-            if( method_exists( $this, 'postCreateHook' ) )
-                $this->postCreateHook();
-
-            return true;
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
         }
 
         return false;
@@ -677,15 +679,15 @@ abstract class Model extends Acl
 
         $i = 1;
         $values = [];
-        while ( $i <= 4 && count( $remaining ) > 0 ) {
-            if( $i == 1 && !$skipLocalCache )
-                $this->getFromLocalCache( $remaining, $values );
+        while ($i <= 4 && count($remaining) > 0) {
+            if ($i == 1 && !$skipLocalCache)
+                $this->getFromLocalCache($remaining, $values);
             elseif( $i == 2 && $hasId )
-                $this->getFromSharedCache( $remaining, $values );
-            elseif( $i == 3 && static::$config[ 'database' ][ 'enabled' ] && $hasId )
-                $this->getFromDatabase( $remaining, $values );
-            elseif( $i == 4 )
-                $this->getFromDefaultValues( $remaining, $values );
+                $this->getFromSharedCache($remaining, $values);
+            elseif ($i == 3 && $hasId)
+                $this->getFromDatabase($remaining, $values);
+            elseif ($i == 4)
+                $this->getFromDefaultValues($remaining, $values);
 
             $i++;
         }
@@ -750,8 +752,8 @@ abstract class Model extends Acl
 
         // make sure each property key at least has a null value
         // and then get the value for each property
-        $result = array_replace( array_fill_keys( $properties, null ),
-                                 $this->get( $properties, false, true ) );
+        $result = array_replace(array_fill_keys($properties, null),
+                                $this->get($properties, false, true));
 
         // expand properties
         foreach ($namedExp as $k => $subExp) {
@@ -886,16 +888,19 @@ abstract class Model extends Acl
 
             return false;
 
-        if( !static::$config[ 'database' ][ 'enabled' ] ||
-            Database::update( static::tablename(), $updateArray, $updateKeys ) )
-        {
-            // update the cache with our new values
-            $this->cacheProperties( $updateArray );
-            // post-hook
-            if( method_exists( $this, 'postSetHook' ) )
-                $this->postSetHook();
+        try {
+            if ($this->app['db']->update(static::tablename())
+                ->values($updateArray)->where($updateKeys)) {
+                // update the cache with our new values
+                $this->cacheProperties( $updateArray );
+                // post-hook
+                if( method_exists( $this, 'postSetHook' ) )
+                    $this->postSetHook();
 
-            return true;
+                return true;
+            }
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
         }
 
         return false;
@@ -928,21 +933,23 @@ abstract class Model extends Acl
 
             return false;
 
-        // delete the model
-        if( !static::$config[ 'database' ][ 'enabled' ] ||
-            Database::delete( static::tablename(), $this->id( true ) ) )
-        {
-            // clear the cache
-            $this->emptyCache();
+        try {
+            // delete the model
+            if ($this->app['db']->delete(static::tablename())->where($this->id(true))) {
+                // clear the cache
+                $this->emptyCache();
 
-            // post-hook
-            if( method_exists( $this, 'postDeleteHook' ) )
-                $this->postDeleteHook();
+                // post-hook
+                if( method_exists( $this, 'postDeleteHook' ) )
+                    $this->postDeleteHook();
 
-            return true;
-        } else
+                return true;
+            }
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
+        }
 
-            return false;
+        return false;
     }
 
     /////////////////////////////
@@ -960,32 +967,29 @@ abstract class Model extends Acl
 	 */
     public static function find(array $params = [])
     {
-        $params = array_replace( static::$defaultFindParameters, $params );
-
-        $params[ 'start' ] = max( $params[ 'start' ], 0 );
-        $params[ 'limit' ] = min( $params[ 'limit' ], 1000 );
+        $params = array_replace(static::$defaultFindParameters, $params);
 
         $modelName = get_called_class();
         $properties = static::properties();
 
         // WARNING: using MYSQL LIKE for search, this is very inefficient
 
-        if ( !empty( $params[ 'search' ] ) ) {
+        if (!empty($params['search'])) {
             $w = [];
-            $search = addslashes( $params[ 'search' ] );
+            $search = addslashes($params['search']);
             foreach ($properties as $name => $property) {
-                if( Utility::array_value( $property, 'searchable' ) )
+                if (Utility::array_value($property, 'searchable'))
                     $w[] = "`$name` LIKE '%$search%'";
             }
 
-            if( count( $w ) > 0 )
-                $params[ 'where' ][] = '(' . implode( ' OR ', $w ) . ')';
+            if (count($w) > 0)
+                $params['where'][] = '(' . implode(' OR ', $w) . ')';
         }
 
         // verify sort
         $sortParams = [];
 
-        $columns = explode( ',', $params[ 'sort' ] );
+        $columns = explode(',', $params['sort']);
         foreach ($columns as $column) {
             $c = explode( ' ', trim( $column ) );
 
@@ -1003,28 +1007,23 @@ abstract class Model extends Acl
             if( !in_array( $direction, [ 'asc', 'desc' ] ) )
                 continue;
 
-            $sortParams[] = "$propertyName $direction";
+            $sortParams[] = [$propertyName, $direction];
         }
 
         $return = [
-            'count' => static::totalRecords( $params[ 'where' ] ),
+            'count' => static::totalRecords($params['where']),
             'models' => [] ];
 
-        $filter = [
-            'where' => $params[ 'where' ],
-            'limit' => $params[ 'start' ] . ',' . $params[ 'limit' ] ];
+        $limit = min($params['limit'], 1000);
+        $offset = max($params['start'], 0);
 
-        $sortStr = implode( ',', $sortParams );
-        if( $sortStr )
-            $filter[ 'orderBy' ] = $sortStr;
+        $select = self::$injectedApp['db']->select('*')->from(static::tablename())
+            ->where($params['where'])->limit($limit, $start)->orderBy($sortParams);
 
         // load models
-        $models = Database::select(
-            static::tablename(),
-            '*',
-            $filter );
+        $models = $select->all();
 
-        if ( is_array( $models ) ) {
+        if (is_array($models)) {
             foreach ($models as $info) {
                 $id = false;
 
@@ -1075,12 +1074,14 @@ abstract class Model extends Acl
 	 */
     public static function totalRecords(array $where = [])
     {
-        return (int) Database::select(
-            static::tablename(),
-            'count(*)',
-            [
-                'where' => $where,
-                'single' => true ] );
+        try {
+            return (int) self::$injectedApp['db']->select('count(*)')
+                ->from(static::tablename())->where($where)->scalar();
+        } catch (\Exception $e) {
+            self::$injectedApp['logger']->error($e);
+        }
+
+        return 0;
     }
 
     /////////////////////////////
@@ -1096,16 +1097,12 @@ abstract class Model extends Acl
 	 */
     public function load()
     {
-        if( $this->_id === false || !static::$config[ 'database' ][ 'enabled' ] )
-
+        if ($this->_id === false) {
             return;
+        }
 
-        $info = (array) Database::select(
-            static::tablename(),
-            '*',
-            [
-                'where' => $this->id( true ),
-                'singleRow' => true ] );
+        $info = (array) $this->app['db']->select('*')->from(static::tablename())
+            ->where($this->id(true))->one();
 
         // marshal values from database
         foreach( $info as $k => $v )
@@ -1219,23 +1216,23 @@ abstract class Model extends Acl
 
     private function getFromLocalCache(&$properties, &$values)
     {
-        $idProperties = $this->id( true );
+        $idProperties = $this->id(true);
         $remove = [];
 
         foreach ($properties as $property) {
-            if( array_key_exists( $property, $this->localCache ) )
-                $values[ $property ] = $this->marshalValue( $property, $this->localCache[ $property ] );
-            elseif( static::isIdProperty( $property ) )
-                $values[ $property ] = $this->marshalValue( $property, $idProperties[ $property ] );
+            if (array_key_exists($property, $this->localCache))
+                $values[$property] = $this->marshalValue($property, $this->localCache[$property]);
+            elseif (static::isIdProperty($property))
+                $values[$property] = $this->marshalValue($property, $idProperties[$property]);
 
             // mark index of property to remove from list of properties
-            if( isset( $values[ $property ] ) )
+            if (array_key_exists($property, $values))
                 $remove[] = $property;
         }
 
         foreach ($remove as $property) {
-            $index = array_search( $property, $properties );
-            unset( $properties[ $index ] );
+            $index = array_search($property, $properties);
+            unset($properties[$index]);
         }
     }
 
@@ -1254,20 +1251,20 @@ abstract class Model extends Acl
 
     private function getFromDatabase(&$properties, &$values)
     {
-        $dbValues = Database::select(
-            static::tablename(),
-            implode(',', $properties),
-            [
-                'where' => $this->id( true ),
-                'singleRow' => true ] );
+        try {
+            $dbValues = $this->app['db']->select(implode(',', $properties))
+                ->from(static::tablename())->where($this->id(true))->one();
 
-        foreach ( (array) $dbValues as $property => $value ) {
-            $values[ $property ] = $this->marshalValue( $property, $value );
-            $this->cacheProperty( $property, $value );
+            foreach ((array) $dbValues as $property => $value) {
+                $values[$property] = $this->marshalValue($property, $value);
+                $this->cacheProperty($property, $value);
 
-            // remove property from list of remaining
-            $index = array_search( $property, $properties );
-            unset( $properties[ $index ] );
+                // remove property from list of remaining
+                $index = array_search($property, $properties);
+                unset($properties[$index]);
+            }
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
         }
     }
 

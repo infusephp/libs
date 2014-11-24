@@ -22,10 +22,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         self::$requester = new Person( 1 );
 
-        Model::configure( [
-            'database' => [
-                'enabled' => false ],
-            'requester' => self::$requester ] );
+        Model::configure([
+            'requester' => self::$requester ]);
 
         // set up DI
         self::$app = new \Pimple\Container();
@@ -35,6 +33,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         self::$app['errors'] = function ($app) {
             return new ErrorStack($app);
         };
+
         Model::inject( self::$app );
     }
 
@@ -258,6 +257,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue( TestModel2::isIdProperty( 'id2' ) );
     }
 
+    public function testExists()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(1);
+
+        $model = new TestModel2(12);
+        $this->assertTrue($model->exists());
+
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(0);
+        $this->assertFalse($model->exists());
+    }
+
     public function testGetMultipleProperties()
     {
         $model = new TestModel( 3 );
@@ -273,8 +285,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( $expected, $values );
     }
 
+    public function testGetFromDb()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['person' => 20]);
+
+        $model = new TestModel2(12);
+        $this->assertEquals(20, $model->person);
+    }
+
     public function testGetDefaultValue()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $model = new TestModel2( 12 );
         $this->assertEquals( 'some default value', $model->get( 'default' ) );
     }
@@ -459,17 +483,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+        self::$app['pdo'] = Mockery::mock();
+        self::$app['pdo']->shouldReceive('lastInsertId')->andReturn(1);
+
         $newModel = new TestModel();
         $this->assertTrue( $newModel->create( [ 'relation' => '', 'answer' => 42 ] ) );
-        $id = $newModel->id();
-        $this->assertTrue( !empty( $id ) );
-        $this->assertTrue( !empty( $newModel->id ) );
+        $this->assertEquals(1, $newModel->id());
+        $this->assertEquals(1, $newModel->id);
         $this->assertEquals( null, $newModel->relation );
         $this->assertEquals( 42, $newModel->answer );
     }
 
     public function testCreateMutable()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+
         $newModel = new TestModel2();
         $this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 25 ] ) );
         $this->assertEquals( '1,2', $newModel->id() );
@@ -477,6 +508,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateJson()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+
         $json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
 
         $newModel = new TestModel2();
@@ -486,6 +520,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateAutoTimestamps()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+
         $newModel = new TestModel2();
         $this->assertTrue( $newModel->create( [ 'id' => 1, 'id2' => 2, 'required' => 235 ] ) );
         $this->assertGreaterThan( 0, $newModel->created_at );
@@ -493,6 +530,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateWithId()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+
         $model = new TestModel( 5 );
         $this->assertFalse( $model->create( [ 'relation' => '', 'answer' => 42 ] ) );
     }
@@ -537,6 +577,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testToArrayAfterCreate()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into')->andReturn(true);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $model = new TestModel2();
         $this->assertTrue( $model->create( [
             'id' => 5,
@@ -558,6 +602,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSet()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where')->andReturn(true);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $model = new TestModel( 10 );
 
         $this->assertTrue( $model->set( 'answer', 42 ) );
@@ -566,6 +614,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetMultiple()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where')->andReturn(true);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $model = new TestModel( 11 );
 
         $this->assertTrue( $model->set( [
@@ -578,14 +630,22 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetAutoTimestamps()
     {
-        $model = new TestModel2( 12 );
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where')->andReturn(true);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
+        $model = new TestModel2(12);
         $updatedAt = $model->updated_at;
-        $model->set( 'default', 'testing' );
-        $this->assertNotEquals( $updatedAt, $model->updated_at );
+        $model->set('default', 'testing');
+        $this->assertNotEquals($updatedAt, $model->updated_at);
     }
 
     public function testSetJson()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where')->andReturn(true);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
 
         $model = new TestModel2( 13 );
@@ -631,6 +691,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testDelete()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('delete->where')->andReturn(true);
+
         $model = new TestModel2( 1 );
         $this->assertTrue( $model->delete() );
     }
@@ -643,6 +706,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testDeleteWithHook()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('delete->where')->andReturn(true);
+
         $model = new TestModel( 100 );
 
         $this->assertTrue( $model->delete() );
