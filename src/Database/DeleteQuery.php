@@ -31,7 +31,7 @@ class DeleteQuery extends Query
     /**
      * @var string
      */
-    protected $liimt;
+    protected $limit;
 
     public function initialize()
     {
