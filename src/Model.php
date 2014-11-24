@@ -1018,7 +1018,7 @@ abstract class Model extends Acl
         $offset = max($params['start'], 0);
 
         $select = self::$injectedApp['db']->select('*')->from(static::tablename())
-            ->where($params['where'])->limit($limit, $start)->orderBy($sortParams);
+            ->where($params['where'])->limit($limit, $offset)->orderBy($sortParams);
 
         // load models
         $models = $select->all();
