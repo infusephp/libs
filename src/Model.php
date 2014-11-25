@@ -10,77 +10,77 @@
  */
 
 /*
-	The following properties (of model properties) are available:
+    The following properties (of model properties) are available:
 
- 	Schema:
+    Schema:
 
-  		type:
-  			The type of the property.
-  			Accepted Types:
-				string
-				number
-				boolean
-				date
-				json
-	  		String
-	  		Required
-	  	default:
-	  		The default value to be used when creating new models.
-	  		String
-	  		Optional
+        type:
+            The type of the property.
+            Accepted Types:
+                string
+                number
+                boolean
+                date
+                json
+            String
+            Required
+        default:
+            The default value to be used when creating new models.
+            String
+            Optional
 
-  	Validation:
+    Validation:
 
-  		mutable:
-  			Specifies whether the property can be set (mutated)
-  			Boolean
-  			Default: true
-  			Optional
- 		validate:
- 			Validation string passed to Validate::is() or validation function
- 			String or callable
- 			Optional
- 		required:
- 			Specifies whether the field is required
- 			Boolean
- 			Default: false
- 			Optional
- 		unique:
- 			Specifies whether the field is required to be unique
- 			Boolean
- 			Default: false
- 			Optional
-  		null:
-  			Specifies whether the column is allowed to have null values
-  			Boolean
-  			Default: false
-  			Optional
+        mutable:
+            Specifies whether the property can be set (mutated)
+            Boolean
+            Default: true
+            Optional
+        validate:
+            Validation string passed to Validate::is() or validation function
+            String or callable
+            Optional
+        required:
+            Specifies whether the field is required
+            Boolean
+            Default: false
+            Optional
+        unique:
+            Specifies whether the field is required to be unique
+            Boolean
+            Default: false
+            Optional
+        null:
+            Specifies whether the column is allowed to have null values
+            Boolean
+            Default: false
+            Optional
 
-	Find:
+    Find:
 
-		searchable:
-			Specifies whether the property should be searched when
-			querying models
-			Boolean
-			Default: false
-			Optional
+        searchable:
+            Specifies whether the property should be searched when
+            querying models
+            Boolean
+            Default: false
+            Optional
 
-	Meta:
+    Meta:
 
-	  	title:
-  			Title of the property that shows up in admin panel
-  			String
-  			Default: Derived from property `name`
-  			Optional
-  		relation:
-			Model class name (including namespace) the property is related to
-  			String
-  			Optional
-  		hidden:
-  			Hides a property when expanding the model, i.e. toArray()
-			Boolean
-			Default: false
-			Optional
+        title:
+            Title of the property that shows up in admin panel
+            String
+            Default: Derived from property `name`
+            Optional
+        relation:
+            Model class name (including namespace) the property is related to
+            String
+            Optional
+        hidden:
+            Hides a property when expanding the model, i.e. toArray()
+            Boolean
+            Default: false
+            Optional
  */
 
 namespace infuse;
@@ -174,30 +174,30 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Changes the default model settings
-	 *
-	 * @param array $config
-	 */
+     * Changes the default model settings
+     *
+     * @param array $config
+     */
     public static function configure(array $config)
     {
         static::$config = array_replace( static::$config, $config );
     }
 
     /**
-	 * Gets a config parameter
-	 *
-	 * @return mixed
-	 */
+     * Gets a config parameter
+     *
+     * @return mixed
+     */
     public static function getConfigValue($key)
     {
         return Utility::array_value( static::$config, $key );
     }
 
     /**
-	 * Injects a DI container
-	 *
-	 * @param Container $app
-	 */
+     * Injects a DI container
+     *
+     * @param Container $app
+     */
     public static function inject(Container $app)
     {
         self::$injectedApp = $app;
@@ -208,10 +208,10 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Creates a new model object
-	 *
-	 * @param array|string $id ordered array of ids or comma-separated id string
-	 */
+     * Creates a new model object
+     *
+     * @param array|string $id ordered array of ids or comma-separated id string
+     */
     public function __construct($id = false)
     {
         if( is_array( $id ) )
@@ -223,34 +223,34 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Converts the model into a string
-	 *
-	 * @return string
-	 */
+     * Converts the model into a string
+     *
+     * @return string
+     */
     public function __toString()
     {
         return get_called_class() . '(' . $this->_id . ')';
     }
 
     /**
-	 * Gets an inaccessible property by looking it up via get().
-	 *
-	 * @param string $name
-	 *
-	 * @return mixed
-	 */
+     * Gets an inaccessible property by looking it up via get().
+     *
+     * @param string $name
+     *
+     * @return mixed
+     */
     public function __get($name)
     {
         return $this->get( $name );
     }
 
     /**
-	 * Sets an inaccessible property by changing the locally cached value.
-	 * This method does not update the database or shared cache
-	 *
-	 * @param string $name
-	 * @param mixed $value
-	 */
+     * Sets an inaccessible property by changing the locally cached value.
+     * This method does not update the database or shared cache
+     *
+     * @param string $name
+     * @param mixed  $value
+     */
     public function __set($name, $value)
     {
         // if changing property, remove relation model
@@ -261,23 +261,23 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Checks if an inaccessible property exists. Any property that is
-	 * in the schema or locally cached is considered to be set
-	 *
-	 * @param string $name
-	 *
-	 * @return bool
-	 */
+     * Checks if an inaccessible property exists. Any property that is
+     * in the schema or locally cached is considered to be set
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
     public function __isset($name)
     {
         return array_key_exists( $name, $this->localCache ) || $this->hasProperty( $name );
     }
 
     /**
-	 * Unsets an inaccessible property by invalidating it in the local cache.
-	 *
-	 * @param string $name
-	 */
+     * Unsets an inaccessible property by invalidating it in the local cache.
+     *
+     * @param string $name
+     */
     public function __unset($name)
     {
         if ( array_key_exists( $name, $this->localCache ) ) {
@@ -294,12 +294,12 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Gets the model identifier(s)
-	 *
-	 * @param boolean $keyValue return key-value array of id
-	 *
-	 * @return array|string key-value if specified, otherwise comma-separated id string
-	 */
+     * Gets the model identifier(s)
+     *
+     * @param boolean $keyValue return key-value array of id
+     *
+     * @return array|string key-value if specified, otherwise comma-separated id string
+     */
     public function id($keyValue = false)
     {
         if( !$keyValue )
@@ -325,23 +325,23 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Checks if the model exists in the database
-	 *
-	 * @return boolean
-	 */
+     * Checks if the model exists in the database
+     *
+     * @return boolean
+     */
     public function exists()
     {
         return static::totalRecords($this->id(true)) == 1;
     }
 
     /**
-	 * Gets the model object corresponding to a relation
-	 * WARNING no check is used to see if the model returned actually exists
-	 *
-	 * @param string $property property
-	 *
-	 * @return Object|false model
-	 */
+     * Gets the model object corresponding to a relation
+     * WARNING no check is used to see if the model returned actually exists
+     *
+     * @param string $property property
+     *
+     * @return Object|false model
+     */
     public function relation($property)
     {
         $properties = static::properties();
@@ -363,20 +363,20 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Returns the id propert(ies) for the model
-	 *
-	 * @return array|string
-	 */
+     * Returns the id propert(ies) for the model
+     *
+     * @return array|string
+     */
     public static function idProperty()
     {
         return 'id';
     }
 
     /**
-	 * Gets the name of the model without namespacing
-	 *
-	 * @return string
-	 */
+     * Gets the name of the model without namespacing
+     *
+     * @return string
+     */
     public static function modelName()
     {
         $class_name = get_called_class();
@@ -388,10 +388,10 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Generates metadata about the model
-	 *
-	 * @return array
-	 */
+     * Generates metadata about the model
+     *
+     * @return array
+     */
     public static function metadata()
     {
         $class_name = get_called_class();
@@ -411,18 +411,18 @@ abstract class Model extends Acl
     }
 
     /**
-	 * @deprecated
-	 */
+     * @deprecated
+     */
     public static function info()
     {
         return static::metadata();
     }
 
     /**
-	 * Generates the tablename for the model
-	 *
-	 * @return string
-	 */
+     * Generates the tablename for the model
+     *
+     * @return string
+     */
     public static function tablename()
     {
         $inflector = Inflector::get();
@@ -431,12 +431,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Gets the properties for the model
-	 *
-	 * @param string $property property to lookup
-	 *
-	 * @return array
-	 */
+     * Gets the properties for the model
+     *
+     * @param string $property property to lookup
+     *
+     * @return array
+     */
     public static function properties($property = false)
     {
         $k = get_called_class();
@@ -473,12 +473,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Checks if the model has a property
-	 *
-	 * @param string $property property
-	 *
-	 * @return boolean has property
-	 */
+     * Checks if the model has a property
+     *
+     * @param string $property property
+     *
+     * @return boolean has property
+     */
     public static function hasProperty($property)
     {
         $properties = static::properties();
@@ -487,10 +487,10 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Checks if a property name is an id property
-	 *
-	 * @return boolean
-	 */
+     * Checks if a property name is an id property
+     *
+     * @return boolean
+     */
     public static function isIdProperty($property)
     {
         $idProperty = static::idProperty();
@@ -509,13 +509,13 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Creates a new model
-	 * WARNING: requires 'create' permission from the requester
-	 *
-	 * @param array $data key-value properties
-	 *
-	 * @return boolean
-	 */
+     * Creates a new model
+     * WARNING: requires 'create' permission from the requester
+     *
+     * @param array $data key-value properties
+     *
+     * @return boolean
+     */
     public function create(array $data)
     {
         $errorStack = $this->app[ 'errors' ];
@@ -644,17 +644,17 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Fetches property values from the model.
-	 *
-	 * This method utilizes a local and shared caching layer (i.e. redis), a database layer,
-	 * and finally resorts to the default property value for the model.
-	 *
-	 * @param string|array $properties list of properties to fetch values for
-	 * @param boolean $skipLocalCache skips local cache when true
-	 * @param boolean $forceReturnArray always return an array when true
-	 *
-	 * @return mixed Returns value when only 1 found or an array when multiple values found
-	 */
+     * Fetches property values from the model.
+     *
+     * This method utilizes a local and shared caching layer (i.e. redis), a database layer,
+     * and finally resorts to the default property value for the model.
+     *
+     * @param string|array $properties       list of properties to fetch values for
+     * @param boolean      $skipLocalCache   skips local cache when true
+     * @param boolean      $forceReturnArray always return an array when true
+     *
+     * @return mixed Returns value when only 1 found or an array when multiple values found
+     */
     public function get($properties, $skipLocalCache = false, $forceReturnArray = false)
     {
         $show = $properties == 'relation';
@@ -664,12 +664,12 @@ abstract class Model extends Acl
             $properties = (array) $properties;
 
         /*
-			Look up property values in this order:
-			i) Local Cache (unless explicitly skipped)
-			ii) Shared Cache
-			iii) Database (if enabled)
-			iv) Model Property Value Defaults
-		*/
+            Look up property values in this order:
+            i) Local Cache (unless explicitly skipped)
+            ii) Shared Cache
+            iii) Database (if enabled)
+            iv) Model Property Value Defaults
+        */
 
         // Make a copy of properties to keep track of what's remaining.
         // Since this will be modified a copy must be made to prevent
@@ -708,14 +708,14 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Converts the model to an array
-	 *
-	 * @param array $exclude properties to exclude
-	 * @param array $include properties to include
-	 * @param array $expand properties to expand
-	 *
-	 * @return array properties
-	 */
+     * Converts the model to an array
+     *
+     * @param array $exclude properties to exclude
+     * @param array $include properties to include
+     * @param array $expand  properties to expand
+     *
+     * @return array properties
+     */
     public function toArray(array $exclude = [], array $include = [], array $expand = [])
     {
         // TODO this method is ripe for some performance improvements
@@ -785,118 +785,118 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Converts the object to JSON format
-	 *
-	 * @param array $exclude properties to exclude
-	 * @param array $include properties to include
-	 * @param array $expand properties to expand
-	 *
-	 * @return string json
-	 */
+     * Converts the object to JSON format
+     *
+     * @param array $exclude properties to exclude
+     * @param array $include properties to include
+     * @param array $expand  properties to expand
+     *
+     * @return string json
+     */
     public function toJson(array $exclude = [], array $include = [], array $expand = [])
     {
         return json_encode( $this->toArray( $exclude, $include, $expand ) );
     }
 
     /**
-	 * Updates the model
-	 * WARNING: requires 'edit' permission from the requester
-	 *
-	 * @param array|string $data key-value properties or name of property
-	 * @param string new $value value to set if name supplied
-	 *
-	 * @return boolean
-	 */
+     * Updates the model
+     * WARNING: requires 'edit' permission from the requester
+     *
+     * @param array|string $data  key-value properties or name of property
+     * @param string new   $value value to set if name supplied
+     *
+     * @return boolean
+     */
     public function set($data, $value = false)
     {
+        if (!is_array($data))
+            return $this->set([$data => $value]);
+
+        if ($this->_id === false)
+            return false;
+
         $errorStack = $this->app[ 'errors' ];
         $errorStack->setCurrentContext( static::modelName() . '.set' );
 
-        if( $this->_id === false )
-
-            return false;
-
         // permission?
-        if ( !$this->can( 'edit', static::$config[ 'requester' ] ) ) {
+        if (!$this->can('edit', static::$config['requester'])) {
             $errorStack->push( [ 'error' => ERROR_NO_PERMISSION ] );
 
             return false;
         }
 
-        if( !is_array( $data ) )
-            $data = [ $data => $value ];
-
         // not updating anything?
-        if( count( $data ) == 0 )
-
+        if (count($data) == 0) {
             return true;
+        }
 
         // update timestamp
-        if( property_exists( get_called_class(), 'autoTimestamps' ) )
+        if (property_exists(get_called_class(), 'autoTimestamps')) {
             $data[ 'updated_at' ] = time();
+        }
 
         // pre-hook
-        if( method_exists( $this, 'preSetHook' ) && !$this->preSetHook( $data ) )
-
+        if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
             return false;
+        }
 
         $validated = true;
-        $updateArray = $this->id( true );
-        $updateKeys = array_keys( $updateArray );
+        $updateArray = [];
         $properties = static::properties();
 
         // get the property names
-        $propertyNames = array_keys( $properties );
+        $propertyNames = array_keys($properties);
 
         // loop through each supplied field and validate
         foreach ($data as $field => $value) {
-            // cannot change keys
-            if( in_array( $field, $updateKeys ) )
-                continue;
-
             // exclude if field does not map to a property
-            if( !in_array( $field, $propertyNames ) )
+            if (!in_array($field, $propertyNames))
                 continue;
 
-            $property = $properties[ $field ];
+            $property = $properties[$field];
 
-            if ( is_array( $property ) ) {
+            if (is_array($property)) {
+                // cannot modify immutable properties
+                if (isset($property['mutable']) && !$property['mutable']) {
+                    continue;
+                }
+
                 // assume empty string is a null value for properties
                 // that are marked as optionally-null
-                if ( Utility::array_value( $property, 'null' ) && empty( $value ) ) {
-                    $updateArray[ $field ] = null;
+                if (Utility::array_value($property, 'null') && empty($value)) {
+                    $updateArray[$field] = null;
                     continue;
                 }
 
                 // validate
-                $thisIsValid = $this->validate( $property, $field, $value );
+                $thisIsValid = $this->validate($property, $field, $value);
 
                 // unique?
-                if( $thisIsValid && Utility::array_value( $property, 'unique' ) && $value != $this->$field )
-                    $thisIsValid = $this->checkUniqueness( $property, $field, $value );
+                if ($thisIsValid && Utility::array_value($property, 'unique') && $value != $this->$field)
+                    $thisIsValid = $this->checkUniqueness($property, $field, $value);
 
                 $validated = $validated && $thisIsValid;
 
                 // json
-                if( Utility::array_value( $property, 'type' ) == 'json' && !is_string( $value ) )
-                    $value = json_encode( $value );
+                if (Utility::array_value($property, 'type') == 'json' && !is_string($value))
+                    $value = json_encode($value);
 
-                $updateArray[ $field ] = $value;
+                $updateArray[$field] = $value;
             }
         }
 
-        if( !$validated )
-
+        if (!$validated) {
             return false;
+        }
 
         try {
             if ($this->app['db']->update(static::tablename())
-                ->values($updateArray)->where($updateKeys)->execute()) {
+                ->values($updateArray)->where($this->id(true))->execute()) {
                 // update the cache with our new values
-                $this->cacheProperties( $updateArray );
+                $this->cacheProperties($updateArray);
 
                 // post-hook
-                if( method_exists( $this, 'postSetHook' ) )
+                if (method_exists($this, 'postSetHook'))
                     $this->postSetHook();
 
                 return true;
@@ -909,11 +909,11 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Delete the model
-	 * WARNING: requires 'delete' permission from the requester
-	 *
-	 * @return boolean success
-	 */
+     * Delete the model
+     * WARNING: requires 'delete' permission from the requester
+     *
+     * @return boolean success
+     */
     public function delete()
     {
         $errorStack = $this->app[ 'errors' ];
@@ -960,14 +960,14 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Fetches models with pagination support
-	 *
-	 * @param array key-value parameters
-	 *
-	 * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
-	 *
-	 * @return array array( 'models' => models, 'count' => 'total found' )
-	 */
+     * Fetches models with pagination support
+     *
+     * @param array key-value parameters
+     *
+     * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
+     *
+     * @return array array( 'models' => models, 'count' => 'total found' )
+     */
     public static function find(array $params = [])
     {
         $params = array_replace(static::$defaultFindParameters, $params);
@@ -1055,12 +1055,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Fetches a single model according to criteria
-	 *
-	 * @param array $params array( start, limit, sort, search, where )
-	 *
-	 * @return Model|false
-	 */
+     * Fetches a single model according to criteria
+     *
+     * @param array $params array( start, limit, sort, search, where )
+     *
+     * @return Model|false
+     */
     public static function findOne(array $params)
     {
         $models = static::find( $params );
@@ -1069,12 +1069,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Gets the toal number of records matching an optional criteria
-	 *
-	 * @param array $where criteria
-	 *
-	 * @return int total
-	 */
+     * Gets the toal number of records matching an optional criteria
+     *
+     * @param array $where criteria
+     *
+     * @return int total
+     */
     public static function totalRecords(array $where = [])
     {
         try {
@@ -1092,12 +1092,12 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-	 * Loads and caches all of the properties from the database layer
-	 * IMPORTANT: this should be called before getting properties
-	 * any time a model *might* have been updated from an outside source
-	 *
-	 * @return Model
-	 */
+     * Loads and caches all of the properties from the database layer
+     * IMPORTANT: this should be called before getting properties
+     * any time a model *might* have been updated from an outside source
+     *
+     * @return Model
+     */
     public function load()
     {
         if ($this->_id === false) {
@@ -1117,13 +1117,13 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Updates the local and shared cache with the new value for a property
-	 *
-	 * @param string $property property name
-	 * @param string $value new value
-	 *
-	 * @return Model
-	 */
+     * Updates the local and shared cache with the new value for a property
+     *
+     * @param string $property property name
+     * @param string $value    new value
+     *
+     * @return Model
+     */
     public function cacheProperty($property, $value)
     {
         // if changing property, remove relation model
@@ -1140,12 +1140,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Cache data inside of the local and shared cache
-	 *
-	 * @param array $data data to be cached
-	 *
-	 * @return Model
-	 */
+     * Cache data inside of the local and shared cache
+     *
+     * @param array $data data to be cached
+     *
+     * @return Model
+     */
     public function cacheProperties(array $data)
     {
         foreach( $data as $property => $value )
@@ -1155,12 +1155,12 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Invalidates a single property in the local and shared caches
-	 *
-	 * @param string $property property name
-	 *
-	 * @return Model
-	 */
+     * Invalidates a single property in the local and shared caches
+     *
+     * @param string $property property name
+     *
+     * @return Model
+     */
     public function invalidateCachedProperty($property)
     {
         // if changing property, remove relation model
@@ -1177,10 +1177,10 @@ abstract class Model extends Acl
     }
 
     /**
-	 * Invalidates all cached properties for this model
-	 *
-	 * @return Model
-	 */
+     * Invalidates all cached properties for this model
+     *
+     * @return Model
+     */
     public function emptyCache()
     {
         // explicitly clear all properties and any other values in cache

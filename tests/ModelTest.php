@@ -610,6 +610,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $model = new TestModel(10);
 
+        $this->assertTrue($model->set([]));
         $this->assertTrue($model->set('answer', 42));
         $this->assertEquals(42, $model->answer);
     }
@@ -659,6 +660,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model = new TestModel2( 13 );
         $model->set( 'json', $json );
         $this->assertEquals( $json, $model->json );
+    }
+
+    public function testSetImmutableProperties()
+    {
+        $stmt = Mockery::mock('PDOStatement');
+
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
+        $model = new TestModel(10);
+
+        $this->assertTrue($model->set('id', 432));
+        $this->assertEquals(10, $model->id);
     }
 
     public function testSetFailWithNoId()
