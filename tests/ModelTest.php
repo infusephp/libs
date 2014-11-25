@@ -602,20 +602,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSet()
     {
+        $stmt = Mockery::mock('PDOStatement');
+
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
-        $model = new TestModel( 10 );
+        $model = new TestModel(10);
 
-        $this->assertTrue( $model->set( 'answer', 42 ) );
-        $this->assertEquals( 42, $model->answer );
+        $this->assertTrue($model->set('answer', 42));
+        $this->assertEquals(42, $model->answer);
     }
 
     public function testSetMultiple()
     {
+        $stmt = Mockery::mock('PDOStatement');
+
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
         $model = new TestModel( 11 );
@@ -630,8 +634,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetAutoTimestamps()
     {
+        $stmt = Mockery::mock('PDOStatement');
+
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
         $model = new TestModel2(12);
@@ -642,8 +648,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetJson()
     {
+        $stmt = Mockery::mock('PDOStatement');
+
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
         $json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];

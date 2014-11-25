@@ -894,6 +894,7 @@ abstract class Model extends Acl
                 ->values($updateArray)->where($updateKeys)->execute()) {
                 // update the cache with our new values
                 $this->cacheProperties( $updateArray );
+
                 // post-hook
                 if( method_exists( $this, 'postSetHook' ) )
                     $this->postSetHook();
