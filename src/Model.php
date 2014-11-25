@@ -916,12 +916,12 @@ abstract class Model extends Acl
      */
     public function delete()
     {
-        $errorStack = $this->app[ 'errors' ];
-        $errorStack->setCurrentContext( static::modelName() . '.delete' );
-
         if( $this->_id === false )
 
             return false;
+
+        $errorStack = $this->app[ 'errors' ];
+        $errorStack->setCurrentContext( static::modelName() . '.delete' );
 
         // permission?
         if ( !$this->can( 'delete', static::$config[ 'requester' ] ) ) {
@@ -1313,7 +1313,7 @@ abstract class Model extends Acl
 
     private function checkUniqueness($property, $field, $value)
     {
-        if ( static::totalRecords( [ $field => $value ] ) > 0 ) {
+        if (static::totalRecords([$field => $value]) > 0) {
             $this->app[ 'errors' ]->push( [
                 'error' => VALIDATION_NOT_UNIQUE,
                 'params' => [

@@ -19,34 +19,11 @@ class Database
     // Private class variables
     /////////////////////////////
 
-    private static $config = [
-        'type' => '',
-        'host' => '',
-        'name' => '',
-        'user' => '',
-        'password' => '',
-        'productionLevel' => false
-    ];
-
     private static $PDO;
     private static $numrows;
     private static $batch = false;
     private static $batchQueue;
-    private static $initializeAttempted;
     private static $injectedApp;
-
-    /**
-	 * Sets up the settings used to interact with database
-	 *
-	 * @param array $config
-	 */
-    public static function configure(array $config)
-    {
-        self::$config = array_replace( self::$config, $config );
-
-        self::$initializeAttempted = false;
-        self::$PDO = null;
-    }
 
     /**
 	 * Injects a DI container
@@ -60,46 +37,11 @@ class Database
 
     /**
 	* Initializes the connection with the database. Only needs to be called once.
-	*
-	* @return boolean true if successful
 	*/
     public static function initialize()
     {
-        if( self::$initializeAttempted )
-
-            return self::$PDO instanceof \PDO;
-
-        self::$initializeAttempted = true;
-
-        try {
-            // Initialize database
-            if (self::$PDO == null) {
-                $dsn = '';
-
-                if( strpos( self::$config[ 'type' ], 'sqlite' ) === 0 )
-                    // i.e. sqlite:memory:
-                    $dsn = self::$config[ 'type' ] . ':' . self::$config[ 'host' ];
-                else
-                    // i.e. mysql:host=localhost;dbname=test
-                    $dsn = self::$config[ 'type' ] . ':host=' . self::$config[ 'host' ] . ';dbname=' . self::$config[ 'name' ];
-
-                self::$PDO = new \PDO( $dsn, Utility::array_value( self::$config, 'user' ), Utility::array_value( self::$config, 'password' ) );
-            }
-        } catch ( \PDOException $e ) {
-            self::$injectedApp[ 'logger' ]->alert( $e );
-
-            die( 'Could not connect to database.' );
-
-            return false;
-        }
-
-        // Set error level
-        if( self::$config[ 'productionLevel' ] )
-            self::$PDO->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
-        else
-            self::$PDO->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-
-        return true;
+        if (!self::$PDO)
+            self::$PDO = self::$injectedApp['pdo'];
     }
 
     /**
@@ -124,9 +66,7 @@ class Database
 	*/
     public static function select($tablename, $fields, $parameters = [])
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         if ( Utility::array_value( $parameters, 'single' ) ) {
             $parameters[ 'singleRow' ] = true;
@@ -199,9 +139,7 @@ class Database
 	*/
     public static function sql($sql)
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         try {
             return self::$PDO->query( $sql );
@@ -220,9 +158,7 @@ class Database
 	*/
     public static function numrows()
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         return (int) self::$numrows;
     }
@@ -234,9 +170,7 @@ class Database
 	*/
     public static function lastInsertId()
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         try {
             return self::$PDO->lastInsertId();
@@ -258,9 +192,7 @@ class Database
 	 */
     public static function startBatch()
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         try {
             return self::$PDO->beginTransaction();
@@ -278,9 +210,7 @@ class Database
 	 */
     public static function executeBatch()
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         try {
             return self::$PDO->commit();
@@ -301,9 +231,7 @@ class Database
 	*/
     public static function insert($tablename, array $data)
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         $tablename = self::escapeIdentifier( $tablename );
 
@@ -341,9 +269,7 @@ class Database
 	 */
     public static function insertBatch($tablename, array $fields, array $data)
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         if( count( $data ) == 0 )
 
@@ -400,9 +326,7 @@ class Database
 	*/
     public static function update($tablename, array $data, array $where = [])
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         $tablename = self::escapeIdentifier( $tablename );
 
@@ -446,9 +370,7 @@ class Database
 	*/
     public static function delete($tablename, array $where)
     {
-        if( !self::initialize() )
-
-            return false;
+        self::initialize();
 
         $sql = "DELETE FROM $tablename";
 
