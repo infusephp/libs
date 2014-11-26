@@ -1019,11 +1019,16 @@ abstract class Model extends Acl
         $limit = min($params['limit'], 1000);
         $offset = max($params['start'], 0);
 
-        $select = self::$injectedApp['db']->select('*')->from(static::tablename())
-            ->where($params['where'])->limit($limit, $offset)->orderBy($sortParams);
-
         // load models
-        $models = $select->all();
+        $models = false;
+
+        try {
+            $models = self::$injectedApp['db']->select('*')
+                ->from(static::tablename())->where($params['where'])
+                ->limit($limit, $offset)->orderBy($sortParams)->all();
+        } catch (\Exception $e) {
+            self::$injectedApp['logger']->error($e);
+        }
 
         if (is_array($models)) {
             foreach ($models as $info) {
@@ -1103,8 +1108,14 @@ abstract class Model extends Acl
             return;
         }
 
-        $info = (array) $this->app['db']->select('*')->from(static::tablename())
-            ->where($this->id(true))->one();
+        $info = [];
+
+        try {
+            $info = (array) $this->app['db']->select('*')->from(static::tablename())
+                ->where($this->id(true))->one();
+        } catch (\Exception $e) {
+            self::$injectedApp['logger']->error($e);
+        }
 
         // marshal values from database
         foreach( $info as $k => $v )
