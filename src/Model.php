@@ -515,7 +515,7 @@ abstract class Model extends Acl
      *
      * @return boolean
      */
-    public function create(array $data)
+    public function create(array $data = [])
     {
         $errorStack = $this->app[ 'errors' ];
         $errorStack->setCurrentContext( static::modelName() . '.create' );
