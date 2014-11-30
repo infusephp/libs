@@ -34,12 +34,12 @@ class InsertQuery extends Query
     }
 
     /**
-	 * Sets the table for the query
-	 *
-	 * @param string $table table name
-	 *
-	 * @return self
-	 */
+     * Sets the table for the query
+     *
+     * @param string $table table name
+     *
+     * @return self
+     */
     public function into($table)
     {
         $this->table->addTable($table);
@@ -90,7 +90,7 @@ class InsertQuery extends Query
     {
         $sql = [
             'INSERT INTO',
-            $this->table->build() ]; // into
+            $this->table->build(), ]; // into
 
         $this->values = [];
 

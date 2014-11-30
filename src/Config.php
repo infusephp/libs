@@ -20,26 +20,27 @@ class Config
     }
 
     /**
-	 * Gets a global configuration value, section, or all values
-	 *
-	 * @param string $property dot value property name
-	 *
-	 * @return mixed value
-	 */
+     * Gets a global configuration value, section, or all values
+     *
+     * @param string $property dot value property name
+     *
+     * @return mixed value
+     */
     public function get($property = false)
     {
-        if (!$property)
+        if (!$property) {
             return $this->values;
+        }
 
         return Utility::array_value($this->values, $property);
     }
 
     /**
-	 * Sets a configuration value (only persists for the duration of the script)
-	 *
-	 * @param string $property dot value property name
-	 * @param string $value value to set
-	 */
+     * Sets a configuration value (only persists for the duration of the script)
+     *
+     * @param string $property dot value property name
+     * @param string $value    value to set
+     */
     public function set($property, $value)
     {
         Utility::array_set($this->values, $property, $value);

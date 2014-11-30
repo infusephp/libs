@@ -53,7 +53,7 @@ class Response
         502 => 'Bad Gateway',
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
-        505 => 'HTTP Version Not Supported'
+        505 => 'HTTP Version Not Supported',
     ];
 
     private $version = '1.1';
@@ -114,12 +114,12 @@ class Response
     }
 
     /**
-	 * Sets the HTTP status code for the response
-	 *
-	 * @param int $code
+     * Sets the HTTP status code for the response
+     *
+     * @param int $code
      *
      * @return Response
-	 */
+     */
     public function setCode($code)
     {
         $this->code = $code;
@@ -128,10 +128,10 @@ class Response
     }
 
     /**
-	 * Gets the HTTP status code for the response
-	 *
-	 * @return int code
-	 */
+     * Gets the HTTP status code for the response
+     *
+     * @return int code
+     */
     public function getCode()
     {
         return $this->code;
@@ -158,16 +158,16 @@ class Response
     {
         $this->contentType = $contentType;
 
-        return $this->setHeader('Content-type', $contentType . '; charset=utf-8');
+        return $this->setHeader('Content-type', $contentType.'; charset=utf-8');
     }
 
     /**
-	 * Sets the response body.
-	 *
-	 * @param string $body
+     * Sets the response body.
+     *
+     * @param string $body
      *
      * @return Response
-	 */
+     */
     public function setBody($body)
     {
         $this->body = $body;
@@ -176,23 +176,23 @@ class Response
     }
 
     /**
-	 * Gets the response body
-	 *
-	 * @return string
-	 */
+     * Gets the response body
+     *
+     * @return string
+     */
     public function getBody()
     {
         return $this->body;
     }
 
     /**
-	 * Convenience method to render a View and set the body to the result.
-	 *
-	 * @param string $template template to render
-	 * @param array $parameters parameters to pass to the template
+     * Convenience method to render a View and set the body to the result.
+     *
+     * @param string $template   template to render
+     * @param array  $parameters parameters to pass to the template
      *
      * @return Response
-	 */
+     */
     public function render(View $view)
     {
         return $this->setBody($view->render());
@@ -212,24 +212,25 @@ class Response
     }
 
     /**
-	 * Convenience method to send a redirect response.
-	 *
-	 * @param string $url URL we redirect to
+     * Convenience method to send a redirect response.
+     *
+     * @param string  $url  URL we redirect to
      * @param int     $code HTTP status code to send
      * @param Request $req  request object for getting requested host information
-	 *
-	 * @return Response
-	 */
+     *
+     * @return Response
+     */
     public function redirect($url, $code = 302, Request $req = null)
     {
         // handle relative URL redirects
         if (substr($url, 0, 7) != 'http://' && substr($url, 0, 8) != 'https://' && substr($url, 0, 2) != '//') {
-            if (!$req)
+            if (!$req) {
                 $req = new Request();
-            $url = $req->headers('host') . '/' . $req->basePath() . '/' . urldecode($url);
+            }
+            $url = $req->headers('host').'/'.$req->basePath().'/'.urldecode($url);
 
             // here we use a protocol-agnostic URL
-            $url = '//' . preg_replace('/\/{2,}/', '/', $url);
+            $url = '//'.preg_replace('/\/{2,}/', '/', $url);
         }
 
         $eUrl = htmlspecialchars($url);
@@ -237,11 +238,11 @@ class Response
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta http-equiv="refresh" content="1;url=' . $eUrl . '" />
-        <title>Redirecting to ' . $eUrl . '</title>
+        <meta http-equiv="refresh" content="1;url='.$eUrl.'" />
+        <title>Redirecting to '.$eUrl.'</title>
     </head>
     <body>
-        Redirecting to <a href="' . $eUrl . '">' . $eUrl . '</a>.
+        Redirecting to <a href="'.$eUrl.'">'.$eUrl.'</a>.
     </body>
 </html>';
 
@@ -258,15 +259,17 @@ class Response
     public function sendHeaders()
     {
         // check if headers have already been sent
-        if (headers_sent())
+        if (headers_sent()) {
             return $this;
+        }
 
         // send status code
-        header('HTTP/' . $this->version . ' ' . $this->code . ' ' . self::$codes[$this->code], true, $this->code);
+        header('HTTP/'.$this->version.' '.$this->code.' '.self::$codes[$this->code], true, $this->code);
 
         // send other headers
-        foreach ($this->headers as $header => $value)
+        foreach ($this->headers as $header => $value) {
             header("$header: $value", false, $this->code);
+        }
 
         return $this;
     }
@@ -278,8 +281,9 @@ class Response
      */
     public function sendBody()
     {
-        if (empty($this->body))
+        if (empty($this->body)) {
             $this->body = self::$codes[$this->code];
+        }
 
         echo $this->body;
 
@@ -287,10 +291,10 @@ class Response
     }
 
     /**
-	 * Sends the response using the given information.
-	 *
-	 * @return Response
-	 */
+     * Sends the response using the given information.
+     *
+     * @return Response
+     */
     public function send()
     {
         return $this->sendHeaders()

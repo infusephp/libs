@@ -21,11 +21,11 @@ class SelectStatementTest extends \PHPUnit_Framework_TestCase
     public function testAddFields()
     {
         $stmt = new SelectStatement();
-        $this->assertEquals($stmt, $stmt->addFields(['test','test2']));
-        $this->assertEquals(['test','test2'], $stmt->getFields());
+        $this->assertEquals($stmt, $stmt->addFields(['test', 'test2']));
+        $this->assertEquals(['test', 'test2'], $stmt->getFields());
 
         $this->assertEquals($stmt, $stmt->addFields(['test3']));
-        $this->assertEquals(['test','test2','test3'], $stmt->getFields());
+        $this->assertEquals(['test', 'test2', 'test3'], $stmt->getFields());
     }
 
     public function testAddFieldsString()
@@ -36,7 +36,7 @@ class SelectStatementTest extends \PHPUnit_Framework_TestCase
 
         $stmt = new SelectStatement();
         $this->assertEquals($stmt, $stmt->addFields('test, test2'));
-        $this->assertEquals(['test','test2'], $stmt->getFields());
+        $this->assertEquals(['test', 'test2'], $stmt->getFields());
     }
 
     public function testBuild()

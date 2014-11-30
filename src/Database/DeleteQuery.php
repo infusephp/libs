@@ -153,7 +153,7 @@ class DeleteQuery extends Query
     {
         $sql = [
             'DELETE',
-            $this->from->build() ]; // from
+            $this->from->build(), ]; // from
 
         $this->values = [];
 
@@ -166,12 +166,14 @@ class DeleteQuery extends Query
 
         // order by
         $orderBy = $this->orderBy->build();
-        if (!empty($orderBy))
+        if (!empty($orderBy)) {
             $sql[] = $orderBy;
+        }
 
         // limit
-        if ($this->limit)
-            $sql[] = 'LIMIT ' . $this->limit;
+        if ($this->limit) {
+            $sql[] = 'LIMIT '.$this->limit;
+        }
 
         return implode(' ', $sql);
     }

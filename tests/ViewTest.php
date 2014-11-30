@@ -38,7 +38,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         self::$viewsDir = 'BLAH';
         $view = new View('test');
         $this->assertEquals('BLAH/test', $view->template());
-        $this->assertEquals(['viewsDir'=>'BLAH'], $view->getParameters());
+        $this->assertEquals(['viewsDir' => 'BLAH'], $view->getParameters());
     }
 
     public function testParameters()
@@ -47,7 +47,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $view->setParameters(['test' => true, 'test2' => 'blah']);
         $view->setParameters(['test' => 'overwrite']);
 
-        $this->assertEquals(['test'=>'overwrite', 'test2'=>'blah','viewsDir'=>'BLAH'], $view->getParameters());
+        $this->assertEquals(['test' => 'overwrite', 'test2' => 'blah', 'viewsDir' => 'BLAH'], $view->getParameters());
     }
 
     public function testEngine()

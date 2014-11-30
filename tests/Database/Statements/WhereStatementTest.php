@@ -65,7 +65,7 @@ class WhereStatementTest extends \PHPUnit_Framework_TestCase
     public function testAddConditionArray()
     {
         $stmt = new WhereStatement();
-        $this->assertEquals($stmt, $stmt->addCondition([['field', 'value'],['field2', 'value2', 'like']]));
+        $this->assertEquals($stmt, $stmt->addCondition([['field', 'value'], ['field2', 'value2', 'like']]));
         $this->assertEquals([['field', '=', 'value'], ['field2', 'like', 'value2']], $stmt->getConditions());
 
         $this->assertEquals('WHERE `field`=? AND `field2`like?', $stmt->build());

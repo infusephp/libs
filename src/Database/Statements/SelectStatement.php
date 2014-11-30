@@ -15,15 +15,15 @@ class SelectStatement extends Statement
     protected $fields = [];
 
     /**
-	 * Adds fields to this statement.
-	 * Supported input styles:
-	 * - addFields('field1,field2')
-	 * - addFields(['field','field2'])
-	 *
-	 * @param string|array $fields
-	 *
-	 * @return self
-	 */
+     * Adds fields to this statement.
+     * Supported input styles:
+     * - addFields('field1,field2')
+     * - addFields(['field','field2'])
+     *
+     * @param string|array $fields
+     *
+     * @return self
+     */
     public function addFields($fields)
     {
         if (!is_array($fields)) {
@@ -38,30 +38,31 @@ class SelectStatement extends Statement
     }
 
     /**
-	 * Gets the fields associated with this statement.
-	 * If no fields are present then defaults to '*'
-	 *
-	 * @return array fields
-	 */
+     * Gets the fields associated with this statement.
+     * If no fields are present then defaults to '*'
+     *
+     * @return array fields
+     */
     public function getFields()
     {
         return (count($this->fields) > 0) ? $this->fields : ['*'];
     }
 
     /**
-	 * Generates the raw SQL string for the statement
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the statement
+     *
+     * @return string
+     */
     public function build()
     {
         $fields = $this->getFields();
-        foreach ($fields as &$field)
+        foreach ($fields as &$field) {
             $field = $this->escapeIdentifier($field);
+        }
 
         // remove empty values
         $fields = array_filter($fields);
 
-        return 'SELECT ' . implode(',', $fields);
+        return 'SELECT '.implode(',', $fields);
     }
 }

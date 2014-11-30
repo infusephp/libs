@@ -39,11 +39,11 @@ class OrderStatementTest extends \PHPUnit_Framework_TestCase
 
         $stmt = new OrderStatement();
         $this->assertEquals($stmt, $stmt->addFields('test ASC, test2'));
-        $this->assertEquals([['test','ASC'],['test2']], $stmt->getFields());
+        $this->assertEquals([['test', 'ASC'], ['test2']], $stmt->getFields());
 
         $stmt = new OrderStatement();
         $this->assertEquals($stmt, $stmt->addFields('test', 'ASC'));
-        $this->assertEquals([['test','ASC']], $stmt->getFields());
+        $this->assertEquals([['test', 'ASC']], $stmt->getFields());
     }
 
     public function testBuild()

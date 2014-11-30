@@ -18,12 +18,12 @@ class SqlQuery extends Query
     protected $sql;
 
     /**
-	 * Sets the SQL for the query
-	 *
-	 * @param string $sql
-	 *
-	 * @return self
-	 */
+     * Sets the SQL for the query
+     *
+     * @param string $sql
+     *
+     * @return self
+     */
     public function raw($sql)
     {
         $this->sql = $sql;

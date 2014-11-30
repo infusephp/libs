@@ -22,14 +22,15 @@ class Mustache extends ViewEngine
     const EXTENSION = '.mustache';
 
     /**
-	 * Creates a new Mustache ViewEngine
-	 *
-	 * @param string $viewsDir optional dir containing templates
-	 */
+     * Creates a new Mustache ViewEngine
+     *
+     * @param string $viewsDir optional dir containing templates
+     */
     public function __construct($viewsDir = false)
     {
-        if ($viewsDir)
+        if ($viewsDir) {
             $this->viewsDir = $viewsDir;
+        }
     }
 
     public function renderView(View $view)
@@ -41,11 +42,12 @@ class Mustache extends ViewEngine
 
         // add extension if left off
         $len = strlen(self::EXTENSION);
-        if(substr($template, -$len, $len) != self::EXTENSION)
+        if (substr($template, -$len, $len) != self::EXTENSION) {
             $template .= self::EXTENSION;
+        }
 
         // compute full template path
-        $fullPath = $this->viewsDir . '/' . $template;
+        $fullPath = $this->viewsDir.'/'.$template;
 
         // assign global and view parameters
         $parameters = array_replace($this->getGlobalParameters(), $view->getParameters());
@@ -55,10 +57,10 @@ class Mustache extends ViewEngine
     }
 
     /**
-	 * Gets (and creates) a Mustache instance
-	 *
-	 * @return Mustache
-	 */
+     * Gets (and creates) a Mustache instance
+     *
+     * @return Mustache
+     */
     public function mustache()
     {
         if (!$this->mustache) {

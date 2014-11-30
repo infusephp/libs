@@ -17,17 +17,18 @@ class AclTest extends \PHPUnit_Framework_TestCase
     {
         $acl = new AclObject();
 
-        $this->assertFalse( $acl->can( 'whatever', new SomeModel() ) );
-        $this->assertTrue( $acl->can( 'do nothing', new SomeModel(5) ) );
-        $this->assertFalse( $acl->can( 'do nothing', new SomeModel() ) );
+        $this->assertFalse($acl->can('whatever', new SomeModel()));
+        $this->assertTrue($acl->can('do nothing', new SomeModel(5)));
+        $this->assertFalse($acl->can('do nothing', new SomeModel()));
     }
 
     public function testCache()
     {
         $acl = new AclObject();
 
-        for( $i = 0; $i < 10; $i++ )
-            $this->assertFalse( $acl->can( 'whatever', new SomeModel() ) );
+        for ($i = 0; $i < 10; $i++) {
+            $this->assertFalse($acl->can('whatever', new SomeModel()));
+        }
     }
 
     public function testGrantAll()
@@ -36,7 +37,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
 
         $acl->grantAllPermissions();
 
-        $this->assertTrue( $acl->can( 'whatever', new SomeModel() ) );
+        $this->assertTrue($acl->can('whatever', new SomeModel()));
     }
 
     public function testEnforcePermissions()
@@ -46,7 +47,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($acl, $acl->grantAllPermissions());
         $this->assertEquals($acl, $acl->enforcePermissions());
 
-        $this->assertFalse( $acl->can( 'whatever', new SomeModel() ) );
+        $this->assertFalse($acl->can('whatever', new SomeModel()));
     }
 }
 
@@ -65,9 +66,9 @@ class AclObject extends Acl
             }
 
             return true;
-        } elseif( $permission == 'do nothing' )
-
+        } elseif ($permission == 'do nothing') {
             return $requester->id() == 5;
+        }
     }
 }
 

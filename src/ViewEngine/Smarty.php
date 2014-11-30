@@ -24,22 +24,25 @@ class Smarty extends ViewEngine
     const EXTENSION = '.tpl';
 
     /**
-	 * Creates a new Smarty ViewEngine
-	 *
-	 * @param string $viewsDir optional dir containing templates
-	 * @param string $compileDir optional dir to save compiled templates
-	 * @param string $cacheDir optional dir to save cached templates
-	 */
+     * Creates a new Smarty ViewEngine
+     *
+     * @param string $viewsDir   optional dir containing templates
+     * @param string $compileDir optional dir to save compiled templates
+     * @param string $cacheDir   optional dir to save cached templates
+     */
     public function __construct($viewsDir = false, $compileDir = false, $cacheDir = false)
     {
-        if ($viewsDir)
+        if ($viewsDir) {
             $this->viewsDir = $viewsDir;
+        }
 
-        if ($compileDir)
+        if ($compileDir) {
             $this->compileDir = $compileDir;
+        }
 
-        if ($cacheDir)
+        if ($cacheDir) {
             $this->cacheDir = $cacheDir;
+        }
     }
 
     public function renderView(View $view)
@@ -51,23 +54,25 @@ class Smarty extends ViewEngine
 
         // add extension if left off
         $len = strlen(self::EXTENSION);
-        if(substr($template, -$len, $len) != self::EXTENSION)
+        if (substr($template, -$len, $len) != self::EXTENSION) {
             $template .= self::EXTENSION;
+        }
 
         // assign global and view parameters
         $parameters = array_replace($this->getGlobalParameters(), $view->getParameters());
-        foreach ($parameters as $key => $value)
+        foreach ($parameters as $key => $value) {
             $smarty->assign($key, $value);
+        }
 
         // now let smarty do its thing
         return $smarty->fetch($template);
     }
 
     /**
-	 * Gets (and creates) a Smarty instance
-	 *
-	 * @return Smarty
-	 */
+     * Gets (and creates) a Smarty instance
+     *
+     * @return Smarty
+     */
     public function smarty()
     {
         if (!$this->smarty) {

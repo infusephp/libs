@@ -40,7 +40,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(self::$res, self::$res->setHeader('Test', 'test'));
         $this->assertEquals('test', self::$res->headers('Test'));
 
-        $this->assertEquals(['Test'=>'test'], self::$res->headers());
+        $this->assertEquals(['Test' => 'test'], self::$res->headers());
     }
 
     public function testVersion()
@@ -81,7 +81,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $body = [
             'test' => [
                 'meh',
-                'blah' ] ];
+                'blah', ], ];
 
         $this->assertEquals(self::$res, self::$res->json($body));
 
@@ -96,7 +96,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $body = [
             'test' => [
                 'meh',
-                'blah' ] ];
+                'blah', ], ];
 
         $this->assertEquals(self::$res, self::$res->setBodyJson($body));
 
@@ -106,10 +106,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testRedirect()
     {
-        $req = new Request( null, null, null, null, [
+        $req = new Request(null, null, null, null, [
             'HTTP_HOST' => 'example.com',
             'DOCUMENT_URI' => '/some/start',
-            'REQUEST_URI' => '/some/start/test/index.php' ] );
+            'REQUEST_URI' => '/some/start/test/index.php' ]);
         $res = new Response();
 
         $this->assertEquals($res, $res->redirect('/', 302, $req));
@@ -129,17 +129,17 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testRedirectNonStandardPort()
     {
-        $req = new Request( null, null, null, null, [
+        $req = new Request(null, null, null, null, [
             'HTTP_HOST' => 'example.com:1234',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php',
-            'SERVER_PORT' => 5000 ] );
+            'SERVER_PORT' => 5000 ]);
         $res = new Response();
 
         $this->assertEquals($res, $res->redirect('/', 302, $req));
         $this->assertEquals('//example.com:1234/some/start/', $res->headers('Location'));
 
-        $this->assertEquals($res, $res->redirect( '/test/url', 302, $req));
+        $this->assertEquals($res, $res->redirect('/test/url', 302, $req));
         $this->assertEquals('//example.com:1234/some/start/test/url', $res->headers('Location'));
     }
 

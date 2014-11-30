@@ -18,26 +18,26 @@ class RedisStrategy
     private $prefix;
 
     /**
-	 * Attempts to use the caching strategy
-	 *
-	 * @param string $prefix cache prefix
-	 *
-	 * @return object|false
-	 */
+     * Attempts to use the caching strategy
+     *
+     * @param string $prefix cache prefix
+     *
+     * @return object|false
+     */
     public static function init($prefix)
     {
-        if( !self::$app->offsetExists( 'redis' ) )
-
+        if (!self::$app->offsetExists('redis')) {
             return false;
+        }
 
-        return new self( $prefix );
+        return new self($prefix);
     }
 
     /**
-	 * Injects a DI container
-	 *
-	 * @param Container $app
-	 */
+     * Injects a DI container
+     *
+     * @param Container $app
+     */
     public static function inject(Container $app)
     {
         self::$app = $app;
@@ -49,21 +49,21 @@ class RedisStrategy
     }
 
     /**
-	 * Looks up values in the cache for each key
-	 *
-	 * @param array $keys keys to look up
-	 *
-	 * @return array
-	 */
+     * Looks up values in the cache for each key
+     *
+     * @param array $keys keys to look up
+     *
+     * @return array
+     */
     public function get(array $keys)
     {
         $prefix = $this->prefix;
 
-        $prefixedKeys = array_map( function ($key) use ($prefix) {
-            return $prefix . $key;
-        }, $keys );
+        $prefixedKeys = array_map(function ($key) use ($prefix) {
+            return $prefix.$key;
+        }, $keys);
 
-        $result = self::$app[ 'redis' ]->mget( $prefixedKeys );
+        $result = self::$app[ 'redis' ]->mget($prefixedKeys);
 
         // for mget() predis will return an ordered list
         // corresponding to the order the keys were passed in
@@ -82,8 +82,9 @@ class RedisStrategy
             // the key exists.
             // TODO This could get nasty if null values
             // are frequently stored in the cache.
-            if( $value === null && !$this->has( $unprefixedKey ) )
+            if ($value === null && !$this->has($unprefixedKey)) {
                 continue;
+            }
 
             // strip cache prefix and add it to return
             $values[ $unprefixedKey ] = $value;
@@ -93,70 +94,70 @@ class RedisStrategy
     }
 
     /**
-	 * Checks if a key exists in the cache
-	 *
-	 * @param string $key
-	 *
-	 * @return boolean
-	 */
+     * Checks if a key exists in the cache
+     *
+     * @param string $key
+     *
+     * @return boolean
+     */
     public function has($key)
     {
-        return self::$app[ 'redis' ]->exists( $this->prefix . $key );
+        return self::$app[ 'redis' ]->exists($this->prefix.$key);
     }
 
     /**
-	 * Sets a value in the cache for a given key
-	 *
-	 * @param string $key
-	 * @param mixed $value
-	 * @param int $expires expiration time in seconds (0 = never)
-	 *
-	 * @return boolean
-	 */
+     * Sets a value in the cache for a given key
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param int    $expires expiration time in seconds (0 = never)
+     *
+     * @return boolean
+     */
     public function set($key, $value, $expires)
     {
-        if( $expires <= 0 )
-
-            return self::$app[ 'redis' ]->set( $this->prefix . $key, $value );
-        else
-            return self::$app[ 'redis' ]->setex( $this->prefix . $key, $expires, $value );
+        if ($expires <= 0) {
+            return self::$app[ 'redis' ]->set($this->prefix.$key, $value);
+        } else {
+            return self::$app[ 'redis' ]->setex($this->prefix.$key, $expires, $value);
+        }
     }
 
     /**
-	 * Increments the value stored in a key
-	 *
-	 * @param string $key
-	 * @param int $amount optional amount to increment
-	 *
-	 * @return number
-	 */
+     * Increments the value stored in a key
+     *
+     * @param string $key
+     * @param int    $amount optional amount to increment
+     *
+     * @return number
+     */
     public function increment($key, $amount)
     {
-        return self::$app[ 'redis' ]->incrby( $this->prefix . $key, $amount );
+        return self::$app[ 'redis' ]->incrby($this->prefix.$key, $amount);
     }
 
     /**
-	 * Decrements the value stored in a key
-	 *
-	 * @param string $key
-	 * @param int $amount optional amount to decrement
-	 *
-	 * @return number
-	 */
+     * Decrements the value stored in a key
+     *
+     * @param string $key
+     * @param int    $amount optional amount to decrement
+     *
+     * @return number
+     */
     public function decrement($key, $amount)
     {
-        return self::$app[ 'redis' ]->decrby( $this->prefix . $key, $amount );
+        return self::$app[ 'redis' ]->decrby($this->prefix.$key, $amount);
     }
 
     /**
-	 * Deletes a value stored in the cache
-	 *
-	 * @param string $key
-	 *
-	 * @return boolean
-	 */
+     * Deletes a value stored in the cache
+     *
+     * @param string $key
+     *
+     * @return boolean
+     */
     public function delete($key)
     {
-        return self::$app[ 'redis' ]->del( $this->prefix . $key );
+        return self::$app[ 'redis' ]->del($this->prefix.$key);
     }
 }

@@ -40,23 +40,24 @@ class SetStatement extends Statement
     }
 
     /**
-	 * Generates the raw SQL string for the statement
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the statement
+     *
+     * @return string
+     */
     public function build()
     {
         $values = [];
         foreach ($this->values as $key => $value) {
             if ($id = $this->escapeIdentifier($key)) {
-                $values[] = $id . '=?';
+                $values[] = $id.'=?';
             }
         }
 
-        if (count($values) == 0)
+        if (count($values) == 0) {
             return '';
+        }
 
         // generates SET `col1`=?,`col2`=?,`col3`=?
-        return 'SET ' . implode(',', $values);
+        return 'SET '.implode(',', $values);
     }
 }

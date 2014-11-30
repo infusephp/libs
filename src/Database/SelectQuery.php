@@ -13,43 +13,43 @@ namespace infuse\Database;
 class SelectQuery extends Query
 {
     /**
-	 * @var SelectStatement
-	 */
+     * @var SelectStatement
+     */
     protected $select;
 
     /**
-	 * @var FromStatement
-	 */
+     * @var FromStatement
+     */
     protected $from;
 
     /**
-	 * @var WhereStatement
-	 */
+     * @var WhereStatement
+     */
     protected $where;
 
     /**
-	 * @var WhereStatement
-	 */
+     * @var WhereStatement
+     */
     protected $having;
 
     /**
-	 * @var OrderStatement
-	 */
+     * @var OrderStatement
+     */
     protected $orderBy;
 
     /**
-	 * @var OrderStatement
-	 */
+     * @var OrderStatement
+     */
     protected $groupBy;
 
     /**
-	 * @var string
-	 */
+     * @var string
+     */
     protected $limit;
 
     /**
-	 * @var string
-	 */
+     * @var string
+     */
     protected $offset = '0';
 
     public function initialize()
@@ -63,12 +63,12 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Sets the fields to be selected for the query
-	 *
-	 * @param array|string $fields fields
-	 *
-	 * @return self
-	 */
+     * Sets the fields to be selected for the query
+     *
+     * @param array|string $fields fields
+     *
+     * @return self
+     */
     public function select($fields)
     {
         $this->select->addFields($fields);
@@ -77,12 +77,12 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Sets the table for the query
-	 *
-	 * @param string $table table name
-	 *
-	 * @return self
-	 */
+     * Sets the table for the query
+     *
+     * @param string $table table name
+     *
+     * @return self
+     */
     public function from($table)
     {
         $this->from->addTable($table);
@@ -91,8 +91,8 @@ class SelectQuery extends Query
     }
 
     /**
-	 * inner join
-	 */
+     * inner join
+     */
     public function join($join, $on = null)
     {
         // TODO
@@ -144,13 +144,13 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Sets the limit for the query
-	 *
-	 * @param int $limit
-	 * @param int $offset
-	 *
-	 * @return self
-	 */
+     * Sets the limit for the query
+     *
+     * @param int $limit
+     * @param int $offset
+     *
+     * @return self
+     */
     public function limit($limit, $offset = 0)
     {
         if (is_numeric($limit) && is_numeric($offset)) {
@@ -162,13 +162,13 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Sets the group by fields for the query
-	 *
-	 * @param string|array $fields
-	 * @param string $direction
-	 *
-	 * @return self
-	 */
+     * Sets the group by fields for the query
+     *
+     * @param string|array $fields
+     * @param string       $direction
+     *
+     * @return self
+     */
     public function groupBy($fields, $direction = false)
     {
         $this->groupBy->addFields($fields, $direction);
@@ -197,13 +197,13 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Sets the order for the query
-	 *
-	 * @param string|array $fields
-	 * @param string $direction
-	 *
-	 * @return self
-	 */
+     * Sets the order for the query
+     *
+     * @param string|array $fields
+     * @param string       $direction
+     *
+     * @return self
+     */
     public function orderBy($fields, $direction = false)
     {
         $this->orderBy->addFields($fields, $direction);
@@ -212,85 +212,85 @@ class SelectQuery extends Query
     }
 
     /**
-	 * Gets the select statement for the query
-	 *
-	 * @return SelectStatement
-	 */
+     * Gets the select statement for the query
+     *
+     * @return SelectStatement
+     */
     public function getSelect()
     {
         return $this->select;
     }
 
     /**
-	 * Gets the from statement for the query
-	 *
-	 * @return FromStatement
-	 */
+     * Gets the from statement for the query
+     *
+     * @return FromStatement
+     */
     public function getFrom()
     {
         return $this->from;
     }
 
     /**
-	 * Gets the where statement for the query
-	 *
-	 * @return WhereStatement
-	 */
+     * Gets the where statement for the query
+     *
+     * @return WhereStatement
+     */
     public function getWhere()
     {
         return $this->where;
     }
 
     /**
-	 * Gets the limit and offset for the query
-	 *
-	 * @return array [limit, offset]
-	 */
+     * Gets the limit and offset for the query
+     *
+     * @return array [limit, offset]
+     */
     public function getLimit()
     {
         return [$this->limit, $this->offset];
     }
 
     /**
-	 * Gets the group by statement for the query
-	 *
-	 * @return GroupByStatement
-	 */
+     * Gets the group by statement for the query
+     *
+     * @return GroupByStatement
+     */
     public function getGroupBy()
     {
         return $this->groupBy;
     }
 
     /**
-	 * Gets the having statement for the query
-	 *
-	 * @return HavingStatement
-	 */
+     * Gets the having statement for the query
+     *
+     * @return HavingStatement
+     */
     public function getHaving()
     {
         return $this->having;
     }
 
     /**
-	 * Gets the order by statement for the query
-	 *
-	 * @return OrderByStatement
-	 */
+     * Gets the order by statement for the query
+     *
+     * @return OrderByStatement
+     */
     public function getOrderBy()
     {
         return $this->orderBy;
     }
 
     /**
-	 * Generates the raw SQL string for the query
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the query
+     *
+     * @return string
+     */
     public function build()
     {
         $sql = [
             $this->select->build(), // select
-            $this->from->build() ]; // from
+            $this->from->build(), ]; // from
 
         $this->values = [];
 
@@ -303,8 +303,9 @@ class SelectQuery extends Query
 
         // group by
         $groupBy = $this->groupBy->build();
-        if (!empty($groupBy))
+        if (!empty($groupBy)) {
             $sql[] = $groupBy;
+        }
 
         // having
         $having = $this->having->build();
@@ -315,12 +316,14 @@ class SelectQuery extends Query
 
         // order by
         $orderBy = $this->orderBy->build();
-        if (!empty($orderBy))
+        if (!empty($orderBy)) {
             $sql[] = $orderBy;
+        }
 
         // limit
-        if ($this->limit)
-            $sql[] = 'LIMIT ' . $this->offset . ',' . $this->limit;
+        if ($this->limit) {
+            $sql[] = 'LIMIT '.$this->offset.','.$this->limit;
+        }
 
         return implode(' ', $sql);
     }

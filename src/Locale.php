@@ -18,38 +18,39 @@ class Locale
 
     public function __construct($locale = false)
     {
-        if( $locale )
+        if ($locale) {
             $this->locale = $locale;
+        }
     }
 
     /**
-	 * Sets the locale
-	 *
-	 * @param string $locale
-	 */
+     * Sets the locale
+     *
+     * @param string $locale
+     */
     public function setLocale($locale)
     {
         $this->locale = $locale;
     }
 
     /**
-	 * Gets the locale
-	 *
-	 * @return string
-	 */
+     * Gets the locale
+     *
+     * @return string
+     */
     public function getLocale()
     {
         return $this->locale;
     }
 
     /**
-	 * Sets the directory where locale data files can be loaded from.
-	 * Locale data files are expected to be have the same name as the
-	 * locale with a .php extension. The locale data file should return
-	 * an array with locale information.
-	 *
-	 * @param string $dir
-	 */
+     * Sets the directory where locale data files can be loaded from.
+     * Locale data files are expected to be have the same name as the
+     * locale with a .php extension. The locale data file should return
+     * an array with locale information.
+     *
+     * @param string $dir
+     */
     public function setLocaleDataDir($dir)
     {
         $this->localeDir = $dir;
@@ -57,30 +58,32 @@ class Locale
     }
 
     /**
-	 * Translates a phrase
-	 *
-	 * @param string $phrase
-	 * @param array $params parameters to inject into phrase
-	 * @param string $locale
-	 *
-	 * @return string
-	 */
+     * Translates a phrase
+     *
+     * @param string $phrase
+     * @param array  $params parameters to inject into phrase
+     * @param string $locale
+     *
+     * @return string
+     */
     public function translate($phrase, array $params = [], $locale = false)
     {
-        if( !$locale )
+        if (!$locale) {
             $locale = $this->locale;
+        }
 
         // lazy load locale data
-        $this->loadLocaleData( $locale );
+        $this->loadLocaleData($locale);
 
         // look up the phrase
-        $translatedPhrase = Utility::array_value( $this->localeData, "$locale.phrases.$phrase" );
+        $translatedPhrase = Utility::array_value($this->localeData, "$locale.phrases.$phrase");
 
         if ($translatedPhrase != null) {
             // inject parameters into phrase
-            if ( count( $params ) > 0 ) {
-                foreach( $params as $param => $paramValue )
-                    $translatedPhrase = str_replace( '{{' . $param . '}}', $paramValue, $translatedPhrase );
+            if (count($params) > 0) {
+                foreach ($params as $param => $paramValue) {
+                    $translatedPhrase = str_replace('{{'.$param.'}}', $paramValue, $translatedPhrase);
+                }
             }
 
             return $translatedPhrase;
@@ -92,100 +95,100 @@ class Locale
     }
 
     /**
-	 * Alias for translate()
-	 */
+     * Alias for translate()
+     */
     public function t($phrase, array $params = [], $locale = false)
     {
-        return $this->translate( $phrase, $params, $locale );
+        return $this->translate($phrase, $params, $locale);
     }
 
     /**
-	 * Pluralizes a string
-	 *
-	 * @param int $n number in question
-	 * @param string $singular singular string
-	 * @param string $plural plural string
-	 *
-	 * @return string
-	 */
+     * Pluralizes a string
+     *
+     * @param int    $n        number in question
+     * @param string $singular singular string
+     * @param string $plural   plural string
+     *
+     * @return string
+     */
     public function pluralize($n, $singular, $plural)
     {
         return ($n == 1) ? $singular : $plural;
     }
 
     /**
-	 * Alias for pluaralize()
-	 */
+     * Alias for pluaralize()
+     */
     public function p($n, $singular, $plural)
     {
-        return $this->pluralize( $n, $singular, $plural );
+        return $this->pluralize($n, $singular, $plural);
     }
 
     /**
-	 * Generates a select box for the currencies
-	 *
-	 * @param string $selectedCurrency
-	 *
-	 * @return string html
-	 */
+     * Generates a select box for the currencies
+     *
+     * @param string $selectedCurrency
+     *
+     * @return string html
+     */
     public function currencyOptions($selectedCurrency = '')
     {
-        $selectedCurrency = strtolower( $selectedCurrency );
+        $selectedCurrency = strtolower($selectedCurrency);
 
-        $return ='';
+        $return = '';
 
         foreach (self::$currencies as $code => $currency) {
             $codeLower = strtolower($code);
             $selected = ($selectedCurrency == $codeLower) ? 'selected="selected"' : '';
-            $return .= '<option value="' . $codeLower . '" ' . $selected . '>' . $code . ' - ' . $currency['name'] . '</option>' . "\n";
+            $return .= '<option value="'.$codeLower.'" '.$selected.'>'.$code.' - '.$currency['name'].'</option>'."\n";
         }
 
         return $return;
     }
 
     /**
-	 * Generates a select box for the time zones
-	 *
-	 * @param string $selected selected timezone
-	 *
-	 * @return string html
-	 */
+     * Generates a select box for the time zones
+     *
+     * @param string $selected selected timezone
+     *
+     * @return string html
+     */
     public function timezoneOptions($selected = '')
     {
         $zones = [];
-        foreach ( timezone_identifiers_list() as $tzIdentifier ) {
-            $exp = explode( '/', $tzIdentifier );
+        foreach (timezone_identifiers_list() as $tzIdentifier) {
+            $exp = explode('/', $tzIdentifier);
             $zones[] = [
-                'continent' => Utility::array_value( $exp, 0 ),
-                'city' => implode( '/', (array) array_slice( $exp, 1 ) ) ];
+                'continent' => Utility::array_value($exp, 0),
+                'city' => implode('/', (array) array_slice($exp, 1)), ];
         }
 
-        asort( $zones );
+        asort($zones);
 
         $return = '';
 
         $currContinent = false;
 
         foreach ($zones as $zone) {
-            extract( $zone );
+            extract($zone);
 
-            if( !$currContinent )
-                $return .= '<optgroup label="' . $continent . '">';
-            elseif( $currContinent != $continent )
+            if (!$currContinent) {
+                $return .= '<optgroup label="'.$continent.'">';
+            } elseif ($currContinent != $continent) {
                 $return .= '</optgroup><optgroup label="'.$continent.'">';
+            }
 
             $key = $continent;
             $value = $continent;
 
-            if ( !empty( $city ) ) {
-                $key = $continent . '/' . $city;
-                $value = str_replace( ['_', '/' ], [ ' ', ': ' ], $city );
+            if (!empty($city)) {
+                $key = $continent.'/'.$city;
+                $value = str_replace(['_', '/' ], [ ' ', ': ' ], $city);
             } else {
-
             }
 
-            $return .= '<option ' . (($key == $selected) ? 'selected="selected "' : '');
-            $return .= ' value="' . $key . '">' . $value . '</option>';
+            $return .= '<option '.(($key == $selected) ? 'selected="selected "' : '');
+            $return .= ' value="'.$key.'">'.$value.'</option>';
 
             $currContinent = $continent;
         }
@@ -196,29 +199,30 @@ class Locale
     }
 
     /**
-	 * Loads locale data for a supplied locale
-	 *
-	 * @param string $locale
-	 */
+     * Loads locale data for a supplied locale
+     *
+     * @param string $locale
+     */
     private function loadLocaleData($locale)
     {
-        if( isset( $this->localeData[ $locale ] ) )
-
+        if (isset($this->localeData[ $locale ])) {
             return;
+        }
 
-        $filename = str_replace( '//', '/', $this->localeDir . '/' ) . $locale . '.php';
+        $filename = str_replace('//', '/', $this->localeDir.'/').$locale.'.php';
 
-        if( $this->localeDir && file_exists( $filename ) )
+        if ($this->localeDir && file_exists($filename)) {
             $this->localeData[ $locale ] = include $filename;
-        else
+        } else {
             $this->localeData[ $locale ] = [];
+        }
     }
 
     /**
-	 * @staticvar $locales
-	 *
-	 * List of locale codes
-	 */
+     * @staticvar $locales
+     *
+     * List of locale codes
+     */
     static $locales = [
         'af-ZA',
         'am-ET',
@@ -429,13 +433,13 @@ class Locale
         'zh-MO',
         'zh-SG',
         'zh-TW',
-        'zu-ZA' ];
+        'zu-ZA', ];
 
     /**
-	 * @staticvar $countries
-	 *
-	 * List of countries
-	 */
+     * @staticvar $countries
+     *
+     * List of countries
+     */
     static $countries = array(
         'Afghanistan',
         'Albania',
@@ -630,622 +634,622 @@ class Locale
         'Vietnam',
         'Yemen',
         'Zambia',
-        'Zimbabwe'
+        'Zimbabwe',
     );
 
     /**
-	 * @staticvar $currencies
-	 *
-	 * List of currency codes, names, and symbols
-	 **/
+     * @staticvar $currencies
+     *
+     * List of currency codes, names, and symbols
+     **/
     static $currencies = [
         'AED' => [
             'name' => 'United Arab Emirates Dirham',
-            'symbol' => 'د.إ'
+            'symbol' => 'د.إ',
         ],
         'AFN' => [
             'name' => 'Afghanistan Afghani',
-            'symbol' => '؋'
+            'symbol' => '؋',
         ],
         'ALL' => [
             'name' => 'Albania Lek',
-            'symbol' => 'Lek'
+            'symbol' => 'Lek',
         ],
         'AMD' => [
-            'name' => 'Armenia Dram'
+            'name' => 'Armenia Dram',
         ],
         'ANG' => [
             'name' => 'Netherlands Antilles Guilder',
-            'symbol' => 'ƒ'
+            'symbol' => 'ƒ',
         ],
         'AOA' => [
-            'name' => 'Angola Kwanza'
+            'name' => 'Angola Kwanza',
         ],
         'ARS' => [
             'name' => 'Argentina Peso',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'AUD' => [
             'name' => 'Australia Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'AWG' => [
             'name' => 'Aruba Guilder',
-            'symbol' => 'ƒ'
+            'symbol' => 'ƒ',
         ],
         'AZN' => [
             'name' => 'Azerbaijan New Manat',
-            'symbol' => 'ман'
+            'symbol' => 'ман',
         ],
         'BAM' => [
             'name' => 'Bosnia and Herzegovina Convertible Marka',
-            'symbol' => 'KM'
+            'symbol' => 'KM',
         ],
         'BBD' => [
             'name' => 'Barbados Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'BDT' => [
-            'name' => 'Bangladesh Taka'
+            'name' => 'Bangladesh Taka',
         ],
         'BGN' => [
             'name' => 'Bulgaria Lev',
-            'symbol' => 'лв'
+            'symbol' => 'лв',
         ],
         'BHD' => [
-            'name' => 'Bahrain Dinar'
+            'name' => 'Bahrain Dinar',
         ],
         'BIF' => [
-            'name' => 'Burundi Franc'
+            'name' => 'Burundi Franc',
         ],
         'BMD' => [
             'name' => 'Bermuda Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'BND' => [
             'name' => 'Brunei Darussalam Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'BOB' => [
             'name' => 'Bolivia Boliviano',
-            'symbol' => '$b'
+            'symbol' => '$b',
         ],
         'BRL' => [
             'name' => 'Brazil Real',
-            'symbol' => 'R$'
+            'symbol' => 'R$',
         ],
         'BSD' => [
             'name' => 'Bahamas Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'BTC' => [
             'name' => 'Bitcoin',
-            'symbol' => 'BTC'
+            'symbol' => 'BTC',
         ],
         'BTN' => [
-            'name' => 'Bhutan Ngultrum'
+            'name' => 'Bhutan Ngultrum',
         ],
         'BWP' => [
             'name' => 'Botswana Pula',
-            'symbol' => 'P'
+            'symbol' => 'P',
         ],
         'BYR' => [
             'name' => 'Belarus Ruble',
-            'symbol' => 'p.'
+            'symbol' => 'p.',
         ],
         'BZD' => [
             'name' => 'Belize Dollar',
-            'symbol' => 'BZ$'
+            'symbol' => 'BZ$',
         ],
         'CAD' => [
             'name' => 'Canada Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'CDF' => [
-            'name' => 'Congo/Kinshasa Franc'
+            'name' => 'Congo/Kinshasa Franc',
         ],
         'CHF' => [
             'name' => 'Switzerland Franc',
-            'symbol' => 'CHF'
+            'symbol' => 'CHF',
         ],
         'CLP' => [
             'name' => 'Chile Peso',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'CNY' => [
             'name' => 'China Yuan Renminbi',
-            'symbol' => '¥'
+            'symbol' => '¥',
         ],
         'COP' => [
             'name' => 'Colombia Peso',
-            'symbol' => 'p.'
+            'symbol' => 'p.',
         ],
         'CRC' => [
             'name' => 'Costa Rica Colon',
-            'symbol' => '₡'
+            'symbol' => '₡',
         ],
         'CUC' => [
-            'name' => 'Cuba Convertible Peso'
+            'name' => 'Cuba Convertible Peso',
         ],
         'CUP' => [
             'name' => 'Cuba Peso',
-            'symbol' => '₱'
+            'symbol' => '₱',
         ],
         'CVE' => [
-            'name' => 'Cape Verde Escudo'
+            'name' => 'Cape Verde Escudo',
         ],
         'CZK' => [
             'name' => 'Czech ReKoruna',
-            'symbol' => 'Kč'
+            'symbol' => 'Kč',
         ],
         'DJF' => [
             'name' => 'Djibouti Franc',
-            'symbol' => 'CHF'
+            'symbol' => 'CHF',
         ],
         'DKK' => [
             'name' => 'Denmark Krone',
-            'symbol' => 'kr'
+            'symbol' => 'kr',
         ],
         'DOP' => [
             'name' => 'Dominican RePeso',
-            'symbol' => 'RD$'
+            'symbol' => 'RD$',
         ],
         'DZD' => [
-            'name' => 'Algeria Dinar'
+            'name' => 'Algeria Dinar',
         ],
         'EGP' => [
             'name' => 'Egypt Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'ERN' => [
-            'name' => 'Eritrea Nakfa'
+            'name' => 'Eritrea Nakfa',
         ],
         'ETB' => [
-            'name' => 'Ethiopia Birr'
+            'name' => 'Ethiopia Birr',
         ],
         'EUR' => [
             'name' => 'Euro Member Countries',
-            'symbol' => '€'
+            'symbol' => '€',
         ],
         'FJD' => [
             'name' => 'Fiji Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'FKP' => [
             'name' => 'Falkland Islands (Malvinas) Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'GBP' => [
             'name' => 'United Kingdom Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'GEL' => [
-            'name' => 'Georgia Lari'
+            'name' => 'Georgia Lari',
         ],
         'GGP' => [
             'name' => 'Guernsey Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'GHS' => [
-            'name' => 'Ghana Cedi'
+            'name' => 'Ghana Cedi',
         ],
         'GIP' => [
             'name' => 'Gibraltar Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'GMD' => [
-            'name' => 'Gambia Dalasi'
+            'name' => 'Gambia Dalasi',
         ],
         'GNF' => [
-            'name' => 'Guinea Franc'
+            'name' => 'Guinea Franc',
         ],
         'GTQ' => [
             'name' => 'Guatemala Quetzal',
-            'symbol' => 'Q'
+            'symbol' => 'Q',
         ],
         'GYD' => [
             'name' => 'Guyana Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'HKD' => [
             'name' => 'Hong Kong Dollar',
-            'symbol' => 'HK$'
+            'symbol' => 'HK$',
         ],
         'HNL' => [
             'name' => 'Honduras Lempira',
-            'symbol' => 'L'
+            'symbol' => 'L',
         ],
         'HRK' => [
             'name' => 'Croatia Kuna',
-            'symbol' => 'kn'
+            'symbol' => 'kn',
         ],
         'HTG' => [
-            'name' => 'Haiti Gourde'
+            'name' => 'Haiti Gourde',
         ],
         'HUF' => [
             'name' => 'Hungary Forint',
-            'symbol' => 'Ft'
+            'symbol' => 'Ft',
         ],
         'IDR' => [
             'name' => 'Indonesia Rupiah',
-            'symbol' => 'Rp'
+            'symbol' => 'Rp',
         ],
         'ILS' => [
             'name' => 'Israel Shekel',
-            'symbol' => '₪'
+            'symbol' => '₪',
         ],
         'IMP' => [
             'name' => 'Isle of Man Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'INR' => [
             'name' => 'India Rupee',
-            'symbol' => '₹'
+            'symbol' => '₹',
         ],
         'IQD' => [
-            'name' => 'Iraq Dinar'
+            'name' => 'Iraq Dinar',
         ],
         'IRR' => [
             'name' => 'Iran Rial',
-            'symbol' => '﷼'
+            'symbol' => '﷼',
         ],
         'ISK' => [
             'name' => 'Iceland Krona',
-            'symbol' => 'kr'
+            'symbol' => 'kr',
         ],
         'JEP' => [
             'name' => 'Jersey Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'JMD' => [
             'name' => 'Jamaica Dollar',
-            'symbol' => 'J$'
+            'symbol' => 'J$',
         ],
         'JOD' => [
-            'name' => 'Jordan Dinar'
+            'name' => 'Jordan Dinar',
         ],
         'JPY' => [
             'name' => 'Japan Yen',
-            'symbol' => '¥'
+            'symbol' => '¥',
         ],
         'KES' => [
             'name' => 'Kenya Shilling',
-            'symbol' => 'KSh'
+            'symbol' => 'KSh',
         ],
         'KGS' => [
             'name' => 'Kyrgyzstan Som',
-            'symbol' => 'лв'
+            'symbol' => 'лв',
         ],
         'KHR' => [
             'name' => 'Cambodia Riel',
-            'symbol' => '៛'
+            'symbol' => '៛',
         ],
         'KMF' => [
-            'name' => 'Comoros Franc'
+            'name' => 'Comoros Franc',
         ],
         'KPW' => [
             'name' => 'Korea (North) Won',
-            'symbol' => '₩'
+            'symbol' => '₩',
         ],
         'KRW' => [
             'name' => 'Korea (South) Won',
-            'symbol' => '₩'
+            'symbol' => '₩',
         ],
         'KWD' => [
-            'name' => 'Kuwait Dinar'
+            'name' => 'Kuwait Dinar',
         ],
         'KYD' => [
             'name' => 'Cayman Islands Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'KZT' => [
             'name' => 'Kazakhstan Tenge',
-            'symbol' => 'лв'
+            'symbol' => 'лв',
         ],
         'LAK' => [
             'name' => 'Laos Kip',
-            'symbol' => '₭'
+            'symbol' => '₭',
         ],
         'LBP' => [
             'name' => 'Lebanon Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'LKR' => [
             'name' => 'Sri Lanka Rupee',
-            'symbol' => '₨'
+            'symbol' => '₨',
         ],
         'LRD' => [
             'name' => 'Liberia Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'LSL' => [
-            'name' => 'Lesotho Loti'
+            'name' => 'Lesotho Loti',
         ],
         'LTL' => [
             'name' => 'Lithuania Litas',
-            'symbol' => 'Lt'
+            'symbol' => 'Lt',
         ],
         'LVL' => [
             'name' => 'Latvia Lat',
-            'symbol' => 'Ls'
+            'symbol' => 'Ls',
         ],
         'LYD' => [
             'name' => 'Libya Dinar',
-            'symbol' => 'LD'
+            'symbol' => 'LD',
         ],
         'MAD' => [
-            'name' => 'Morocco Dirham'
+            'name' => 'Morocco Dirham',
         ],
         'MDL' => [
-            'name' => 'Moldova Leu'
+            'name' => 'Moldova Leu',
         ],
         'MGA' => [
-            'name' => 'Madagascar Ariary'
+            'name' => 'Madagascar Ariary',
         ],
         'MKD' => [
             'name' => 'Macedonia Denar',
-            'symbol' => 'ден'
+            'symbol' => 'ден',
         ],
         'MMK' => [
-            'name' => 'Myanmar (Burma) Kyat'
+            'name' => 'Myanmar (Burma) Kyat',
         ],
         'MNT' => [
             'name' => 'Mongolia Tughrik',
-            'symbol' => '₮'
+            'symbol' => '₮',
         ],
         'MOP' => [
-            'name' => 'Macau Pataca'
+            'name' => 'Macau Pataca',
         ],
         'MRO' => [
-            'name' => 'Mauritania Ouguiya'
+            'name' => 'Mauritania Ouguiya',
         ],
         'MUR' => [
             'name' => 'Mauritius Rupee',
-            'symbol' => '₨'
+            'symbol' => '₨',
         ],
         'MVR' => [
-            'name' => 'Maldives (Maldive Islands) Rufiyaa'
+            'name' => 'Maldives (Maldive Islands) Rufiyaa',
         ],
         'MWK' => [
-            'name' => 'Malawi Kwacha'
+            'name' => 'Malawi Kwacha',
         ],
         'MXN' => [
             'name' => 'Mexico Peso',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'MYR' => [
             'name' => 'Malaysia Ringgit',
-            'symbol' => 'RM'
+            'symbol' => 'RM',
         ],
         'MZN' => [
             'name' => 'Mozambique Metical',
-            'symbol' => 'MT'
+            'symbol' => 'MT',
         ],
         'NAD' => [
             'name' => 'Namibia Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'NGN' => [
             'name' => 'Nigeria Naira',
-            'symbol' => '₦'
+            'symbol' => '₦',
         ],
         'NIO' => [
             'name' => 'Nicaragua Cordoba',
-            'symbol' => 'C$'
+            'symbol' => 'C$',
         ],
         'NOK' => [
             'name' => 'Norway Krone',
-            'symbol' => 'kr'
+            'symbol' => 'kr',
         ],
         'NPR' => [
             'name' => 'Nepal Rupee',
-            'symbol' => '₨'
+            'symbol' => '₨',
         ],
         'NZD' => [
             'name' => 'New Zealand Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'OMR' => [
             'name' => 'Oman Rial',
-            'symbol' => '﷼'
+            'symbol' => '﷼',
         ],
         'PAB' => [
             'name' => 'Panama Balboa',
-            'symbol' => 'B/.'
+            'symbol' => 'B/.',
         ],
         'PEN' => [
             'name' => 'Peru Nuevo Sol',
-            'symbol' => 'S/.'
+            'symbol' => 'S/.',
         ],
         'PGK' => [
-            'name' => 'Papua New Guinea Kina'
+            'name' => 'Papua New Guinea Kina',
         ],
         'PHP' => [
             'name' => 'Philippines Peso',
-            'symbol' => '₱'
+            'symbol' => '₱',
         ],
         'PKR' => [
             'name' => 'Pakistan Rupee',
-            'symbol' => '₨'
+            'symbol' => '₨',
         ],
         'PLN' => [
             'name' => 'Poland Zloty',
-            'symbol' => 'zł'
+            'symbol' => 'zł',
         ],
         'PYG' => [
             'name' => 'Paraguay Guarani',
-            'symbol' => 'Gs'
+            'symbol' => 'Gs',
         ],
         'QAR' => [
             'name' => 'Qatar Riyal',
-            'symbol' => '﷼'
+            'symbol' => '﷼',
         ],
         'RON' => [
             'name' => 'Romania New Leu',
-            'symbol' => 'lei'
+            'symbol' => 'lei',
         ],
         'RSD' => [
             'name' => 'Serbia Dinar',
-            'symbol' => 'Дин.'
+            'symbol' => 'Дин.',
         ],
         'RUB' => [
             'name' => 'Russia Ruble',
-            'symbol' => 'руб'
+            'symbol' => 'руб',
         ],
         'RWF' => [
-            'name' => 'Rwanda Franc'
+            'name' => 'Rwanda Franc',
         ],
         'SAR' => [
             'name' => 'Saudi Arabia Riyal',
-            'symbol' => '﷼'
+            'symbol' => '﷼',
         ],
         'SBD' => [
             'name' => 'Solomon Islands Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'SCR' => [
             'name' => 'Seychelles Rupee',
-            'symbol' => '₨'
+            'symbol' => '₨',
         ],
         'SDG' => [
-            'name' => 'Sudan Pound'
+            'name' => 'Sudan Pound',
         ],
         'SEK' => [
             'name' => 'Sweden Krona',
-            'symbol' => 'kr'
+            'symbol' => 'kr',
         ],
         'SGD' => [
             'name' => 'Singapore Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'SHP' => [
             'name' => 'Saint Helena Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'SLL' => [
-            'name' => 'Sierra Leone Leone'
+            'name' => 'Sierra Leone Leone',
         ],
         'SOS' => [
             'name' => 'Somalia Shilling',
-            'symbol' => 'S'
+            'symbol' => 'S',
         ],
         'SPL*' => [
-            'name' => 'Seborga Luigino'
+            'name' => 'Seborga Luigino',
         ],
         'SRD' => [
             'name' => 'Suriname Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'STD' => [
-            'name' => '	São Tomé and Príncipe Dobra'
+            'name' => '	São Tomé and Príncipe Dobra',
         ],
         'SVC' => [
             'name' => 'El Salvador Colon',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'SYP' => [
             'name' => 'Syria Pound',
-            'symbol' => '£'
+            'symbol' => '£',
         ],
         'SZL' => [
-            'name' => 'Swaziland Lilangeni'
+            'name' => 'Swaziland Lilangeni',
         ],
         'THB' => [
             'name' => 'Thailand Baht',
-            'symbol' => '฿'
+            'symbol' => '฿',
         ],
         'TJS' => [
-            'name' => 'Tajikistan Somoni'
+            'name' => 'Tajikistan Somoni',
         ],
         'TMT' => [
-            'name' => 'Turkmenistan Manat'
+            'name' => 'Turkmenistan Manat',
         ],
         'TND' => [
             'name' => 'Tunisia Dinar',
-            'symbol' => 'DT'
+            'symbol' => 'DT',
         ],
         'TOP' => [
-            'name' => 'Tonga Paanga'
+            'name' => 'Tonga Paanga',
         ],
         'TRY' => [
             'name' => 'Turkey Lira',
-            'symbol' => 'TRY'
+            'symbol' => 'TRY',
         ],
         'TTD' => [
             'name' => 'Trinidad and Tobago Dollar',
-            'symbol' => 'TT$'
+            'symbol' => 'TT$',
         ],
         'TVD' => [
             'name' => 'Tuvalu Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'TWD' => [
             'name' => 'Taiwan New Dollar',
-            'symbol' => 'NT$'
+            'symbol' => 'NT$',
         ],
         'TZS' => [
             'name' => 'Tanzania Shilling',
-            'symbol' => 'TSh'
+            'symbol' => 'TSh',
         ],
         'UAH' => [
             'name' => 'Ukraine Hryvna',
-            'symbol' => '₴'
+            'symbol' => '₴',
         ],
         'UGX' => [
             'name' => 'Uganda Shilling',
-            'symbol' => 'USh'
+            'symbol' => 'USh',
         ],
         'USD' => [
             'name' => 'United States Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'UYU' => [
             'name' => 'Uruguay Peso',
-            'symbol' => '$U'
+            'symbol' => '$U',
         ],
         'UZS' => [
             'name' => 'Uzbekistan Som',
-            'symbol' => 'лв'
+            'symbol' => 'лв',
         ],
         'VEF' => [
             'name' => 'Venezuela Bolivar',
-            'symbol' => 'Bs'
+            'symbol' => 'Bs',
         ],
         'VND' => [
             'name' => 'Viet Nam Dong',
-            'symbol' => '₫'
+            'symbol' => '₫',
         ],
         'VUV' => [
-            'name' => 'Vanuatu Vatu'
+            'name' => 'Vanuatu Vatu',
         ],
         'WST' => [
-            'name' => 'Samoa Tala'
+            'name' => 'Samoa Tala',
         ],
         'XCD' => [
             'name' => 'East Caribbean Dollar',
-            'symbol' => '$'
+            'symbol' => '$',
         ],
         'XDR' => [
-            'name' => 'International Monetary Fund (IMF) Special Drawing Rights'
+            'name' => 'International Monetary Fund (IMF) Special Drawing Rights',
         ],
         'XOF' => [
-            'name' => 'Communauté Financière Africaine (BCEAO) Franc'
+            'name' => 'Communauté Financière Africaine (BCEAO) Franc',
         ],
         'XPF' => [
-            'name' => 'Comptoirs Français du Pacifique (CFP) Franc'
+            'name' => 'Comptoirs Français du Pacifique (CFP) Franc',
         ],
         'YER' => [
             'name' => 'Yemen Rial',
-            'symbol' => '﷼'
+            'symbol' => '﷼',
         ],
         'ZAR' => [
             'name' => 'South Africa Rand',
-            'symbol' => 'R'
+            'symbol' => 'R',
         ],
         'ZWD' => [
             'name' => 'Zimbabwe Dollar',
-            'symbol' => 'Z$'
-        ]
+            'symbol' => 'Z$',
+        ],
     ];
 
     static $usaStates = [
@@ -1299,5 +1303,5 @@ class Locale
         'WA' => 'Washington',
         'WV' => 'West Virginia',
         'WI' => 'Wisconsin',
-        'WY' => 'Wyoming' ];
+        'WY' => 'Wyoming', ];
 }

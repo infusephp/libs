@@ -13,48 +13,48 @@ namespace infuse\Database\Statements;
 class WhereStatement extends Statement
 {
     /**
-	 * @var boolean
-	 */
+     * @var boolean
+     */
     protected $having;
 
     /**
-	 * @var array
-	 */
+     * @var array
+     */
     protected $conditions = [];
 
     /**
-	 * @param boolean $having when true, statement becomes a having statement
-	 */
+     * @param boolean $having when true, statement becomes a having statement
+     */
     public function __construct($having = false)
     {
         $this->having = $having;
     }
 
     /**
-	 * Tells whether this statement is a HAVING statement
-	 *
-	 * @return boolean true: is HAVING, false: is WHERE
-	 */
+     * Tells whether this statement is a HAVING statement
+     *
+     * @return boolean true: is HAVING, false: is WHERE
+     */
     public function isHaving()
     {
         return $this->having;
     }
 
     /**
-	 * Accepts the following forms:
-	 * 1. addCondition('username', 'john')
-	 * 2. addCondition('balance', 100, '>')
-	 * 3. addCondition('name LIKE "%john%"')
-	 * 4. addCondition([['balance', 100, '>'], ['user_id', 5]])
-	 * 5. addCondition(['username' => 'john', 'user_id' => 5])
-	 * 6. addCondition(['first_name LIKE "%john%"', 'last_name LIKE "%doe%"'])
-	 *
-	 * @param array|string $field
-	 * @param string $value condition value (optional)
-	 * @param string $operator operator (optional)
-	 *
-	 * @return self
-	 */
+     * Accepts the following forms:
+     * 1. addCondition('username', 'john')
+     * 2. addCondition('balance', 100, '>')
+     * 3. addCondition('name LIKE "%john%"')
+     * 4. addCondition([['balance', 100, '>'], ['user_id', 5]])
+     * 5. addCondition(['username' => 'john', 'user_id' => 5])
+     * 6. addCondition(['first_name LIKE "%john%"', 'last_name LIKE "%doe%"'])
+     *
+     * @param array|string $field
+     * @param string       $value    condition value (optional)
+     * @param string       $operator operator (optional)
+     *
+     * @return self
+     */
     public function addCondition($field, $value = false, $operator = '=')
     {
         if (is_array($field) && !$value) {
@@ -84,20 +84,20 @@ class WhereStatement extends Statement
     }
 
     /**
-	 * Gets the conditions for this statement
-	 *
-	 * @return array
-	 */
+     * Gets the conditions for this statement
+     *
+     * @return array
+     */
     public function getConditions()
     {
         return $this->conditions;
     }
 
     /**
-	 * Generates the raw SQL string for the statement
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the statement
+     *
+     * @return string
+     */
     public function build()
     {
         $sql = (!$this->having) ? 'WHERE ' : 'HAVING ';
@@ -110,9 +110,10 @@ class WhereStatement extends Statement
         // remove empty values
         $clauses = array_filter($clauses);
 
-        if (count($clauses) == 0)
+        if (count($clauses) == 0) {
             return '';
+        }
 
-        return $sql . implode(' AND ', $clauses);
+        return $sql.implode(' AND ', $clauses);
     }
 }

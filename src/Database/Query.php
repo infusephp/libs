@@ -36,15 +36,16 @@ abstract class Query
     {
         $this->pdo = $pdo;
 
-        if (method_exists($this, 'initialize'))
+        if (method_exists($this, 'initialize')) {
             $this->initialize();
+        }
     }
 
     /**
-	 * Builds a SQL string for the query
-	 *
-	 * @return string SQL
-	 */
+     * Builds a SQL string for the query
+     *
+     * @return string SQL
+     */
     abstract public function build();
 
     /**
@@ -70,9 +71,9 @@ abstract class Query
             $this->rowCount = $stmt->rowCount();
 
             return $stmt;
-        } else
-
+        } else {
             return false;
+        }
     }
 
     /**
@@ -86,10 +87,11 @@ abstract class Query
     {
         $stmt = $this->execute();
 
-        if ($stmt)
+        if ($stmt) {
             return $stmt->fetch($style);
-        else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -103,10 +105,11 @@ abstract class Query
     {
         $stmt = $this->execute();
 
-        if ($stmt)
+        if ($stmt) {
             return $stmt->fetchAll($style);
-        else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -120,10 +123,11 @@ abstract class Query
     {
         $stmt = $this->execute();
 
-        if ($stmt)
+        if ($stmt) {
             return $stmt->fetchAll(PDO::FETCH_COLUMN, $index);
-        else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -137,10 +141,11 @@ abstract class Query
     {
         $stmt = $this->execute();
 
-        if ($stmt)
+        if ($stmt) {
             return $stmt->fetchColumn($index);
-        else
+        } else {
             return false;
+        }
     }
 
     /**

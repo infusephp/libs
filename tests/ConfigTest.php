@@ -18,40 +18,40 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'test' => 1,
             'test2' => [
                 2,
-                3
+                3,
             ],
             'test3' => [
                 'does' => 'this',
-                'thing' => 'work?'
-            ]
+                'thing' => 'work?',
+            ],
         ];
 
-        $config = new Config( $testConfig );
+        $config = new Config($testConfig);
 
-        $this->assertEquals( $config->get(), $testConfig );
+        $this->assertEquals($config->get(), $testConfig);
     }
 
     public function testSetandGet()
     {
         $config = new Config();
 
-        $config->set( 'test-property', 'abc' );
-        $this->assertEquals( $config->get( 'test-property' ), 'abc' );
+        $config->set('test-property', 'abc');
+        $this->assertEquals($config->get('test-property'), 'abc');
 
-        $config->set( 'test.1.2.3', 'test' );
-        $this->assertEquals( $config->get( 'test.1.2.3' ), 'test' );
+        $config->set('test.1.2.3', 'test');
+        $this->assertEquals($config->get('test.1.2.3'), 'test');
 
-        $config->set( 'test-property', 'blah' );
-        $this->assertEquals( $config->get( 'test-property' ), 'blah' );
+        $config->set('test-property', 'blah');
+        $this->assertEquals($config->get('test-property'), 'blah');
 
-        $this->assertEquals( $config->get( 'some.invalid.property' ), null );
+        $this->assertEquals($config->get('some.invalid.property'), null);
 
         $expected = [
             'test-property' => 'blah',
             'test' => [
                 '1' => [
                     '2' => [
-                        '3' => 'test' ] ] ] ];
-        $this->assertEquals( $expected, $config->get() );
+                        '3' => 'test', ], ], ], ];
+        $this->assertEquals($expected, $config->get());
     }
 }

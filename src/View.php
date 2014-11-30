@@ -22,10 +22,10 @@ class View
     private $engine;
 
     /**
-	 * Sets the default ViewEngine used by views
-	 *
-	 * @param ViewEngine $engine
-	 */
+     * Sets the default ViewEngine used by views
+     *
+     * @param ViewEngine $engine
+     */
     public static function inject(Container $container)
     {
         self::$container = $container;
@@ -33,30 +33,31 @@ class View
     }
 
     /**
-	 * Gets the default ViewEngine used by views
-	 *
-	 * @return ViewEngine
-	 */
+     * Gets the default ViewEngine used by views
+     *
+     * @return ViewEngine
+     */
     public static function defaultEngine()
     {
         if (!self::$defaultEngine) {
-            if (self::$container && isset(self::$container['view_engine']))
+            if (self::$container && isset(self::$container['view_engine'])) {
                 self::$defaultEngine = self::$container['view_engine'];
-            else
+            } else {
                 // default to php view engine
                 self::$defaultEngine = new ViewEngine\PHP();
+            }
         }
 
         return self::$defaultEngine;
     }
 
     /**
-	 * Creates a new View
-	 *
-	 * @param string $template template name
-	 * @param array $templateParameters optional parameters to render template with
-	 * @param string $engine rendering engine to use
-	 */
+     * Creates a new View
+     *
+     * @param string $template           template name
+     * @param array  $templateParameters optional parameters to render template with
+     * @param string $engine             rendering engine to use
+     */
     public function __construct($template, $templateParameters = [], $engine = null)
     {
         // deal with relative template paths by checking for an optional
@@ -67,7 +68,7 @@ class View
             if (isset($backtrace[1])) {
                 $class = Utility::array_value($backtrace[1], 'class');
                 if (class_exists($class) && property_exists($class, 'viewsDir') && $class::$viewsDir) {
-                    $template = $class::$viewsDir . '/' . $template;
+                    $template = $class::$viewsDir.'/'.$template;
                     $templateParameters['viewsDir'] = $class::$viewsDir;
                 }
             }
@@ -76,27 +77,28 @@ class View
         $this->template = $template;
         $this->data = $templateParameters;
 
-        if ($engine)
+        if ($engine) {
             $this->engine = $engine;
+        }
     }
 
     /**
-	 * Returns the template this view represents
-	 *
-	 * @return string
-	 */
+     * Returns the template this view represents
+     *
+     * @return string
+     */
     public function template()
     {
         return $this->template;
     }
 
     /**
-	 * Updates the template parameters associated with this view
-	 *
-	 * @param array $parameters template parameters
-	 *
-	 * @return View
-	 */
+     * Updates the template parameters associated with this view
+     *
+     * @param array $parameters template parameters
+     *
+     * @return View
+     */
     public function setParameters(array $parameters)
     {
         $this->data = array_replace($this->data, $parameters);
@@ -105,22 +107,22 @@ class View
     }
 
     /**
-	 * Gets the template parameters associated with this view
-	 *
-	 * @return array
-	 */
+     * Gets the template parameters associated with this view
+     *
+     * @return array
+     */
     public function getParameters()
     {
         return $this->data;
     }
 
     /**
-	 * Sets the ViewEngine associated with this view
-	 *
-	 * @param ViewEngine $engine
-	 *
-	 * @return View
-	 */
+     * Sets the ViewEngine associated with this view
+     *
+     * @param ViewEngine $engine
+     *
+     * @return View
+     */
     public function setEngine(ViewEngine $engine)
     {
         $this->engine = $engine;
@@ -129,10 +131,10 @@ class View
     }
 
     /**
-	 * Gets the ViewEngine associated with this view
-	 *
-	 * @return ViewEngine
-	 */
+     * Gets the ViewEngine associated with this view
+     *
+     * @return ViewEngine
+     */
     public function getEngine()
     {
         if (!$this->engine) {
@@ -143,10 +145,10 @@ class View
     }
 
     /**
-	 * Renders this view using the associated ViewEngine
-	 *
-	 * @return string compiled view
-	 */
+     * Renders this view using the associated ViewEngine
+     *
+     * @return string compiled view
+     */
     public function render()
     {
         return $this->getEngine()->renderView($this);

@@ -15,11 +15,11 @@ class FromStatementTest extends \PHPUnit_Framework_TestCase
     public function testAddTable()
     {
         $stmt = new FromStatement();
-        $this->assertEquals($stmt, $stmt->addTable(['test','test2']));
-        $this->assertEquals(['test','test2'], $stmt->getTables());
+        $this->assertEquals($stmt, $stmt->addTable(['test', 'test2']));
+        $this->assertEquals(['test', 'test2'], $stmt->getTables());
 
         $this->assertEquals($stmt, $stmt->addTable(['test3']));
-        $this->assertEquals(['test','test2','test3'], $stmt->getTables());
+        $this->assertEquals(['test', 'test2', 'test3'], $stmt->getTables());
     }
 
     public function testAddTableString()
@@ -30,7 +30,7 @@ class FromStatementTest extends \PHPUnit_Framework_TestCase
 
         $stmt = new FromStatement();
         $this->assertEquals($stmt, $stmt->addTable('test, test2'));
-        $this->assertEquals(['test','test2'], $stmt->getTables());
+        $this->assertEquals(['test', 'test2'], $stmt->getTables());
     }
 
     public function testBuild()

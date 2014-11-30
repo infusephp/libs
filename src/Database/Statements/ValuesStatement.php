@@ -40,10 +40,10 @@ class ValuesStatement extends Statement
     }
 
     /**
-	 * Generates the raw SQL string for the statement
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the statement
+     *
+     * @return string
+     */
     public function build()
     {
         $keys = array_keys($this->values);
@@ -54,11 +54,12 @@ class ValuesStatement extends Statement
         // remove empty values
         $keys = array_filter($keys);
 
-        if (count($keys) == 0)
+        if (count($keys) == 0) {
             return '';
+        }
 
         // generates (`col1`,`col2`,`col3`) VALUES (?,?,?)
-        return '(' . implode(',', $keys) . ') VALUES (' .
-            implode(',', array_fill(0, count($keys), '?')) . ')';
+        return '('.implode(',', $keys).') VALUES ('.
+            implode(',', array_fill(0, count($keys), '?')).')';
     }
 }

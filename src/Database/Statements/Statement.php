@@ -13,15 +13,15 @@ namespace infuse\Database\Statements;
 abstract class Statement
 {
     /**
-	 * @var array
-	 */
+     * @var array
+     */
     protected $values = [];
 
     /**
-	 * Generates the raw SQL string for the statement
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the statement
+     *
+     * @return string
+     */
     abstract public function build();
 
     /**
@@ -37,8 +37,9 @@ abstract class Statement
     protected function buildClause(array $clause)
     {
         // handle pure SQL clauses
-        if (count($clause) == 1)
+        if (count($clause) == 1) {
             return $clause[0];
+        }
 
         foreach ($clause as $k => &$value) {
             // handles nested conditions
@@ -61,14 +62,14 @@ abstract class Statement
     }
 
     /**
-	 * Escapes potentially reserved keywords in identifiers by wrapping them
-	 * with the escape character as necessary
-	 *
-	 * @param string $word
-	 * @param string $escapeChar
-	 *
-	 * @return string escaped identifier
-	 */
+     * Escapes potentially reserved keywords in identifiers by wrapping them
+     * with the escape character as necessary
+     *
+     * @param string $word
+     * @param string $escapeChar
+     *
+     * @return string escaped identifier
+     */
     protected function escapeIdentifier($word, $escapeChar = '`')
     {
         if (is_array($word) || is_object($word) || is_numeric($word)) {
@@ -84,7 +85,7 @@ abstract class Statement
                 foreach ($periods as &$period) {
                     // escape identifiers that are: [0-9,a-z,A-Z$_]
                     if (preg_match('/^[A-Za-z0-9_$]*$/', $period)) {
-                        $period = $escapeChar . $period . $escapeChar;
+                        $period = $escapeChar.$period.$escapeChar;
                     // do not use an identifier that contains something other than:
                     //      alpha-numeric, _, $, *, (, )
                     } elseif (!preg_match('/^[A-Za-z0-9_$\*\(\)]*$/', $period)) {

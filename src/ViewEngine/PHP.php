@@ -20,14 +20,15 @@ class PHP extends ViewEngine
     const EXTENSION = '.php';
 
     /**
-	 * Creates a new PHP ViewEngine
-	 *
-	 * @param string $viewsDir
-	 */
+     * Creates a new PHP ViewEngine
+     *
+     * @param string $viewsDir
+     */
     public function __construct($viewsDir = false)
     {
-        if ($viewsDir)
+        if ($viewsDir) {
             $this->viewsDir = $viewsDir;
+        }
     }
 
     public function renderView(View $view)
@@ -37,8 +38,9 @@ class PHP extends ViewEngine
 
         // add extension if left off
         $len = strlen(self::EXTENSION);
-        if(substr($template, -$len, $len) != self::EXTENSION)
+        if (substr($template, -$len, $len) != self::EXTENSION) {
             $template .= self::EXTENSION;
+        }
 
         // assign global and view parameters
         $parameters = array_replace($this->getGlobalParameters(), $view->getParameters());
@@ -46,7 +48,7 @@ class PHP extends ViewEngine
 
         // render the template with output buffering
         ob_start();
-        include $this->viewsDir . '/' . $template;
+        include $this->viewsDir.'/'.$template;
         $renderedString = ob_get_contents();
         ob_end_clean();
 

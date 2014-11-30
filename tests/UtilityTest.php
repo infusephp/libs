@@ -19,36 +19,36 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
             'test2' => [
                 '3' => [
                     '4' => [
-                        'asldfj'
+                        'asldfj',
                     ],
                 ],
-                '5' => 1234
-            ]
+                '5' => 1234,
+            ],
         ];
 
-        $this->assertEquals( U::array_value( $a, 'test' ), 2 );
-        $this->assertEquals( U::array_value( $a, 'test2.3.4' ), [ 'asldfj' ] );
-        $this->assertEquals( U::array_value( $a, 'test2.5' ), 1234 );
+        $this->assertEquals(U::array_value($a, 'test'), 2);
+        $this->assertEquals(U::array_value($a, 'test2.3.4'), [ 'asldfj' ]);
+        $this->assertEquals(U::array_value($a, 'test2.5'), 1234);
 
-        $this->assertNull( U::array_value( $a, 'nonexistent' ) );
-        $this->assertNull( U::array_value( $a, 'some.nonexistent.property' ) );
+        $this->assertNull(U::array_value($a, 'nonexistent'));
+        $this->assertNull(U::array_value($a, 'some.nonexistent.property'));
     }
 
     public function testArraySet()
     {
         $a = [];
 
-        U::array_set( $a, '1.2.3.4.5', 'test' );
+        U::array_set($a, '1.2.3.4.5', 'test');
         $expected = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
-        $this->assertEquals( $expected, $a );
+        $this->assertEquals($expected, $a);
 
-        U::array_set( $a, 'test', 'ok?' );
+        U::array_set($a, 'test', 'ok?');
         $expected[ 'test' ] = 'ok?';
-        $this->assertEquals( $expected, $a );
+        $this->assertEquals($expected, $a);
 
-        U::array_set( $a, '1.2.3', 'test' );
+        U::array_set($a, '1.2.3', 'test');
         $expected[ '1' ][ '2' ][ '3' ] = 'test';
-        $this->assertEquals( $expected, $a );
+        $this->assertEquals($expected, $a);
     }
 
     public function testArrayDot()
@@ -56,30 +56,30 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $a = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
         $expected = [ '1.2.3.4.5' => 'test' ];
 
-        $this->assertEquals( $expected, U::array_dot( $a ) );
+        $this->assertEquals($expected, U::array_dot($a));
 
         $a = [
             'fruit' => [
                 'apples' => [
                     'sold' => 100,
                     'remaining' => 100,
-                    'percent' => 0.5
+                    'percent' => 0.5,
                 ],
                 'oranges' => [
-                    'remaining' => 0
-                ]
+                    'remaining' => 0,
+                ],
             ],
-            'test' => true
+            'test' => true,
         ];
         $expected = [
             'fruit.apples.sold' => 100,
             'fruit.apples.remaining' => 100,
             'fruit.apples.percent' => 0.5,
             'fruit.oranges.remaining' => 0,
-            'test' => true
+            'test' => true,
         ];
 
-        $this->assertEquals( $expected, U::array_dot( $a ) );
+        $this->assertEquals($expected, U::array_dot($a));
     }
 
     public function testEncryptPassword()
@@ -88,14 +88,15 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
 
         $test = [
             $password,
-            U::encrypt_password( $password, 'salt should not be empty' ),
-            U::encrypt_password( $password, 'this is our salt' ),
-            U::encrypt_password( $password, 'this is our salt', 123456 ) ];
+            U::encrypt_password($password, 'salt should not be empty'),
+            U::encrypt_password($password, 'this is our salt'),
+            U::encrypt_password($password, 'this is our salt', 123456), ];
 
         // test each combination once to ensure they are not equal
-        for ( $i = 0; $i < count( $test ); $i++ ) {
-            for( $j = $i + 1; $j < count( $test ); $j++ )
-                $this->assertTrue( $test[ $i ] != $test[ $j ] );
+        for ($i = 0; $i < count($test); $i++) {
+            for ($j = $i + 1; $j < count($test); $j++) {
+                $this->assertTrue($test[ $i ] != $test[ $j ]);
+            }
         }
     }
 
@@ -104,46 +105,46 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $guid1 = U::guid();
         $guid2 = U::guid();
 
-        $this->assertEquals( 36, strlen( $guid1 ) );
-        $this->assertEquals( 36, strlen( $guid2 ) );
-        $this->assertTrue( $guid1 != $guid2 );
+        $this->assertEquals(36, strlen($guid1));
+        $this->assertEquals(36, strlen($guid2));
+        $this->assertTrue($guid1 != $guid2);
 
-        $guid1 = U::guid( false );
-        $guid2 = U::guid( false );
+        $guid1 = U::guid(false);
+        $guid2 = U::guid(false);
 
-        $this->assertEquals( 32, strlen( $guid1 ) );
-        $this->assertEquals( 32, strlen( $guid2 ) );
-        $this->assertTrue( $guid1 != $guid2 );
+        $this->assertEquals(32, strlen($guid1));
+        $this->assertEquals(32, strlen($guid2));
+        $this->assertTrue($guid1 != $guid2);
     }
 
     public function testSeoify()
     {
-        $this->assertEquals( 'some-test-string', U::seoify( 'some test string' ) );
-        $this->assertEquals( 'meh', U::seoify( '*)#%*^&--meh' ) );
-        $this->assertEquals( 'already-seoified-string', U::seoify( 'already-seoified-string' ) );
+        $this->assertEquals('some-test-string', U::seoify('some test string'));
+        $this->assertEquals('meh', U::seoify('*)#%*^&--meh'));
+        $this->assertEquals('already-seoified-string', U::seoify('already-seoified-string'));
     }
 
     public function testParseMetricStr()
     {
-        $this->assertEquals( 1000000000000, U::parse_metric_str( '1T' ) );
-        $this->assertEquals( 50000000000, U::parse_metric_str( '50G' ) );
-        $this->assertEquals( 1400000, U::parse_metric_str( '1.4M' ) );
-        $this->assertEquals( 2000, U::parse_metric_str( '2K' ) );
+        $this->assertEquals(1000000000000, U::parse_metric_str('1T'));
+        $this->assertEquals(50000000000, U::parse_metric_str('50G'));
+        $this->assertEquals(1400000, U::parse_metric_str('1.4M'));
+        $this->assertEquals(2000, U::parse_metric_str('2K'));
 
-        $this->assertEquals( 1073741824, U::parse_metric_str( '1GBytes', true ) );
+        $this->assertEquals(1073741824, U::parse_metric_str('1GBytes', true));
     }
 
     public function testNumberAbbreviate()
     {
-        $this->assertEquals( '12.3K', U::number_abbreviate( 12345 ) );
-        $this->assertEquals( '1M', U::number_abbreviate( 1000000, 2 ) );
+        $this->assertEquals('12.3K', U::number_abbreviate(12345));
+        $this->assertEquals('1M', U::number_abbreviate(1000000, 2));
 
-        $this->assertEquals( '-1234', U::number_abbreviate( -1234, 2 ) );
-        $this->assertEquals( '123', U::number_abbreviate( 123, 3 ) );
-        $this->assertEquals( '12.345K', U::number_abbreviate( 12345, 3 ) );
-        $this->assertEquals( '12.345M', U::number_abbreviate( 12345000, 3 ) );
-        $this->assertEquals( '1.23G', U::number_abbreviate( 1234567890, 2 ) );
-        $this->assertEquals( '1.23T', U::number_abbreviate( 1234567890123, 2 ) );
+        $this->assertEquals('-1234', U::number_abbreviate(-1234, 2));
+        $this->assertEquals('123', U::number_abbreviate(123, 3));
+        $this->assertEquals('12.345K', U::number_abbreviate(12345, 3));
+        $this->assertEquals('12.345M', U::number_abbreviate(12345000, 3));
+        $this->assertEquals('1.23G', U::number_abbreviate(1234567890, 2));
+        $this->assertEquals('1.23T', U::number_abbreviate(1234567890123, 2));
     }
 
     public function testSetCookieFixDomain()
@@ -164,13 +165,13 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
             $domain,
             $secure,
             $httponly,
-            false );
+            false);
 
         $expiresStr = gmdate('D, d-M-Y H:i:s T', $expires);
 
         $expected = "Set-Cookie: $name=$value; expires=$expiresStr; path=$path; domain=.example.com; secure; HttpOnly";
 
-        $this->assertEquals( $expected, $cookieStr );
+        $this->assertEquals($expected, $cookieStr);
     }
 
     public function testTimeAgo()

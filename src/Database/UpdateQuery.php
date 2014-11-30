@@ -13,18 +13,18 @@ namespace infuse\Database;
 class UpdateQuery extends Query
 {
     /**
-	 * @var FromStatement
-	 */
+     * @var FromStatement
+     */
     protected $table;
 
     /**
-	 * @var SetStatement
-	 */
+     * @var SetStatement
+     */
     protected $set;
 
     /**
-	 * @var WhereStatement
-	 */
+     * @var WhereStatement
+     */
     protected $where;
 
     /**
@@ -125,10 +125,10 @@ class UpdateQuery extends Query
     }
 
     /**
-	 * Gets the table name for the query
-	 *
-	 * @return FromStatement
-	 */
+     * Gets the table name for the query
+     *
+     * @return FromStatement
+     */
     public function getTable()
     {
         return $this->table;
@@ -145,20 +145,20 @@ class UpdateQuery extends Query
     }
 
     /**
-	 * Gets the where statement for the query
-	 *
-	 * @return WhereStatement
-	 */
+     * Gets the where statement for the query
+     *
+     * @return WhereStatement
+     */
     public function getWhere()
     {
         return $this->where;
     }
 
     /**
-	 * Gets the order by statement for the query
-	 *
-	 * @return OrderByStatement
-	 */
+     * Gets the order by statement for the query
+     *
+     * @return OrderByStatement
+     */
     public function getOrderBy()
     {
         return $this->orderBy;
@@ -175,15 +175,15 @@ class UpdateQuery extends Query
     }
 
     /**
-	 * Generates the raw SQL string for the query
-	 *
-	 * @return string
-	 */
+     * Generates the raw SQL string for the query
+     *
+     * @return string
+     */
     public function build()
     {
         $sql = [
             'UPDATE',
-            $this->table->build() ]; // table
+            $this->table->build(), ]; // table
 
         $this->values = [];
 
@@ -203,12 +203,14 @@ class UpdateQuery extends Query
 
         // order by
         $orderBy = $this->orderBy->build();
-        if (!empty($orderBy))
+        if (!empty($orderBy)) {
             $sql[] = $orderBy;
+        }
 
         // limit
-        if ($this->limit)
-            $sql[] = 'LIMIT ' . $this->limit;
+        if ($this->limit) {
+            $sql[] = 'LIMIT '.$this->limit;
+        }
 
         return implode(' ', $sql);
     }
