@@ -290,6 +290,18 @@ class Utility
     }
 
     /**
+     * Converts a UNIX timestamp to the database timestamp format
+     *
+     * @param int $timestamp
+     *
+     * @return string
+     */
+    public static function unixToDb($timestamp)
+    {
+        return date('Y-m-d H:i:s', $timestamp);
+    }
+
+    /**
      * Generates a string for how long ago a timestamp happened.
      * i.e. '2 minutes ago' or 'just now'
      *

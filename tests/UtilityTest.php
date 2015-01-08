@@ -197,4 +197,10 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('1 day, 1 minute, 40 seconds', U::timeUntil(strtotime('+86500 seconds'), true));
     }
+
+    public function testUnixToDb()
+    {
+        $t = mktime(23, 34, 20, 4, 18, 2012);
+        $this->assertEquals('2012-04-18 23:34:20', U::unixToDb($t));
+    }
 }

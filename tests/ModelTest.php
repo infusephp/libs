@@ -146,12 +146,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'created_at' => [
                 'type' => 'timestamp',
                 'validate' => 'timestamp|db_timestamp',
+                'mutable' => false,
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
             ],
             'updated_at' => [
                 'type' => 'timestamp',
                 'validate' => 'timestamp|db_timestamp',
+                'mutable' => false,
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
             ],

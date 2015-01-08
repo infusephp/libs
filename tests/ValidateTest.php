@@ -176,11 +176,14 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(strtotime('today'), $s);
     }
 
-    function testDbTimestamp()
+    public function testDbTimestamp()
     {
         $s = mktime(23, 34, 20, 4, 18, 2012);
         $this->assertTrue(Validate::is($s, 'db_timestamp'));
-        $this->assertEquals('2012-04-18 23:34:20', date('Y-m-d H:i:s', $s));
+        $this->assertEquals('2012-04-18 23:34:20', $s);
+
+        $s = 'test';
+        $this->assertFalse(Validate::is($s, 'db_timestamp'));
     }
 
     public function testUrl()

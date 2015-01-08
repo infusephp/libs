@@ -348,7 +348,13 @@ class Validate
      */
     private static function db_timestamp(&$value, $parameters)
     {
-        return date('Y-m-d H:i:s', $value);
+        if (is_integer($value)) {
+            $value = date('Y-m-d H:i:s', $value);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
