@@ -349,7 +349,7 @@ class Validate
     private static function db_timestamp(&$value, $parameters)
     {
         if (is_integer($value)) {
-            $value = date('Y-m-d H:i:s', $value);
+            $value = Utility::unixToDb($value);
 
             return true;
         }
