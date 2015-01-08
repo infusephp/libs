@@ -153,7 +153,6 @@ abstract class Model extends Acl
     private static $timestampProperties = [
         'created_at' => [
             'type' => 'timestamp',
-            'validate' => 'timestamp|db_timestamp',
             'mutable' => false,
             'default' => null,
             'admin_hidden_property' => true,
@@ -161,7 +160,6 @@ abstract class Model extends Acl
         ],
         'updated_at' => [
             'type' => 'timestamp',
-            'validate' => 'timestamp|db_timestamp',
             'mutable' => false,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
@@ -563,8 +561,8 @@ abstract class Model extends Acl
 
         // add in default values
         foreach ($properties as $name => $fieldInfo) {
-            if (isset($fieldInfo[ 'default' ]) && !isset($data[ $name ])) {
-                $data[ $name ] = $fieldInfo[ 'default' ];
+            if (array_key_exists('default', $fieldInfo) && !array_key_exists($name, $data)) {
+                $data[$name] = $fieldInfo['default'];
             }
         }
 
@@ -575,14 +573,14 @@ abstract class Model extends Acl
                 continue;
             }
 
-            $property = $properties[ $field ];
-
-            // cannot insert keys, unless explicitly allowed
-            if (isset($property[ 'mutable' ]) && !$property[ 'mutable' ]) {
-                continue;
-            }
+            $property = $properties[$field];
 
             if (is_array($property)) {
+                // cannot insert keys, unless explicitly allowed
+                if (isset($property['mutable']) && !$property['mutable'] && !array_key_exists('default', $property)) {
+                    continue;
+                }
+
                 // assume empty string is a null value for properties
                 // that are marked as optionally-null
                 if (Utility::array_value($property, 'null') && empty($value)) {

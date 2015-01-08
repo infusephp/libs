@@ -145,7 +145,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ],
             'created_at' => [
                 'type' => 'timestamp',
-                'validate' => 'timestamp|db_timestamp',
                 'mutable' => false,
                 'default' => null,
                 'admin_hidden_property' => true,
@@ -153,7 +152,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ],
             'updated_at' => [
                 'type' => 'timestamp',
-                'validate' => 'timestamp|db_timestamp',
                 'mutable' => false,
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
