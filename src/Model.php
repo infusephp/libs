@@ -1408,8 +1408,12 @@ abstract class Model extends Acl
         }
 
         // cast timestamps as numbers
-        if ($type == 'timestamp' && !is_int($value)) {
-            return strtotime($value);
+        if ($type == 'timestamp') {
+            if (!is_int($value)) {
+                return strtotime($value);
+            } else {
+                return $value + 0;
+            }
         }
 
         if ($type == 'json' && is_string($value)) {
