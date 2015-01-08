@@ -155,6 +155,7 @@ abstract class Model extends Acl
             'type' => 'timestamp',
             'validate' => 'timestamp|db_timestamp',
             'mutable' => false,
+            'default' => null,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
