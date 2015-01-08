@@ -1414,7 +1414,7 @@ abstract class Model extends Acl
 
         // cast timestamps as numbers
         if ($type == 'timestamp') {
-            if (!is_int($value)) {
+            if (!is_int($value) && !ctype_digit($value)) {
                 return strtotime($value);
             } else {
                 return $value + 0;
