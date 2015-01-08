@@ -921,11 +921,6 @@ abstract class Model extends Acl
         try {
             if ($this->app['db']->update(static::tablename())
                 ->values($updateArray)->where($this->id(true))->execute()) {
-                // force updated_at key to be reloaded
-                if (property_exists(get_called_class(), 'autoTimestamps')) {
-                    unset($updateArray['updated_at']);
-                }
-
                 // update the cache with our new values
                 $this->cacheProperties($updateArray);
 
