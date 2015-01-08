@@ -144,17 +144,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'default' => '{"tax":"%","discounts":false,"shipping":false}',
             ],
             'created_at' => [
-                'type' => 'date',
-                'validate' => 'timestamp',
-                'required' => true,
-                'default' => 'now',
+                'type' => 'timestamp',
+                'validate' => 'timestamp|db_timestamp',
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
             ],
             'updated_at' => [
-                'type' => 'date',
-                'validate' => 'timestamp',
-                'null' => true,
+                'type' => 'timestamp',
+                'validate' => 'timestamp|db_timestamp',
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
             ],
@@ -517,16 +514,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($json, $newModel->json);
     }
 
-    public function testCreateAutoTimestamps()
-    {
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
-
-        $newModel = new TestModel2();
-        $this->assertTrue($newModel->create([ 'id' => 1, 'id2' => 2, 'required' => 235 ]));
-        $this->assertGreaterThan(0, $newModel->created_at);
-    }
-
     public function testCreateWithId()
     {
         self::$app['db'] = Mockery::mock();
@@ -641,9 +628,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
         $model = new TestModel2(12);
-        $updatedAt = $model->updated_at;
+        $updatedAt = $model->updated_at = 100000;
         $model->set('default', 'testing');
         $this->assertNotEquals($updatedAt, $model->updated_at);
+
+        $model->updated_at = '2012-04-18 23:38:18';
+        $this->assertTrue(is_integer($model->updated_at));
     }
 
     public function testSetJson()

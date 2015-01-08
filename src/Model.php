@@ -20,6 +20,7 @@
                 number
                 boolean
                 date
+                timestamp
                 json
             String
             Required
@@ -151,17 +152,14 @@ abstract class Model extends Acl
     ];
     private static $timestampProperties = [
         'created_at' => [
-            'type' => 'date',
-            'validate' => 'timestamp',
-            'required' => true,
-            'default' => 'now',
+            'type' => 'timestamp',
+            'validate' => 'timestamp|db_timestamp',
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
         'updated_at' => [
-            'type' => 'date',
-            'validate' => 'timestamp',
-            'null' => true,
+            'type' => 'timestamp',
+            'validate' => 'timestamp|db_timestamp',
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
@@ -859,11 +857,6 @@ abstract class Model extends Acl
             return true;
         }
 
-        // update timestamp
-        if (property_exists(get_called_class(), 'autoTimestamps')) {
-            $data[ 'updated_at' ] = time();
-        }
-
         // pre-hook
         if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
             return false;
@@ -926,6 +919,11 @@ abstract class Model extends Acl
                 ->values($updateArray)->where($this->id(true))->execute()) {
                 // update the cache with our new values
                 $this->cacheProperties($updateArray);
+
+                // force updated_at key to be reloaded
+                if (property_exists(get_called_class(), 'autoTimestamps')) {
+                    $this->invalidateCachedProperty('updated_at');
+                }
 
                 // post-hook
                 if (method_exists($this, 'postSetHook')) {
@@ -1408,6 +1406,11 @@ abstract class Model extends Acl
         // instead of strings by adding 0
         if (in_array($type, [ 'number', 'date' ])) {
             return $value + 0;
+        }
+
+        // cast timestamps as numbers
+        if ($type == 'timestamp' && !is_int($value)) {
+            return strtotime($value);
         }
 
         if ($type == 'json' && is_string($value)) {

@@ -338,6 +338,20 @@ class Validate
     }
 
     /**
+     * Converts a Unix timestamp into a format compatible with database
+     * timestamp types.
+     *
+     * @param $value
+     * @param $parameters
+     *
+     * @return boolean
+     */
+    private static function db_timestamp(&$value, $parameters)
+    {
+        return date('Y-m-d H:i:s', $value);
+    }
+
+    /**
      * Validates a URL
      *
      * @param $value

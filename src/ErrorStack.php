@@ -37,7 +37,7 @@ class ErrorStack
      *                     - class: (optional) the class invoking the error
      *                     - function: (optional) the function invoking the error
      *
-     * @return boolean was error valid?
+     * @return self
      */
     public function push(array $error)
     {
@@ -60,6 +60,8 @@ class ErrorStack
      * Sets the current default error context
      *
      * @param string $context
+     *
+     * @return self
      */
     public function setCurrentContext($context = '')
     {
@@ -70,6 +72,8 @@ class ErrorStack
 
     /**
      * Clears the current default error context
+     *
+     * @return self
      */
     public function clearCurrentContext()
     {
@@ -160,6 +164,8 @@ class ErrorStack
 
     /**
      * Clears the error stack
+     *
+     * @return self
      */
     public function clear()
     {
