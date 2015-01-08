@@ -153,14 +153,12 @@ abstract class Model extends Acl
     private static $timestampProperties = [
         'created_at' => [
             'type' => 'timestamp',
-            'mutable' => false,
             'default' => null,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
         'updated_at' => [
             'type' => 'timestamp',
-            'mutable' => false,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
