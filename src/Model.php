@@ -105,6 +105,20 @@ if (!defined('VALIDATION_NOT_UNIQUE')) {
 abstract class Model extends Acl
 {
     /////////////////////////////
+    // CONSTANTS
+    /////////////////////////////
+
+    const IMMUTABLE = 0;
+    const MUTABLE_CREATE_ONLY = 1;
+    const MUTABLE = 1;
+
+    const TYPE_STRING = 'string';
+    const TYPE_NUMBER = 'number';
+    const TYPE_BOOLEAN = 'boolean';
+    const TYPE_DATE = 'date';
+    const TYPE_JSON = 'json';
+
+    /////////////////////////////
     // Public variables
     /////////////////////////////
 
@@ -143,22 +157,31 @@ abstract class Model extends Acl
     // Private variables
     /////////////////////////////
 
+    private static $propertyBase = [
+        'type' => self::TYPE_STRING,
+        'mutable' => self::MUTABLE,
+        'null' => false,
+        'unique' => false,
+        'required' => false,
+        'searchable' => false,
+        'hidden' => false,
+    ];
     private static $idProperties = [
         'id' => [
-            'type' => 'number',
-            'mutable' => false,
+            'type' => self::TYPE_NUMBER,
+            'mutable' => self::IMMUTABLE,
             'admin_hidden_property' => true,
         ],
     ];
     private static $timestampProperties = [
         'created_at' => [
-            'type' => 'timestamp',
+            'type' => self::TYPE_DATE,
             'default' => null,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
         'updated_at' => [
-            'type' => 'timestamp',
+            'type' => self::TYPE_DATE,
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
@@ -349,17 +372,17 @@ abstract class Model extends Acl
     {
         $properties = static::properties();
 
-        if (!static::hasProperty($property) || !isset($properties[ $property ][ 'relation' ])) {
+        if (!static::hasProperty($property) || !isset($properties[$property ]['relation'])) {
             return false;
         }
 
-        $relationModelName = $properties[ $property ][ 'relation' ];
+        $relationModelName = $properties[$property]['relation'];
 
-        if (!isset($this->relationModels[ $property ])) {
-            $this->relationModels[ $property ] = new $relationModelName($this->$property);
+        if (!isset($this->relationModels[$property])) {
+            $this->relationModels[$property] = new $relationModelName($this->$property);
         }
 
-        return $this->relationModels[ $property ];
+        return $this->relationModels[$property];
     }
 
     /////////////////////////////
@@ -445,12 +468,16 @@ abstract class Model extends Acl
     {
         $k = get_called_class();
 
-        if (!isset(self::$cachedProperties[ $k ])) {
-            self::$cachedProperties[ $k ] = array_replace(static::propertiesHook(), static::$properties);
+        if (!isset(self::$cachedProperties[$k])) {
+            self::$cachedProperties[$k] = array_replace(static::propertiesHook(), static::$properties);
+
+            foreach (self::$cachedProperties[$k] as &$cachedProperty) {
+                $cachedProperty = array_replace(self::$propertyBase, $cachedProperty);
+            }
         }
 
         if ($property) {
-            return Utility::array_value(self::$cachedProperties[ $k ], $property);
+            return Utility::array_value(self::$cachedProperties[$k], $property);
         } else {
             return self::$cachedProperties[ $k ];
         }
@@ -552,7 +579,7 @@ abstract class Model extends Acl
         $requiredProperties = [];
         foreach ($properties as $name => $property) {
             $propertyNames[] = $name;
-            if (Utility::array_value($property, 'required')) {
+            if ($property['required']) {
                 $requiredProperties[] = $name;
             }
         }
@@ -573,36 +600,34 @@ abstract class Model extends Acl
 
             $property = $properties[$field];
 
-            if (is_array($property)) {
-                // cannot insert keys, unless explicitly allowed
-                if (isset($property['mutable']) && !$property['mutable'] && !array_key_exists('default', $property)) {
-                    continue;
-                }
-
-                // assume empty string is a null value for properties
-                // that are marked as optionally-null
-                if (Utility::array_value($property, 'null') && empty($value)) {
-                    $insertArray[ $field ] = null;
-                    continue;
-                }
-
-                // validate
-                $thisIsValid = $this->validate($property, $field, $value);
-
-                // unique?
-                if ($thisIsValid && Utility::array_value($property, 'unique')) {
-                    $thisIsValid = $this->checkUniqueness($property, $field, $value);
-                }
-
-                $validated = $validated && $thisIsValid;
-
-                // json
-                if (Utility::array_value($property, 'type') == 'json' && !is_string($value)) {
-                    $value = json_encode($value);
-                }
-
-                $insertArray[ $field ] = $value;
+            // cannot insert keys, unless explicitly allowed
+            if ($property['mutable'] == self::IMMUTABLE && !array_key_exists('default', $property)) {
+                continue;
             }
+
+            // assume empty string is a null value for properties
+            // that are marked as optionally-null
+            if ($property['null'] && empty($value)) {
+                $insertArray[ $field ] = null;
+                continue;
+            }
+
+            // validate
+            $thisIsValid = $this->validate($property, $field, $value);
+
+            // unique?
+            if ($thisIsValid && $property['unique']) {
+                $thisIsValid = $this->checkUniqueness($property, $field, $value);
+            }
+
+            $validated = $validated && $thisIsValid;
+
+            // json
+            if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
+                $value = json_encode($value);
+            }
+
+            $insertArray[ $field ] = $value;
         }
 
         // check for required fields
@@ -629,10 +654,7 @@ abstract class Model extends Acl
                 $idProperty = (array) static::idProperty();
                 foreach ($idProperty as $property) {
                     // attempt use the supplied value if the id property is mutable
-                    $mutable = !isset($properties[$property]['mutable']) ||
-                                $properties[$property ]['mutable'];
-
-                    if ($mutable && isset($data[$property])) {
+                    if ($properties[$property ]['mutable'] == self::MUTABLE && isset($data[$property])) {
                         $ids[] = $data[$property];
                     } else {
                         $ids[] = $this->app['pdo']->lastInsertId();
@@ -769,8 +791,7 @@ abstract class Model extends Acl
             }
 
             // skip hidden properties that are not explicitly included
-            if (Utility::array_value($pData, 'hidden') &&
-                !isset($namedInc[ $property ])) {
+            if ($pData['hidden'] && !isset($namedInc[$property])) {
                 continue;
             }
 
@@ -882,36 +903,34 @@ abstract class Model extends Acl
 
             $property = $properties[$field];
 
-            if (is_array($property)) {
-                // cannot modify immutable properties
-                if (isset($property['mutable']) && !$property['mutable']) {
-                    continue;
-                }
-
-                // assume empty string is a null value for properties
-                // that are marked as optionally-null
-                if (Utility::array_value($property, 'null') && empty($value)) {
-                    $updateArray[$field] = null;
-                    continue;
-                }
-
-                // validate
-                $thisIsValid = $this->validate($property, $field, $value);
-
-                // unique?
-                if ($thisIsValid && Utility::array_value($property, 'unique') && $value != $this->$field) {
-                    $thisIsValid = $this->checkUniqueness($property, $field, $value);
-                }
-
-                $validated = $validated && $thisIsValid;
-
-                // json
-                if (Utility::array_value($property, 'type') == 'json' && !is_string($value)) {
-                    $value = json_encode($value);
-                }
-
-                $updateArray[$field] = $value;
+            // cannot only modify mutable properties
+            if ($property['mutable'] != self::MUTABLE) {
+                continue;
             }
+
+            // assume empty string is a null value for properties
+            // that are marked as optionally-null
+            if ($property['null'] && empty($value)) {
+                $updateArray[$field] = null;
+                continue;
+            }
+
+            // validate
+            $thisIsValid = $this->validate($property, $field, $value);
+
+            // unique?
+            if ($thisIsValid && $property['unique'] && $value != $this->$field) {
+                $thisIsValid = $this->checkUniqueness($property, $field, $value);
+            }
+
+            $validated = $validated && $thisIsValid;
+
+            // json
+            if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
+                $value = json_encode($value);
+            }
+
+            $updateArray[$field] = $value;
         }
 
         if (!$validated) {
@@ -1017,7 +1036,7 @@ abstract class Model extends Acl
             $w = [];
             $search = addslashes($params['search']);
             foreach ($properties as $name => $property) {
-                if (Utility::array_value($property, 'searchable')) {
+                if ($property['searchable']) {
                     $w[] = "`$name` LIKE '%$search%'";
                 }
             }
@@ -1181,8 +1200,8 @@ abstract class Model extends Acl
     public function cacheProperty($property, $value)
     {
         // if changing property, remove relation model
-        if (isset($this->relationModels[ $property ])) {
-            unset($this->relationModels[ $property ]);
+        if (isset($this->relationModels[$property])) {
+            unset($this->relationModels[$property]);
         }
 
         /* Local Cache */
@@ -1396,24 +1415,23 @@ abstract class Model extends Acl
             return $value;
         }
 
-        if (Utility::array_value($pData, 'null') && $value == '') {
+        if ($pData['null'] && $value == '') {
             return null;
         }
 
-        $type = Utility::array_value($pData, 'type');
+        $type = $pData['type'];
 
-        if ($type == 'boolean') {
+        if ($type == self::TYPE_BOOLEAN) {
             return ($value == '1') ? true : false;
         }
 
-        // ensure numbers/dates are cast as numbers
-        // instead of strings by adding 0
-        if (in_array($type, [ 'number', 'date' ])) {
+        // cast numbers as....numbers
+        if ($type == self::TYPE_NUMBER) {
             return $value + 0;
         }
 
-        // cast timestamps as numbers
-        if ($type == 'timestamp') {
+        // also cast dates as numbers
+        if ($type == self::TYPE_DATE) {
             if (!is_int($value) && !ctype_digit($value)) {
                 return strtotime($value);
             } else {
@@ -1421,7 +1439,7 @@ abstract class Model extends Acl
             }
         }
 
-        if ($type == 'json' && is_string($value)) {
+        if ($type == self::TYPE_JSON && is_string($value)) {
             return (array) json_decode($value, true);
         }
 

@@ -56,21 +56,42 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $expected = [
             'id' => [
-                'type' => 'number',
-                'mutable' => false,
+                'type' => Model::TYPE_NUMBER,
+                'mutable' => Model::IMMUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
                 'admin_hidden_property' => true,
             ],
             'relation' => [
-                'type' => 'number',
+                'type' => Model::TYPE_NUMBER,
                 'relation' => 'TestModel2',
                 'null' => true,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'mutable' => Model::MUTABLE,
+                'hidden' => false,
             ],
             'answer' => [
-                'type' => 'string',
+                'type' => Model::TYPE_STRING,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'test_hook' => [
-                'type' => 'string',
+                'type' => Model::TYPE_STRING,
                 'null' => true,
+                'mutable' => Model::MUTABLE,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
         ];
 
@@ -79,7 +100,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testPropertiesIdOverwrite()
     {
-        $expected = [ 'type' => 'string' ];
+        $expected = [
+            'type' => Model::TYPE_STRING,
+            'mutable' => Model::MUTABLE,
+            'null' => false,
+            'unique' => false,
+            'required' => false,
+            'searchable' => false,
+            'hidden' => false,
+        ];
 
         $this->assertEquals($expected, Person::properties('id'));
     }
@@ -87,16 +116,26 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testProperty()
     {
         $expected = [
-            'type' => 'number',
-            'mutable' => false,
+            'type' => Model::TYPE_NUMBER,
+            'mutable' => Model::IMMUTABLE,
+            'null' => false,
+            'unique' => false,
+            'required' => false,
+            'searchable' => false,
             'admin_hidden_property' => true,
+            'hidden' => false,
         ];
         $this->assertEquals($expected, TestModel::properties('id'));
 
         $expected = [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
             'relation' => 'TestModel2',
             'null' => true,
+            'unique' => false,
+            'required' => false,
+            'searchable' => false,
+            'mutable' => Model::MUTABLE,
+            'hidden' => false,
         ];
         $this->assertEquals($expected, TestModel::properties('relation'));
     }
@@ -105,52 +144,121 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $expected = [
             'id' => [
-                'type' => 'number',
+                'type' => Model::TYPE_NUMBER,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'id2' => [
-                'type' => 'number',
+                'type' => Model::TYPE_NUMBER,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'default' => [
-                'type' => 'string',
+                'type' => Model::TYPE_STRING,
                 'default' => 'some default value',
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'validate' => [
-                'type' => 'string',
+                'type' => Model::TYPE_STRING,
                 'validate' => 'email',
                 'null' => true,
+                'mutable' => Model::MUTABLE,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'unique' => [
-                'type' => 'string',
+                'type' => Model::TYPE_STRING,
                 'unique' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'required' => [
-                'type' => 'number',
+                'type' => Model::TYPE_NUMBER,
                 'required' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'searchable' => false,
+                'hidden' => false,
             ],
             'hidden' => [
-                'type' => 'boolean',
+                'type' => Model::TYPE_BOOLEAN,
                 'default' => false,
                 'hidden' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
             ],
             'person' => [
-                'type' => 'number',
+                'type' => Model::TYPE_NUMBER,
                 'relation' => 'Person',
                 'default' => 20,
                 'hidden' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
             ],
             'json' => [
-                'type' => 'json',
+                'type' => Model::TYPE_JSON,
                 'hidden' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
                 'default' => '{"tax":"%","discounts":false,"shipping":false}',
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+            ],
+            'mutable_create_only' => [
+                'type' => Model::TYPE_STRING,
+                'mutable' => Model::MUTABLE_CREATE_ONLY,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => true,
             ],
             'created_at' => [
-                'type' => 'timestamp',
+                'type' => Model::TYPE_DATE,
                 'default' => null,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
+                'hidden' => false,
             ],
             'updated_at' => [
-                'type' => 'timestamp',
+                'type' => Model::TYPE_DATE,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => false,
                 'admin_hidden_property' => true,
                 'admin_type' => 'datepicker',
             ],
@@ -311,23 +419,38 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $relation->test = 'hello';
         $relation2 = $model->relation('relation');
         $this->assertEquals('hello', $relation2->test);
+
+        // reset the relation
+        $model->relation = 3;
+        $this->assertEquals(3, $model->relation('relation')->id());
+
+        // check other methods for thorougness...
+        unset($model->relation);
+        $model->relation = 4;
+        $this->assertEquals(4, $model->relation('relation')->id());
+
+        $model->invalidateCachedProperty('relation');
+        $model->relation = 5;
+        $this->assertEquals(5, $model->relation('relation')->id());
+
+        $model->cacheProperty('relation', 6);
+        $this->assertEquals(6, $model->relation('relation')->id());
     }
 
     public function testToArray()
     {
         $model = new TestModel(5);
-        $model->relation = '10';
 
         $expected = [
             'id' => 5,
-            'relation' => 10,
+            'relation' => null,
             'answer' => null,
             'test_hook' => null,
             // this is tacked on in toArrayHook() below
             'toArray' => true,
         ];
 
-        $this->assertEquals($expected, $model->toArray());
+        $this->assertEquals($expected, $model->toArray([], [], ['relation']));
     }
 
     public function testToArrayExcluded()
@@ -484,7 +607,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         self::$app['pdo']->shouldReceive('lastInsertId')->andReturn(1);
 
         $newModel = new TestModel();
-        $this->assertTrue($newModel->create([ 'relation' => '', 'answer' => 42 ]));
+        $this->assertTrue($newModel->create(['relation' => '', 'answer' => 42, 'extra' => true]));
         $this->assertEquals(1, $newModel->id());
         $this->assertEquals(1, $newModel->id);
         $this->assertEquals(null, $newModel->relation);
@@ -499,6 +622,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $newModel = new TestModel2();
         $this->assertTrue($newModel->create([ 'id' => 1, 'id2' => 2, 'required' => 25 ]));
         $this->assertEquals('1,2', $newModel->id());
+    }
+
+    public function testCreateImmutable()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
+
+        $newModel = new TestModel();
+        $this->assertTrue($newModel->create(['id' => 100]));
+        $this->assertNotEquals(100, $newModel->id());
+
+        $newModel = new TestModel2();
+        $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25, 'mutable_create_only' => 'test']));
+        $this->assertEquals('test', $newModel->mutable_create_only);
     }
 
     public function testCreateJson()
@@ -662,6 +799,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($model->set('id', 432));
         $this->assertEquals(10, $model->id);
+
+        $this->assertTrue($model->set('mutable_create_only', 'blah'));
+        $this->assertEquals(null, $model->mutable_create_only);
     }
 
     public function testSetFailWithNoId()
@@ -746,12 +886,12 @@ class TestModel extends Model
 {
     static $properties = [
         'relation' => [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
             'relation' => 'TestModel2',
             'null' => true,
         ],
         'answer' => [
-            'type' => 'string',
+            'type' => Model::TYPE_STRING,
         ],
     ];
     public $preDelete;
@@ -762,7 +902,7 @@ class TestModel extends Model
         $properties = parent::propertiesHook();
 
         $properties[ 'test_hook' ] = [
-            'type' => 'string',
+            'type' => Model::TYPE_STRING,
             'null' => true, ];
 
         return $properties;
@@ -821,42 +961,43 @@ class TestModel2 extends Model
 {
     static $properties = [
         'id' => [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
         ],
         'id2' => [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
         ],
         'default' => [
-            'type' => 'string',
             'default' => 'some default value',
         ],
         'validate' => [
-            'type' => 'string',
             'validate' => 'email',
             'null' => true,
         ],
         'unique' => [
-            'type' => 'string',
             'unique' => true,
         ],
         'required' => [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
             'required' => true,
         ],
         'hidden' => [
-            'type' => 'boolean',
+            'type' => Model::TYPE_BOOLEAN,
             'default' => false,
             'hidden' => true,
         ],
         'person' => [
-            'type' => 'number',
+            'type' => Model::TYPE_NUMBER,
             'relation' => 'Person',
             'default' => 20,
             'hidden' => true,
         ],
         'json' => [
-            'type' => 'json',
+            'type' => Model::TYPE_JSON,
             'default' => '{"tax":"%","discounts":false,"shipping":false}',
+            'hidden' => true,
+        ],
+        'mutable_create_only' => [
+            'mutable' => Model::MUTABLE_CREATE_ONLY,
             'hidden' => true,
         ],
     ];
@@ -921,14 +1062,14 @@ class Person extends Model
 {
     static $properties = [
         'id' => [
-            'type' => 'string',
+            'type' => Model::TYPE_STRING,
         ],
         'name' => [
-            'type' => 'string',
+            'type' => Model::TYPE_STRING,
             'default' => 'Jared',
         ],
         'address' => [
-            'type' => 'string',
+            'type' => Model::TYPE_STRING,
         ],
     ];
 
