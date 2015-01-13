@@ -483,9 +483,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model->created_at = 100;
         $model->updated_at = 102;
 
-        $expected = [ 'created_at' => 100, 'updated_at' => '102' ];
+        $expected = ['created_at' => 100, 'updated_at' => '102'];
 
         $this->assertEquals($expected, $model->toArray([ 'id', 'id2', 'default', 'validate', 'unique', 'required' ]));
+
+        $model->created_at = '-1';
+        $this->assertEquals(-1, $model->created_at);
     }
 
     public function testToArrayIncluded()

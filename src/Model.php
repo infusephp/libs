@@ -1179,8 +1179,8 @@ abstract class Model extends Acl
         }
 
         // marshal values from database
-        foreach ($info as $k => $v) {
-            $info[ $k ] = $this->marshalValue($k, $v);
+        foreach ($info as $k => &$v) {
+            $v = $this->marshalValue($k, $v);
         }
 
         $this->cacheProperties($info);
@@ -1435,7 +1435,7 @@ abstract class Model extends Acl
 
         // also cast dates as numbers
         if ($type == self::TYPE_DATE) {
-            if (!is_int($value) && !ctype_digit($value)) {
+            if (!is_numeric($value)) {
                 return strtotime($value);
             } else {
                 return $value + 0;
