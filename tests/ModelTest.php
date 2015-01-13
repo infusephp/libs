@@ -406,8 +406,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('some default value', $model->get('default'));
     }
 
+    public function testGetEmptyProperty()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['' => 'blah']);
+
+        $model = new TestModel(12);
+        $this->assertEquals('blah', $model->get('whatever'));
+    }
+
     public function testRelation()
     {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+
         $model = new TestModel();
         $model->relation = 2;
 

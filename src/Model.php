@@ -698,7 +698,6 @@ abstract class Model extends Acl
      */
     public function get($properties, $skipLocalCache = false, $forceReturnArray = false)
     {
-        $show = $properties == 'relation';
         if (is_string($properties)) {
             $properties = explode(',', $properties);
         } else {
@@ -1409,6 +1408,10 @@ abstract class Model extends Acl
 
     private function marshalValue($property, $value)
     {
+        if (empty($property)) {
+            return $value;
+        }
+
         // look up property (if it exists)
         $pData = static::properties($property);
         if (!$pData) {
