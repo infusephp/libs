@@ -839,6 +839,7 @@ class Locale
         ],
         'GMD' => [
             'name' => 'Gambia Dalasi',
+            'symbol' => 'GMD',
         ],
         'GNF' => [
             'name' => 'Guinea Franc',
