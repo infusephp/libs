@@ -1,8 +1,8 @@
-infuse/libs
+libs
 ===========
 
-[![Build Status](https://travis-ci.org/jaredtking/infuse-libs.png?branch=master)](https://travis-ci.org/jaredtking/infuse-libs)
-[![Coverage Status](https://coveralls.io/repos/jaredtking/infuse-libs/badge.png)](https://coveralls.io/r/jaredtking/infuse-libs)
+[![Build Status](https://travis-ci.org/infusephp/libs.png?branch=master)](https://travis-ci.org/infusephp/libs)
+[![Coverage Status](https://coveralls.io/repos/infusephp/libs/badge.png)](https://coveralls.io/r/infusephp/libs)
 [![Latest Stable Version](https://poser.pugx.org/infuse/libs/v/stable.png)](https://packagist.org/packages/infuse/libs)
 [![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.png)](https://packagist.org/packages/infuse/libs)
 [![HHVM Status](http://hhvm.h4cc.de/badge/infuse/libs.svg)](http://hhvm.h4cc.de/package/infuse/libs)
@@ -11,9 +11,9 @@ infuse/libs
 
 These libraries are unit-tested, battle-tested, and can be used à la carte. Each class has as few external dependencies as possible. Inspiration was drawn from many sources, in particular, the simplicity of node libraries like express.js.
 
-## Idealist Framework
+## Infuse Framework
 
-An MVC framework, called Idealist Framework, has been built using *infuse/libs*. Check it out at [https://github.com/idealistsoft/framework](https://github.com/idealistsoft/framework).
+An MVC framework, called Infuse Framework, has been built using *infuse/libs*. Check it out at [https://github.com/infusephp/framework](https://github.com/infusephp/framework).
 
 ## Tests
 

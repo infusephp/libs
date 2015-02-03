@@ -13,8 +13,8 @@
 		}
 	],
 	"support": {
-		"issues": "https://github.com/jaredtking/infuse-libs/issues",
-		"source": "https://github.com/jaredtking/infuse-libs"
+		"issues": "https://github.com/infusephp/libs/issues",
+		"source": "https://github.com/infusephp/libs"
 	},
     "autoload": {
         "psr-4": {"infuse\\": "src/"}
