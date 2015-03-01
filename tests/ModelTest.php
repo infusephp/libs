@@ -722,7 +722,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $json = ['test' => true, 'test2' => [1, 2, 3]];
 
-        // insert mock
+        // insert query mock
         $execute = Mockery::mock();
         $execute->shouldReceive('execute')->andReturn(true);
         $into = Mockery::mock();
@@ -787,6 +787,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $newModel = new TestModel2();
         $this->assertFalse($newModel->create([ 'id' => 10, 'id2' => 1 ]));
         $this->assertCount(1, $errorStack->errors('TestModel2.create'));
+    }
+
+    public function testCreateFail()
+    {
+        // insert qquery mock
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert->into->execute')->andThrow(new Exception());
+
+        // logger mock
+        self::$app['logger'] = Mockery::mock();
+        self::$app['logger']->shouldReceive('error');
+
+        $newModel = new TestModel();
+        $this->assertFalse($newModel->create(['relation' => '', 'answer' => 42, 'extra' => true]));
     }
 
     /////////////////////////////

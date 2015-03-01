@@ -688,7 +688,7 @@ abstract class Model extends Acl
 
             // unique?
             if ($thisIsValid && $property['unique']) {
-                $thisIsValid = $this->checkUniqueness($property, $field, $value);
+                $thisIsValid = $this->isUnique($property, $field, $value);
             }
 
             $validated = $validated && $thisIsValid;
@@ -964,7 +964,7 @@ abstract class Model extends Acl
 
             // unique?
             if ($thisIsValid && $property['unique'] && $value != $this->$field) {
-                $thisIsValid = $this->checkUniqueness($property, $field, $value);
+                $thisIsValid = $this->isUnique($property, $field, $value);
             }
 
             $validated = $validated && $thisIsValid;
@@ -1403,7 +1403,7 @@ abstract class Model extends Acl
      *
      * @return boolean
      */
-    private function checkUniqueness(array $property, $field, $value)
+    private function isUnique(array $property, $field, $value)
     {
         if (static::totalRecords([$field => $value]) > 0) {
             $this->app[ 'errors' ]->push([
