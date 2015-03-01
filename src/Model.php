@@ -292,7 +292,7 @@ abstract class Model extends Acl
      */
     public static function inject(Container $app)
     {
-        self::$injectedApp = $app;
+        static::$injectedApp = $app;
     }
 
     /////////////////////////////
@@ -312,7 +312,7 @@ abstract class Model extends Acl
 
         $this->_id = $id;
 
-        $this->app = self::$injectedApp;
+        $this->app = static::$injectedApp;
 
         if (self::$defaultCache) {
             $this->_cache = &self::$defaultCache;
@@ -550,7 +550,7 @@ abstract class Model extends Acl
         if ($property) {
             return Utility::array_value(self::$cachedProperties[$k], $property);
         } else {
-            return self::$cachedProperties[ $k ];
+            return self::$cachedProperties[$k];
         }
     }
 
@@ -770,6 +770,8 @@ abstract class Model extends Acl
 
         $_values = array_replace($this->id(true), $this->_local, $this->_unsaved);
 
+        // figure out if there are any missing values and
+        // the model needs to be loaded
         $missingValues = count(array_diff($properties, array_keys($_values))) > 0;
         if ($missingValues || $skipCache) {
             $this->load($skipCache);
@@ -1019,8 +1021,8 @@ abstract class Model extends Acl
         $errorStack->setCurrentContext(static::modelName().'.delete');
 
         // permission?
-        if (!$this->can('delete', static::$config[ 'requester' ])) {
-            $errorStack->push([ 'error' => ERROR_NO_PERMISSION ]);
+        if (!$this->can('delete', static::$config['requester'])) {
+            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -1107,7 +1109,7 @@ abstract class Model extends Acl
 
             // validate direction
             $direction = strtolower($c[ 1 ]);
-            if (!in_array($direction, [ 'asc', 'desc' ])) {
+            if (!in_array($direction, ['asc', 'desc'])) {
                 continue;
             }
 
@@ -1125,11 +1127,11 @@ abstract class Model extends Acl
         $models = false;
 
         try {
-            $models = self::$injectedApp['db']->select('*')
+            $models = static::$injectedApp['db']->select('*')
                 ->from(static::tablename())->where($params['where'])
                 ->limit($limit, $offset)->orderBy($sortParams)->all();
         } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
+            static::$injectedApp['logger']->error($e);
         }
 
         if (is_array($models)) {
@@ -1149,7 +1151,7 @@ abstract class Model extends Acl
 
                 $model = new $modelName($id);
                 $model->local = $info;
-                $return[ 'models' ][] = $model;
+                $return['models'][] = $model;
             }
         }
 
@@ -1172,7 +1174,7 @@ abstract class Model extends Acl
     {
         $models = static::find($params);
 
-        return ($models[ 'count' ] > 0) ? reset($models[ 'models' ]) : false;
+        return ($models['count'] > 0) ? reset($models['models']) : false;
     }
 
     /**
@@ -1185,11 +1187,10 @@ abstract class Model extends Acl
     public static function totalRecords(array $where = [])
     {
         try {
-            return (int) self::$injectedApp['db']->select('count(*)')
+            return (int) static::$injectedApp['db']->select('count(*)')
                 ->from(static::tablename())->where($where)->scalar();
         } catch (\Exception $e) {
-            echo $e->getMessage();
-            self::$injectedApp['logger']->error($e);
+            static::$injectedApp['logger']->error($e);
         }
 
         return 0;
@@ -1256,13 +1257,21 @@ abstract class Model extends Acl
     }
 
     /**
-     * Caches the entire model
+     * Caches the entire model assuming it's already been loaded
      *
      * @return self
      */
     public function cache()
     {
-        if (!$this->_cache || $this->_clean || count($this->_local) == 0) {
+        if (!$this->_cache) {
+            return $this;
+        }
+
+        if (count($this->_local) == 0) {
+            return $this;
+        }
+
+        if ($this->_clean) {
             return $this;
         }
 
@@ -1304,7 +1313,7 @@ abstract class Model extends Acl
      * If that fails, then attempts to load the model from the
      * database layer.
      *
-     * @param boolean $skipCache
+     * @param boolean $skipCache when true, always loads from database
      *
      * @return Model
      */
@@ -1341,20 +1350,19 @@ abstract class Model extends Acl
                 ->one();
 
             if (count($info) > 0) {
-                // marshal values from database
                 $this->_local = [];
+                $this->_relationModels = [];
+
+                // marshal values from database
                 foreach ($info as $k => &$v) {
                     $this->_local[$k] = $this->marshalValue($k, $v);
                 }
 
-                // clear any relations
-                $this->_relationModels = [];
-
-                // cache the model
+                // cache the resulting model
                 return $this->cache();
             }
         } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
+            static::$injectedApp['logger']->error($e);
         }
 
         return $this;
@@ -1427,7 +1435,7 @@ abstract class Model extends Acl
      */
     private function getDefaultValueFor($property)
     {
-        $properties = self::properties();
+        $properties = static::properties();
         $default = Utility::array_value($properties, $property.'.default');
         if ($default) {
             return $this->marshalValue($property, $default);

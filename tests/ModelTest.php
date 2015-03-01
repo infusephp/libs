@@ -768,7 +768,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateNotUnique()
     {
-        // TODO
+        $this->markTestIncomplete();
     }
 
     public function testCreateInvalid()
@@ -920,7 +920,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetNotUnique()
     {
-        // TODO
+        $this->markTestIncomplete();
     }
 
     public function testSetInvalid()
@@ -1006,9 +1006,39 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     // CACHE
     /////////////////////////////
 
-/*    public function testCacheAndValueMarshaling()
+    public function testSetDefaultCache()
     {
-        // TODO
+        $cache = Mockery::mock('Stash\\Pool');
+
+        TestModel::setDefaultCache($cache);
+        for ($i = 0; $i < 5; $i++) {
+            $model = new TestModel();
+            $this->assertEquals($cache, $model->getCache());
+        }
+
+        TestModel::clearDefaultCache();
+    }
+
+    public function testSetCache()
+    {
+        $cache = Mockery::mock('Stash\\Pool');
+
+        $model = new TestModel();
+        $this->assertEquals($model, $model->setCache($cache));
+
+        $this->assertEquals($cache, $model->getCache());
+    }
+
+    public function testCacheKey()
+    {
+        $model = new TestModel(5);
+        $this->assertEquals('models/testmodel/5', $model->cacheKey());
+    }
+
+    public function testGetFromCache()
+    {
+        $this->markTestIncomplete();
+/*
         $model = new TestModel2(3);
 
         $json = [
@@ -1042,50 +1072,31 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($model2->default === 'testing');
         $this->assertEquals('hello', $model2->test2);
         $this->assertEquals($json, $model2->json);
-    }*/
-
-    public function testSetDefaultCache()
-    {
-        $cache = Mockery::mock('Stash\\Pool');
-
-        TestModel::setDefaultCache($cache);
-        for ($i = 0; $i < 5; $i++) {
-            $model = new TestModel();
-            $this->assertEquals($cache, $model->getCache());
-        }
-
-        TestModel::clearDefaultCache();
+*/
     }
 
-    public function testSetCache()
+    public function testCache()
     {
-        $cache = Mockery::mock('Stash\\Pool');
-
-        $model = new TestModel();
-        $this->assertEquals($model, $model->setCache($cache));
-
-        $this->assertEquals($cache, $model->getCache());
+        $this->markTestIncomplete();
     }
 
-    public function testCacheKey()
+    public function testLoad()
     {
-        $model = new TestModel(5);
-        $this->assertEquals('models/testmodel/5', $model->cacheKey());
+        $this->markTestIncomplete();
     }
 
     public function testClearCache()
     {
-        $model = new TestModel(4);
+        $this->markTestIncomplete();
+    }
 
-        $model->answer = 42;
-        $model->test = 1234;
-        $this->assertTrue(isset($model->answer));
-        $this->assertTrue(isset($model->test));
+    /////////////////////////////
+    // DATABASE
+    /////////////////////////////
 
-        $this->assertEquals($model, $model->clearCache());
-
-        $this->assertNotEquals(42, $model->answer);
-        $this->assertFalse(isset($model->test));
+    public function testLoadFromDb()
+    {
+        $this->markTestIncomplete();
     }
 }
 
