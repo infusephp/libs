@@ -296,7 +296,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('TestModel(1)', (string) $model);
     }
 
-    public function testSetProperty()
+    public function testSetUnsaved()
     {
         $model = new TestModel(2);
 
@@ -360,10 +360,44 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(TestModel2::isIdProperty('id2'));
     }
 
-    public function testExists()
+    public function testTotalRecords()
+    {
+        // select query mock
+        $scalar = Mockery::mock();
+        $scalar->shouldReceive('scalar')->andReturn(1);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([[]])->andReturn($scalar);
+        $from = Mockery::mock();
+        $from->shouldReceive('from')->withArgs(['TestModel2s'])->andReturn($where);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select')->withArgs(['count(*)'])->andReturn($from);
+
+        $model = new TestModel2(12);
+        $this->assertEquals(1, $model->totalRecords());
+    }
+
+    public function testTotalRecordsFail()
     {
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(1);
+        self::$app['db']->shouldReceive('select->from->where->scalar')->andThrow(new Exception());
+        self::$app['logger'] = Mockery::mock();
+        self::$app['logger']->shouldReceive('error');
+
+        $model = new TestModel2(12);
+        $this->assertEquals(0, $model->totalRecords());
+    }
+
+    public function testExists()
+    {
+        // select query mock
+        $scalar = Mockery::mock();
+        $scalar->shouldReceive('scalar')->andReturn(1);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['id' => 12, 'id2' => null]])->andReturn($scalar);
+        $from = Mockery::mock();
+        $from->shouldReceive('from')->withArgs(['TestModel2s'])->andReturn($where);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select')->withArgs(['count(*)'])->andReturn($from);
 
         $model = new TestModel2(12);
         $this->assertTrue($model->exists());
@@ -384,21 +418,29 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'relation' => 10,
             'answer' => 42, ];
 
-        $values = $model->get([ 'id', 'relation', 'answer' ]);
+        $values = $model->get(['id', 'relation', 'answer']);
         $this->assertEquals($expected, $values);
     }
 
     public function testGetFromDb()
     {
+        // select query mock
+        $one = Mockery::mock();
+        $one->shouldReceive('one')->andReturn(['answer' => 20]);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['id' => 12]])->andReturn($one);
+        $from = Mockery::mock();
+        $from->shouldReceive('from')->withArgs(['TestModels'])->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['person' => 20]);
+        self::$app['db']->shouldReceive('select')->andReturn($from);
 
-        $model = new TestModel2(12);
-        $this->assertEquals(20, $model->person);
+        $model = new TestModel(12);
+        $this->assertEquals(20, $model->answer);
     }
 
     public function testGetDefaultValue()
     {
+        // select query mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
@@ -406,17 +448,62 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('some default value', $model->get('default'));
     }
 
-    public function testGetEmptyProperty()
+    public function testMarshalBoolean()
     {
+        // select query mock
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['' => 'blah']);
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['hidden' => '1']);
 
-        $model = new TestModel(12);
-        $this->assertEquals('blah', $model->get('whatever'));
+        $model = new TestModel2(12);
+        $this->assertTrue($model->hidden);
     }
+
+    public function testMarshalTimestamp()
+    {
+        // select query mock
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '2012-04-18 23:38:18']);
+
+        $model = new TestModel2(12);
+        $this->assertTrue(is_integer($model->updated_at));
+        $this->assertGreaterThan(0, $model->updated_at);
+    }
+
+    public function testMarshalTimestampInteger()
+    {
+        // select query mock
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '123']);
+
+        $model = new TestModel2(12);
+        $this->assertTrue(is_integer($model->updated_at));
+        $this->assertEquals(123, $model->updated_at);
+    }
+
+    public function testMarshalJson()
+    {
+        // select query mock
+        $json = ['test' => true, 'test2' => [1, 2, 3]];
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['json' => json_encode($json)]);
+
+        $model = new TestModel2(12);
+        $this->assertEquals($json, $model->json);
+    }
+
+    // public function testGetEmptyProperty()
+    // {
+    //     // select mock
+    //     self::$app['db'] = Mockery::mock();
+    //     self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['' => 'blah']);
+
+    //     $model = new TestModel(12);
+    //     $this->assertEquals('blah', $model->get('whatever'));
+    // }
 
     public function testRelation()
     {
+        // select query mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
@@ -440,13 +527,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         unset($model->relation);
         $model->relation = 4;
         $this->assertEquals(4, $model->relation('relation')->id());
-
-        $model->invalidateCachedProperty('relation');
-        $model->relation = 5;
-        $this->assertEquals(5, $model->relation('relation')->id());
-
-        $model->cacheProperty('relation', 6);
-        $this->assertEquals(6, $model->relation('relation')->id());
     }
 
     public function testToArray()
@@ -551,9 +631,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testToJson()
     {
         $model = new TestModel(5);
-        $model->relation = '10';
+        $model->relation = 10;
 
-        $this->assertEquals('{"id":5,"test_hook":null,"relation":10,"answer":null}', $model->toJson([ 'toArray' ]));
+        $this->assertEquals('{"id":"5","test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
     }
 
     public function testHasSchema()
@@ -562,64 +642,25 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(TestModel2::hasSchema());
     }
 
-    public function testCacheAndValueMarshaling()
-    {
-        $model = new TestModel2(3);
-
-        $json = [
-            'test' => true,
-            'test2' => [
-                'hello',
-                'anyone there?', ], ];
-
-        $this->assertEquals($model, $model->cacheProperties([
-            'validate' => '',
-            'hidden' => '1',
-            'default' => 'testing',
-            'test2' => 'hello',
-            'person' => '30',
-            'required' => '50',
-            'json' => $json, ]));
-
-        $this->assertEquals('', $model->validate);
-        $this->assertEquals('1', $model->hidden);
-        $this->assertEquals('50', $model->required);
-        $this->assertEquals('30', $model->person);
-        $this->assertEquals('hello', $model->test2);
-        $this->assertEquals('testing', $model->default);
-        $this->assertEquals($json, $model->json);
-
-        $model2 = new TestModel2(3);
-        $this->assertTrue($model2->validate === null);
-        $this->assertTrue($model2->hidden === true);
-        $this->assertTrue($model2->required === 50);
-        $this->assertTrue($model2->person === 30);
-        $this->assertTrue($model2->default === 'testing');
-        $this->assertEquals('hello', $model2->test2);
-        $this->assertEquals($json, $model2->json);
-    }
-
-    public function testInvalidateCache()
-    {
-        $model = new testModel(4);
-
-        $model->answer = 42;
-        $model->test = 1234;
-        $this->assertTrue(isset($model->answer));
-        $this->assertTrue(isset($model->test));
-
-        $this->assertEquals($model, $model->emptyCache());
-
-        $this->assertNotEquals(42, $model->answer);
-        $this->assertFalse(isset($model->test));
-    }
+    /////////////////////////////
+    // CREATE
+    /////////////////////////////
 
     public function testCreate()
     {
+        // insert mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
+
+        // lastInsertId mock
         self::$app['pdo'] = Mockery::mock();
         self::$app['pdo']->shouldReceive('lastInsertId')->andReturn(1);
+
+        // select mock
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
+            'id' => 1,
+            'relation' => null,
+            'answer' => 42, ]);
 
         $newModel = new TestModel();
         $this->assertTrue($newModel->create(['relation' => '', 'answer' => 42, 'extra' => true]));
@@ -631,38 +672,74 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateMutable()
     {
+        // insert mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
 
         $newModel = new TestModel2();
-        $this->assertTrue($newModel->create([ 'id' => 1, 'id2' => 2, 'required' => 25 ]));
+        $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25]));
         $this->assertEquals('1,2', $newModel->id());
     }
 
     public function testCreateImmutable()
     {
+        // insert mock
+        $into = Mockery::mock();
+        $into->shouldReceive('into->execute')->andReturn(true);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
+        self::$app['db']->shouldReceive('insert')->withArgs([[
+            'id' => 1,
+            'id2' => 2,
+            'required' => 25,
+            'default' => 'some default value',
+            'hidden' => false,
+            'created_at' => null,
+            'json' => '{"tax":"%","discounts":false,"shipping":false}',
+            'person' => 20,
+            'mutable_create_only' => 'test', ]])
+            ->andReturn($into);
 
-        $newModel = new TestModel();
-        $this->assertTrue($newModel->create(['id' => 100]));
-        $this->assertNotEquals(100, $newModel->id());
+        // select mock
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['mutable_create_only' => 'test']);
 
         $newModel = new TestModel2();
         $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25, 'mutable_create_only' => 'test']));
         $this->assertEquals('test', $newModel->mutable_create_only);
     }
 
-    public function testCreateJson()
+    public function testCreateImmutableId()
     {
+        // insert mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
 
-        $json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+        $newModel = new TestModel();
+        $this->assertTrue($newModel->create(['id' => 100]));
+        $this->assertNotEquals(100, $newModel->id());
+    }
+
+    public function testCreateJson()
+    {
+        $json = ['test' => true, 'test2' => [1, 2, 3]];
+
+        // insert mock
+        $execute = Mockery::mock();
+        $execute->shouldReceive('execute')->andReturn(true);
+        $into = Mockery::mock();
+        $into->shouldReceive('into')->withArgs(['TestModel2s'])->andReturn($execute);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert')->withArgs([[
+            'id' => 2,
+            'id2' => 4,
+            'required' => 25,
+            'created_at' => null,
+            'default' => 'some default value',
+            'hidden' => false,
+            'person' => 20,
+            'json' => json_encode($json), ]])->andReturn($into);
 
         $newModel = new TestModel2();
-        $this->assertTrue($newModel->create([ 'id' => 2, 'id2' => 4, 'required' => 25, 'json' => $json ]));
-        $this->assertEquals($json, $newModel->json);
+        $this->assertTrue($newModel->create(['id' => 2, 'id2' => 4, 'required' => 25, 'json' => $json]));
     }
 
     public function testCreateWithId()
@@ -712,90 +789,70 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $errorStack->errors('TestModel2.create'));
     }
 
-    public function testToArrayAfterCreate()
-    {
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
-        $model = new TestModel2();
-        $this->assertTrue($model->create([
-            'id' => 5,
-            'id2' => 10,
-            'required' => true, ]));
-
-        $expected = [
-            'id' => 5,
-            'id2' => 10,
-            'required' => true,
-            'default' => 'some default value',
-            'validate' => null,
-            'unique' => null,
-            'updated_at' => null,
-        ];
-
-        $this->assertEquals($expected, $model->toArray([ 'created_at' ]));
-    }
+    /////////////////////////////
+    // SET
+    /////////////////////////////
 
     public function testSet()
     {
-        $stmt = Mockery::mock('PDOStatement');
-
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
         $model = new TestModel(10);
 
         $this->assertTrue($model->set([]));
+
+        // update query mock
+        $stmt = Mockery::mock('PDOStatement');
+        $execute = Mockery::mock();
+        $execute->shouldReceive('execute')->andReturn($stmt);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['id' => 10]])->andReturn($execute);
+        $values = Mockery::mock();
+        $values->shouldReceive('values')->withArgs([[
+            'answer' => 42, ]])->andReturn($where);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update')->withArgs(['TestModels'])->andReturn($values);
+
         $this->assertTrue($model->set('answer', 42));
-        $this->assertEquals(42, $model->answer);
     }
 
     public function testSetMultiple()
     {
-        $stmt = Mockery::mock('PDOStatement');
-
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
         $model = new TestModel(11);
+
+        // update query mock
+        $stmt = Mockery::mock('PDOStatement');
+        $execute = Mockery::mock();
+        $execute->shouldReceive('execute')->andReturn($stmt);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['id' => 11]])->andReturn($execute);
+        $values = Mockery::mock();
+        $values->shouldReceive('values')->withArgs([[
+            'answer' => 'hello',
+            'relation' => null, ]])->andReturn($where);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update')->withArgs(['TestModels'])->andReturn($values);
 
         $this->assertTrue($model->set([
             'answer' => 'hello',
             'relation' => '',
             'nonexistent_property' => 'whatever', ]));
-        $this->assertEquals('hello', $model->answer);
-        $this->assertEquals(null, $model->relation);
-    }
-
-    public function testSetAutoTimestamps()
-    {
-        $stmt = Mockery::mock('PDOStatement');
-
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
-        $model = new TestModel2(12);
-        $updatedAt = $model->updated_at = 100000;
-        $model->set('default', 'testing');
-        $this->assertNotEquals($updatedAt, $model->updated_at);
-
-        $model->updated_at = '2012-04-18 23:38:18';
-        $this->assertTrue(is_integer($model->updated_at));
     }
 
     public function testSetJson()
     {
         $stmt = Mockery::mock('PDOStatement');
 
+        // update mock
+        $where = Mockery::mock();
+        $where->shouldReceive('where->execute')->andReturn($stmt);
+        $values = Mockery::mock();
+        $values->shouldReceive('values')->withArgs([['json' => '{"test":true,"test2":[1,2,3]}']])->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
+        self::$app['db']->shouldReceive('update')->andReturn($values);
 
-        $json = [ 'test' => true, 'test2' => [ 1, 2, 3 ] ];
+        // select mock
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['json' => '{"test":true,"test2":[1,2,3]}']);
+
+        $json = ['test' => true, 'test2' => [1, 2, 3]];
 
         $model = new TestModel2(13);
         $model->set('json', $json);
@@ -806,8 +863,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $stmt = Mockery::mock('PDOStatement');
 
+        // update mock
+        $where = Mockery::mock();
+        $where->shouldReceive('where->execute')->andReturn($stmt);
+        $values = Mockery::mock();
+        $values->shouldReceive('values')->withArgs([[]])->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn($stmt);
+        self::$app['db']->shouldReceive('update')->andReturn($values);
+
+        // select mock
         self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
 
         $model = new TestModel(10);
@@ -855,6 +919,23 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $errorStack->errors('TestModel2.set'));
     }
 
+    public function testSetFail()
+    {
+        $model = new TestModel(10);
+
+        // update query mock
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('update->values->where->execute')->andThrow(new Exception());
+        self::$app['logger'] = Mockery::mock();
+        self::$app['logger']->shouldReceive('error');
+
+        $this->assertFalse($model->set('answer', 42));
+    }
+
+    /////////////////////////////
+    // DELETE
+    /////////////////////////////
+
     public function testDelete()
     {
         self::$app['db'] = Mockery::mock();
@@ -894,6 +975,103 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $model = new TestModelHookFail(5);
         $this->assertFalse($model->delete());
+    }
+
+    public function testDeleteFail()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('delete->where->execute')->andThrow(new Exception());
+        self::$app['logger'] = Mockery::mock();
+        self::$app['logger']->shouldReceive('error');
+
+        $model = new TestModel2(1);
+        $this->assertFalse($model->delete());
+    }
+
+    /////////////////////////////
+    // CACHE
+    /////////////////////////////
+
+/*    public function testCacheAndValueMarshaling()
+    {
+        // TODO
+        $model = new TestModel2(3);
+
+        $json = [
+            'test' => true,
+            'test2' => [
+                'hello',
+                'anyone there?', ], ];
+
+        $this->assertEquals($model, $model->cacheProperties([
+            'validate' => '',
+            'hidden' => '1',
+            'default' => 'testing',
+            'test2' => 'hello',
+            'person' => '30',
+            'required' => '50',
+            'json' => $json, ]));
+
+        $this->assertEquals('', $model->validate);
+        $this->assertEquals('1', $model->hidden);
+        $this->assertEquals('50', $model->required);
+        $this->assertEquals('30', $model->person);
+        $this->assertEquals('hello', $model->test2);
+        $this->assertEquals('testing', $model->default);
+        $this->assertEquals($json, $model->json);
+
+        $model2 = new TestModel2(3);
+        $this->assertTrue($model2->validate === null);
+        $this->assertTrue($model2->hidden === true);
+        $this->assertTrue($model2->required === 50);
+        $this->assertTrue($model2->person === 30);
+        $this->assertTrue($model2->default === 'testing');
+        $this->assertEquals('hello', $model2->test2);
+        $this->assertEquals($json, $model2->json);
+    }*/
+
+    public function testSetDefaultCache()
+    {
+        $cache = Mockery::mock('Stash\\Pool');
+
+        TestModel::setDefaultCache($cache);
+        for ($i = 0; $i < 5; $i++) {
+            $model = new TestModel();
+            $this->assertEquals($cache, $model->getCache());
+        }
+
+        TestModel::clearDefaultCache();
+    }
+
+    public function testSetCache()
+    {
+        $cache = Mockery::mock('Stash\\Pool');
+
+        $model = new TestModel();
+        $this->assertEquals($model, $model->setCache($cache));
+
+        $this->assertEquals($cache, $model->getCache());
+    }
+
+    public function testCacheKey()
+    {
+        $model = new TestModel(5);
+        $this->assertEquals('models/testmodel/5', $model->cacheKey());
+    }
+
+    public function testClearCache()
+    {
+        $model = new TestModel(4);
+
+        $model->answer = 42;
+        $model->test = 1234;
+        $this->assertTrue(isset($model->answer));
+        $this->assertTrue(isset($model->test));
+
+        $this->assertEquals($model, $model->clearCache());
+
+        $this->assertNotEquals(42, $model->answer);
+        $this->assertFalse(isset($model->test));
     }
 }
 

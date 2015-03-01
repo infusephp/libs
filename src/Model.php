@@ -88,6 +88,7 @@ namespace infuse;
 use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
 use Pimple\Container;
+use Stash\Pool;
 
 if (!defined('ERROR_NO_PERMISSION')) {
     define('ERROR_NO_PERMISSION', 'no_permission');
@@ -122,19 +123,35 @@ abstract class Model extends Acl
     // Public variables
     /////////////////////////////
 
+    /**
+     * @staticvar array
+     */
     public static $properties = [];
 
     /////////////////////////////
     // Protected variables
     /////////////////////////////
 
+    /**
+     * @var number|string
+     */
     protected $_id;
+
+    /**
+     * @var App
+     */
     protected $app;
 
-    /* Property names that are excluded from the database */
+    /**
+     * @staticvar array
+     * Property names that are excluded from the database
+     */
     protected static $propertiesNotInDatabase = [];
 
-    /* Default model configuration */
+    /**
+     * @staticvar array
+     * Default model configuration
+     */
     protected static $config = [
         'cache' => [
             'strategies' => [
@@ -143,7 +160,10 @@ abstract class Model extends Acl
             'expires' => 0, ],
         'requester' => false, ];
 
-    /* Default parameters for Model::find() queries */
+    /**
+     * @staticvar array
+     * Default parameters for Model::find() queries
+     */
     protected static $defaultFindParameters = [
         'where' => [],
         'start' => 0,
@@ -151,12 +171,23 @@ abstract class Model extends Acl
         'search' => '',
         'sort' => '', ];
 
+    /**
+     * @staticvar App
+     */
     protected static $injectedApp;
+
+    /**
+     * @var Stash\Pool
+     */
+    protected $_cache;
 
     /////////////////////////////
     // Private variables
     /////////////////////////////
 
+    /**
+     * @staticvar array
+     */
     private static $propertyBase = [
         'type' => self::TYPE_STRING,
         'mutable' => self::MUTABLE,
@@ -166,6 +197,10 @@ abstract class Model extends Acl
         'searchable' => false,
         'hidden' => false,
     ];
+
+    /**
+     * @staticvar array
+     */
     private static $idProperties = [
         'id' => [
             'type' => self::TYPE_NUMBER,
@@ -173,6 +208,10 @@ abstract class Model extends Acl
             'admin_hidden_property' => true,
         ],
     ];
+
+    /**
+     * @staticvar array
+     */
     private static $timestampProperties = [
         'created_at' => [
             'type' => self::TYPE_DATE,
@@ -186,11 +225,41 @@ abstract class Model extends Acl
             'admin_type' => 'datepicker',
         ],
     ];
+
+    /**
+     * @staticvar array
+     */
     private static $cachedProperties = [];
 
-    private $localCache = [];
-    private $sharedCache;
-    private $relationModels;
+    /**
+     * @staticvar Stash\Pool
+     */
+    private static $defaultCache;
+
+    /**
+     * @var string
+     */
+    private static $_cachePrefix;
+
+    /**
+     * @var array
+     */
+    private $_local = [];
+
+    /**
+     * @var array
+     */
+    private $_unsaved = [];
+
+    /**
+     * @var array
+     */
+    private $_relationModels;
+
+    /**
+     * @var boolean
+     */
+    private $_clean;
 
     /////////////////////////////
     // GLOBAL CONFIGURATION
@@ -244,6 +313,10 @@ abstract class Model extends Acl
         $this->_id = $id;
 
         $this->app = self::$injectedApp;
+
+        if (self::$defaultCache) {
+            $this->_cache = &self::$defaultCache;
+        }
     }
 
     /**
@@ -257,7 +330,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets an inaccessible property by looking it up via get().
+     * Shortcut to a get() call for a given property
      *
      * @param string $name
      *
@@ -269,8 +342,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Sets an inaccessible property by changing the locally cached value.
-     * This method does not update the database or shared cache
+     * Sets an unsaved value
      *
      * @param string $name
      * @param mixed  $value
@@ -278,16 +350,15 @@ abstract class Model extends Acl
     public function __set($name, $value)
     {
         // if changing property, remove relation model
-        if (isset($this->relationModels[ $name ])) {
-            unset($this->relationModels[ $name ]);
+        if (isset($this->_relationModels[$name])) {
+            unset($this->_relationModels[$name]);
         }
 
-        $this->localCache[ $name ] = $value;
+        $this->_unsaved[$name] = $value;
     }
 
     /**
-     * Checks if an inaccessible property exists. Any property that is
-     * in the schema or locally cached is considered to be set
+     * Checks if an unsaved value or property exists by this name
      *
      * @param string $name
      *
@@ -295,23 +366,23 @@ abstract class Model extends Acl
      */
     public function __isset($name)
     {
-        return array_key_exists($name, $this->localCache) || $this->hasProperty($name);
+        return array_key_exists($name, $this->_unsaved) || $this->hasProperty($name);
     }
 
     /**
-     * Unsets an inaccessible property by invalidating it in the local cache.
+     * Unsets an unsaved value
      *
      * @param string $name
      */
     public function __unset($name)
     {
-        if (array_key_exists($name, $this->localCache)) {
+        if (array_key_exists($name, $this->_unsaved)) {
             // if changing property, remove relation model
-            if (isset($this->relationModels[ $name ])) {
-                unset($this->relationModels[ $name ]);
+            if (isset($this->_relationModels[$name])) {
+                unset($this->_relationModels[$name]);
             }
 
-            unset($this->localCache[ $name ]);
+            unset($this->_unsaved[$name]);
         }
     }
 
@@ -344,7 +415,7 @@ abstract class Model extends Acl
         foreach ($idProperty as $f) {
             $id = (count($ids)>0) ? array_pop($ids) : false;
 
-            $return[ $f ] = $id;
+            $return[$f] = $id;
         }
 
         return $return;
@@ -372,17 +443,17 @@ abstract class Model extends Acl
     {
         $properties = static::properties();
 
-        if (!static::hasProperty($property) || !isset($properties[$property ]['relation'])) {
+        if (!static::hasProperty($property) || !isset($properties[$property]['relation'])) {
             return false;
         }
 
         $relationModelName = $properties[$property]['relation'];
 
-        if (!isset($this->relationModels[$property])) {
-            $this->relationModels[$property] = new $relationModelName($this->$property);
+        if (!isset($this->_relationModels[$property])) {
+            $this->_relationModels[$property] = new $relationModelName($this->$property);
         }
 
-        return $this->relationModels[$property];
+        return $this->_relationModels[$property];
     }
 
     /////////////////////////////
@@ -516,7 +587,7 @@ abstract class Model extends Acl
     {
         $properties = static::properties();
 
-        return isset($properties[ $property ]);
+        return isset($properties[$property]);
     }
 
     /**
@@ -608,7 +679,7 @@ abstract class Model extends Acl
             // assume empty string is a null value for properties
             // that are marked as optionally-null
             if ($property['null'] && empty($value)) {
-                $insertArray[ $field ] = null;
+                $insertArray[$field] = null;
                 continue;
             }
 
@@ -627,12 +698,12 @@ abstract class Model extends Acl
                 $value = json_encode($value);
             }
 
-            $insertArray[ $field ] = $value;
+            $insertArray[$field] = $value;
         }
 
         // check for required fields
         foreach ($requiredProperties as $name) {
-            if (!isset($insertArray[ $name ])) {
+            if (!isset($insertArray[$name])) {
                 $this->app[ 'errors' ]->push([
                     'error' => VALIDATION_REQUIRED_FIELD_MISSING,
                     'params' => [
@@ -648,8 +719,10 @@ abstract class Model extends Acl
         }
 
         try {
-            if ($this->app['db']->insert($insertArray)
-                ->into(static::tablename())->execute()) {
+            $inserted = $this->app['db']->insert($insertArray)
+                ->into(static::tablename())->execute();
+            if ($inserted) {
+                // set new id(s)
                 $ids = [];
                 $idProperty = (array) static::idProperty();
                 foreach ($idProperty as $property) {
@@ -661,14 +734,7 @@ abstract class Model extends Acl
                     }
                 }
 
-                // force created_at key to be reloaded
-                if (property_exists(get_called_class(), 'autoTimestamps')) {
-                    unset($insertArray['created_at']);
-                }
-
-                // set id and cache properties
                 $this->_id = implode(',', $ids);
-                $this->cacheProperties($insertArray);
 
                 // post-hook
                 if (method_exists($this, 'postCreateHook')) {
@@ -687,8 +753,8 @@ abstract class Model extends Acl
     /**
      * Fetches property values from the model.
      *
-     * This method utilizes a local and shared caching layer (i.e. redis), a database layer,
-     * and finally resorts to the default property value for the model.
+     * This method looks up values in this order:
+     * unsaved values, local cache, cache, database, defaults
      *
      * @param string|array $properties       list of properties to fetch values for
      * @param boolean      $skipLocalCache   skips local cache when true
@@ -696,57 +762,36 @@ abstract class Model extends Acl
      *
      * @return mixed Returns value when only 1 found or an array when multiple values found
      */
-    public function get($properties, $skipLocalCache = false, $forceReturnArray = false)
+    public function get($properties, $skipCache = false, $forceReturnArray = false)
     {
-        if (is_string($properties)) {
+        if (!is_array($properties)) {
             $properties = explode(',', $properties);
-        } else {
-            $properties = (array) $properties;
         }
 
-        /*
-            Look up property values in this order:
-            i) Local Cache (unless explicitly skipped)
-            ii) Shared Cache
-            iii) Database (if enabled)
-            iv) Model Property Value Defaults
-        */
+        $_values = array_replace($this->id(true), $this->_local, $this->_unsaved);
 
-        // Make a copy of properties to keep track of what's remaining.
-        // Since this will be modified a copy must be made to prevent
-        // functional side effects
-        $remaining = $properties;
-
-        $hasId = $this->_id !== false;
-
-        $i = 1;
-        $values = [];
-        while ($i <= 4 && count($remaining) > 0) {
-            if ($i == 1 && !$skipLocalCache) {
-                $this->getFromLocalCache($remaining, $values);
-            } elseif ($i == 2 && $hasId) {
-                $this->getFromSharedCache($remaining, $values);
-            } elseif ($i == 3 && $hasId) {
-                $this->getFromDatabase($remaining, $values);
-            } elseif ($i == 4) {
-                $this->getFromDefaultValues($remaining, $values);
-            }
-
-            $i++;
+        $missingValues = count(array_diff($properties, array_keys($_values))) > 0;
+        if ($missingValues || $skipCache) {
+            $this->load($skipCache);
+            $_values = array_replace($_values, $this->_local, $this->_unsaved);
         }
 
-        if (count($properties) != count($values)) {
-            // TODO should we throw a notice if one or more
-            // properties were not found?
-            if (!$forceReturnArray && count($properties) == 1) {
-                return null;
+        // only return requested properties
+        foreach ($properties as $key) {
+            if (array_key_exists($key, $_values)) {
+                $return[$key] = $_values[$key];
             } else {
-                return $values;
+                // set any missing values to the default value
+                $return[$key] = $this->getDefaultValueFor($key);
+                $this->_local[$key] = $return[$key];
             }
         }
 
-        return (!$forceReturnArray && count($values) == 1) ?
-            reset($values) : $values;
+        if (!$forceReturnArray && count($return) == 1) {
+            return reset($return);
+        }
+
+        return $return;
     }
 
     /**
@@ -866,7 +911,7 @@ abstract class Model extends Acl
             return false;
         }
 
-        $errorStack = $this->app[ 'errors' ];
+        $errorStack = $this->app['errors'];
         $errorStack->setCurrentContext(static::modelName().'.set');
 
         // permission?
@@ -937,15 +982,12 @@ abstract class Model extends Acl
         }
 
         try {
-            if ($this->app['db']->update(static::tablename())
-                ->values($updateArray)->where($this->id(true))->execute()) {
-                // update the cache with our new values
-                $this->cacheProperties($updateArray);
-
-                // force updated_at key to be reloaded
-                if (property_exists(get_called_class(), 'autoTimestamps')) {
-                    $this->invalidateCachedProperty('updated_at');
-                }
+            $updated = $this->app['db']->update(static::tablename())
+                ->values($updateArray)->where($this->id(true))
+                ->execute();
+            if ($updated) {
+                // clear the cache
+                $this->clearCache();
 
                 // post-hook
                 if (method_exists($this, 'postSetHook')) {
@@ -993,7 +1035,7 @@ abstract class Model extends Acl
             if ($this->app['db']->delete(static::tablename())
                 ->where($this->id(true))->execute()) {
                 // clear the cache
-                $this->emptyCache();
+                $this->clearCache();
 
                 // post-hook
                 if (method_exists($this, 'postDeleteHook')) {
@@ -1106,7 +1148,7 @@ abstract class Model extends Acl
                 }
 
                 $model = new $modelName($id);
-                $model->cacheProperties($info);
+                $model->local = $info;
                 $return[ 'models' ][] = $model;
             }
         }
@@ -1146,6 +1188,7 @@ abstract class Model extends Acl
             return (int) self::$injectedApp['db']->select('count(*)')
                 ->from(static::tablename())->where($where)->scalar();
         } catch (\Exception $e) {
+            echo $e->getMessage();
             self::$injectedApp['logger']->error($e);
         }
 
@@ -1157,241 +1200,210 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Loads and caches all of the properties from the database layer
-     * IMPORTANT: this should be called before getting properties
-     * any time a model *might* have been updated from an outside source
+     * Sets the default cache instance used by new models
+     *
+     * @param Stash\Pool $pool
+     */
+    public static function setDefaultCache(Pool $pool)
+    {
+        self::$defaultCache = $pool;
+    }
+
+    /**
+     * Clears the default cache instance
+     */
+    public static function clearDefaultCache()
+    {
+        self::$defaultCache = false;
+    }
+
+    /**
+     * Sets the cache instance
+     *
+     * @param Stash/Pool $pool
+     *
+     * @return self
+     */
+    public function setCache(Pool $pool)
+    {
+        $this->_cache = $pool;
+
+        return $this;
+    }
+
+    /**
+     * Returns the cache instance
+     *
+     * @return Stash/Pool|false
+     */
+    public function getCache()
+    {
+        return $this->_cache;
+    }
+
+    /**
+     * Returns the cache key for this model
+     *
+     * @return string
+     */
+    public function cacheKey()
+    {
+        if (!self::$_cachePrefix) {
+            self::$_cachePrefix = 'models/'.strtolower(static::modelName());
+        }
+
+        return self::$_cachePrefix.'/'.$this->_id;
+    }
+
+    /**
+     * Caches the entire model
+     *
+     * @return self
+     */
+    public function cache()
+    {
+        if (!$this->_cache || $this->_clean || count($this->_local) == 0) {
+            return $this;
+        }
+
+        // cache the local properties
+        $item = $this->_cache->getItem($this->cacheKey());
+        $item->set($this->_local, static::$config['cache']['expires']);
+
+        $this->_clean = true;
+
+        return $this;
+    }
+
+    /**
+     * Clears the cache for this model
+     *
+     * @return self
+     */
+    public function clearCache()
+    {
+        $this->_unsaved = [];
+        $this->_local = [];
+        $this->_relationModels = [];
+
+        if ($this->_cache) {
+            $item = $this->_cache->getItem($this->cacheKey());
+            $item->clear();
+        }
+
+        return $this;
+    }
+
+    /////////////////////////////
+    // DATABASE
+    /////////////////////////////
+
+    /**
+     * Loads the model from the cache or database.
+     * First, attempts to load the model from the caching layer.
+     * If that fails, then attempts to load the model from the
+     * database layer.
+     *
+     * @param boolean $skipCache
      *
      * @return Model
      */
-    public function load()
+    public function load($skipCache = false)
     {
         if ($this->_id === false) {
             return;
         }
 
-        $info = [];
+        // load from the cache first
+        if ($this->_cache && !$skipCache) {
+            $item = $this->_cache->getItem($this->cacheKey());
+            $this->_local = $item->get();
 
+            // If the cache was a miss, then lock the item down,
+            // attempt to load from the database, and update it.
+            // This helps to deal with the stampede problem.
+            if ($item->isMiss()) {
+                $item->lock();
+                $this->loadFromDb();
+            }
+        } else {
+            $this->loadFromDb();
+        }
+
+        return $this;
+    }
+
+    public function loadFromDb()
+    {
         try {
-            $info = (array) $this->app['db']->select('*')->from(static::tablename())
-                ->where($this->id(true))->one();
+            $info = (array) $this->app['db']->select('*')
+                ->from(static::tablename())->where($this->id(true))
+                ->one();
+
+            if (count($info) > 0) {
+                // marshal values from database
+                $this->_local = [];
+                foreach ($info as $k => &$v) {
+                    $this->_local[$k] = $this->marshalValue($k, $v);
+                }
+
+                // clear any relations
+                $this->_relationModels = [];
+
+                // cache the model
+                return $this->cache();
+            }
         } catch (\Exception $e) {
             self::$injectedApp['logger']->error($e);
         }
 
-        // marshal values from database
-        foreach ($info as $k => &$v) {
-            $v = $this->marshalValue($k, $v);
-        }
-
-        $this->cacheProperties($info);
-
         return $this;
-    }
-
-    /**
-     * Updates the local and shared cache with the new value for a property
-     *
-     * @param string $property property name
-     * @param string $value    new value
-     *
-     * @return Model
-     */
-    public function cacheProperty($property, $value)
-    {
-        // if changing property, remove relation model
-        if (isset($this->relationModels[$property])) {
-            unset($this->relationModels[$property]);
-        }
-
-        /* Local Cache */
-        $this->localCache[ $property ] = $value;
-
-        /* Shared Cache */
-        $this->cache()->set($property, $value, static::$config['cache']['expires']);
-
-        return $this;
-    }
-
-    /**
-     * Cache data inside of the local and shared cache
-     *
-     * @param array $data data to be cached
-     *
-     * @return Model
-     */
-    public function cacheProperties(array $data)
-    {
-        foreach ($data as $property => $value) {
-            $this->cacheProperty($property, $value);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Invalidates a single property in the local and shared caches
-     *
-     * @param string $property property name
-     *
-     * @return Model
-     */
-    public function invalidateCachedProperty($property)
-    {
-        // if changing property, remove relation model
-        if (isset($this->relationModels[ $property ])) {
-            unset($this->relationModels[ $property ]);
-        }
-
-        /* Local Cache */
-        unset($this->localCache[ $property ]);
-
-        /* Shared Cache */
-        $this->cache()->delete($property);
-
-        return $this;
-    }
-
-    /**
-     * Invalidates all cached properties for this model
-     *
-     * @return Model
-     */
-    public function emptyCache()
-    {
-        // explicitly clear all properties and any other values in cache
-        $properties = array_unique(array_merge(
-            array_keys(static::properties()),
-            array_keys($this->localCache)));
-
-        foreach ($properties as $property) {
-            $this->invalidateCachedProperty($property);
-        }
-
-        return $this;
-    }
-
-    /////////////////////////////
-    // PROTECTED METHODS
-    /////////////////////////////
-
-    protected function cache()
-    {
-        if (!$this->sharedCache) {
-            $strategies = static::$config[ 'cache' ][ 'strategies' ];
-
-            // generate cache prefix for this model
-            $prefix = static::$config[ 'cache' ][ 'prefix' ].
-                      strtolower(static::modelName()).'.'.$this->_id.'.';
-
-            $this->sharedCache = new Cache($strategies, $prefix, $this->app);
-        }
-
-        return $this->sharedCache;
     }
 
     /////////////////////////////
     // PRIVATE METHODS
     /////////////////////////////
 
-    private function getFromLocalCache(&$properties, &$values)
-    {
-        $idProperties = $this->id(true);
-        $remove = [];
-
-        foreach ($properties as $property) {
-            if (array_key_exists($property, $this->localCache)) {
-                $values[$property] = $this->marshalValue($property, $this->localCache[$property]);
-            } elseif (static::isIdProperty($property)) {
-                $values[$property] = $this->marshalValue($property, $idProperties[$property]);
-            }
-
-            // mark index of property to remove from list of properties
-            if (array_key_exists($property, $values)) {
-                $remove[] = $property;
-            }
-        }
-
-        foreach ($remove as $property) {
-            $index = array_search($property, $properties);
-            unset($properties[$index]);
-        }
-    }
-
-    private function getFromSharedCache(&$properties, &$values)
-    {
-        $cached = $this->cache()->get($properties, true);
-
-        foreach ($cached as $property => $value) {
-            $values[ $property ] = $this->marshalValue($property, $value);
-
-            // remove property from list of remaining
-            $index = array_search($property, $properties);
-            unset($properties[ $index ]);
-        }
-    }
-
-    private function getFromDatabase(&$properties, &$values)
-    {
-        try {
-            $dbValues = $this->app['db']->select(implode(',', $properties))
-                ->from(static::tablename())->where($this->id(true))->one();
-
-            foreach ((array) $dbValues as $property => $value) {
-                $values[$property] = $this->marshalValue($property, $value);
-                $this->cacheProperty($property, $value);
-
-                // remove property from list of remaining
-                $index = array_search($property, $properties);
-                unset($properties[$index]);
-            }
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
-        }
-    }
-
-    private function getFromDefaultValues(&$properties, &$values)
-    {
-        $remove = [];
-
-        $availableProperties = static::properties();
-
-        foreach ($properties as $property) {
-            if (isset($availableProperties[ $property ]) && isset($availableProperties[ $property ][ 'default' ])) {
-                $values[ $property ] = $this->marshalValue($property, $availableProperties[ $property ][ 'default' ]);
-
-                // mark index of property to remove from list of properties
-                $remove[] = $property;
-            }
-        }
-
-        foreach ($remove as $property) {
-            $index = array_search($property, $properties);
-            unset($properties[ $index ]);
-        }
-    }
-
-    private function validate($property, $field, &$value)
+    /**
+     * Validates a value for a property
+     *
+     * @param array  $property
+     * @param string $field
+     * @param mixed  $value
+     *
+     * @return boolean
+     */
+    private function validate(array $property, $field, &$value)
     {
         $valid = true;
 
-        if (isset($property[ 'validate' ]) && is_callable($property[ 'validate' ])) {
-            $valid = call_user_func_array($property[ 'validate' ], [ $value ]);
-        } elseif (isset($property[ 'validate' ])) {
-            $valid = Validate::is($value, $property[ 'validate' ]);
+        if (isset($property['validate']) && is_callable($property['validate'])) {
+            $valid = call_user_func_array($property['validate'], [ $value ]);
+        } elseif (isset($property['validate'])) {
+            $valid = Validate::is($value, $property['validate']);
         }
 
         if (!$valid) {
-            $this->app[ 'errors' ]->push([
+            $this->app['errors']->push([
                 'error' => VALIDATION_FAILED,
                 'params' => [
                     'field' => $field,
-                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize($field), ], ]);
+                    'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($field), ], ]);
         }
 
         return $valid;
     }
 
-    private function checkUniqueness($property, $field, $value)
+    /**
+     * Checks if a value is unique for a property
+     *
+     * @param array  $property
+     * @param string $field
+     * @param mixed  $value
+     *
+     * @return boolean
+     */
+    private function checkUniqueness(array $property, $field, $value)
     {
         if (static::totalRecords([$field => $value]) > 0) {
             $this->app[ 'errors' ]->push([
@@ -1406,6 +1418,30 @@ abstract class Model extends Acl
         return true;
     }
 
+    /**
+     * Gets the marshaled default value for a property (if set)
+     *
+     * @param string $property
+     *
+     * @return mixed
+     */
+    private function getDefaultValueFor($property)
+    {
+        $properties = self::properties();
+        $default = Utility::array_value($properties, $property.'.default');
+        if ($default) {
+            return $this->marshalValue($property, $default);
+        }
+    }
+
+    /**
+     * Marshals a value to a given property
+     *
+     * @param string $property
+     * @param mixed  $value
+     *
+     * @return mixed
+     */
     private function marshalValue($property, $value)
     {
         if (empty($property)) {
