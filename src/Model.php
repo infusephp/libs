@@ -542,10 +542,10 @@ abstract class Model extends Acl
             }
         }
 
-        if ($property) {
+        if ($property !== false) {
             return Utility::array_value(self::$cachedProperties[$k], $property);
         } else {
-            return self::$cachedProperties[ $k ];
+            return self::$cachedProperties[$k];
         }
     }
 
@@ -1326,6 +1326,42 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
+     * Marshals a value for a given property to storage, and
+     * checks the validity of a value
+     *
+     * @param array  $property
+     * @param string $propertyName
+     * @param mixed  $value
+     *
+     * @return boolean|null true: is valid, false: is invalid
+     */
+    private function marshalToStorage(array $property, $propertyName, &$value)
+    {
+        // assume empty string is a null value for properties
+        // that are marked as optionally-null
+        if ($property['null'] && empty($value)) {
+            $value = null;
+
+            return true;
+        }
+
+        // json
+        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
+            $value = json_encode($value);
+        }
+
+        // validate
+        $valid = $this->validate($property, $propertyName, $value);
+
+        // unique?
+        if ($valid && $property['unique']) {
+            $valid = $this->checkUniqueness($property, $propertyName, $value);
+        }
+
+        return $valid;
+    }
+
+    /**
      * Validates a value for a property
      *
      * @param array  $property
@@ -1395,42 +1431,6 @@ abstract class Model extends Acl
         }
 
         return $this->marshalFromStorage($property, $property['default']);
-    }
-
-    /**
-     * Marshals a value for a given property to storage, and
-     * checks the validity of a value
-     *
-     * @param array  $property
-     * @param string $propertyName
-     * @param mixed  $value
-     *
-     * @return boolean|null true: is valid, false: is invalid
-     */
-    private function marshalToStorage(array $property, $propertyName, &$value)
-    {
-        // assume empty string is a null value for properties
-        // that are marked as optionally-null
-        if ($property['null'] && empty($value)) {
-            $value = null;
-
-            return true;
-        }
-
-        // json
-        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
-            $value = json_encode($value);
-        }
-
-        // validate
-        $valid = $this->validate($property, $propertyName, $value);
-
-        // unique?
-        if ($valid && $property['unique']) {
-            $valid = $this->checkUniqueness($property, $propertyName, $value);
-        }
-
-        return $valid;
     }
 
     /**
