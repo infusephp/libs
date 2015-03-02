@@ -1102,7 +1102,7 @@ abstract class Model extends Acl
 
                 $model = new $modelName($id);
                 $model->local = $info;
-                $return[ 'models' ][] = $model;
+                $return['models'][] = $model;
             }
         }
 
@@ -1125,7 +1125,7 @@ abstract class Model extends Acl
     {
         $models = static::find($params);
 
-        return ($models[ 'count' ] > 0) ? reset($models[ 'models' ]) : false;
+        return ($models['count'] > 0) ? reset($models['models']) : false;
     }
 
     /**
@@ -1261,7 +1261,7 @@ abstract class Model extends Acl
     public function load($skipCache = false)
     {
         if ($this->_id === false) {
-            return;
+            return $this;
         }
 
         if ($this->_cache && !$skipCache) {
@@ -1403,7 +1403,7 @@ abstract class Model extends Acl
     private function checkUniqueness(array $property, $propertyName, $value)
     {
         if (static::totalRecords([$propertyName => $value]) > 0) {
-            $this->app[ 'errors' ]->push([
+            $this->app['errors']->push([
                 'error' => VALIDATION_NOT_UNIQUE,
                 'params' => [
                     'field' => $propertyName,

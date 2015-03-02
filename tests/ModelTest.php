@@ -768,7 +768,28 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateNotUnique()
     {
-        $this->markTestIncomplete();
+        $errorStack = self::$app['errors'];
+        $errorStack->clear();
+
+        // select query mock
+        $scalar = Mockery::mock();
+        $scalar->shouldReceive('scalar')->andReturn(1);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['unique' => 'fail']])->andReturn($scalar);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from')->andReturn($where);
+
+        $model = new TestModel2();
+
+        $create = [
+            'id' => 2,
+            'id2' => 4,
+            'required' => 25,
+            'unique' => 'fail', ];
+        $this->assertFalse($model->create($create));
+
+        // verify error
+        $this->assertCount(1, $errorStack->errors('TestModel2.create'));
     }
 
     public function testCreateInvalid()
@@ -905,7 +926,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetNoPermission()
     {
-        $errorStack = self::$app[ 'errors' ];
+        $errorStack = self::$app['errors'];
         $errorStack->clear();
         $model = new TestModelNoPermission(5);
         $this->assertFalse($model->set('answer', 42));
@@ -920,7 +941,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetNotUnique()
     {
-        $this->markTestIncomplete();
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(0);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+
+        $model = new TestModel2(12);
+        $this->assertTrue($model->set('unique', 'works'));
     }
 
     public function testSetInvalid()
@@ -1082,7 +1108,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testLoad()
     {
-        $this->markTestIncomplete();
+        $model = new TestModel();
+        $this->assertEquals($model, $model->load());
     }
 
     public function testClearCache()
@@ -1096,7 +1123,27 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFromDb()
     {
-        $this->markTestIncomplete();
+        // select query mock
+        $one = Mockery::mock();
+        $one->shouldReceive('one')->andReturn([]);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')->withArgs([['id' => 12]])->andReturn($one);
+        $from = Mockery::mock();
+        $from->shouldReceive('from')->withArgs(['TestModels'])->andReturn($where);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select')->andReturn($from);
+
+        $model = new TestModel(12);
+        $this->assertEquals($model, $model->loadFromDb());
+    }
+
+    public function testLoadFromDbFail()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andThrow(new Exception());
+
+        $model = new TestModel(12);
+        $this->assertEquals($model, $model->loadFromDb());
     }
 }
 
