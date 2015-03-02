@@ -939,10 +939,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($model->set('answer', 42));
     }
 
-    public function testSetNotUnique()
+    public function testSetUnique()
     {
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(0);
+        self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
+
+        $model = new TestModel2(12);
+        $this->assertTrue($model->set('unique', 'works'));
+    }
+
+    public function testSetUniqueSkip()
+    {
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['unique' => 'works']);
         self::$app['db']->shouldReceive('update->values->where->execute')->andReturn(true);
 
         $model = new TestModel2(12);

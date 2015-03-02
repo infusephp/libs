@@ -1354,7 +1354,7 @@ abstract class Model extends Acl
         $valid = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique']) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
