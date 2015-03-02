@@ -773,10 +773,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateInvalid()
     {
-        $errorStack = self::$app[ 'errors' ];
+        $errorStack = self::$app['errors'];
         $errorStack->clear();
         $newModel = new TestModel2();
-        $this->assertFalse($newModel->create([ 'id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true ]));
+        $this->assertFalse($newModel->create(['id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true]));
         $this->assertCount(1, $errorStack->errors('TestModel2.create'));
     }
 

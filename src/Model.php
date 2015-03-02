@@ -671,24 +671,8 @@ abstract class Model extends Acl
                 continue;
             }
 
-            // assume empty string is a null value for properties
-            // that are marked as optionally-null
-            if ($property['null'] && empty($value)) {
-                $insertArray[$field] = null;
-                continue;
-            }
-
-            // validate
-            $thisIsValid = $this->validate($property, $field, $value);
-
-            // unique?
-            if ($thisIsValid && $property['unique']) {
-                $thisIsValid = $this->checkUniqueness($property, $field, $value);
-            }
-
-            $validated = $validated && $thisIsValid;
-
-            $insertArray[$field] = $this->marshalToStorage($property, $value);
+            $validated = $validated && $this->marshalToStorage($property, $field, $value);
+            $insertArray[$field] = $value;
         }
 
         // check for required fields
@@ -942,24 +926,8 @@ abstract class Model extends Acl
                 continue;
             }
 
-            // assume empty string is a null value for properties
-            // that are marked as optionally-null
-            if ($property['null'] && empty($value)) {
-                $updateArray[$field] = null;
-                continue;
-            }
-
-            // validate
-            $thisIsValid = $this->validate($property, $field, $value);
-
-            // unique?
-            if ($thisIsValid && $property['unique'] && $value != $this->$field) {
-                $thisIsValid = $this->checkUniqueness($property, $field, $value);
-            }
-
-            $validated = $validated && $thisIsValid;
-
-            $updateArray[$field] = $this->marshalToStorage($property, $value);
+            $validated = $validated && $this->marshalToStorage($property, $field, $value);
+            $updateArray[$field] = $value;
         }
 
         if (!$validated) {
@@ -1361,12 +1329,12 @@ abstract class Model extends Acl
      * Validates a value for a property
      *
      * @param array  $property
-     * @param string $field
+     * @param string $propertyName
      * @param mixed  $value
      *
      * @return boolean
      */
-    private function validate(array $property, $field, &$value)
+    private function validate(array $property, $propertyName, &$value)
     {
         $valid = true;
 
@@ -1380,8 +1348,8 @@ abstract class Model extends Acl
             $this->app['errors']->push([
                 'error' => VALIDATION_FAILED,
                 'params' => [
-                    'field' => $field,
-                    'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($field), ], ]);
+                    'field' => $propertyName,
+                    'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($propertyName), ], ]);
         }
 
         return $valid;
@@ -1391,19 +1359,19 @@ abstract class Model extends Acl
      * Checks if a value is unique for a property
      *
      * @param array  $property
-     * @param string $field
+     * @param string $propertyName
      * @param mixed  $value
      *
      * @return boolean
      */
-    private function checkUniqueness(array $property, $field, $value)
+    private function checkUniqueness(array $property, $propertyName, $value)
     {
-        if (static::totalRecords([$field => $value]) > 0) {
+        if (static::totalRecords([$propertyName => $value]) > 0) {
             $this->app[ 'errors' ]->push([
                 'error' => VALIDATION_NOT_UNIQUE,
                 'params' => [
-                    'field' => $field,
-                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize($field), ], ]);
+                    'field' => $propertyName,
+                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize($propertyName), ], ]);
 
             return false;
         }
@@ -1430,17 +1398,23 @@ abstract class Model extends Acl
     }
 
     /**
-     * Marshals a value for a given property to storage
+     * Marshals a value for a given property to storage, and
+     * checks the validity of a value
      *
-     * @param array $property
-     * @param mixed $value
+     * @param array  $property
+     * @param string $propertyName
+     * @param mixed  $value
      *
-     * @return mixed
+     * @return boolean|null true: is valid, false: is invalid
      */
-    private function marshalToStorage($property, $value)
+    private function marshalToStorage(array $property, $propertyName, &$value)
     {
-        if (!isset($property['type'])) {
-            return $value;
+        // assume empty string is a null value for properties
+        // that are marked as optionally-null
+        if ($property['null'] && empty($value)) {
+            $value = null;
+
+            return true;
         }
 
         // json
@@ -1448,7 +1422,15 @@ abstract class Model extends Acl
             $value = json_encode($value);
         }
 
-        return $value;
+        // validate
+        $valid = $this->validate($property, $propertyName, $value);
+
+        // unique?
+        if ($valid && $property['unique']) {
+            $valid = $this->checkUniqueness($property, $propertyName, $value);
+        }
+
+        return $valid;
     }
 
     /**
@@ -1461,10 +1443,6 @@ abstract class Model extends Acl
      */
     private function marshalFromStorage(array $property, $value)
     {
-        if (!isset($property['type'])) {
-            return $value;
-        }
-
         if ($property['null'] && $value == '') {
             return null;
         }
