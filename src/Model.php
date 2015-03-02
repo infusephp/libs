@@ -256,11 +256,6 @@ abstract class Model extends Acl
      */
     private $_relationModels;
 
-    /**
-     * @var boolean
-     */
-    private $_clean;
-
     /////////////////////////////
     // GLOBAL CONFIGURATION
     /////////////////////////////
@@ -292,7 +287,7 @@ abstract class Model extends Acl
      */
     public static function inject(Container $app)
     {
-        static::$injectedApp = $app;
+        self::$injectedApp = $app;
     }
 
     /////////////////////////////
@@ -312,7 +307,7 @@ abstract class Model extends Acl
 
         $this->_id = $id;
 
-        $this->app = static::$injectedApp;
+        $this->app = self::$injectedApp;
 
         if (self::$defaultCache) {
             $this->_cache = &self::$defaultCache;
@@ -550,7 +545,7 @@ abstract class Model extends Acl
         if ($property) {
             return Utility::array_value(self::$cachedProperties[$k], $property);
         } else {
-            return self::$cachedProperties[$k];
+            return self::$cachedProperties[ $k ];
         }
     }
 
@@ -688,17 +683,12 @@ abstract class Model extends Acl
 
             // unique?
             if ($thisIsValid && $property['unique']) {
-                $thisIsValid = $this->isUnique($property, $field, $value);
+                $thisIsValid = $this->checkUniqueness($property, $field, $value);
             }
 
             $validated = $validated && $thisIsValid;
 
-            // json
-            if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
-                $value = json_encode($value);
-            }
-
-            $insertArray[$field] = $value;
+            $insertArray[$field] = $this->marshalToStorage($property, $value);
         }
 
         // check for required fields
@@ -770,10 +760,8 @@ abstract class Model extends Acl
 
         $_values = array_replace($this->id(true), $this->_local, $this->_unsaved);
 
-        // figure out if there are any missing values and
-        // the model needs to be loaded
-        $missingValues = count(array_diff($properties, array_keys($_values))) > 0;
-        if ($missingValues || $skipCache) {
+        $numMissing = count(array_diff($properties, array_keys($_values)));
+        if ($numMissing > 0 || $skipCache) {
             $this->load($skipCache);
             $_values = array_replace($_values, $this->_local, $this->_unsaved);
         }
@@ -966,17 +954,12 @@ abstract class Model extends Acl
 
             // unique?
             if ($thisIsValid && $property['unique'] && $value != $this->$field) {
-                $thisIsValid = $this->isUnique($property, $field, $value);
+                $thisIsValid = $this->checkUniqueness($property, $field, $value);
             }
 
             $validated = $validated && $thisIsValid;
 
-            // json
-            if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
-                $value = json_encode($value);
-            }
-
-            $updateArray[$field] = $value;
+            $updateArray[$field] = $this->marshalToStorage($property, $value);
         }
 
         if (!$validated) {
@@ -1021,8 +1004,8 @@ abstract class Model extends Acl
         $errorStack->setCurrentContext(static::modelName().'.delete');
 
         // permission?
-        if (!$this->can('delete', static::$config['requester'])) {
-            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
+        if (!$this->can('delete', static::$config[ 'requester' ])) {
+            $errorStack->push([ 'error' => ERROR_NO_PERMISSION ]);
 
             return false;
         }
@@ -1109,7 +1092,7 @@ abstract class Model extends Acl
 
             // validate direction
             $direction = strtolower($c[ 1 ]);
-            if (!in_array($direction, ['asc', 'desc'])) {
+            if (!in_array($direction, [ 'asc', 'desc' ])) {
                 continue;
             }
 
@@ -1127,11 +1110,11 @@ abstract class Model extends Acl
         $models = false;
 
         try {
-            $models = static::$injectedApp['db']->select('*')
+            $models = self::$injectedApp['db']->select('*')
                 ->from(static::tablename())->where($params['where'])
                 ->limit($limit, $offset)->orderBy($sortParams)->all();
         } catch (\Exception $e) {
-            static::$injectedApp['logger']->error($e);
+            self::$injectedApp['logger']->error($e);
         }
 
         if (is_array($models)) {
@@ -1151,7 +1134,7 @@ abstract class Model extends Acl
 
                 $model = new $modelName($id);
                 $model->local = $info;
-                $return['models'][] = $model;
+                $return[ 'models' ][] = $model;
             }
         }
 
@@ -1174,7 +1157,7 @@ abstract class Model extends Acl
     {
         $models = static::find($params);
 
-        return ($models['count'] > 0) ? reset($models['models']) : false;
+        return ($models[ 'count' ] > 0) ? reset($models[ 'models' ]) : false;
     }
 
     /**
@@ -1187,10 +1170,10 @@ abstract class Model extends Acl
     public static function totalRecords(array $where = [])
     {
         try {
-            return (int) static::$injectedApp['db']->select('count(*)')
+            return (int) self::$injectedApp['db']->select('count(*)')
                 ->from(static::tablename())->where($where)->scalar();
         } catch (\Exception $e) {
-            static::$injectedApp['logger']->error($e);
+            self::$injectedApp['logger']->error($e);
         }
 
         return 0;
@@ -1257,29 +1240,19 @@ abstract class Model extends Acl
     }
 
     /**
-     * Caches the entire model assuming it's already been loaded
+     * Caches the entire model
      *
      * @return self
      */
     public function cache()
     {
-        if (!$this->_cache) {
-            return $this;
-        }
-
-        if (count($this->_local) == 0) {
-            return $this;
-        }
-
-        if ($this->_clean) {
+        if (!$this->_cache || count($this->_local) == 0) {
             return $this;
         }
 
         // cache the local properties
         $item = $this->_cache->getItem($this->cacheKey());
         $item->set($this->_local, static::$config['cache']['expires']);
-
-        $this->_clean = true;
 
         return $this;
     }
@@ -1313,7 +1286,7 @@ abstract class Model extends Acl
      * If that fails, then attempts to load the model from the
      * database layer.
      *
-     * @param boolean $skipCache when true, always loads from database
+     * @param boolean $skipCache
      *
      * @return Model
      */
@@ -1323,17 +1296,20 @@ abstract class Model extends Acl
             return;
         }
 
-        // load from the cache first
         if ($this->_cache && !$skipCache) {
+            // attempt load from the cache first
             $item = $this->_cache->getItem($this->cacheKey());
             $this->_local = $item->get();
 
-            // If the cache was a miss, then lock the item down,
-            // attempt to load from the database, and update it.
-            // This helps to deal with the stampede problem.
-            if ($item->isMiss()) {
+            if (!$item->isMiss()) {
+                // TODO
+            } else {
+                // If the cache was a miss, then lock the item down,
+                // attempt to load from the database, and update it.
+                // This helps to deal with the stampede problem.
                 $item->lock();
                 $this->loadFromDb();
+                $item->set($this->_local, static::$config['cache']['expires']);
             }
         } else {
             $this->loadFromDb();
@@ -1342,6 +1318,11 @@ abstract class Model extends Acl
         return $this;
     }
 
+    /**
+     * Loads the model from the database and caches it
+     *
+     * @return self
+     */
     public function loadFromDb()
     {
         try {
@@ -1350,19 +1331,23 @@ abstract class Model extends Acl
                 ->one();
 
             if (count($info) > 0) {
-                $this->_local = [];
-                $this->_relationModels = [];
-
                 // marshal values from database
+                $this->_local = [];
                 foreach ($info as $k => &$v) {
-                    $this->_local[$k] = $this->marshalValue($k, $v);
+                    $property = static::properties($k);
+                    if (is_array($property)) {
+                        $this->_local[$k] = $this->marshalFromStorage($property, $v);
+                    }
                 }
 
-                // cache the resulting model
-                return $this->cache();
+                // clear any relations
+                $this->_relationModels = [];
+
+                // cache the model
+                return $this;
             }
         } catch (\Exception $e) {
-            static::$injectedApp['logger']->error($e);
+            self::$injectedApp['logger']->error($e);
         }
 
         return $this;
@@ -1411,7 +1396,7 @@ abstract class Model extends Acl
      *
      * @return boolean
      */
-    private function isUnique(array $property, $field, $value)
+    private function checkUniqueness(array $property, $field, $value)
     {
         if (static::totalRecords([$field => $value]) > 0) {
             $this->app[ 'errors' ]->push([
@@ -1435,38 +1420,56 @@ abstract class Model extends Acl
      */
     private function getDefaultValueFor($property)
     {
-        $properties = static::properties();
-        $default = Utility::array_value($properties, $property.'.default');
-        if ($default) {
-            return $this->marshalValue($property, $default);
-        }
-    }
+        $property = self::properties($property);
 
-    /**
-     * Marshals a value to a given property
-     *
-     * @param string $property
-     * @param mixed  $value
-     *
-     * @return mixed
-     */
-    private function marshalValue($property, $value)
-    {
-        if (empty($property)) {
-            return $value;
-        }
-
-        // look up property (if it exists)
-        $pData = static::properties($property);
-        if (!$pData) {
-            return $value;
-        }
-
-        if ($pData['null'] && $value == '') {
+        if (!is_array($property) || !isset($property['default'])) {
             return null;
         }
 
-        $type = $pData['type'];
+        return $this->marshalFromStorage($property, $property['default']);
+    }
+
+    /**
+     * Marshals a value for a given property to storage
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function marshalToStorage($property, $value)
+    {
+        if (!isset($property['type'])) {
+            return $value;
+        }
+
+        // json
+        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
+            $value = json_encode($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Marshals a value for a given property from storage
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function marshalFromStorage(array $property, $value)
+    {
+        if (!isset($property['type'])) {
+            return $value;
+        }
+
+        if ($property['null'] && $value == '') {
+            return null;
+        }
+
+        $type = $property['type'];
 
         if ($type == self::TYPE_BOOLEAN) {
             return ($value == '1') ? true : false;
