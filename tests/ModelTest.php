@@ -181,6 +181,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'searchable' => false,
                 'hidden' => false,
             ],
+            'validate2' => [
+                'type' => Model::TYPE_STRING,
+                'validate' => 'validate',
+                'null' => true,
+                'mutable' => Model::MUTABLE,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => true,
+            ],
             'unique' => [
                 'type' => Model::TYPE_STRING,
                 'unique' => true,
@@ -961,11 +971,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testSetInvalid()
     {
-        $errorStack = self::$app[ 'errors' ];
+        $errorStack = self::$app['errors'];
         $errorStack->clear();
         $model = new TestModel2(15);
 
-        $this->assertFalse($model->set('validate', 'not a valid email'));
+        $this->assertFalse($model->set('validate2', 'invalid'));
         $this->assertCount(1, $errorStack->errors('TestModel2.set'));
     }
 
@@ -1070,61 +1080,69 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model = new TestModel(5);
         $this->assertEquals('models/testmodel/5', $model->cacheKey());
     }
-
-    public function testGetFromCache()
+    public function testCacheHit()
     {
-        $this->markTestIncomplete();
-/*
-        $model = new TestModel2(3);
+        $cache = new Stash\Pool();
 
-        $json = [
-            'test' => true,
-            'test2' => [
-                'hello',
-                'anyone there?', ], ];
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
+            'answer' => 42, ]);
 
-        $this->assertEquals($model, $model->cacheProperties([
-            'validate' => '',
-            'hidden' => '1',
-            'default' => 'testing',
-            'test2' => 'hello',
-            'person' => '30',
-            'required' => '50',
-            'json' => $json, ]));
+        $model = new TestModel(100);
+        $model->setCache($cache);
 
-        $this->assertEquals('', $model->validate);
-        $this->assertEquals('1', $model->hidden);
-        $this->assertEquals('50', $model->required);
-        $this->assertEquals('30', $model->person);
-        $this->assertEquals('hello', $model->test2);
-        $this->assertEquals('testing', $model->default);
-        $this->assertEquals($json, $model->json);
+        // load from the db first
+        $model->load(true);
 
-        $model2 = new TestModel2(3);
-        $this->assertTrue($model2->validate === null);
-        $this->assertTrue($model2->hidden === true);
-        $this->assertTrue($model2->required === 50);
-        $this->assertTrue($model2->person === 30);
-        $this->assertTrue($model2->default === 'testing');
-        $this->assertEquals('hello', $model2->test2);
-        $this->assertEquals($json, $model2->json);
-*/
+        $this->assertEquals($model, $model->load());
+
+        $this->assertEquals(42, $model->get('answer'));
+    }
+
+    public function testCacheMiss()
+    {
+        $cache = new Stash\Pool();
+
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
+            'answer' => 42, ]);
+
+        $model = new TestModel(101);
+        $model->setCache($cache);
+
+        $this->assertEquals($model, $model->load());
+
+        // value should now be cached
+        $item = $cache->getItem($model->cacheKey());
+        $value = $item->get();
+        $this->assertFalse($item->isMiss());
+        $expected = [
+            'answer' => 42, ];
+        $this->assertEquals($expected, $value);
     }
 
     public function testCache()
     {
-        $this->markTestIncomplete();
-    }
+        $cache = new Stash\Pool();
 
-    public function testLoad()
-    {
-        $model = new TestModel();
-        $this->assertEquals($model, $model->load());
-    }
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
+            'answer' => 42, ]);
 
-    public function testClearCache()
-    {
-        $this->markTestIncomplete();
+        $model = new TestModel(102);
+        $model->setCache($cache);
+
+        // cache
+        $this->assertEquals($model, $model->load()->cache());
+        $item = $cache->getItem($model->cacheKey());
+        $value = $item->get();
+        $this->assertFalse($item->isMiss());
+
+        // clear the cache
+        $this->assertEquals($model, $model->clearCache());
+        $item = $cache->getItem($model->cacheKey());
+        $value = $item->get();
+        $this->assertTrue($item->isMiss());
     }
 
     /////////////////////////////
@@ -1133,6 +1151,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFromDb()
     {
+        $model = new TestModel2();
+        $this->assertEquals($model, $model->load());
+
         // select query mock
         $one = Mockery::mock();
         $one->shouldReceive('one')->andReturn([]);
@@ -1141,19 +1162,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $from = Mockery::mock();
         $from->shouldReceive('from')->withArgs(['TestModels'])->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select')->andReturn($from);
+        self::$app['db']->shouldReceive('select')->andReturn($from)->once();
 
         $model = new TestModel(12);
-        $this->assertEquals($model, $model->loadFromDb());
+        $this->assertEquals($model, $model->load(true));
     }
 
     public function testLoadFromDbFail()
     {
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andThrow(new Exception());
+        self::$app['db']->shouldReceive('select->from->where->one')->andThrow(new Exception())->once();
 
         $model = new TestModel(12);
-        $this->assertEquals($model, $model->loadFromDb());
+        $this->assertEquals($model, $model->load(true));
     }
 }
 
@@ -1232,6 +1253,10 @@ class TestModel extends Model
     }
 }
 
+function validate()
+{
+    return false;
+};
 class TestModel2 extends Model
 {
     static $properties = [
@@ -1246,6 +1271,11 @@ class TestModel2 extends Model
         ],
         'validate' => [
             'validate' => 'email',
+            'null' => true,
+        ],
+        'validate2' => [
+            'validate' => 'validate',
+            'hidden' => true,
             'null' => true,
         ],
         'unique' => [

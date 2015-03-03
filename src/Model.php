@@ -1147,6 +1147,46 @@ abstract class Model extends Acl
         return 0;
     }
 
+    /**
+     * Loads the model from the cache or database.
+     * First, attempts to load the model from the caching layer.
+     * If that fails, then attempts to load the model from the
+     * database layer.
+     *
+     * @param boolean $skipCache
+     *
+     * @return Model
+     */
+    public function load($skipCache = false)
+    {
+        if ($this->_id === false) {
+            return $this;
+        }
+
+        if ($this->_cache && !$skipCache) {
+            // attempt load from the cache first
+            $item = $this->_cache->getItem($this->cacheKey());
+            $this->_local = $item->get();
+
+            if ($item->isMiss()) {
+                // If the cache was a miss, then lock the item down,
+                // attempt to load from the database, and update it.
+                // Stash uses this to prevent the stampede problem.
+                $item->lock();
+                $this->loadFromDb();
+
+                $item->set($this->_local, $this->getCacheTTL());
+            }
+        } else {
+            $this->loadFromDb()->cache();
+        }
+
+        // clear any relations
+        $this->_relationModels = [];
+
+        return $this;
+    }
+
     /////////////////////////////
     // CACHE
     /////////////////////////////
@@ -1194,6 +1234,18 @@ abstract class Model extends Acl
     }
 
     /**
+     * Returns the cache TTL
+     *
+     * @return number|null
+     */
+    public function getCacheTTL()
+    {
+        $expires = static::$config['cache']['expires'];
+
+        return ($expires < 1) ? null : $expires;
+    }
+
+    /**
      * Returns the cache key for this model
      *
      * @return string
@@ -1220,7 +1272,7 @@ abstract class Model extends Acl
 
         // cache the local properties
         $item = $this->_cache->getItem($this->cacheKey());
-        $item->set($this->_local, static::$config['cache']['expires']);
+        $item->set($this->_local, $this->getCacheTTL());
 
         return $this;
     }
@@ -1239,83 +1291,6 @@ abstract class Model extends Acl
         if ($this->_cache) {
             $item = $this->_cache->getItem($this->cacheKey());
             $item->clear();
-        }
-
-        return $this;
-    }
-
-    /////////////////////////////
-    // DATABASE
-    /////////////////////////////
-
-    /**
-     * Loads the model from the cache or database.
-     * First, attempts to load the model from the caching layer.
-     * If that fails, then attempts to load the model from the
-     * database layer.
-     *
-     * @param boolean $skipCache
-     *
-     * @return Model
-     */
-    public function load($skipCache = false)
-    {
-        if ($this->_id === false) {
-            return $this;
-        }
-
-        if ($this->_cache && !$skipCache) {
-            // attempt load from the cache first
-            $item = $this->_cache->getItem($this->cacheKey());
-            $this->_local = $item->get();
-
-            if (!$item->isMiss()) {
-                // TODO
-            } else {
-                // If the cache was a miss, then lock the item down,
-                // attempt to load from the database, and update it.
-                // This helps to deal with the stampede problem.
-                $item->lock();
-                $this->loadFromDb();
-                $item->set($this->_local, static::$config['cache']['expires']);
-            }
-        } else {
-            $this->loadFromDb();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Loads the model from the database and caches it
-     *
-     * @return self
-     */
-    public function loadFromDb()
-    {
-        try {
-            $info = (array) $this->app['db']->select('*')
-                ->from(static::tablename())->where($this->id(true))
-                ->one();
-
-            if (count($info) > 0) {
-                // marshal values from database
-                $this->_local = [];
-                foreach ($info as $k => &$v) {
-                    $property = static::properties($k);
-                    if (is_array($property)) {
-                        $this->_local[$k] = $this->marshalFromStorage($property, $v);
-                    }
-                }
-
-                // clear any relations
-                $this->_relationModels = [];
-
-                // cache the model
-                return $this;
-            }
-        } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
         }
 
         return $this;
@@ -1413,6 +1388,37 @@ abstract class Model extends Acl
         }
 
         return true;
+    }
+
+    /**
+     * Loads the model from the database and caches it
+     *
+     * @return self
+     */
+    private function loadFromDb()
+    {
+        try {
+            $info = (array) $this->app['db']->select('*')
+                ->from(static::tablename())->where($this->id(true))
+                ->one();
+
+            if (count($info) > 0) {
+                // marshal values from database
+                $this->_local = [];
+                foreach ($info as $k => &$v) {
+                    $property = static::properties($k);
+                    if (is_array($property)) {
+                        $this->_local[$k] = $this->marshalFromStorage($property, $v);
+                    }
+                }
+
+                return $this;
+            }
+        } catch (\Exception $e) {
+            self::$injectedApp['logger']->error($e);
+        }
+
+        return $this;
     }
 
     /**
