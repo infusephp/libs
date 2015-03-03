@@ -1455,7 +1455,7 @@ abstract class Model extends Acl
 
         $type = $property['type'];
 
-        if ($type == self::TYPE_BOOLEAN) {
+        if ($type == self::TYPE_BOOLEAN && is_string($value)) {
             return ($value == '1') ? true : false;
         }
 
