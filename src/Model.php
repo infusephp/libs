@@ -252,7 +252,12 @@ abstract class Model extends Acl
     /**
      * @var array
      */
-    private $_relationModels;
+    private $_relationModels = [];
+
+    /**
+     * @var Stash\Item
+     */
+    private $_cacheItem;
 
     /////////////////////////////
     // GLOBAL CONFIGURATION
@@ -1166,7 +1171,7 @@ abstract class Model extends Acl
 
         if ($this->_cache && !$skipCache) {
             // attempt load from the cache first
-            $item = $this->_cache->getItem($this->cacheKey());
+            $item = $this->cacheItem();
             $values = $item->get();
 
             if ($item->isMiss()) {
@@ -1175,7 +1180,7 @@ abstract class Model extends Acl
                 // Stash calls this Stampede Protection.
                 $item->lock();
 
-                $this->loadFromDb()->cache($item);
+                $this->loadFromDb()->cache();
             } else {
                 $this->_local = $values;
             }
@@ -1263,24 +1268,36 @@ abstract class Model extends Acl
     }
 
     /**
-     * Caches the entire model
+     * Returns the cache item for this model
      *
-     * @param Stash\Item optional stash item to cache on
+     * @return Stash\Item|null
+     */
+    public function cacheItem()
+    {
+        if (!$this->_cache) {
+            return null;
+        }
+
+        if (!$this->_cacheItem) {
+            $this->_cacheItem = $this->_cache->getItem($this->cacheKey());
+        }
+
+        return $this->_cacheItem;
+    }
+
+    /**
+     * Caches the entire model
      *
      * @return self
      */
-    public function cache(Item $item = null)
+    public function cache()
     {
         if (!$this->_cache || count($this->_local) == 0) {
             return $this;
         }
 
-        if (!$item) {
-            $item = $this->_cache->getItem($this->cacheKey());
-        }
-
         // cache the local properties
-        $item->set($this->_local, $this->getCacheTTL());
+        $this->cacheItem()->set($this->_local, $this->getCacheTTL());
 
         return $this;
     }
@@ -1297,8 +1314,7 @@ abstract class Model extends Acl
         $this->_relationModels = [];
 
         if ($this->_cache) {
-            $item = $this->_cache->getItem($this->cacheKey());
-            $item->clear();
+            $this->cacheItem()->clear();
         }
 
         return $this;
@@ -1400,6 +1416,8 @@ abstract class Model extends Acl
 
     /**
      * Loads the model from the database and caches it
+     *
+     * @param array $values optional values (if already loaded from DB)
      *
      * @return self
      */

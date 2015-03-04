@@ -1083,6 +1083,26 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model = new TestModel2(5);
         $this->assertEquals('models/testmodel2/5', $model->cacheKey());
     }
+
+    public function testCacheItem()
+    {
+        $cache = new Stash\Pool();
+
+        $model = new TestModel(5);
+        $this->assertNull($model->cacheItem());
+
+        $model->setCache($cache);
+        $item = $model->cacheItem();
+        $this->assertInstanceOf('Stash\\Item', $item);
+        $this->assertEquals('models/testmodel/5', $item->getKey());
+
+        $model = new TestModel2(5);
+        $model->setCache($cache);
+        $item = $model->cacheItem();
+        $this->assertInstanceOf('Stash\\Item', $item);
+        $this->assertEquals('models/testmodel2/5', $item->getKey());
+    }
+
     public function testCacheHit()
     {
         $cache = new Stash\Pool();
