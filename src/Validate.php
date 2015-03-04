@@ -67,7 +67,7 @@ class Validate
 
         foreach ($filters as $filterStr) {
             $exp = explode(':', $filterStr);
-            $filter = $exp[ 0 ];
+            $filter = $exp[0];
             $validated = $validated && self::$filter($value, array_slice($exp, 1));
         }
 

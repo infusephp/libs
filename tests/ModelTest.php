@@ -490,6 +490,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(123, $model->updated_at);
     }
 
+    public function testMarshalDecimal()
+    {
+        // select query mock
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '123.2384']);
+
+        $model = new TestModel2(12);
+        $this->assertTrue(is_numeric($model->updated_at));
+        $this->assertEquals(123.2384, $model->updated_at);
+    }
+
     public function testMarshalJson()
     {
         // select query mock
