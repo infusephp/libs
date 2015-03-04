@@ -1079,6 +1079,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         $model = new TestModel(5);
         $this->assertEquals('models/testmodel/5', $model->cacheKey());
+
+        $model = new TestModel2(5);
+        $this->assertEquals('models/testmodel2/5', $model->cacheKey());
     }
     public function testCacheHit()
     {

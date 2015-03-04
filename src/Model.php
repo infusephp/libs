@@ -89,6 +89,7 @@ use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
 use Pimple\Container;
 use Stash\Pool;
+use Stash\Item;
 
 if (!defined('ERROR_NO_PERMISSION')) {
     define('ERROR_NO_PERMISSION', 'no_permission');
@@ -154,9 +155,6 @@ abstract class Model extends Acl
      */
     protected static $config = [
         'cache' => [
-            'strategies' => [
-                'local', ],
-            'prefix' => '',
             'expires' => 0, ],
         'requester' => false, ];
 
@@ -227,19 +225,19 @@ abstract class Model extends Acl
     ];
 
     /**
-     * @staticvar array
-     */
-    private static $cachedProperties = [];
-
-    /**
      * @staticvar Stash\Pool
      */
     private static $defaultCache;
 
     /**
+     * @staticvar array
+     */
+    private static $cachedProperties = [];
+
+    /**
      * @var string
      */
-    private static $_cachePrefix;
+    private static $cachePrefix = [];
 
     /**
      * @var array
@@ -742,19 +740,19 @@ abstract class Model extends Acl
             $properties = explode(',', $properties);
         }
 
-        $_values = array_replace($this->id(true), $this->_local, $this->_unsaved);
+        $values = array_replace($this->id(true), $this->_local, $this->_unsaved);
 
-        $numMissing = count(array_diff($properties, array_keys($_values)));
+        $numMissing = count(array_diff($properties, array_keys($values)));
         if ($numMissing > 0 || $skipCache) {
             $this->load($skipCache);
-            $_values = array_replace($_values, $this->_local, $this->_unsaved);
+            $values = array_replace($values, $this->_local, $this->_unsaved);
         }
 
         // only return requested properties
         $return = [];
         foreach ($properties as $key) {
-            if (array_key_exists($key, $_values)) {
-                $return[$key] = $_values[$key];
+            if (array_key_exists($key, $values)) {
+                $return[$key] = $values[$key];
             } else {
                 // set any missing values to the default value
                 $return[$key] = $this->getDefaultValueFor($key);
@@ -1087,22 +1085,24 @@ abstract class Model extends Acl
         }
 
         if (is_array($models)) {
-            foreach ($models as $info) {
+            foreach ($models as $values) {
+                // determine the model id
                 $id = false;
-
                 $idProperty = static::idProperty();
                 if (is_array($idProperty)) {
                     $id = [];
 
                     foreach ($idProperty as $f) {
-                        $id[] = $info[ $f ];
+                        $id[] = $values[$f];
                     }
                 } else {
-                    $id = $info[ $idProperty ];
+                    $id = $values[$idProperty];
                 }
 
+                // create the model and cache the loaded values
                 $model = new $modelName($id);
-                $model->local = $info;
+                $model->loadFromDb($values)->cache();
+
                 $return['models'][] = $model;
             }
         }
@@ -1169,14 +1169,13 @@ abstract class Model extends Acl
             $item = $this->_cache->getItem($this->cacheKey());
             $values = $item->get();
 
-            if ($item->isMiss() || count($values) == 0) {
+            if ($item->isMiss()) {
                 // If the cache was a miss, then lock the item down,
                 // attempt to load from the database, and update it.
-                // Stash uses this to prevent the stampede problem.
+                // Stash calls this Stampede Protection.
                 $item->lock();
-                $this->loadFromDb();
 
-                $item->set($this->_local, $this->getCacheTTL());
+                $this->loadFromDb()->cache($item);
             } else {
                 $this->_local = $values;
             }
@@ -1255,26 +1254,32 @@ abstract class Model extends Acl
      */
     public function cacheKey()
     {
-        if (!self::$_cachePrefix) {
-            self::$_cachePrefix = 'models/'.strtolower(static::modelName());
+        $k = get_called_class();
+        if (!isset(self::$cachePrefix[$k])) {
+            self::$cachePrefix[$k] = 'models/'.strtolower(static::modelName());
         }
 
-        return self::$_cachePrefix.'/'.$this->_id;
+        return self::$cachePrefix[$k].'/'.$this->_id;
     }
 
     /**
      * Caches the entire model
      *
+     * @param Stash\Item optional stash item to cache on
+     *
      * @return self
      */
-    public function cache()
+    public function cache(Item $item = null)
     {
         if (!$this->_cache || count($this->_local) == 0) {
             return $this;
         }
 
+        if (!$item) {
+            $item = $this->_cache->getItem($this->cacheKey());
+        }
+
         // cache the local properties
-        $item = $this->_cache->getItem($this->cacheKey());
         $item->set($this->_local, $this->getCacheTTL());
 
         return $this;
@@ -1398,27 +1403,29 @@ abstract class Model extends Acl
      *
      * @return self
      */
-    private function loadFromDb()
+    private function loadFromDb($values = false)
     {
-        try {
-            $info = $this->app['db']->select('*')
-                ->from(static::tablename())->where($this->id(true))
-                ->one();
-
-            if (is_array($info)) {
-                // marshal values from database
-                $this->_local = [];
-                foreach ($info as $k => &$v) {
-                    $property = static::properties($k);
-                    if (is_array($property)) {
-                        $this->_local[$k] = $this->marshalFromStorage($property, $v);
-                    }
-                }
-
-                return $this;
+        if (!is_array($values)) {
+            try {
+                $values = $this->app['db']->select('*')
+                    ->from(static::tablename())->where($this->id(true))
+                    ->one();
+            } catch (\Exception $e) {
+                self::$injectedApp['logger']->error($e);
             }
-        } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
+        }
+
+        if (is_array($values)) {
+            // marshal values from database
+            $this->_local = [];
+            foreach ($values as $k => &$v) {
+                $property = static::properties($k);
+                if (is_array($property)) {
+                    $this->_local[$k] = $this->marshalFromStorage($property, $v);
+                }
+            }
+
+            return $this;
         }
 
         return $this;
@@ -1433,7 +1440,7 @@ abstract class Model extends Acl
      */
     private function getDefaultValueFor($property)
     {
-        $property = self::properties($property);
+        $property = static::properties($property);
 
         if (!is_array($property) || !isset($property['default'])) {
             return null;
