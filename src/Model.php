@@ -1169,7 +1169,7 @@ abstract class Model extends Acl
             $item = $this->_cache->getItem($this->cacheKey());
             $values = $item->get();
 
-            if ($item->isMiss()) {
+            if ($item->isMiss() || count($values) == 0) {
                 // If the cache was a miss, then lock the item down,
                 // attempt to load from the database, and update it.
                 // Stash uses this to prevent the stampede problem.
