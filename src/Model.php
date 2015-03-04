@@ -751,6 +751,7 @@ abstract class Model extends Acl
         }
 
         // only return requested properties
+        $return = [];
         foreach ($properties as $key) {
             if (array_key_exists($key, $_values)) {
                 $return[$key] = $_values[$key];
@@ -1166,7 +1167,7 @@ abstract class Model extends Acl
         if ($this->_cache && !$skipCache) {
             // attempt load from the cache first
             $item = $this->_cache->getItem($this->cacheKey());
-            $this->_local = $item->get();
+            $values = $item->get();
 
             if ($item->isMiss()) {
                 // If the cache was a miss, then lock the item down,
@@ -1176,6 +1177,8 @@ abstract class Model extends Acl
                 $this->loadFromDb();
 
                 $item->set($this->_local, $this->getCacheTTL());
+            } else {
+                $this->_local = $values;
             }
         } else {
             $this->loadFromDb()->cache();
@@ -1398,11 +1401,11 @@ abstract class Model extends Acl
     private function loadFromDb()
     {
         try {
-            $info = (array) $this->app['db']->select('*')
+            $info = $this->app['db']->select('*')
                 ->from(static::tablename())->where($this->id(true))
                 ->one();
 
-            if (count($info) > 0) {
+            if (is_array($info)) {
                 // marshal values from database
                 $this->_local = [];
                 foreach ($info as $k => &$v) {
