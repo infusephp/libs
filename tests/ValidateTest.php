@@ -95,6 +95,9 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
     public function testMatching()
     {
+        $match = 'notarray';
+        $this->assertTrue(Validate::is($match, 'matching'));
+
         $match = [ 'test', 'test' ];
         $this->assertTrue(Validate::is($match, 'matching'));
         $this->assertEquals('test', $match);
@@ -133,6 +136,18 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
         $invalid = '...';
         $this->assertFalse(Validate::is($invalid, 'password:8'));
+    }
+
+    public function testRange()
+    {
+        $s = -1;
+        $this->assertTrue(Validate::is($s, 'range'));
+        $this->assertTrue(Validate::is($s, 'range:-1'));
+        $this->assertTrue(Validate::is($s, 'range:-1:100'));
+
+        $s = 100;
+        $this->assertFalse(Validate::is($s, 'range:101'));
+        $this->assertFalse(Validate::is($s, 'range:0:99'));
     }
 
     public function testRequired()

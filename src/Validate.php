@@ -259,6 +259,29 @@ class Validate
     }
 
     /**
+     * Validates that a number falls within a range
+     *
+     * @param $value
+     * @param $parameters
+     *
+     * @return boolean
+     */
+    private static function range(&$value, $parameters)
+    {
+        // check min
+        if (isset($parameters[0]) && $value < $parameters[0]) {
+            return false;
+        }
+
+        // check max
+        if (isset($parameters[1]) && $value > $parameters[1]) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Makes sure that a variable is not empty
      *
      * @param $value
@@ -274,7 +297,7 @@ class Validate
     /**
      * Validates a string.
      * OPTIONAL string:5 supplies a minimum length
-     * 			string:1:5 supplies a minimum and maximum length
+     *          string:1:5 supplies a minimum and maximum length
      *
      * @param $value
      * @param $parameters

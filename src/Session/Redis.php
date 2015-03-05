@@ -11,22 +11,37 @@
 namespace infuse\Session;
 
 use Pimple\Container;
+use SessionHandlerInterface;
 
-class Redis implements \SessionHandlerInterface
+class Redis implements SessionHandlerInterface
 {
+    /**
+     * @var Container
+     */
     private $app;
+
+    /**
+     * @var string
+     */
     private $prefix;
 
-    public static function start(Container $app, $prefix = '')
+    /**
+     * Starts the session using this handler
+     *
+     * @param Session $app
+     *
+     * @return boolean
+     */
+    public static function registerHandler(Redis $handler)
     {
-        $obj = new self($app, $prefix);
-
-        session_set_save_handler($obj, true);
-        session_start();
-
-        return $obj;
+        return session_set_save_handler($handler, true);
     }
 
+    /**
+     * Creates a new session handler
+     *
+     * @param Container $app
+     */
     public function __construct(Container $app, $prefix = '')
     {
         $this->app = $app;
@@ -40,7 +55,7 @@ class Redis implements \SessionHandlerInterface
      */
     public function read($id)
     {
-        return $this->app[ 'redis' ]->get($this->prefix.$id);
+        return $this->app['redis']->get($this->prefix.$id);
     }
 
     /**
@@ -53,7 +68,7 @@ class Redis implements \SessionHandlerInterface
     {
         $ttl = ini_get('session.gc_maxlifetime');
 
-        $this->app[ 'redis' ]->setex($this->prefix.$id, $ttl, $data);
+        $this->app['redis']->setex($this->prefix.$id, $ttl, $data);
     }
 
     /**
@@ -63,7 +78,7 @@ class Redis implements \SessionHandlerInterface
      */
     public function destroy($id)
     {
-        $this->app[ 'redis' ]->del($this->prefix.$id);
+        $this->app['redis']->del($this->prefix.$id);
     }
 
     /**
@@ -75,15 +90,14 @@ class Redis implements \SessionHandlerInterface
     {
         return true;
     }
+
     public function close()
     {
         return true;
     }
+
     public function gc($age)
     {
         return true;
     }
 }
-
-// the following prevents unexpected effects when using objects as save handlers
-register_shutdown_function('session_write_close');
