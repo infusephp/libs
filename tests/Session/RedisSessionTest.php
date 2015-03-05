@@ -14,9 +14,9 @@ use infuse\Session\Redis as RedisSession;
 use Mockery;
 use Pimple\Container;
 
-function session_start()
+function session_set_save_handler($arg1, $arg2 = true)
 {
-    return RedisSessionTest::$mock ? RedisSessionTest::$mock->session_start() : \session_start();
+    return RedisSessionTest::$mock ? RedisSessionTest::$mock->session_set_save_handler($arg1, $arg2) : \session_set_save_handler($arg1, $arg2);
 }
 
 class RedisSessionTest extends \PHPUnit_Framework_TestCase
@@ -28,18 +28,15 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
         self::$mock = false;
     }
 
-    public function testStart()
+    public function testRegisterHandler()
     {
+        $c = new Container();
+        $session = new RedisSession($c);
+
         self::$mock = \Mockery::mock('php');
-        self::$mock->shouldReceive('session_start')->once();
+        self::$mock->shouldReceive('session_set_save_handler')->withArgs([$session, true])->andReturn(true)->once();
 
-        $app = new Container();
-        $redis = Mockery::mock('Predis\Client');
-        $redis->shouldReceive('setex');
-        $redis->shouldReceive('get');
-        $app[ 'redis' ] = $redis;
-
-        $this->assertInstanceOf('\\infuse\\Session\\Redis', RedisSession::start($app, 'test:'));
+        $this->assertTrue(RedisSession::registerHandler($session));
     }
 
     public function testRead()
