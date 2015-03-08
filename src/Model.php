@@ -20,7 +20,6 @@
                 number
                 boolean
                 date
-                timestamp
                 json
             String
             Required
@@ -214,11 +213,14 @@ abstract class Model extends Acl
         'created_at' => [
             'type' => self::TYPE_DATE,
             'default' => null,
+            'null' => true,
+            'validate' => 'timestamp|db_timestamp',
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
         'updated_at' => [
             'type' => self::TYPE_DATE,
+            'validate' => 'timestamp|db_timestamp',
             'admin_hidden_property' => true,
             'admin_type' => 'datepicker',
         ],
