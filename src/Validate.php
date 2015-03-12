@@ -351,7 +351,7 @@ class Validate
      */
     private static function timestamp(&$value, $parameters)
     {
-        if (ctype_digit($value)) {
+        if (ctype_digit((string) $value)) {
             return true;
         }
 
