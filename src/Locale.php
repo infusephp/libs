@@ -1226,6 +1226,10 @@ class Locale
         'WST' => [
             'name' => 'Samoa Tala',
         ],
+        'XAF' => [
+            'name' => 'Central African CFA Franc BEAC',
+            'symbol' => 'XAF',
+        ],
         'XCD' => [
             'name' => 'East Caribbean Dollar',
             'symbol' => '$',
