@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -143,7 +144,7 @@ class Request
         // parse request body
         $this->request = $request;
 
-        if (!$request && in_array($this->method(), [ 'POST', 'PUT' ])) {
+        if (!$request && in_array($this->method(), ['POST', 'PUT', 'PATCH'])) {
             $contentType = $this->contentType();
 
             // content-type: multipart/form-data
@@ -171,10 +172,10 @@ class Request
             $this->request = [];
         }
 
-        // DELETE and PUT requests can come through POST
+        // PUT, PATCH, and DELETE requests can come through POST
         $requestMethodFromPost = Utility::array_value((array) $this->request, 'method');
         if ($this->method() == 'POST' &&
-            in_array($requestMethodFromPost, [ 'PUT', 'DELETE' ])) {
+            in_array($requestMethodFromPost, ['PUT', 'PATCH', 'DELETE'])) {
             $this->server[ 'REQUEST_METHOD' ] = $requestMethodFromPost;
         }
     }
@@ -210,7 +211,7 @@ class Request
     }
 
     /**
-     * Gets the protocol associated with the request
+     * Gets the protocol associated with the request.
      *
      * @return string https or http
      */
@@ -245,7 +246,7 @@ class Request
     }
 
     /**
-     * Gets values from the request headers
+     * Gets values from the request headers.
      *
      * @param string $index optional
      *
@@ -265,7 +266,7 @@ class Request
     }
 
     /**
-     * Gets the username from the auth headers associated with the request
+     * Gets the username from the auth headers associated with the request.
      *
      * @return string username
      */
@@ -275,7 +276,7 @@ class Request
     }
 
     /**
-     * Gets the password from the auth headers associated with the request
+     * Gets the password from the auth headers associated with the request.
      *
      * @return string password
      */
@@ -334,8 +335,7 @@ class Request
     }
 
     /**
-     * Gets the path associated with the request minus the bse path
-     *
+     * Gets the path associated with the request minus the bse path.
      */
     public function path()
     {
@@ -345,7 +345,7 @@ class Request
     /**
      * Gets the base path associated with the request. i.e. /comments/10
      * Useful if the entry point to the request was not located in the root directory
-     * i.e. /blog/index.php returns /blog or /index.php returns an empty string
+     * i.e. /blog/index.php returns /blog or /index.php returns an empty string.
      *
      * @param string base path
      */
@@ -415,7 +415,7 @@ class Request
     }
 
     /**
-     * Checks if the request accepts HTML
+     * Checks if the request accepts HTML.
      *
      * @return boolean
      */
@@ -431,7 +431,7 @@ class Request
     }
 
     /**
-     * Checks if the request accepts JSON
+     * Checks if the request accepts JSON.
      *
      * @return boolean
      */
@@ -447,7 +447,7 @@ class Request
     }
 
     /**
-     * Checks if the request accepts XML
+     * Checks if the request accepts XML.
      *
      * @return boolean
      */
@@ -463,7 +463,7 @@ class Request
     }
 
     /**
-     * Checks if the request was sent using AJAX
+     * Checks if the request was sent using AJAX.
      *
      * @return boolean
      */
@@ -520,7 +520,7 @@ class Request
     }
 
     /**
-     * Gets values from the query portion of the request. (i.e. GET parameters)
+     * Gets values from the query portion of the request. (i.e. GET parameters).
      *
      * @param string $index optional
      *
@@ -532,7 +532,7 @@ class Request
     }
 
     /**
-     * Gets values from the body of the request. (i.e. POST, PUT parameters)
+     * Gets values from the body of the request. (i.e. POST, PUT parameters).
      *
      * @param string $index optional
      *
@@ -556,7 +556,7 @@ class Request
     }
 
     /**
-     * Sets a cookie with the same signature as PHP's setcookie()
+     * Sets a cookie with the same signature as PHP's setcookie().
      *
      * @param string  $name
      * @param string  $value
@@ -587,7 +587,7 @@ class Request
     }
 
     /**
-     * Gets the files associated with the request. (i.e. $_FILES)
+     * Gets the files associated with the request. (i.e. $_FILES).
      *
      * @param string $index optional
      *
@@ -611,7 +611,7 @@ class Request
     }
 
     /**
-     * Sets session variable(s)
+     * Sets session variable(s).
      *
      * @param array|string $key   key-value or just a key
      * @param mixed        $value value to set if not supplying key-value map in first argument
@@ -630,7 +630,7 @@ class Request
     }
 
     /**
-     * Destroys the session for the request
+     * Destroys the session for the request.
      */
     public function destroySession()
     {
