@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -24,7 +25,7 @@ class Locale
     }
 
     /**
-     * Sets the locale
+     * Sets the locale.
      *
      * @param string $locale
      */
@@ -34,7 +35,7 @@ class Locale
     }
 
     /**
-     * Gets the locale
+     * Gets the locale.
      *
      * @return string
      */
@@ -58,7 +59,7 @@ class Locale
     }
 
     /**
-     * Translates a phrase
+     * Translates a phrase.
      *
      * @param string $phrase
      * @param array  $params parameters to inject into phrase
@@ -95,7 +96,7 @@ class Locale
     }
 
     /**
-     * Alias for translate()
+     * Alias for translate().
      */
     public function t($phrase, array $params = [], $locale = false)
     {
@@ -103,7 +104,7 @@ class Locale
     }
 
     /**
-     * Pluralizes a string
+     * Pluralizes a string.
      *
      * @param int    $n        number in question
      * @param string $singular singular string
@@ -117,7 +118,7 @@ class Locale
     }
 
     /**
-     * Alias for pluaralize()
+     * Alias for pluaralize().
      */
     public function p($n, $singular, $plural)
     {
@@ -125,7 +126,7 @@ class Locale
     }
 
     /**
-     * Generates a select box for the currencies
+     * Generates a select box for the currencies.
      *
      * @param string $selectedCurrency
      *
@@ -147,7 +148,7 @@ class Locale
     }
 
     /**
-     * Generates a select box for the time zones
+     * Generates a select box for the time zones.
      *
      * @param string $selected selected timezone
      *
@@ -199,7 +200,7 @@ class Locale
     }
 
     /**
-     * Loads locale data for a supplied locale
+     * Loads locale data for a supplied locale.
      *
      * @param string $locale
      */
@@ -223,7 +224,7 @@ class Locale
      *
      * List of locale codes
      */
-    static $locales = [
+    public static $locales = [
         'af-ZA',
         'am-ET',
         'ar-AE',
@@ -440,7 +441,7 @@ class Locale
      *
      * List of countries
      */
-    static $countries = array(
+    public static $countries = array(
         'Afghanistan',
         'Albania',
         'Algeria',
@@ -642,7 +643,7 @@ class Locale
      *
      * List of currency codes, names, and symbols
      **/
-    static $currencies = [
+    public static $currencies = [
         'AED' => [
             'name' => 'United Arab Emirates Dirham',
             'symbol' => 'د.إ',
@@ -691,6 +692,7 @@ class Locale
         ],
         'BDT' => [
             'name' => 'Bangladesh Taka',
+            'symbol' => 'Tk',
         ],
         'BGN' => [
             'name' => 'Bulgaria Lev',
@@ -1257,7 +1259,7 @@ class Locale
         ],
     ];
 
-    static $usaStates = [
+    public static $usaStates = [
         'AL' => 'Alabama',
         'AK' => 'Alaska',
         'AZ' => 'Arizona',
