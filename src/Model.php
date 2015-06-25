@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -266,7 +267,7 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Changes the default model settings
+     * Changes the default model settings.
      *
      * @param array $config
      */
@@ -276,7 +277,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets a config parameter
+     * Gets a config parameter.
      *
      * @return mixed
      */
@@ -286,7 +287,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Injects a DI container
+     * Injects a DI container.
      *
      * @param Container $app
      */
@@ -300,7 +301,7 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Creates a new model object
+     * Creates a new model object.
      *
      * @param array|string $id ordered array of ids or comma-separated id string
      */
@@ -308,6 +309,10 @@ abstract class Model extends Acl
     {
         if (is_array($id)) {
             $id = implode(',', $id);
+        } elseif (strpos($id, ',') === false) {
+            // ensure id has the right type
+            $idProperties = (array) static::idProperty();
+            $this->_id = $this->marshalFromStorage(static::properties($idProperties[0]), $id);
         }
 
         $this->_id = $id;
@@ -320,7 +325,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Converts the model into a string
+     * Converts the model into a string.
      *
      * @return string
      */
@@ -330,7 +335,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Shortcut to a get() call for a given property
+     * Shortcut to a get() call for a given property.
      *
      * @param string $name
      *
@@ -342,7 +347,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Sets an unsaved value
+     * Sets an unsaved value.
      *
      * @param string $name
      * @param mixed  $value
@@ -358,7 +363,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Checks if an unsaved value or property exists by this name
+     * Checks if an unsaved value or property exists by this name.
      *
      * @param string $name
      *
@@ -370,7 +375,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Unsets an unsaved value
+     * Unsets an unsaved value.
      *
      * @param string $name
      */
@@ -391,7 +396,7 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Gets the model identifier(s)
+     * Gets the model identifier(s).
      *
      * @param boolean $keyValue return key-value array of id
      *
@@ -403,7 +408,7 @@ abstract class Model extends Acl
             return $this->_id;
         }
 
-        $idProperty = (array) static::idProperty();
+        $idProperties = (array) static::idProperty();
 
         // get id(s) into key-value format
         $return = [];
@@ -412,8 +417,14 @@ abstract class Model extends Acl
         $ids = explode(',', $this->_id);
         $ids = array_reverse($ids);
 
-        foreach ($idProperty as $f) {
+        foreach ($idProperties as $k => $f) {
             $id = (count($ids)>0) ? array_pop($ids) : false;
+
+            // enforce the type by marshaling (otherwise it would always return a string)
+            if ($id && isset($idProperties[$k])) {
+                $property = $idProperties[$k];
+                $id = $this->marshalFromStorage(static::properties($property), $id);
+            }
 
             $return[$f] = $id;
         }
@@ -422,7 +433,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Checks if the model exists in the database
+     * Checks if the model exists in the database.
      *
      * @return boolean
      */
@@ -433,7 +444,7 @@ abstract class Model extends Acl
 
     /**
      * Gets the model object corresponding to a relation
-     * WARNING no check is used to see if the model returned actually exists
+     * WARNING no check is used to see if the model returned actually exists.
      *
      * @param string $property property
      *
@@ -461,7 +472,7 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Returns the id propert(ies) for the model
+     * Returns the id propert(ies) for the model.
      *
      * @return array|string
      */
@@ -471,7 +482,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets the name of the model without namespacing
+     * Gets the name of the model without namespacing.
      *
      * @return string
      */
@@ -486,7 +497,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Generates metadata about the model
+     * Generates metadata about the model.
      *
      * @return array
      */
@@ -505,7 +516,7 @@ abstract class Model extends Acl
             'singular_key' => $singularKey,
             'plural_key' => $pluralKey,
             'proper_name' => $inflector->titleize($singularKey),
-            'proper_name_plural' => $inflector->titleize($pluralKey) ];
+            'proper_name_plural' => $inflector->titleize($pluralKey), ];
     }
 
     /**
@@ -517,7 +528,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Generates the tablename for the model
+     * Generates the tablename for the model.
      *
      * @return string
      */
@@ -529,7 +540,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets the properties for the model
+     * Gets the properties for the model.
      *
      * @param string $property property to lookup
      *
@@ -556,7 +567,7 @@ abstract class Model extends Acl
 
     /**
      * Adds extra properties that have not been explicitly defined.
-     * If overriding, be sure to extend parent::propertiesHook()
+     * If overriding, be sure to extend parent::propertiesHook().
      *
      * @return array
      */
@@ -577,7 +588,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Checks if the model has a property
+     * Checks if the model has a property.
      *
      * @param string $property property
      *
@@ -591,7 +602,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Checks if a property name is an id property
+     * Checks if a property name is an id property.
      *
      * @return boolean
      */
@@ -614,7 +625,7 @@ abstract class Model extends Acl
 
     /**
      * Creates a new model
-     * WARNING: requires 'create' permission from the requester
+     * WARNING: requires 'create' permission from the requester.
      *
      * @param array $data key-value properties
      *
@@ -703,17 +714,20 @@ abstract class Model extends Acl
             if ($inserted) {
                 // set new id(s)
                 $ids = [];
-                $idProperty = (array) static::idProperty();
-                foreach ($idProperty as $property) {
+                $idProperties = (array) static::idProperty();
+                foreach ($idProperties as $property) {
                     // attempt use the supplied value if the id property is mutable
+                    $id = null;
                     if ($properties[$property ]['mutable'] == self::MUTABLE && isset($data[$property])) {
-                        $ids[] = $data[$property];
+                        $id = $data[$property];
                     } else {
-                        $ids[] = $this->app['pdo']->lastInsertId();
+                        $id = $this->app['pdo']->lastInsertId();
                     }
+
+                    $ids[] = $this->marshalFromStorage(static::properties($property), $id);
                 }
 
-                $this->_id = implode(',', $ids);
+                $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
 
                 // post-hook
                 if (method_exists($this, 'postCreateHook')) {
@@ -775,7 +789,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Converts the model to an array
+     * Converts the model to an array.
      *
      * @param array $exclude properties to exclude
      * @param array $include properties to include
@@ -859,7 +873,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Converts the object to JSON format
+     * Converts the object to JSON format.
      *
      * @param array $exclude properties to exclude
      * @param array $include properties to include
@@ -874,7 +888,7 @@ abstract class Model extends Acl
 
     /**
      * Updates the model
-     * WARNING: requires 'edit' permission from the requester
+     * WARNING: requires 'edit' permission from the requester.
      *
      * @param array|string $data  key-value properties or name of property
      * @param string new   $value value to set if name supplied
@@ -964,7 +978,7 @@ abstract class Model extends Acl
 
     /**
      * Delete the model
-     * WARNING: requires 'delete' permission from the requester
+     * WARNING: requires 'delete' permission from the requester.
      *
      * @return boolean success
      */
@@ -1015,10 +1029,9 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Fetches models with pagination support
+     * Fetches models with pagination support.
      *
      * @param array key-value parameters
-     *
      * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
      *
      * @return array array( 'models' => models, 'count' => 'total found' )
@@ -1123,7 +1136,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Fetches a single model according to criteria
+     * Fetches a single model according to criteria.
      *
      * @param array $params array( start, limit, sort, search, where )
      *
@@ -1137,7 +1150,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets the toal number of records matching an optional criteria
+     * Gets the toal number of records matching an optional criteria.
      *
      * @param array $where criteria
      *
@@ -1201,7 +1214,7 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Sets the default cache instance used by new models
+     * Sets the default cache instance used by new models.
      *
      * @param Stash\Pool $pool
      */
@@ -1211,7 +1224,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Clears the default cache instance
+     * Clears the default cache instance.
      */
     public static function clearDefaultCache()
     {
@@ -1219,7 +1232,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Sets the cache instance
+     * Sets the cache instance.
      *
      * @param Stash/Pool $pool
      *
@@ -1233,7 +1246,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Returns the cache instance
+     * Returns the cache instance.
      *
      * @return Stash/Pool|false
      */
@@ -1243,7 +1256,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Returns the cache TTL
+     * Returns the cache TTL.
      *
      * @return number|null
      */
@@ -1255,7 +1268,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Returns the cache key for this model
+     * Returns the cache key for this model.
      *
      * @return string
      */
@@ -1270,14 +1283,14 @@ abstract class Model extends Acl
     }
 
     /**
-     * Returns the cache item for this model
+     * Returns the cache item for this model.
      *
      * @return Stash\Item|null
      */
     public function cacheItem()
     {
         if (!$this->_cache) {
-            return null;
+            return;
         }
 
         if (!$this->_cacheItem) {
@@ -1288,7 +1301,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Caches the entire model
+     * Caches the entire model.
      *
      * @return self
      */
@@ -1305,7 +1318,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Clears the cache for this model
+     * Clears the cache for this model.
      *
      * @return self
      */
@@ -1328,7 +1341,7 @@ abstract class Model extends Acl
 
     /**
      * Marshals a value for a given property to storage, and
-     * checks the validity of a value
+     * checks the validity of a value.
      *
      * @param array  $property
      * @param string $propertyName
@@ -1363,7 +1376,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Validates a value for a property
+     * Validates a value for a property.
      *
      * @param array  $property
      * @param string $propertyName
@@ -1393,7 +1406,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Checks if a value is unique for a property
+     * Checks if a value is unique for a property.
      *
      * @param array  $property
      * @param string $propertyName
@@ -1417,7 +1430,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Loads the model from the database and caches it
+     * Loads the model from the database and caches it.
      *
      * @param array $values optional values (if already loaded from DB)
      *
@@ -1452,7 +1465,7 @@ abstract class Model extends Acl
     }
 
     /**
-     * Gets the marshaled default value for a property (if set)
+     * Gets the marshaled default value for a property (if set).
      *
      * @param string $property
      *
@@ -1463,14 +1476,14 @@ abstract class Model extends Acl
         $property = static::properties($property);
 
         if (!is_array($property) || !isset($property['default'])) {
-            return null;
+            return;
         }
 
         return $this->marshalFromStorage($property, $property['default']);
     }
 
     /**
-     * Marshals a value for a given property from storage
+     * Marshals a value for a given property from storage.
      *
      * @param array $property
      * @param mixed $value
@@ -1480,7 +1493,7 @@ abstract class Model extends Acl
     private function marshalFromStorage(array $property, $value)
     {
         if ($property['null'] && $value == '') {
-            return null;
+            return;
         }
 
         $type = $property['type'];

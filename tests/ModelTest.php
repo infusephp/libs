@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
@@ -628,10 +628,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'relation.person.address', ],
             [
                 'relation.hidden',
-                'relation.person' ],
+                'relation.person', ],
             [
                 'relation.person',
-                'answer' ]);
+                'answer', ]);
 
         $expected = [
             'answer' => 42,
@@ -656,7 +656,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model = new TestModel(5);
         $model->relation = 10;
 
-        $this->assertEquals('{"id":"5","test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
+        $this->assertEquals('{"id":5,"test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
     }
 
     public function testHasSchema()
@@ -1216,7 +1216,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 class TestModel extends Model
 {
-    static $properties = [
+    public static $properties = [
         'relation' => [
             'type' => Model::TYPE_NUMBER,
             'relation' => 'TestModel2',
@@ -1295,7 +1295,7 @@ function validate()
 };
 class TestModel2 extends Model
 {
-    static $properties = [
+    public static $properties = [
         'id' => [
             'type' => Model::TYPE_NUMBER,
         ],
@@ -1401,7 +1401,7 @@ class TestModelHookFail extends Model
 
 class Person extends Model
 {
-    static $properties = [
+    public static $properties = [
         'id' => [
             'type' => Model::TYPE_STRING,
         ],
