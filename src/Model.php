@@ -915,11 +915,6 @@ abstract class Model extends Acl
             return false;
         }
 
-        // not updating anything?
-        if (count($data) == 0) {
-            return true;
-        }
-
         // pre-hook
         if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
             return false;
@@ -955,9 +950,12 @@ abstract class Model extends Acl
         }
 
         try {
-            $updated = $this->app['db']->update(static::tablename())
-                ->values($updateArray)->where($this->id(true))
-                ->execute();
+            $updated = (count($updateArray) == 0) ||
+                $this->app['db']->update(static::tablename())
+                                ->values($updateArray)
+                                ->where($this->id(true))
+                                ->execute();
+
             if ($updated) {
                 // clear the cache
                 $this->clearCache();
