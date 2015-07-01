@@ -731,7 +731,7 @@ abstract class Model extends Acl
 
                 // post-hook
                 if (method_exists($this, 'postCreateHook')) {
-                    $this->postCreateHook();
+                    return $this->postCreateHook() !== false;
                 }
 
                 return true;
@@ -915,6 +915,11 @@ abstract class Model extends Acl
             return false;
         }
 
+        // not updating anything?
+        if (count($data) == 0) {
+            return true;
+        }
+
         // pre-hook
         if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
             return false;
@@ -936,7 +941,7 @@ abstract class Model extends Acl
 
             $property = $properties[$field];
 
-            // cannot only modify mutable properties
+            // can only modify mutable properties
             if ($property['mutable'] != self::MUTABLE) {
                 continue;
             }
@@ -962,7 +967,7 @@ abstract class Model extends Acl
 
                 // post-hook
                 if (method_exists($this, 'postSetHook')) {
-                    $this->postSetHook();
+                    return $this->postSetHook() !== false;
                 }
 
                 return true;
@@ -1010,7 +1015,7 @@ abstract class Model extends Acl
 
                 // post-hook
                 if (method_exists($this, 'postDeleteHook')) {
-                    $this->postDeleteHook();
+                    return $this->postDeleteHook() !== false;
                 }
 
                 return true;
