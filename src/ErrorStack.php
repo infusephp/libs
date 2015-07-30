@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -28,7 +29,7 @@ class ErrorStack
     }
 
     /**
-     * Adds an error message to the stack
+     * Adds an error message to the stack.
      *
      * @param array $error
      *                     - error: error code
@@ -41,12 +42,12 @@ class ErrorStack
      */
     public function push(array $error)
     {
-        if (!isset($error[ 'context' ])) {
-            $error[ 'context' ] = $this->context;
+        if (!isset($error['context'])) {
+            $error['context'] = $this->context;
         }
 
-        if (!isset($error[ 'params' ])) {
-            $error[ 'params' ] = [];
+        if (!isset($error['params'])) {
+            $error['params'] = [];
         }
 
         if (Utility::array_value($error, 'error')) {
@@ -57,7 +58,7 @@ class ErrorStack
     }
 
     /**
-     * Sets the current default error context
+     * Sets the current default error context.
      *
      * @param string $context
      *
@@ -71,7 +72,7 @@ class ErrorStack
     }
 
     /**
-     * Clears the current default error context
+     * Clears the current default error context.
      *
      * @return self
      */
@@ -84,7 +85,7 @@ class ErrorStack
 
     /**
      * Gets all of the errors on the stack and also attempts
-     * translation using the Locale class
+     * translation using the Locale class.
      *
      * @param string $context optional context
      * @param string $locale  optional locale
@@ -96,10 +97,10 @@ class ErrorStack
         $errors = [];
 
         foreach ($this->stack as $error) {
-            if (!$context || $error[ 'context' ] == $context) {
+            if (!$context || $error['context'] == $context) {
                 // attempt to translate error into a message
-                if (!isset($error[ 'message' ])) {
-                    $error[ 'message' ] = $this->app[ 'locale' ]->t($error[ 'error' ], $error[ 'params' ], $locale);
+                if (!isset($error['message'])) {
+                    $error['message'] = $this->app['locale']->t($error['error'], $error['params'], $locale);
                 }
 
                 $errors[] = $error;
@@ -110,7 +111,7 @@ class ErrorStack
     }
 
     /**
-     * Gets the messages of errors on the stack
+     * Gets the messages of errors on the stack.
      *
      * @param string $context optional context
      * @param string $locale  optional locale
@@ -124,14 +125,14 @@ class ErrorStack
         $messages = [];
 
         foreach ($errors as $error) {
-            $messages[] = $error[ 'message' ];
+            $messages[] = $error['message'];
         }
 
         return $messages;
     }
 
     /**
-     * Gets an error for a specific parameter on the stack
+     * Gets an error for a specific parameter on the stack.
      *
      * @param string $value value we are searching for
      * @param string $param parameter name
@@ -141,7 +142,7 @@ class ErrorStack
     public function find($value, $param = 'field')
     {
         foreach ($this->stack as $error) {
-            if (Utility::array_value($error[ 'params' ], $param) === $value) {
+            if (Utility::array_value($error['params'], $param) === $value) {
                 return $error;
             }
         }
@@ -150,7 +151,7 @@ class ErrorStack
     }
 
     /**
-     * Checks if an error exists with a specific parameter on the stack
+     * Checks if an error exists with a specific parameter on the stack.
      *
      * @param string $value value we are searching for
      * @param string $param parameter name
@@ -163,7 +164,7 @@ class ErrorStack
     }
 
     /**
-     * Clears the error stack
+     * Clears the error stack.
      *
      * @return self
      */

@@ -665,6 +665,7 @@ class Locale
         ],
         'AOA' => [
             'name' => 'Angola Kwanza',
+            'symbol' => 'Kz',
         ],
         'ARS' => [
             'name' => 'Argentina Peso',
