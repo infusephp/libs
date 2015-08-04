@@ -835,7 +835,7 @@ class Locale
         ],
         'GHS' => [
             'name' => 'Ghana Cedi',
-            'symbol' => 'GH₵',
+            'symbol' => 'GH¢',
         ],
         'GIP' => [
             'name' => 'Gibraltar Pound',
