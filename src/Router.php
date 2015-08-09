@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -18,6 +19,8 @@ if (!defined('SKIP_ROUTE')) {
 
 class Router
 {
+    const SKIP_ROUTE = -1;
+
     private static $config = [
         'namespace' => '',
         'defaultController' => '',
@@ -25,7 +28,7 @@ class Router
     ];
 
     /**
-     * Changes the router settings
+     * Changes the router settings.
      *
      * @param array $config
      */
@@ -60,20 +63,20 @@ class Router
 
         foreach ($routes as $routeStr => $route) {
             if (strpos($routeStr, ':')) {
-                $dynamicRoutes[ $routeStr ] = $route;
+                $dynamicRoutes[$routeStr] = $route;
             } else {
-                $staticRoutes[ $routeStr ] = $route;
+                $staticRoutes[$routeStr]  = $route;
             }
         }
 
         /* global static routes */
-        if (isset($staticRoutes[ $routeMethodStr ]) &&
-            self::performRoute($staticRoutes[ $routeMethodStr ], $app, $req, $res) !== SKIP_ROUTE) {
+        if (isset($staticRoutes[$routeMethodStr]) &&
+            self::performRoute($staticRoutes[$routeMethodStr], $app, $req, $res) !== self::SKIP_ROUTE) {
             return true;
         }
 
-        if (isset($staticRoutes[ $routeGenericStr ]) &&
-            self::performRoute($staticRoutes[ $routeGenericStr ], $app, $req, $res) !== SKIP_ROUTE) {
+        if (isset($staticRoutes[$routeGenericStr]) &&
+            self::performRoute($staticRoutes[$routeGenericStr], $app, $req, $res) !== self::SKIP_ROUTE) {
             return true;
         }
 
@@ -81,7 +84,7 @@ class Router
 
         foreach ($dynamicRoutes as $routeStr => $route) {
             if (self::matchRouteToRequest($routeStr, $req) &&
-                self::performRoute($route, $app, $req, $res) !== SKIP_ROUTE) {
+                self::performRoute($route, $app, $req, $res) !== self::SKIP_ROUTE) {
                 return true;
             }
         }
@@ -111,27 +114,28 @@ class Router
         if (is_array($route) || is_string($route)) {
             // method name and controller supplied
             if (is_string($route) && $req->params('controller')) {
-                $route = [ $req->params('controller'), $route ];
+                $route = [$req->params('controller'), $route];
             }
             // method name supplied
             elseif (is_string($route)) {
-                $route = [ self::$config[ 'defaultController' ], $route ];
+                $route = [self::$config['defaultController'], $route];
             }
             // no method name? fallback to the index() method
             elseif (count($route) == 1) {
-                $route[] = self::$config[ 'defaultAction' ];
+                $route[] = self::$config['defaultAction'];
             }
 
             list($controller, $method) = $route;
 
-            $controller = self::$config[ 'namespace' ].'\\'.$controller;
+            $controller = self::$config['namespace'].'\\'.$controller;
 
             if (!class_exists($controller)) {
-                return SKIP_ROUTE;
+                return self::SKIP_ROUTE;
             }
 
             $controllerObj = new $controller();
 
+            // give the controller access to the DI container
             if (method_exists($controllerObj, 'injectApp')) {
                 $controllerObj->injectApp($app);
             }
@@ -141,8 +145,8 @@ class Router
             $result = call_user_func($route, $req, $res);
         }
 
-        if ($result === SKIP_ROUTE) {
-            return SKIP_ROUTE;
+        if ($result === self::SKIP_ROUTE) {
+            return self::SKIP_ROUTE;
         } elseif ($result instanceof View) {
             $res->render($result);
         }
@@ -152,26 +156,26 @@ class Router
 
     /**
      * Checks if a request matches a given route. If so, the parameters will
-     * be extracted and returned
+     * be extracted and returned.
      *
-     * @param array|false
+     * @param string  $routeStr route template we are trying to match
      * @param Request $req
      *
      * @return boolean
      */
-    private static function matchRouteToRequest($route, $req)
+    private static function matchRouteToRequest($routeStr, $req)
     {
-        $routeParts = explode(' ', $route);
+        $routeParts = explode(' ', $routeStr);
 
         // verify that the method matches
-        if (count($routeParts) != 1 && $routeParts[ 0 ] != strtolower($req->method())) {
+        if (count($routeParts) != 1 && $routeParts[0] != strtolower($req->method())) {
             return false;
         }
 
         // break the url into components
         $reqPaths = $req->paths();
         $routePaths = explode('/', end($routeParts));
-        if ($routePaths[ 0 ] == '') {
+        if ($routePaths[0] == '') {
             array_splice($routePaths, 0, 1);
         }
 
@@ -186,9 +190,9 @@ class Router
             // is this a parameter
             if (substr($path, 0, 1) == ':') {
                 $key = substr_replace($path, '', 0, 1);
-                $params[ $key ] = $reqPaths[ $i ];
+                $params[$key] = $reqPaths[$i];
             } else {
-                if ($reqPaths[ $i ] != $path) {
+                if ($reqPaths[$i] != $path) {
                     return false;
                 }
             }
