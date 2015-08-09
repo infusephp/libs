@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Request;
 use infuse\Response;
 use infuse\Router;
@@ -212,6 +212,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
 
         $this->assertTrue($test);
+    }
+
+    public function testPresetParameters()
+    {
+        $extraParams = [
+            'test' => true,
+            'hello' => 'world',
+        ];
+
+        $testRoutes = [
+            'get /test' => ['MockController', 'staticRoute', $extraParams],
+        ];
+
+        $server = $_SERVER;
+        $server[ 'REQUEST_METHOD' ] = 'GET';
+
+        $req = new Request(null, null, null, null, $server);
+        $req->setPath('/test');
+
+        $res = new Response();
+
+        $this->assertTrue(Router::route($testRoutes, self::$app, $req, $res));
+
+        $this->assertTrue(MockController::$staticRouteCalled);
+        $this->assertEquals($extraParams, $req->params());
     }
 }
 

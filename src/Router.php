@@ -140,6 +140,12 @@ class Router
                 $controllerObj->injectApp($app);
             }
 
+            // collect any preset route parameters
+            if (isset($route[2])) {
+                $params = $route[2];
+                $req->setParams($params);
+            }
+
             $result = $controllerObj->$method($req, $res);
         } elseif (is_callable($route)) {
             $result = call_user_func($route, $req, $res);
