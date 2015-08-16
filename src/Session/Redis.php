@@ -73,7 +73,9 @@ class Redis implements SessionHandlerInterface
     {
         $ttl = ini_get('session.gc_maxlifetime');
 
-        return $this->app['redis']->setex($this->prefix.$id, $ttl, $data);
+        $this->app['redis']->setex($this->prefix.$id, $ttl, $data);
+
+        return true;
     }
 
     /**
@@ -85,7 +87,9 @@ class Redis implements SessionHandlerInterface
      */
     public function destroy($id)
     {
-        return $this->app['redis']->del($this->prefix.$id);
+        $this->app['redis']->del($this->prefix.$id);
+
+        return true;
     }
 
     /**
