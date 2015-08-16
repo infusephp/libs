@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
@@ -26,7 +27,7 @@ class Redis implements SessionHandlerInterface
     private $prefix;
 
     /**
-     * Starts the session using this handler
+     * Starts the session using this handler.
      *
      * @param Session $app
      *
@@ -38,7 +39,7 @@ class Redis implements SessionHandlerInterface
     }
 
     /**
-     * Creates a new session handler
+     * Creates a new session handler.
      *
      * @param Container $app
      */
@@ -49,9 +50,11 @@ class Redis implements SessionHandlerInterface
     }
 
     /**
-     * Loads a session into $_SESSION given a session id
+     * Loads a session into $_SESSION given a session id.
      *
      * @param string $id session id
+     *
+     * @return string
      */
     public function read($id)
     {
@@ -59,26 +62,30 @@ class Redis implements SessionHandlerInterface
     }
 
     /**
-     * Persists data from the session
+     * Persists data from the session.
      *
      * @param string $id   session id
      * @param string $data data
+     *
+     * @return boolean
      */
     public function write($id, $data)
     {
         $ttl = ini_get('session.gc_maxlifetime');
 
-        $this->app['redis']->setex($this->prefix.$id, $ttl, $data);
+        return $this->app['redis']->setex($this->prefix.$id, $ttl, $data);
     }
 
     /**
-     * Destroys a session
+     * Destroys a session.
      *
      * @param string $id session id
+     *
+     * @return boolean
      */
     public function destroy($id)
     {
-        $this->app['redis']->del($this->prefix.$id);
+        return $this->app['redis']->del($this->prefix.$id);
     }
 
     /**
