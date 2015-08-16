@@ -1392,7 +1392,7 @@ abstract class Model extends Acl
         $valid = true;
 
         if (isset($property['validate']) && is_callable($property['validate'])) {
-            $valid = call_user_func_array($property['validate'], [ &$value ]);
+            $valid = call_user_func_array($property['validate'], [$value]);
         } elseif (isset($property['validate'])) {
             $valid = Validate::is($value, $property['validate']);
         }
