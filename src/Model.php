@@ -1368,16 +1368,16 @@ abstract class Model extends Acl
             return true;
         }
 
-        // json
-        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
-            $value = json_encode($value);
-        }
-
         // filter
         $value = $this->filter($property, $value);
 
         // validate
         list($valid, $value) = $this->validate($property, $propertyName, $value);
+
+        // json
+        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
+            $value = json_encode($value);
+        }
 
         // unique?
         if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
