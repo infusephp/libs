@@ -93,6 +93,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'searchable' => false,
                 'hidden' => false,
             ],
+            'filter' => [
+                'type' => Model::TYPE_STRING,
+                'null' => false,
+                'mutable' => Model::MUTABLE,
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+                'hidden' => true,
+                'filter' => 'uppercase',
+            ],
         ];
 
         $this->assertEquals($expected, TestModel::properties());
@@ -671,22 +681,45 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        // insert mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
-
         // lastInsertId mock
         self::$app['pdo'] = Mockery::mock();
         self::$app['pdo']->shouldReceive('lastInsertId')->andReturn(1);
 
+        // insert mock
+        $execute = Mockery::mock();
+        $execute->shouldReceive('execute')
+                ->andReturn(true);
+        $into = Mockery::mock();
+        $into->shouldReceive('into')
+             ->withArgs(['TestModels'])
+             ->andReturn($execute);
+        self::$app['db'] = Mockery::mock();
+        self::$app['db']->shouldReceive('insert')
+            ->withArgs([[
+                'relation' => '',
+                'answer' => 42,
+                'filter' => 'BLAH',
+                ]])
+            ->andReturn($into)
+            ->once();
+
         // select mock
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
-            'id' => 1,
-            'relation' => null,
-            'answer' => 42, ]);
+        self::$app['db']->shouldReceive('select->from->where->one')
+            ->andReturn([
+                'id' => 1,
+                'relation' => null,
+                'answer' => 42, ]);
+
+        $params = [
+            'relation' => '',
+            'answer' => 42,
+            'extra' => true,
+            'filter' => 'blah',
+            'json' => [],
+        ];
 
         $newModel = new TestModel();
-        $this->assertTrue($newModel->create(['relation' => '', 'answer' => 42, 'extra' => true]));
+        $this->assertTrue($newModel->create($params));
         $this->assertEquals(1, $newModel->id());
         $this->assertEquals(1, $newModel->id);
         $this->assertEquals(null, $newModel->relation);
@@ -844,7 +877,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         self::$app['logger']->shouldReceive('error');
 
         $newModel = new TestModel();
-        $this->assertFalse($newModel->create(['relation' => '', 'answer' => 42, 'extra' => true]));
+        $this->assertFalse($newModel->create(['relation' => '', 'answer' => 42]));
     }
 
     /////////////////////////////
@@ -862,12 +895,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $execute = Mockery::mock();
         $execute->shouldReceive('execute')->andReturn($stmt);
         $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['id' => 10]])->andReturn($execute);
+        $where->shouldReceive('where')
+              ->withArgs([['id' => 10]])
+              ->andReturn($execute);
         $values = Mockery::mock();
-        $values->shouldReceive('values')->withArgs([[
-            'answer' => 42, ]])->andReturn($where);
+        $values->shouldReceive('values')
+               ->withArgs([['answer' => 42]])
+               ->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update')->withArgs(['TestModels'])->andReturn($values);
+        self::$app['db']->shouldReceive('update')
+            ->withArgs(['TestModels'])
+            ->andReturn($values);
 
         $this->assertTrue($model->set('answer', 42));
     }
@@ -881,17 +919,25 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $execute = Mockery::mock();
         $execute->shouldReceive('execute')->andReturn($stmt);
         $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['id' => 11]])->andReturn($execute);
+        $where->shouldReceive('where')
+              ->withArgs([['id' => 11]])
+              ->andReturn($execute);
         $values = Mockery::mock();
-        $values->shouldReceive('values')->withArgs([[
-            'answer' => 'hello',
-            'relation' => null, ]])->andReturn($where);
+        $values->shouldReceive('values')
+            ->withArgs([[
+                'answer' => 'hello',
+                'filter' => 'BLAH',
+                'relation' => null, ]])
+            ->andReturn($where);
         self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update')->withArgs(['TestModels'])->andReturn($values);
+        self::$app['db']->shouldReceive('update')
+            ->withArgs(['TestModels'])
+            ->andReturn($values);
 
         $this->assertTrue($model->set([
             'answer' => 'hello',
             'relation' => '',
+            'filter' => 'blah',
             'nonexistent_property' => 'whatever', ]));
     }
 
@@ -1225,6 +1271,10 @@ class TestModel extends Model
         'answer' => [
             'type' => Model::TYPE_STRING,
         ],
+        'filter' => [
+            'filter' => 'uppercase',
+            'hidden' => true,
+        ],
     ];
     public $preDelete;
     public $postDelete;
@@ -1286,6 +1336,11 @@ class TestModel extends Model
         if (!isset($exclude[ 'toArray' ])) {
             $result[ 'toArray' ] = true;
         }
+    }
+
+    protected function uppercase($value)
+    {
+        return strtoupper($value);
     }
 }
 
@@ -1352,14 +1407,14 @@ class TestModel2 extends Model
 
     public function toArrayHook(array &$result, array $exclude, array $include, array $expand)
     {
-        if (isset($include[ 'toArrayHook' ])) {
-            $result[ 'toArrayHook' ] = true;
+        if (isset($include['toArrayHook'])) {
+            $result['toArrayHook'] = true;
         }
     }
 
     public static function idProperty()
     {
-        return [ 'id', 'id2' ];
+        return ['id', 'id2'];
     }
 
     public static function hasSchema()

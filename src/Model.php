@@ -36,6 +36,10 @@
             Boolean
             Default: true
             Optional
+        filter:
+            Function on this object that mutates any property values before they are validated and saved
+            String
+            Optional
         validate:
             Validation string passed to Validate::is() or validation function
             String or callable
@@ -694,7 +698,7 @@ abstract class Model extends Acl
         // check for required fields
         foreach ($requiredProperties as $name) {
             if (!isset($insertArray[$name])) {
-                $this->app[ 'errors' ]->push([
+                $this->app['errors']->push([
                     'error' => VALIDATION_REQUIRED_FIELD_MISSING,
                     'params' => [
                         'field' => $name,
@@ -710,7 +714,9 @@ abstract class Model extends Acl
 
         try {
             $inserted = $this->app['db']->insert($insertArray)
-                ->into(static::tablename())->execute();
+                ->into(static::tablename())
+                ->execute();
+
             if ($inserted) {
                 // set new id(s)
                 $ids = [];
@@ -1367,8 +1373,11 @@ abstract class Model extends Acl
             $value = json_encode($value);
         }
 
+        // filter
+        $value = $this->filter($property, $value);
+
         // validate
-        $valid = $this->validate($property, $propertyName, $value);
+        list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
         if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
@@ -1376,6 +1385,25 @@ abstract class Model extends Acl
         }
 
         return $valid;
+    }
+
+    /**
+     * Filter a value for a property.
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return boolean
+     */
+    private function filter(array $property, $value)
+    {
+        if (isset($property['filter'])) {
+            $filter = $property['filter'];
+
+            return $this->$filter($value);
+        }
+
+        return $value;
     }
 
     /**
@@ -1387,7 +1415,7 @@ abstract class Model extends Acl
      *
      * @return boolean
      */
-    private function validate(array $property, $propertyName, &$value)
+    private function validate(array $property, $propertyName, $value)
     {
         $valid = true;
 
@@ -1405,7 +1433,7 @@ abstract class Model extends Acl
                     'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($propertyName), ], ]);
         }
 
-        return $valid;
+        return [$valid, $value];
     }
 
     /**
