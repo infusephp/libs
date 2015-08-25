@@ -437,6 +437,16 @@ abstract class Model extends Acl
     }
 
     /**
+     * Gets the DI container used for this model.
+     *
+     * @return Container
+     */
+    public function getApp()
+    {
+        return $this->app;
+    }
+
+    /**
      * Checks if the model exists in the database.
      *
      * @return boolean

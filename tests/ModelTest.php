@@ -36,6 +36,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         Model::inject(self::$app);
     }
 
+    protected function tearDown()
+    {
+        Model::inject(self::$app);
+    }
+
     public function testConfigure()
     {
         TestModel::configure([
@@ -49,7 +54,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testInjectContainer()
     {
         $c = new \Pimple\Container();
-        Model::inject(self::$app);
+        Model::inject($c);
+
+        $model = new TestModel();
+        $this->assertEquals($c, $model->getApp());
     }
 
     public function testProperties()
