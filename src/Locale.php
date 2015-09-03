@@ -8,7 +8,6 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 class Locale
@@ -184,7 +183,7 @@ class Locale
 
             if (!empty($city)) {
                 $key = $continent.'/'.$city;
-                $value = str_replace(['_', '/' ], [ ' ', ': ' ], $city);
+                $value = str_replace(['_', '/'], [' ', ': '], $city);
             } else {
             }
 
@@ -658,6 +657,7 @@ class Locale
         ],
         'AMD' => [
             'name' => 'Armenia Dram',
+            'symbol' => 'AMD',
         ],
         'ANG' => [
             'name' => 'Netherlands Antilles Guilder',
@@ -701,9 +701,11 @@ class Locale
         ],
         'BHD' => [
             'name' => 'Bahrain Dinar',
+            'symbol' => 'BHD',
         ],
         'BIF' => [
             'name' => 'Burundi Franc',
+            'symbol' => 'BIF',
         ],
         'BMD' => [
             'name' => 'Bermuda Dollar',
@@ -731,6 +733,7 @@ class Locale
         ],
         'BTN' => [
             'name' => 'Bhutan Ngultrum',
+            'symbol' => 'BTN',
         ],
         'BWP' => [
             'name' => 'Botswana Pula',
@@ -750,6 +753,7 @@ class Locale
         ],
         'CDF' => [
             'name' => 'Congo/Kinshasa Franc',
+            'symbol' => 'CDF',
         ],
         'CHF' => [
             'name' => 'Switzerland Franc',
@@ -773,6 +777,7 @@ class Locale
         ],
         'CUC' => [
             'name' => 'Cuba Convertible Peso',
+            'symbol' => 'CUC',
         ],
         'CUP' => [
             'name' => 'Cuba Peso',
@@ -780,6 +785,7 @@ class Locale
         ],
         'CVE' => [
             'name' => 'Cape Verde Escudo',
+            'symbol' => 'CVE',
         ],
         'CZK' => [
             'name' => 'Czech ReKoruna',
@@ -799,6 +805,7 @@ class Locale
         ],
         'DZD' => [
             'name' => 'Algeria Dinar',
+            'symbol' => 'DZD',
         ],
         'EGP' => [
             'name' => 'Egypt Pound',
@@ -806,9 +813,11 @@ class Locale
         ],
         'ERN' => [
             'name' => 'Eritrea Nakfa',
+            'symbol' => 'ERN',
         ],
         'ETB' => [
             'name' => 'Ethiopia Birr',
+            'symbol' => 'ETB',
         ],
         'EUR' => [
             'name' => 'Euro Member Countries',
@@ -828,6 +837,7 @@ class Locale
         ],
         'GEL' => [
             'name' => 'Georgia Lari',
+            'symbol' => 'GEL',
         ],
         'GGP' => [
             'name' => 'Guernsey Pound',
@@ -847,6 +857,7 @@ class Locale
         ],
         'GNF' => [
             'name' => 'Guinea Franc',
+            'symbol' => 'GNF',
         ],
         'GTQ' => [
             'name' => 'Guatemala Quetzal',
@@ -931,6 +942,7 @@ class Locale
         ],
         'KMF' => [
             'name' => 'Comoros Franc',
+            'symbol' => 'KMF',
         ],
         'KPW' => [
             'name' => 'Korea (North) Won',
@@ -942,6 +954,7 @@ class Locale
         ],
         'KWD' => [
             'name' => 'Kuwait Dinar',
+            'symbol' => 'ك',
         ],
         'KYD' => [
             'name' => 'Cayman Islands Dollar',
@@ -969,6 +982,7 @@ class Locale
         ],
         'LSL' => [
             'name' => 'Lesotho Loti',
+            'symbol' => 'LSL',
         ],
         'LTL' => [
             'name' => 'Lithuania Litas',
@@ -984,12 +998,15 @@ class Locale
         ],
         'MAD' => [
             'name' => 'Morocco Dirham',
+            'symbol' => 'MAD',
         ],
         'MDL' => [
             'name' => 'Moldova Leu',
+            'symbol' => 'MDL',
         ],
         'MGA' => [
             'name' => 'Madagascar Ariary',
+            'symbol' => 'MGA',
         ],
         'MKD' => [
             'name' => 'Macedonia Denar',
@@ -997,6 +1014,7 @@ class Locale
         ],
         'MMK' => [
             'name' => 'Myanmar (Burma) Kyat',
+            'symbol' => 'MMK',
         ],
         'MNT' => [
             'name' => 'Mongolia Tughrik',
@@ -1004,9 +1022,11 @@ class Locale
         ],
         'MOP' => [
             'name' => 'Macau Pataca',
+            'symbol' => 'MOP',
         ],
         'MRO' => [
             'name' => 'Mauritania Ouguiya',
+            'symbol' => 'MRO',
         ],
         'MUR' => [
             'name' => 'Mauritius Rupee',
@@ -1014,9 +1034,11 @@ class Locale
         ],
         'MVR' => [
             'name' => 'Maldives (Maldive Islands) Rufiyaa',
+            'symbol' => 'MVR',
         ],
         'MWK' => [
             'name' => 'Malawi Kwacha',
+            'symbol' => 'MWK',
         ],
         'MXN' => [
             'name' => 'Mexico Peso',
@@ -1068,6 +1090,7 @@ class Locale
         ],
         'PGK' => [
             'name' => 'Papua New Guinea Kina',
+            'symbol' => 'PGK',
         ],
         'PHP' => [
             'name' => 'Philippines Peso',
@@ -1103,6 +1126,7 @@ class Locale
         ],
         'RWF' => [
             'name' => 'Rwanda Franc',
+            'symbol' => 'RWF',
         ],
         'SAR' => [
             'name' => 'Saudi Arabia Riyal',
@@ -1118,6 +1142,7 @@ class Locale
         ],
         'SDG' => [
             'name' => 'Sudan Pound',
+            'symbol' => 'SDG',
         ],
         'SEK' => [
             'name' => 'Sweden Krona',
@@ -1133,13 +1158,15 @@ class Locale
         ],
         'SLL' => [
             'name' => 'Sierra Leone Leone',
+            'symbol' => 'SLL',
         ],
         'SOS' => [
             'name' => 'Somalia Shilling',
             'symbol' => 'S',
         ],
-        'SPL*' => [
+        'SPL' => [
             'name' => 'Seborga Luigino',
+            'symbol' => 'SPL',
         ],
         'SRD' => [
             'name' => 'Suriname Dollar',
@@ -1147,6 +1174,7 @@ class Locale
         ],
         'STD' => [
             'name' => '	São Tomé and Príncipe Dobra',
+            'symbol' => 'STD',
         ],
         'SVC' => [
             'name' => 'El Salvador Colon',
@@ -1158,6 +1186,7 @@ class Locale
         ],
         'SZL' => [
             'name' => 'Swaziland Lilangeni',
+            'symbol' => 'SZL',
         ],
         'THB' => [
             'name' => 'Thailand Baht',
@@ -1165,9 +1194,11 @@ class Locale
         ],
         'TJS' => [
             'name' => 'Tajikistan Somoni',
+            'symbol' => 'TJS',
         ],
         'TMT' => [
             'name' => 'Turkmenistan Manat',
+            'symbol' => 'TMT',
         ],
         'TND' => [
             'name' => 'Tunisia Dinar',
@@ -1175,6 +1206,7 @@ class Locale
         ],
         'TOP' => [
             'name' => 'Tonga Paanga',
+            'symbol' => 'TOP',
         ],
         'TRY' => [
             'name' => 'Turkey Lira',
@@ -1226,9 +1258,11 @@ class Locale
         ],
         'VUV' => [
             'name' => 'Vanuatu Vatu',
+            'symbol' => 'VUV',
         ],
         'WST' => [
             'name' => 'Samoa Tala',
+            'symbol' => 'WST',
         ],
         'XAF' => [
             'name' => 'Central African CFA Franc BEAC',
@@ -1240,12 +1274,15 @@ class Locale
         ],
         'XDR' => [
             'name' => 'International Monetary Fund (IMF) Special Drawing Rights',
+            'symbol' => 'XDR',
         ],
         'XOF' => [
             'name' => 'Communauté Financière Africaine (BCEAO) Franc',
+            'symbol' => 'XOF',
         ],
         'XPF' => [
             'name' => 'Comptoirs Français du Pacifique (CFP) Franc',
+            'symbol' => 'XPF',
         ],
         'YER' => [
             'name' => 'Yemen Rial',
