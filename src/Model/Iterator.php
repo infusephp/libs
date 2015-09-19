@@ -1,41 +1,86 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse\Model;
 
 class Iterator implements \Iterator
 {
+    /**
+     * @var Model
+     */
     private $modelClass;
-    private $start;
-    private $pointer;
-    private $limit;
-    private $where;
-    private $sort;
-    private $loadedStart = false;
-    private $models = [];
-    private $count = false;
 
-    public function __construct($modelClass, array $parameters)
+    /**
+     * @var int
+     */
+    private $start;
+
+    /**
+     * @var int
+     */
+    private $pointer;
+
+    /**
+     * @var int
+     */
+    private $limit;
+
+    /**
+     * @var array
+     */
+    private $where;
+
+    /**
+     * @var string
+     */
+    private $sort;
+
+    /**
+     * @var bool
+     */
+    private $loadedStart;
+
+    /**
+     * @var array
+     */
+    private $models = [];
+
+    /**
+     * @var int
+     */
+    private $count;
+
+    /**
+     * @var int
+     */
+    private $max;
+
+    /**
+     * @param string $modelClass
+     * @param array  $parameters
+     */
+    public function __construct($modelClass, array $parameters = [])
     {
         $this->modelClass = $modelClass;
-        $this->parameters = $parameters;
+        $this->models = [];
 
-        $this->start = (isset($parameters['start'])) ? $parameters[ 'start' ] : 0;
+        $this->start = (isset($parameters['start'])) ? $parameters['start'] : 0;
         $this->pointer = $this->start;
-        $this->limit = (isset($parameters['limit'])) ? $parameters[ 'limit' ] : 100;
-        $this->where = (isset($parameters['where'])) ? $parameters[ 'where' ] : [];
-        $this->sort = (isset($parameters['sort'])) ? $parameters[ 'sort' ] : '';
+        $this->limit = (isset($parameters['limit'])) ? $parameters['limit'] : 100;
+        $this->where = (isset($parameters['where'])) ? $parameters['where'] : [];
+        $this->sort = (isset($parameters['sort'])) ? $parameters['sort'] : '';
+        $this->max = -1;
 
-        if (!empty($parameters[ 'search' ])) {
+        if (!empty($parameters['search'])) {
             $w = [];
-            $search = addslashes($parameters[ 'search' ]);
+            $search = addslashes($parameters['search']);
             foreach ($modelClass::properties() as $name => $property) {
                 if ($property['searchable']) {
                     $w[] = "`$name` LIKE '%$search%'";
@@ -50,14 +95,38 @@ class Iterator implements \Iterator
         if (empty($this->sort)) {
             $idProperties = (array) $modelClass::idProperty();
             foreach ($idProperties as $k => $property) {
-                $idProperties[ $k ] .= ' ASC';
+                $idProperties[$k] .= ' ASC';
             }
             $this->sort = implode(',', $idProperties);
         }
     }
 
     /**
-     * Rewind the Iterator to the first element
+     * Sets the maximum number of results to return.
+     *
+     * @param int $n
+     *
+     * @return self
+     */
+    public function setMax($n)
+    {
+        $this->max = $n;
+
+        return $this;
+    }
+
+    /**
+     * Gets the maximum number of results to return.
+     *
+     * @return int
+     */
+    public function getMax()
+    {
+        return $this->max;
+    }
+
+    /**
+     * Rewind the Iterator to the first element.
      */
     public function rewind()
     {
@@ -68,24 +137,24 @@ class Iterator implements \Iterator
     }
 
     /**
-     * Returns the current element
+     * Returns the current element.
      *
      * @return mixed
      */
     public function current()
     {
         if ($this->pointer >= $this->count()) {
-            return null;
+            return;
         }
 
         $this->loadModels();
         $k = $this->pointer % $this->limit;
 
-        return (isset($this->models[$k])) ? $this->models[ $k ] : null;
+        return (isset($this->models[$k])) ? $this->models[$k] : null;
     }
 
     /**
-     * Return the key of the current element
+     * Return the key of the current element.
      *
      * @return int
      */
@@ -95,17 +164,17 @@ class Iterator implements \Iterator
     }
 
     /**
-     * Move forward to the next element
+     * Move forward to the next element.
      */
     public function next()
     {
-        $this->pointer++;
+        ++$this->pointer;
     }
 
     /**
-     * Checks if current position is valid
+     * Checks if current position is valid.
      *
-     * @return boolean
+     * @return bool
      */
     public function valid()
     {
@@ -113,7 +182,7 @@ class Iterator implements \Iterator
     }
 
     /**
-     * Get total number of models matching query
+     * Get total number of models matching query.
      *
      * @return int
      */
@@ -121,13 +190,17 @@ class Iterator implements \Iterator
     {
         $this->updateCount();
 
+        if ($this->max >= 0) {
+            return min($this->max, $this->count);
+        }
+
         return $this->count;
     }
 
     /**
-     * Load the next round of models
+     * Load the next round of models.
      *
-     * @return boolean success
+     * @return bool success
      */
     private function loadModels()
     {
@@ -138,9 +211,10 @@ class Iterator implements \Iterator
                 'where' => $this->where,
                 'start' => $start,
                 'limit' => $this->limit,
-                'sort' => $this->sort, ]);
+                'sort' => $this->sort,
+            ]);
 
-            $this->models = $result[ 'models' ];
+            $this->models = $result['models'];
             $this->loadedStart = $start;
 
             return true;
@@ -152,7 +226,7 @@ class Iterator implements \Iterator
     /**
      * Updates the total count of models. For better performance, the
      * count is only updated on edges, i.e. when new models need to
-     * be loaded
+     * be loaded.
      */
     private function updateCount()
     {

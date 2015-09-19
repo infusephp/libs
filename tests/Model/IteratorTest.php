@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Model;
 use infuse\Model\Iterator;
 
@@ -21,13 +21,22 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
     {
         self::$iterator = new Iterator('IteratorTestModel', [
             'start' => self::$start,
-            'limit' => self::$limit ]);
+            'limit' => self::$limit, ]);
     }
 
     public function testConstructSearch()
     {
         $iterator = new Iterator('IteratorTestModel', [
-            'search' => 'test' ]);
+            'search' => 'test', ]);
+    }
+
+    public function testSetMax()
+    {
+        $iterator = new Iterator('IteratorTestModel');
+
+        $this->assertEquals(-1, $iterator->getMax());
+        $this->assertEquals($iterator, $iterator->setMax(100));
+        $this->assertEquals(100, $iterator->getMax());
     }
 
     public function testKey()
@@ -42,7 +51,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 
     public function testNext()
     {
-        for ($i = self::$start; $i < self::$limit + 1; $i++) {
+        for ($i = self::$start; $i < self::$limit + 1; ++$i) {
             self::$iterator->next();
         }
 
@@ -61,7 +70,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         self::$iterator->rewind();
 
         $count = IteratorTestModel::totalRecords();
-        for ($i = self::$start; $i < $count + 1; $i++) {
+        for ($i = self::$start; $i < $count + 1; ++$i) {
             $current = self::$iterator->current();
             if ($i < $count) {
                 $this->assertEquals($i, $current->id());
@@ -76,7 +85,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
     public function testNotValid()
     {
         self::$iterator->rewind();
-        for ($i = self::$start; $i < IteratorTestModel::totalRecords() + 1; $i++) {
+        for ($i = self::$start; $i < IteratorTestModel::totalRecords() + 1; ++$i) {
             self::$iterator->next();
         }
 
@@ -89,7 +98,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         foreach (self::$iterator as $k => $model) {
             $this->assertEquals($i, $k);
             $this->assertEquals($i, $model->id());
-            $i++;
+            ++$i;
         }
 
         $this->assertEquals($i, IteratorTestModel::totalRecords());
@@ -103,7 +112,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         foreach ($iterator as $k => $model) {
             $this->assertEquals($i, $k);
             $this->assertEquals($i, $model->id());
-            $i++;
+            ++$i;
         }
 
         $this->assertEquals($i, IteratorTestModel::totalRecords());
@@ -115,22 +124,37 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $limit = 101;
         $iterator = new Iterator('IteratorTestModel', [
             'start' => $start,
-            'limit' => $limit ]);
+            'limit' => $limit, ]);
 
         $i = $start;
         foreach ($iterator as $k => $model) {
             $this->assertEquals($i, $k);
             $this->assertEquals($i, $model->id());
-            $i++;
+            ++$i;
         }
 
         $this->assertEquals($i, IteratorTestModel::totalRecords());
+    }
+
+    public function testWithMax()
+    {
+        $iterator = new Iterator('IteratorTestModel');
+        $iterator->setMax(5);
+
+        $found = [];
+        foreach ($iterator as $model) {
+            $found[] = $model->id();
+        }
+
+        $expected = [0, 1, 2, 3, 4];
+
+        $this->assertEquals($expected, $found);
     }
 }
 
 class IteratorTestModel extends Model
 {
-    static $properties = [
+    public static $properties = [
         'id' => [
             'type' => 'number', ],
         'id2' => [
@@ -142,7 +166,7 @@ class IteratorTestModel extends Model
 
     public static function idProperty()
     {
-        return [ 'id', 'id2' ];
+        return ['id', 'id2'];
     }
     protected function hasPermission($permission, Model $requester)
     {
@@ -157,7 +181,7 @@ class IteratorTestModel extends Model
     public static function find(array $params = [])
     {
         if ($params[ 'sort' ] != 'id ASC,id2 ASC') {
-            return [ 'models' => [], 'count' => 0 ];
+            return ['models' => [], 'count' => 0];
         }
 
         $range = range($params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1);
@@ -170,6 +194,6 @@ class IteratorTestModel extends Model
 
         return [
             'models' => $models,
-            'count' => self::totalRecords() ];
+            'count' => self::totalRecords(), ];
     }
 }
