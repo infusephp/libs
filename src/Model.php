@@ -91,6 +91,7 @@ namespace infuse;
 
 use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
+use infuse\Model\Driver\DriverInterface;
 use Pimple\Container;
 use Stash\Pool;
 use Stash\Item;
@@ -247,6 +248,11 @@ abstract class Model extends Acl
     private static $cachePrefix = [];
 
     /**
+     * @var DriverInterface
+     */
+    private static $driver;
+
+    /**
      * @var array
      */
     private $_local = [];
@@ -311,12 +317,15 @@ abstract class Model extends Acl
      */
     public function __construct($id = false)
     {
+        // load the driver
+        static::getDriver();
+
         if (is_array($id)) {
             $id = implode(',', $id);
         } elseif (strpos($id, ',') === false) {
             // ensure id has the right type
             $idProperties = (array) static::idProperty();
-            $this->_id = $this->marshalFromStorage(static::properties($idProperties[0]), $id);
+            $this->_id = self::$driver->unserializeValue(static::properties($idProperties[0]), $id);
         }
 
         $this->_id = $id;
@@ -427,7 +436,7 @@ abstract class Model extends Acl
             // enforce the type by marshaling (otherwise it would always return a string)
             if ($id && isset($idProperties[$k])) {
                 $property = $idProperties[$k];
-                $id = $this->marshalFromStorage(static::properties($property), $id);
+                $id = self::$driver->unserializeValue(static::properties($property), $id);
             }
 
             $return[$f] = $id;
@@ -628,9 +637,23 @@ abstract class Model extends Acl
                $property == $idProperty;
     }
 
-    public static function hasSchema()
+    /////////////////////////////
+    // DRIVERS
+    /////////////////////////////
+
+    public static function setDriver(DriverInterface $driver)
     {
-        return true;
+        self::$driver = $driver;
+    }
+
+    public static function getDriver()
+    {
+        // use the DatabaseDriver by default
+        if (!self::$driver) {
+            self::$driver = new Model\Driver\DatabaseDriver();
+        }
+
+        return self::$driver;
     }
 
     /////////////////////////////
@@ -701,7 +724,7 @@ abstract class Model extends Acl
                 continue;
             }
 
-            $validated = $validated && $this->marshalToStorage($property, $field, $value);
+            $validated = $validated && $this->validateAndMarshal($property, $field, $value);
             $insertArray[$field] = $value;
         }
 
@@ -744,7 +767,7 @@ abstract class Model extends Acl
                     $id = $this->app['pdo']->lastInsertId();
                 }
 
-                $ids[] = $this->marshalFromStorage(static::properties($property), $id);
+                $ids[] = self::$driver->unserializeValue(static::properties($property), $id);
             }
 
             $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
@@ -961,7 +984,7 @@ abstract class Model extends Acl
                 continue;
             }
 
-            $validated = $validated && $this->marshalToStorage($property, $field, $value);
+            $validated = $validated && $this->validateAndMarshal($property, $field, $value);
             $updateArray[$field] = $value;
         }
 
@@ -1360,16 +1383,15 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Marshals a value for a given property to storage, and
-     * checks the validity of a value.
+     * Validates and marshals a value to storage.
      *
      * @param array  $property
      * @param string $propertyName
      * @param mixed  $value
      *
-     * @return bool|null true: is valid, false: is invalid
+     * @return bool
      */
-    private function marshalToStorage(array $property, $propertyName, &$value)
+    private function validateAndMarshal(array $property, $propertyName, &$value)
     {
         // assume empty string is a null value for properties
         // that are marked as optionally-null
@@ -1385,10 +1407,8 @@ abstract class Model extends Acl
         // validate
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
-        // json
-        if ($property['type'] == self::TYPE_JSON && !is_string($value)) {
-            $value = json_encode($value);
-        }
+        // marshal the value
+        $value = self::$driver->serializeValue($property, $value);
 
         // unique?
         if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
@@ -1497,7 +1517,7 @@ abstract class Model extends Acl
             foreach ($values as $k => &$v) {
                 $property = static::properties($k);
                 if (is_array($property)) {
-                    $this->_local[$k] = $this->marshalFromStorage($property, $v);
+                    $this->_local[$k] = self::$driver->unserializeValue($property, $v);
                 }
             }
 
@@ -1522,47 +1542,6 @@ abstract class Model extends Acl
             return;
         }
 
-        return $this->marshalFromStorage($property, $property['default']);
-    }
-
-    /**
-     * Marshals a value for a given property from storage.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    private function marshalFromStorage(array $property, $value)
-    {
-        if ($property['null'] && $value == '') {
-            return;
-        }
-
-        $type = $property['type'];
-
-        if ($type == self::TYPE_BOOLEAN && is_string($value)) {
-            return ($value == '1') ? true : false;
-        }
-
-        // cast numbers as....numbers
-        if ($type == self::TYPE_NUMBER) {
-            return $value + 0;
-        }
-
-        // also cast dates as numbers
-        if ($type == self::TYPE_DATE) {
-            if (!is_numeric($value)) {
-                return strtotime($value);
-            } else {
-                return $value + 0;
-            }
-        }
-
-        if ($type == self::TYPE_JSON && is_string($value)) {
-            return (array) json_decode($value, true);
-        }
-
-        return $value;
+        return self::$driver->unserializeValue($property, $property['default']);
     }
 }

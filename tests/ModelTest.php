@@ -12,7 +12,7 @@ use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
 
-class ModelTest extends \PHPUnit_Framework_TestCase
+class ModelTest extends PHPUnit_Framework_TestCase
 {
     public static $requester;
     public static $app;
@@ -390,6 +390,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(TestModel2::isIdProperty('id2'));
     }
 
+    public function testDefaultDriver()
+    {
+        $driver = TestModel::getDriver();
+        $this->assertInstanceOf('infuse\\Model\\Driver\\DatabaseDriver', $driver);
+    }
+
+    public function testDriver()
+    {
+        $old = TestModel::getDriver();
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        TestModel::setDriver($driver);
+        $this->assertEquals($driver, TestModel::getDriver());
+
+        // restore old driver
+        TestModel::setDriver($old);
+    }
+
     public function testTotalRecords()
     {
         // select query mock
@@ -675,12 +693,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $model->relation = 10;
 
         $this->assertEquals('{"id":5,"test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
-    }
-
-    public function testHasSchema()
-    {
-        $this->assertTrue(TestModel::hasSchema());
-        $this->assertFalse(TestModel2::hasSchema());
     }
 
     /////////////////////////////
@@ -1424,11 +1436,6 @@ class TestModel2 extends Model
     public static function idProperty()
     {
         return ['id', 'id2'];
-    }
-
-    public static function hasSchema()
-    {
-        return false;
     }
 }
 
