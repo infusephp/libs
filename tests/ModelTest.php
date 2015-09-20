@@ -306,7 +306,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     public function testMultipleIds()
     {
-        $model = new TestModel2([ 5, 2 ]);
+        $model = new TestModel2([5, 2]);
 
         $this->assertEquals('5,2', $model->id());
     }
@@ -314,10 +314,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testIdKeyValue()
     {
         $model = new TestModel(3);
-        $this->assertEquals([ 'id' => 3 ], $model->id(true));
+        $this->assertEquals(['id' => 3], $model->id(true));
 
-        $model = new TestModel2([ 5, 2 ]);
-        $this->assertEquals([ 'id' => 5, 'id2' => 2 ], $model->id(true));
+        $model = new TestModel2([5, 2]);
+        $this->assertEquals(['id' => 5, 'id2' => 2], $model->id(true));
     }
 
     public function testToString()
@@ -595,7 +595,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'relation' => 100,
         ];
 
-        $this->assertEquals($expected, $model->toArray([ 'id', 'answer', 'toArray', 'test_hook' ]));
+        $this->assertEquals($expected, $model->toArray(['id', 'answer', 'toArray', 'test_hook']));
     }
 
     public function testToArrayAutoTimestamps()
@@ -606,7 +606,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $expected = ['created_at' => 100, 'updated_at' => '102'];
 
-        $this->assertEquals($expected, $model->toArray([ 'id', 'id2', 'default', 'validate', 'unique', 'required' ]));
+        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required']));
 
         $model->created_at = '-1';
         $this->assertEquals(-1, $model->created_at);
@@ -625,7 +625,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 'shipping' => false, ],
             'toArrayHook' => true, ];
 
-        $this->assertEquals($expected, $model->toArray([ 'id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at' ], [ 'hidden', 'toArrayHook', 'json' ]));
+        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at'], ['hidden', 'toArrayHook', 'json']));
     }
 
     public function testToArrayExpand()
@@ -691,7 +691,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         // lastInsertId mock
         self::$app['pdo'] = Mockery::mock();
-        self::$app['pdo']->shouldReceive('lastInsertId')->andReturn(1);
+        self::$app['pdo']->shouldReceive('lastInsertId')
+                         ->andReturn(1);
 
         // insert mock
         $execute = Mockery::mock();
@@ -703,20 +704,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
              ->andReturn($execute);
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('insert')
-            ->withArgs([[
-                'relation' => '',
-                'answer' => 42,
-                'filter' => 'BLAH',
-                ]])
-            ->andReturn($into)
-            ->once();
+                        ->withArgs([[
+                            'relation' => '',
+                            'answer' => 42,
+                            'filter' => 'BLAH',
+                            ]])
+                        ->andReturn($into)
+                        ->once();
 
         // select mock
         self::$app['db']->shouldReceive('select->from->where->one')
-            ->andReturn([
-                'id' => 1,
-                'relation' => null,
-                'answer' => 42, ]);
+                        ->andReturn([
+                            'id' => 1,
+                            'relation' => null,
+                            'answer' => 42, ]);
 
         $params = [
             'relation' => '',
@@ -812,7 +813,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         self::$app['db']->shouldReceive('insert->into->execute')->andReturn(true);
 
         $model = new TestModel(5);
-        $this->assertFalse($model->create([ 'relation' => '', 'answer' => 42 ]));
+        $this->assertFalse($model->create(['relation' => '', 'answer' => 42]));
     }
 
     public function testCreateNoPermission()
@@ -870,7 +871,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $errorStack = self::$app[ 'errors' ];
         $errorStack->clear();
         $newModel = new TestModel2();
-        $this->assertFalse($newModel->create([ 'id' => 10, 'id2' => 1 ]));
+        $this->assertFalse($newModel->create(['id' => 10, 'id2' => 1]));
         $this->assertCount(1, $errorStack->errors('TestModel2.create'));
     }
 
@@ -998,7 +999,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testSetFailWithNoId()
     {
         $model = new TestModel();
-        $this->assertFalse($model->set([ 'answer' => 42 ]));
+        $this->assertFalse($model->set(['answer' => 42]));
     }
 
     public function testSetNoPermission()
@@ -1124,7 +1125,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $cache = Mockery::mock('Stash\\Pool');
 
         TestModel::setDefaultCache($cache);
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $model = new TestModel();
             $this->assertEquals($cache, $model->getCache());
         }

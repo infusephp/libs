@@ -402,7 +402,7 @@ abstract class Model extends Acl
     /**
      * Gets the model identifier(s).
      *
-     * @param boolean $keyValue return key-value array of id
+     * @param bool $keyValue return key-value array of id
      *
      * @return array|string key-value if specified, otherwise comma-separated id string
      */
@@ -422,7 +422,7 @@ abstract class Model extends Acl
         $ids = array_reverse($ids);
 
         foreach ($idProperties as $k => $f) {
-            $id = (count($ids)>0) ? array_pop($ids) : false;
+            $id = (count($ids) > 0) ? array_pop($ids) : false;
 
             // enforce the type by marshaling (otherwise it would always return a string)
             if ($id && isset($idProperties[$k])) {
@@ -449,7 +449,7 @@ abstract class Model extends Acl
     /**
      * Checks if the model exists in the database.
      *
-     * @return boolean
+     * @return bool
      */
     public function exists()
     {
@@ -606,7 +606,7 @@ abstract class Model extends Acl
      *
      * @param string $property property
      *
-     * @return boolean has property
+     * @return bool has property
      */
     public static function hasProperty($property)
     {
@@ -618,7 +618,7 @@ abstract class Model extends Acl
     /**
      * Checks if a property name is an id property.
      *
-     * @return boolean
+     * @return bool
      */
     public static function isIdProperty($property)
     {
@@ -643,11 +643,11 @@ abstract class Model extends Acl
      *
      * @param array $data key-value properties
      *
-     * @return boolean
+     * @return bool
      */
     public function create(array $data = [])
     {
-        $errorStack = $this->app[ 'errors' ];
+        $errorStack = $this->app['errors'];
         $errorStack->setCurrentContext(static::modelName().'.create');
 
         if ($this->_id !== false) {
@@ -655,8 +655,8 @@ abstract class Model extends Acl
         }
 
         // permission?
-        if (!$this->can('create', static::$config[ 'requester' ])) {
-            $errorStack->push([ 'error' => ERROR_NO_PERMISSION ]);
+        if (!$this->can('create', static::$config['requester'])) {
+            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -712,7 +712,7 @@ abstract class Model extends Acl
                     'error' => VALIDATION_REQUIRED_FIELD_MISSING,
                     'params' => [
                         'field' => $name,
-                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name][ 'title' ] : Inflector::get()->titleize($name), ], ]);
+                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name]['title'] : Inflector::get()->titleize($name), ], ]);
 
                 $validated = false;
             }
@@ -722,41 +722,40 @@ abstract class Model extends Acl
             return false;
         }
 
+        $inserted = false;
         try {
             $inserted = $this->app['db']->insert($insertArray)
                 ->into(static::tablename())
                 ->execute();
-
-            if ($inserted) {
-                // set new id(s)
-                $ids = [];
-                $idProperties = (array) static::idProperty();
-                foreach ($idProperties as $property) {
-                    // attempt use the supplied value if the id property is mutable
-                    $id = null;
-                    if ($properties[$property ]['mutable'] == self::MUTABLE && isset($data[$property])) {
-                        $id = $data[$property];
-                    } else {
-                        $id = $this->app['pdo']->lastInsertId();
-                    }
-
-                    $ids[] = $this->marshalFromStorage(static::properties($property), $id);
-                }
-
-                $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
-
-                // post-hook
-                if (method_exists($this, 'postCreateHook')) {
-                    return $this->postCreateHook() !== false;
-                }
-
-                return true;
-            }
         } catch (\Exception $e) {
             $this->app['logger']->error($e);
         }
 
-        return false;
+        if ($inserted) {
+            // set new id(s)
+            $ids = [];
+            $idProperties = (array) static::idProperty();
+            foreach ($idProperties as $property) {
+                // attempt use the supplied value if the id property is mutable
+                $id = null;
+                if ($properties[$property]['mutable'] == self::MUTABLE && isset($data[$property])) {
+                    $id = $data[$property];
+                } else {
+                    $id = $this->app['pdo']->lastInsertId();
+                }
+
+                $ids[] = $this->marshalFromStorage(static::properties($property), $id);
+            }
+
+            $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
+
+            // post-hook
+            if (method_exists($this, 'postCreateHook') && $this->postCreateHook() === false) {
+                return false;
+            }
+        }
+
+        return !!$inserted;
     }
 
     /**
@@ -766,8 +765,8 @@ abstract class Model extends Acl
      * unsaved values, local cache, cache, database, defaults
      *
      * @param string|array $properties       list of properties to fetch values for
-     * @param boolean      $skipLocalCache   skips local cache when true
-     * @param boolean      $forceReturnArray always return an array when true
+     * @param bool         $skipLocalCache   skips local cache when true
+     * @param bool         $forceReturnArray always return an array when true
      *
      * @return mixed Returns value when only 1 found or an array when multiple values found
      */
@@ -840,7 +839,7 @@ abstract class Model extends Acl
         // get the list of appropriate properties
         foreach (static::properties() as $property => $pData) {
             // skip excluded properties
-            if (isset($namedExc[ $property ]) && !is_array($namedExc[ $property ])) {
+            if (isset($namedExc[$property]) && !is_array($namedExc[$property])) {
                 continue;
             }
 
@@ -861,7 +860,7 @@ abstract class Model extends Acl
         foreach ($namedExp as $k => $subExp) {
             // if the property is null, excluded, or not included
             // then we are not going to expand it
-            if (!isset($result[ $k ]) || !$result[ $k ]) {
+            if (!isset($result[$k]) || !$result[$k]) {
                 continue;
             }
 
@@ -876,7 +875,7 @@ abstract class Model extends Acl
 
             $relation = $this->relation($k);
             if ($relation) {
-                $result[ $k ] = $relation->toArray($flatExc, $flatInc, $flatExp);
+                $result[$k] = $relation->toArray($flatExc, $flatInc, $flatExp);
             }
         }
 
@@ -909,7 +908,7 @@ abstract class Model extends Acl
      * @param array|string $data  key-value properties or name of property
      * @param string new   $value value to set if name supplied
      *
-     * @return boolean
+     * @return bool
      */
     public function set($data, $value = false)
     {
@@ -926,7 +925,7 @@ abstract class Model extends Acl
 
         // permission?
         if (!$this->can('edit', static::$config['requester'])) {
-            $errorStack->push([ 'error' => ERROR_NO_PERMISSION ]);
+            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -970,36 +969,36 @@ abstract class Model extends Acl
             return false;
         }
 
-        try {
-            $updated = (count($updateArray) == 0) ||
-                $this->app['db']->update(static::tablename())
-                                ->values($updateArray)
-                                ->where($this->id(true))
-                                ->execute();
-
-            if ($updated) {
-                // clear the cache
-                $this->clearCache();
-
-                // post-hook
-                if (method_exists($this, 'postSetHook')) {
-                    return $this->postSetHook() !== false;
-                }
-
-                return true;
+        $updated = count($updateArray) == 0;
+        if (!$updated) {
+            try {
+                $updated = $this->app['db']->update(static::tablename())
+                    ->values($updateArray)
+                    ->where($this->id(true))
+                    ->execute();
+            } catch (\Exception $e) {
+                $this->app['logger']->error($e);
             }
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
         }
 
-        return false;
+        if ($updated) {
+            // clear the cache
+            $this->clearCache();
+
+            // post-hook
+            if (method_exists($this, 'postSetHook') && $this->postSetHook() === false) {
+                return false;
+            }
+        }
+
+        return !!$updated;
     }
 
     /**
      * Delete the model
      * WARNING: requires 'delete' permission from the requester.
      *
-     * @return boolean success
+     * @return bool success
      */
     public function delete()
     {
@@ -1007,12 +1006,12 @@ abstract class Model extends Acl
             return false;
         }
 
-        $errorStack = $this->app[ 'errors' ];
+        $errorStack = $this->app['errors'];
         $errorStack->setCurrentContext(static::modelName().'.delete');
 
         // permission?
-        if (!$this->can('delete', static::$config[ 'requester' ])) {
-            $errorStack->push([ 'error' => ERROR_NO_PERMISSION ]);
+        if (!$this->can('delete', static::$config['requester'])) {
+            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -1051,7 +1050,7 @@ abstract class Model extends Acl
      * Fetches models with pagination support.
      *
      * @param array key-value parameters
-     * @param array $params optional parameters [ 'where', 'start', 'limit', 'search', 'sort' ]
+     * @param array $params optional parameters ['where', 'start', 'limit', 'search', 'sort']
      *
      * @return array array( 'models' => models, 'count' => 'total found' )
      */
@@ -1089,16 +1088,16 @@ abstract class Model extends Acl
                 continue;
             }
 
-            $propertyName = $c[ 0 ];
+            $propertyName = $c[0];
 
             // validate property
-            if (!isset($properties[ $propertyName ])) {
+            if (!isset($properties[$propertyName])) {
                 continue;
             }
 
             // validate direction
-            $direction = strtolower($c[ 1 ]);
-            if (!in_array($direction, [ 'asc', 'desc' ])) {
+            $direction = strtolower($c[1]);
+            if (!in_array($direction, ['asc', 'desc'])) {
                 continue;
             }
 
@@ -1179,7 +1178,9 @@ abstract class Model extends Acl
     {
         try {
             return (int) self::$injectedApp['db']->select('count(*)')
-                ->from(static::tablename())->where($where)->scalar();
+                ->from(static::tablename())
+                ->where($where)
+                ->scalar();
         } catch (\Exception $e) {
             self::$injectedApp['logger']->error($e);
         }
@@ -1193,7 +1194,7 @@ abstract class Model extends Acl
      * If that fails, then attempts to load the model from the
      * database layer.
      *
-     * @param boolean $skipCache
+     * @param bool $skipCache
      *
      * @return Model
      */
@@ -1366,7 +1367,7 @@ abstract class Model extends Acl
      * @param string $propertyName
      * @param mixed  $value
      *
-     * @return boolean|null true: is valid, false: is invalid
+     * @return bool|null true: is valid, false: is invalid
      */
     private function marshalToStorage(array $property, $propertyName, &$value)
     {
@@ -1403,7 +1404,7 @@ abstract class Model extends Acl
      * @param array $property
      * @param mixed $value
      *
-     * @return boolean
+     * @return bool
      */
     private function filter(array $property, $value)
     {
@@ -1423,7 +1424,7 @@ abstract class Model extends Acl
      * @param string $propertyName
      * @param mixed  $value
      *
-     * @return boolean
+     * @return bool
      */
     private function validate(array $property, $propertyName, $value)
     {
@@ -1453,7 +1454,7 @@ abstract class Model extends Acl
      * @param string $propertyName
      * @param mixed  $value
      *
-     * @return boolean
+     * @return bool
      */
     private function checkUniqueness(array $property, $propertyName, $value)
     {
@@ -1462,7 +1463,7 @@ abstract class Model extends Acl
                 'error' => VALIDATION_NOT_UNIQUE,
                 'params' => [
                     'field' => $propertyName,
-                    'field_name' => (isset($property['title'])) ? $property[ 'title' ] : Inflector::get()->titleize($propertyName), ], ]);
+                    'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($propertyName), ], ]);
 
             return false;
         }
@@ -1482,7 +1483,8 @@ abstract class Model extends Acl
         if (!is_array($values)) {
             try {
                 $values = $this->app['db']->select('*')
-                    ->from(static::tablename())->where($this->id(true))
+                    ->from(static::tablename())
+                    ->where($this->id(true))
                     ->one();
             } catch (\Exception $e) {
                 self::$injectedApp['logger']->error($e);
