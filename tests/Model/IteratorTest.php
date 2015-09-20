@@ -10,15 +10,21 @@
  */
 use infuse\Model;
 use infuse\Model\Iterator;
+use Pimple\Container;
 
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
+    public static $app;
     public static $iterator;
     public static $start = 10;
     public static $limit = 50;
 
     public static function setUpBeforeClass()
     {
+        self::$app = new Container();
+        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
+        IteratorTestModel::inject(self::$app);
+
         self::$iterator = new Iterator('IteratorTestModel', [
             'start' => self::$start,
             'limit' => self::$limit, ]);

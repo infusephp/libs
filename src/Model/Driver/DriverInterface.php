@@ -2,6 +2,8 @@
 
 namespace infuse\Model\Driver;
 
+use infuse\Model;
+
 interface DriverInterface
 {
     /**
@@ -24,4 +26,33 @@ interface DriverInterface
      * @return mixed unserialized value
      */
     public function unserializeValue(array $property, $value);
+
+    /**
+     * Creates a model.
+     *
+     * @param Model $model
+     * @param array $parameters
+     *
+     * @return mixed result
+     */
+    public function createModel(Model $model, array $parameters);
+
+    /**
+     * Updates a model.
+     *
+     * @param Model $model
+     * @param array $parameters
+     *
+     * @return bool
+     */
+    public function updateModel(Model $model, array $parameters);
+
+    /**
+     * Deletes a model.
+     *
+     * @param Model $model
+     *
+     * @return bool
+     */
+    public function deleteModel(Model $model);
 }

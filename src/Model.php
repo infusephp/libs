@@ -650,7 +650,7 @@ abstract class Model extends Acl
     {
         // use the DatabaseDriver by default
         if (!self::$driver) {
-            self::$driver = new Model\Driver\DatabaseDriver();
+            self::$driver = new Model\Driver\DatabaseDriver(self::$injectedApp['db'], self::$injectedApp);
         }
 
         return self::$driver;
@@ -745,14 +745,7 @@ abstract class Model extends Acl
             return false;
         }
 
-        $inserted = false;
-        try {
-            $inserted = $this->app['db']->insert($insertArray)
-                ->into(static::tablename())
-                ->execute();
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
-        }
+        $inserted = self::$driver->createModel($this, $insertArray);
 
         if ($inserted) {
             // set new id(s)
@@ -778,7 +771,7 @@ abstract class Model extends Acl
             }
         }
 
-        return !!$inserted;
+        return $inserted;
     }
 
     /**
@@ -971,38 +964,28 @@ abstract class Model extends Acl
         $propertyNames = array_keys($properties);
 
         // loop through each supplied field and validate
-        foreach ($data as $field => $value) {
+        foreach ($data as $propertyName => $value) {
             // exclude if field does not map to a property
-            if (!in_array($field, $propertyNames)) {
+            if (!in_array($propertyName, $propertyNames)) {
                 continue;
             }
 
-            $property = $properties[$field];
+            $property = $properties[$propertyName];
 
             // can only modify mutable properties
             if ($property['mutable'] != self::MUTABLE) {
                 continue;
             }
 
-            $validated = $validated && $this->validateAndMarshal($property, $field, $value);
-            $updateArray[$field] = $value;
+            $validated = $validated && $this->validateAndMarshal($property, $propertyName, $value);
+            $updateArray[$propertyName] = $value;
         }
 
         if (!$validated) {
             return false;
         }
 
-        $updated = count($updateArray) == 0;
-        if (!$updated) {
-            try {
-                $updated = $this->app['db']->update(static::tablename())
-                    ->values($updateArray)
-                    ->where($this->id(true))
-                    ->execute();
-            } catch (\Exception $e) {
-                $this->app['logger']->error($e);
-            }
-        }
+        $updated = self::$driver->updateModel($this, $updateArray);
 
         if ($updated) {
             // clear the cache
@@ -1014,7 +997,7 @@ abstract class Model extends Acl
             }
         }
 
-        return !!$updated;
+        return $updated;
     }
 
     /**
@@ -1044,25 +1027,19 @@ abstract class Model extends Acl
             return false;
         }
 
-        try {
-            // delete the model
-            if ($this->app['db']->delete(static::tablename())
-                ->where($this->id(true))->execute()) {
-                // clear the cache
-                $this->clearCache();
+        $deleted = self::$driver->deleteModel($this);
 
-                // post-hook
-                if (method_exists($this, 'postDeleteHook')) {
-                    return $this->postDeleteHook() !== false;
-                }
+        if ($deleted) {
+            // clear the cache
+            $this->clearCache();
 
-                return true;
+            // post-hook
+            if (method_exists($this, 'postDeleteHook')) {
+                return $this->postDeleteHook() !== false;
             }
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
         }
 
-        return false;
+        return $deleted;
     }
 
     /////////////////////////////

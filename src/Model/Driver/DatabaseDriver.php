@@ -3,9 +3,37 @@
 namespace infuse\Model\Driver;
 
 use infuse\Model;
+use JAQB\QueryBuilder;
+use PDOStatement;
+use Pimple\Container;
 
 class DatabaseDriver implements DriverInterface
 {
+    /**
+     * @var QueryBuilder
+     */
+    private $db;
+
+    /**
+     * @var Container
+     */
+    private $app;
+
+    /**
+     * @param QueryBuilder $db
+     * @param Container    $app
+     */
+    public function __construct(QueryBuilder $db, Container $app = null)
+    {
+        $this->db = $db;
+        $this->app = $app;
+    }
+
+    public function getDatabase()
+    {
+        return $this->db;
+    }
+
     public function serializeValue(array $property, $value)
     {
         // encode JSON
@@ -50,5 +78,49 @@ class DatabaseDriver implements DriverInterface
         }
 
         return $value;
+    }
+
+    public function createModel(Model $model, array $parameters)
+    {
+        try {
+            return $this->db->insert($parameters)
+                ->into($model::tablename())
+                ->execute();
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
+    }
+
+    public function updateModel(Model $model, array $parameters)
+    {
+        if (count($parameters) == 0) {
+            return true;
+        }
+
+        try {
+            return $this->db->update($model::tablename())
+                ->values($parameters)
+                ->where($model->id(true))
+                ->execute() instanceof PDOStatement;
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
+    }
+
+    public function deleteModel(Model $model)
+    {
+        try {
+            return $this->db->delete($model::tablename())
+                ->where($model->id(true))
+                ->execute();
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
     }
 }

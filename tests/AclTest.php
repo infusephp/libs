@@ -1,18 +1,28 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Acl;
 use infuse\Model;
+use Pimple\Container;
 
 class AclTest extends \PHPUnit_Framework_TestCase
 {
+    public static $app;
+
+    public static function setUpBeforeClass()
+    {
+        self::$app = new Container();
+        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
+        SomeModel::inject(self::$app);
+    }
+
     public function testCan()
     {
         $acl = new AclObject();
@@ -26,7 +36,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     {
         $acl = new AclObject();
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 10; ++$i) {
             $this->assertFalse($acl->can('whatever', new SomeModel()));
         }
     }
