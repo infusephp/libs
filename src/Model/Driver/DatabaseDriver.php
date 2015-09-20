@@ -4,6 +4,7 @@ namespace infuse\Model\Driver;
 
 use infuse\Model;
 use JAQB\QueryBuilder;
+use PDOException;
 use PDOStatement;
 use Pimple\Container;
 
@@ -29,9 +30,72 @@ class DatabaseDriver implements DriverInterface
         $this->app = $app;
     }
 
+    /**
+     * Returns the query builder instance used by this driver.
+     *
+     * @return QueryBuilder
+     */
     public function getDatabase()
     {
         return $this->db;
+    }
+
+    public function createModel(Model $model, array $parameters)
+    {
+        try {
+            return $this->db->insert($parameters)
+                ->into($model::tablename())
+                ->execute();
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
+    }
+
+    public function loadModel(Model $model)
+    {
+        try {
+            return $this->db->select('*')
+                ->from($model::tablename())
+                ->where($model->id(true))
+                ->one();
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return [];
+    }
+
+    public function updateModel(Model $model, array $parameters)
+    {
+        if (count($parameters) == 0) {
+            return true;
+        }
+
+        try {
+            return $this->db->update($model::tablename())
+                ->values($parameters)
+                ->where($model->id(true))
+                ->execute() instanceof PDOStatement;
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
+    }
+
+    public function deleteModel(Model $model)
+    {
+        try {
+            return $this->db->delete($model::tablename())
+                ->where($model->id(true))
+                ->execute();
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return false;
     }
 
     public function serializeValue(array $property, $value)
@@ -78,49 +142,5 @@ class DatabaseDriver implements DriverInterface
         }
 
         return $value;
-    }
-
-    public function createModel(Model $model, array $parameters)
-    {
-        try {
-            return $this->db->insert($parameters)
-                ->into($model::tablename())
-                ->execute();
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
-    }
-
-    public function updateModel(Model $model, array $parameters)
-    {
-        if (count($parameters) == 0) {
-            return true;
-        }
-
-        try {
-            return $this->db->update($model::tablename())
-                ->values($parameters)
-                ->where($model->id(true))
-                ->execute() instanceof PDOStatement;
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
-    }
-
-    public function deleteModel(Model $model)
-    {
-        try {
-            return $this->db->delete($model::tablename())
-                ->where($model->id(true))
-                ->execute();
-        } catch (\Exception $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
     }
 }

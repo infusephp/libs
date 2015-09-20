@@ -12,6 +12,8 @@ use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
 
+require_once 'test_models.php';
+
 class ModelTest extends PHPUnit_Framework_TestCase
 {
     public static $requester;
@@ -258,7 +260,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
-                'default' => '{"tax":"%","discounts":false,"shipping":false}',
+                'default' => [
+                    'tax' => '%',
+                    'discounts' => false,
+                    'shipping' => false,
+                ],
                 'unique' => false,
                 'required' => false,
                 'searchable' => false,
@@ -426,8 +432,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testTotalRecordsFail()
     {
+        // select query mock
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->scalar')->andThrow(new Exception());
+
+        // logger mock
         self::$app['logger'] = Mockery::mock();
         self::$app['logger']->shouldReceive('error');
 
@@ -449,9 +458,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel2(12);
         $this->assertTrue($model->exists());
+    }
 
+    public function testNotExists()
+    {
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(0);
+
+        $model = new TestModel2(12);
         $this->assertFalse($model->exists());
     }
 
@@ -472,100 +486,43 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testGetFromDb()
     {
-        // select query mock
-        $one = Mockery::mock();
-        $one->shouldReceive('one')->andReturn(['answer' => 20]);
-        $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['id' => 12]])->andReturn($one);
-        $from = Mockery::mock();
-        $from->shouldReceive('from')->withArgs(['TestModels'])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select')->andReturn($from);
-
         $model = new TestModel(12);
-        $this->assertEquals(20, $model->answer);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->withArgs([$model])
+               ->andReturn(['answer' => 20])
+               ->once();
+
+        $driver->shouldReceive('unserializeValue')
+               ->withArgs([TestModel::properties('answer'), 20])
+               ->andReturn(42);
+
+        TestModel::setDriver($driver);
+
+        $this->assertEquals(42, $model->answer);
     }
 
     public function testGetDefaultValue()
     {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
         $model = new TestModel2(12);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        $driver->shouldReceive('unserializeValue')
+               ->andReturn('some default value');
+
+        TestModel2::setDriver($driver);
+
         $this->assertEquals('some default value', $model->get('default'));
     }
 
-    public function testMarshalBoolean()
-    {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['hidden' => '1']);
-
-        $model = new TestModel2(12);
-        $this->assertTrue($model->hidden);
-    }
-
-    public function testMarshalTimestamp()
-    {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '2012-04-18 23:38:18']);
-
-        $model = new TestModel2(12);
-        $this->assertTrue(is_integer($model->updated_at));
-        $this->assertGreaterThan(0, $model->updated_at);
-    }
-
-    public function testMarshalTimestampInteger()
-    {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '123']);
-
-        $model = new TestModel2(12);
-        $this->assertTrue(is_integer($model->updated_at));
-        $this->assertEquals(123, $model->updated_at);
-    }
-
-    public function testMarshalDecimal()
-    {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['updated_at' => '123.2384']);
-
-        $model = new TestModel2(12);
-        $this->assertTrue(is_numeric($model->updated_at));
-        $this->assertEquals(123.2384, $model->updated_at);
-    }
-
-    public function testMarshalJson()
-    {
-        // select query mock
-        $json = ['test' => true, 'test2' => [1, 2, 3]];
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['json' => json_encode($json)]);
-
-        $model = new TestModel2(12);
-        $this->assertEquals($json, $model->json);
-    }
-
-    // public function testGetEmptyProperty()
-    // {
-    //     // select mock
-    //     self::$app['db'] = Mockery::mock();
-    //     self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['' => 'blah']);
-
-    //     $model = new TestModel(12);
-    //     $this->assertEquals('blah', $model->get('whatever'));
-    // }
-
     public function testRelation()
     {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
         $model = new TestModel();
         $model->relation = 2;
 
@@ -590,6 +547,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArray()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
         $model = new TestModel(5);
 
         $expected = [
@@ -606,6 +570,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayExcluded()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
         $model = new TestModel(5);
         $model->relation = 100;
 
@@ -618,6 +589,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayAutoTimestamps()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel2::setDriver($driver);
+
         $model = new TestModel2(5);
         $model->created_at = 100;
         $model->updated_at = 102;
@@ -632,6 +610,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayIncluded()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
         $model = new TestModel2(5);
         $model->hidden = true;
 
@@ -648,6 +633,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayExpand()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
         $model = new TestModel(10);
         $model->relation = 100;
         $model->answer = 42;
@@ -689,10 +681,17 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToJson()
     {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
         $model = new TestModel(5);
         $model->relation = 10;
 
-        $this->assertEquals('{"id":5,"test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
+        $this->assertEquals('{"id":"5","test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
     }
 
     /////////////////////////////
@@ -702,17 +701,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     public function testCreate()
     {
         $newModel = new TestModel();
-
-        $db = Mockery::mock();
-
-        // select mock
-        $db->shouldReceive('select->from->where->one')
-           ->andReturn([
-                'id' => 1,
-                'relation' => null,
-                'answer' => 42, ]);
-
-        self::$app['db'] = $db;
 
         // lastInsertId mock
         $pdo = Mockery::mock();
@@ -764,8 +752,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($newModel->create($params));
         $this->assertEquals(1, $newModel->id());
         $this->assertEquals(1, $newModel->id);
-        $this->assertEquals(null, $newModel->relation);
-        $this->assertEquals(42, $newModel->answer);
     }
 
     public function testCreateMutable()
@@ -826,7 +812,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->andReturn(20);
 
         $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('json'), '{"tax":"%","discounts":false,"shipping":false}'])
+               ->withArgs([TestModel2::properties('json'), [
+                    'tax' => '%',
+                    'discounts' => false,
+                    'shipping' => false,
+                ]])
                ->andReturn('{"tax":"%","discounts":false,"shipping":false}');
 
         $driver->shouldReceive('createModel')
@@ -897,7 +887,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $errorStack = self::$app['errors'];
         $errorStack->clear();
 
-        // select query mock
+        // select query mock for uniqueness
         $scalar = Mockery::mock();
         $scalar->shouldReceive('scalar')->andReturn(1);
         $where = Mockery::mock();
@@ -938,13 +928,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateFail()
     {
-        // insert qquery mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('insert->into->execute')->andThrow(new Exception());
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        // logger mock
-        self::$app['logger'] = Mockery::mock();
-        self::$app['logger']->shouldReceive('error');
+        $driver->shouldReceive('serializeValue');
+
+        $driver->shouldReceive('createModel')
+               ->andReturn(false);
+
+        TestModel::setDriver($driver);
 
         $newModel = new TestModel();
         $this->assertFalse($newModel->create(['relation' => '', 'answer' => 42]));
@@ -979,8 +970,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('unserializeValue');
-
         $driver->shouldReceive('serializeValue')
                ->withArgs([TestModel::properties('answer'), 'hello'])
                ->andReturn('hello');
@@ -1002,50 +991,23 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'nonexistent_property' => 'whatever', ]));
     }
 
-    public function testSetJson()
-    {
-        $stmt = Mockery::mock('PDOStatement');
-
-        // update mock
-        $where = Mockery::mock();
-        $where->shouldReceive('where->execute')->andReturn($stmt);
-        $values = Mockery::mock();
-        $values->shouldReceive('values')->withArgs([['json' => '{"test":true,"test2":[1,2,3]}']])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update')->andReturn($values);
-
-        // select mock
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn(['json' => '{"test":true,"test2":[1,2,3]}']);
-
-        $json = ['test' => true, 'test2' => [1, 2, 3]];
-
-        $model = new TestModel2(13);
-        $model->set('json', $json);
-        $this->assertEquals($json, $model->json);
-    }
-
     public function testSetImmutableProperties()
     {
-        $stmt = Mockery::mock('PDOStatement');
-
-        // update mock
-        $where = Mockery::mock();
-        $where->shouldReceive('where->execute')->andReturn($stmt);
-        $values = Mockery::mock();
-        $values->shouldReceive('values')->withArgs([[]])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('update')->andReturn($values);
-
-        // select mock
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([]);
-
         $model = new TestModel(10);
 
-        $this->assertTrue($model->set('id', 432));
-        $this->assertEquals(10, $model->id);
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $this->assertTrue($model->set('mutable_create_only', 'blah'));
-        $this->assertEquals(null, $model->mutable_create_only);
+        $driver->shouldReceive('updateModel')
+               ->withArgs([$model, []])
+               ->andReturn(true)
+               ->once();
+
+        TestModel::setDriver($driver);
+
+        $this->assertTrue($model->set([
+            'id' => 432,
+            'mutable_create_only' => 'blah', ]));
+        $this->assertEquals(10, $model->id);
     }
 
     public function testSetFailWithNoId()
@@ -1071,16 +1033,19 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUnique()
     {
+        // select query mock for uniqueness
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->scalar')
                         ->andReturn(0);
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-        $driver->shouldReceive('unserializeValue');
+
         $driver->shouldReceive('serializeValue');
+        $driver->shouldReceive('loadModel');
 
         $driver->shouldReceive('updateModel')
                ->andReturn(true);
+
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
@@ -1089,16 +1054,19 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUniqueSkip()
     {
+        // select query mock for uniqueness
         self::$app['db'] = Mockery::mock();
         self::$app['db']->shouldReceive('select->from->where->one')
                         ->andReturn(['unique' => 'works']);
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-        $driver->shouldReceive('unserializeValue');
+
         $driver->shouldReceive('serializeValue');
+        $driver->shouldReceive('loadModel');
 
         $driver->shouldReceive('updateModel')
                ->andReturn(true);
+
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
@@ -1239,12 +1207,18 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $cache = new Stash\Pool();
 
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
-            'answer' => 42, ]);
-
         $model = new TestModel(100);
         $model->setCache($cache);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn(['answer' => 42]);
+
+        $driver->shouldReceive('unserializeValue')
+               ->andReturn(42);
+
+        TestModel2::setDriver($driver);
 
         // load from the db first
         $model->load(true);
@@ -1258,12 +1232,18 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $cache = new Stash\Pool();
 
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
-            'answer' => 42, ]);
-
         $model = new TestModel(101);
         $model->setCache($cache);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn(['answer' => 42]);
+
+        $driver->shouldReceive('unserializeValue')
+               ->andReturn(42);
+
+        TestModel2::setDriver($driver);
 
         $this->assertEquals($model, $model->load());
 
@@ -1280,12 +1260,18 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $cache = new Stash\Pool();
 
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andReturn([
-            'answer' => 42, ]);
-
         $model = new TestModel(102);
         $model->setCache($cache);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn(['answer' => 42]);
+
+        $driver->shouldReceive('unserializeValue')
+               ->andReturn(42);
+
+        TestModel2::setDriver($driver);
 
         // cache
         $this->assertEquals($model, $model->load()->cache());
@@ -1301,244 +1287,38 @@ class ModelTest extends PHPUnit_Framework_TestCase
     }
 
     /////////////////////////////
-    // DATABASE
+    // STORAGE
     /////////////////////////////
 
-    public function testLoadFromDb()
+    public function testLoadFromStorage()
     {
         $model = new TestModel2();
         $this->assertEquals($model, $model->load());
 
-        // select query mock
-        $one = Mockery::mock();
-        $one->shouldReceive('one')->andReturn([]);
-        $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['id' => 12]])->andReturn($one);
-        $from = Mockery::mock();
-        $from->shouldReceive('from')->withArgs(['TestModels'])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select')->andReturn($from)->once();
-
         $model = new TestModel(12);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->withArgs([$model])
+               ->andReturn([])
+               ->once();
+
+        TestModel::setDriver($driver);
+
         $this->assertEquals($model, $model->load(true));
     }
 
-    public function testLoadFromDbFail()
+    public function testLoadFromStorageFail()
     {
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')->andThrow(new Exception())->once();
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn(false);
+
+        TestModel::setDriver($driver);
 
         $model = new TestModel(12);
         $this->assertEquals($model, $model->load(true));
-    }
-}
-
-class TestModel extends Model
-{
-    public static $properties = [
-        'relation' => [
-            'type' => Model::TYPE_NUMBER,
-            'relation' => 'TestModel2',
-            'null' => true,
-        ],
-        'answer' => [
-            'type' => Model::TYPE_STRING,
-        ],
-        'filter' => [
-            'filter' => 'uppercase',
-            'hidden' => true,
-        ],
-    ];
-    public $preDelete;
-    public $postDelete;
-
-    protected static function propertiesHook()
-    {
-        $properties = parent::propertiesHook();
-
-        $properties[ 'test_hook' ] = [
-            'type' => Model::TYPE_STRING,
-            'null' => true, ];
-
-        return $properties;
-    }
-
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
-    public function preCreateHook()
-    {
-        $this->preCreate = true;
-
-        return true;
-    }
-
-    public function postCreateHook()
-    {
-        $this->postCreate = true;
-    }
-
-    public function preSetHook()
-    {
-        $this->preSet = true;
-
-        return true;
-    }
-
-    public function postSetHook()
-    {
-        $this->postSet = true;
-    }
-
-    public function preDeleteHook()
-    {
-        $this->preDelete = true;
-
-        return true;
-    }
-
-    public function postDeleteHook()
-    {
-        $this->postDelete = true;
-    }
-
-    public function toArrayHook(array &$result, array $exclude, array $include, array $expand)
-    {
-        if (!isset($exclude[ 'toArray' ])) {
-            $result[ 'toArray' ] = true;
-        }
-    }
-
-    protected function uppercase($value)
-    {
-        return strtoupper($value);
-    }
-}
-
-function validate()
-{
-    return false;
-};
-class TestModel2 extends Model
-{
-    public static $properties = [
-        'id' => [
-            'type' => Model::TYPE_NUMBER,
-        ],
-        'id2' => [
-            'type' => Model::TYPE_NUMBER,
-        ],
-        'default' => [
-            'default' => 'some default value',
-        ],
-        'validate' => [
-            'validate' => 'email',
-            'null' => true,
-        ],
-        'validate2' => [
-            'validate' => 'validate',
-            'hidden' => true,
-            'null' => true,
-        ],
-        'unique' => [
-            'unique' => true,
-        ],
-        'required' => [
-            'type' => Model::TYPE_NUMBER,
-            'required' => true,
-        ],
-        'hidden' => [
-            'type' => Model::TYPE_BOOLEAN,
-            'default' => false,
-            'hidden' => true,
-        ],
-        'person' => [
-            'type' => Model::TYPE_NUMBER,
-            'relation' => 'Person',
-            'default' => 20,
-            'hidden' => true,
-        ],
-        'json' => [
-            'type' => Model::TYPE_JSON,
-            'default' => '{"tax":"%","discounts":false,"shipping":false}',
-            'hidden' => true,
-        ],
-        'mutable_create_only' => [
-            'mutable' => Model::MUTABLE_CREATE_ONLY,
-            'hidden' => true,
-        ],
-    ];
-
-    public static $autoTimestamps;
-
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
-    public function toArrayHook(array &$result, array $exclude, array $include, array $expand)
-    {
-        if (isset($include['toArrayHook'])) {
-            $result['toArrayHook'] = true;
-        }
-    }
-
-    public static function idProperty()
-    {
-        return ['id', 'id2'];
-    }
-}
-
-class TestModelNoPermission extends Model
-{
-    protected function hasPermission($permission, Model $requester)
-    {
-        return false;
-    }
-}
-
-class TestModelHookFail extends Model
-{
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
-    public function preCreateHook()
-    {
-        return false;
-    }
-
-    public function preSetHook()
-    {
-        return false;
-    }
-
-    public function preDeleteHook()
-    {
-        return false;
-    }
-}
-
-class Person extends Model
-{
-    public static $properties = [
-        'id' => [
-            'type' => Model::TYPE_STRING,
-        ],
-        'name' => [
-            'type' => Model::TYPE_STRING,
-            'default' => 'Jared',
-        ],
-        'address' => [
-            'type' => Model::TYPE_STRING,
-        ],
-    ];
-
-    protected function hasPermission($permission, Model $requester)
-    {
-        return false;
     }
 }

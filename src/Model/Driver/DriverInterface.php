@@ -38,6 +38,15 @@ interface DriverInterface
     public function createModel(Model $model, array $parameters);
 
     /**
+     * Loads a model.
+     *
+     * @param Model $model
+     *
+     * @return array
+     */
+    public function loadModel(Model $model);
+
+    /**
      * Updates a model.
      *
      * @param Model $model

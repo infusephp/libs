@@ -320,12 +320,12 @@ abstract class Model extends Acl
         // load the driver
         static::getDriver();
 
+        // TODO need to store the id as an array
+        // instead of a string to maintain type integrity
         if (is_array($id)) {
             $id = implode(',', $id);
         } elseif (strpos($id, ',') === false) {
-            // ensure id has the right type
-            $idProperties = (array) static::idProperty();
-            $this->_id = self::$driver->unserializeValue(static::properties($idProperties[0]), $id);
+            $this->_id = $id;
         }
 
         $this->_id = $id;
@@ -430,14 +430,10 @@ abstract class Model extends Acl
         $ids = explode(',', $this->_id);
         $ids = array_reverse($ids);
 
+        // TODO need to store the id as an array
+        // instead of a string to maintain type integrity
         foreach ($idProperties as $k => $f) {
             $id = (count($ids) > 0) ? array_pop($ids) : false;
-
-            // enforce the type by marshaling (otherwise it would always return a string)
-            if ($id && isset($idProperties[$k])) {
-                $property = $idProperties[$k];
-                $id = self::$driver->unserializeValue(static::properties($property), $id);
-            }
 
             $return[$f] = $id;
         }
@@ -1116,8 +1112,11 @@ abstract class Model extends Acl
 
         try {
             $models = self::$injectedApp['db']->select('*')
-                ->from(static::tablename())->where($params['where'])
-                ->limit($limit, $offset)->orderBy($sortParams)->all();
+                ->from(static::tablename())
+                ->where($params['where'])
+                ->limit($limit, $offset)
+                ->orderBy($sortParams)
+                ->all();
         } catch (\Exception $e) {
             self::$injectedApp['logger']->error($e);
         }
@@ -1139,7 +1138,7 @@ abstract class Model extends Acl
 
                 // create the model and cache the loaded values
                 $model = new $modelName($id);
-                $model->loadFromDb($values)->cache();
+                $model->loadFromStorage($values)->cache();
 
                 $return['models'][] = $model;
             }
@@ -1215,12 +1214,12 @@ abstract class Model extends Acl
                 // Stash calls this Stampede Protection.
                 $item->lock();
 
-                $this->loadFromDb()->cache();
+                $this->loadFromStorage()->cache();
             } else {
                 $this->_local = $values;
             }
         } else {
-            $this->loadFromDb()->cache();
+            $this->loadFromStorage()->cache();
         }
 
         // clear any relations
@@ -1475,17 +1474,10 @@ abstract class Model extends Acl
      *
      * @return self
      */
-    private function loadFromDb($values = false)
+    private function loadFromStorage($values = false)
     {
         if (!is_array($values)) {
-            try {
-                $values = $this->app['db']->select('*')
-                    ->from(static::tablename())
-                    ->where($this->id(true))
-                    ->one();
-            } catch (\Exception $e) {
-                self::$injectedApp['logger']->error($e);
-            }
+            $values = self::$driver->loadModel($this);
         }
 
         if (is_array($values)) {
@@ -1497,8 +1489,6 @@ abstract class Model extends Acl
                     $this->_local[$k] = self::$driver->unserializeValue($property, $v);
                 }
             }
-
-            return $this;
         }
 
         return $this;
@@ -1519,6 +1509,6 @@ abstract class Model extends Acl
             return;
         }
 
-        return self::$driver->unserializeValue($property, $property['default']);
+        return $property['default'];
     }
 }
