@@ -1175,16 +1175,7 @@ abstract class Model extends Acl
      */
     public static function totalRecords(array $where = [])
     {
-        try {
-            return (int) self::$injectedApp['db']->select('count(*)')
-                ->from(static::tablename())
-                ->where($where)
-                ->scalar();
-        } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
-        }
-
-        return 0;
+        return self::getDriver()->totalRecords(get_called_class(), $where);
     }
 
     /**

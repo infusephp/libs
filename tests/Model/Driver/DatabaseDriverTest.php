@@ -226,6 +226,50 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $model = new User(10);
         $this->assertFalse($driver->deleteModel($model));
     }
+
+    public function totalRecords()
+    {
+        // select query mock
+        $scalar = Mockery::mock();
+        $scalar->shouldReceive('scalar')
+               ->andReturn(1);
+        $where = Mockery::mock();
+        $where->shouldReceive('where')
+              ->withArgs([[]])
+              ->andReturn($scalar);
+        $from = Mockery::mock();
+        $from->shouldReceive('from')
+             ->withArgs(['TestModel2s'])
+             ->andReturn($where);
+        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db->shouldReceive('select')
+           ->withArgs(['count(*)'])
+           ->andReturn($from);
+
+        $driver = new DatabaseDriver($db, $app);
+        User::setDriver($driver);
+
+        $this->assertEquals(1, $driver->totalRecords('User', []));
+    }
+
+    public function totalRecordsFail()
+    {
+        // select query mock
+        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db->shouldReceive('select->from->where->scalar')
+           ->andThrow(new Exception());
+
+        // logger mock
+        $app = new Container();
+        $app['logger'] = Mockery::mock();
+        $app['logger']->shouldReceive('error')
+                      ->once();
+
+        $driver = new DatabaseDriver($db, $app);
+        User::setDriver($driver);
+
+        $this->assertEquals(0, $driver->totalRecords('User', []));
+    }
 }
 
 class User extends Model

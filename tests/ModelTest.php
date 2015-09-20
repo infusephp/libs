@@ -416,45 +416,38 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testTotalRecords()
     {
-        // select query mock
-        $scalar = Mockery::mock();
-        $scalar->shouldReceive('scalar')->andReturn(1);
-        $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([[]])->andReturn($scalar);
-        $from = Mockery::mock();
-        $from->shouldReceive('from')->withArgs(['TestModel2s'])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select')->withArgs(['count(*)'])->andReturn($from);
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $model = new TestModel2(12);
-        $this->assertEquals(1, $model->totalRecords());
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', ['name' => 'John']])
+               ->andReturn(1);
+
+        TestModel2::setDriver($driver);
+
+        $this->assertEquals(1, TestModel2::totalRecords(['name' => 'John']));
     }
 
-    public function testTotalRecordsFail()
+    public function testTotalRecordsNoCriteria()
     {
-        // select query mock
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->scalar')->andThrow(new Exception());
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        // logger mock
-        self::$app['logger'] = Mockery::mock();
-        self::$app['logger']->shouldReceive('error');
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', []])
+               ->andReturn(2);
 
-        $model = new TestModel2(12);
-        $this->assertEquals(0, $model->totalRecords());
+        TestModel2::setDriver($driver);
+
+        $this->assertEquals(2, TestModel2::totalRecords());
     }
 
     public function testExists()
     {
-        // select query mock
-        $scalar = Mockery::mock();
-        $scalar->shouldReceive('scalar')->andReturn(1);
-        $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['id' => 12, 'id2' => null]])->andReturn($scalar);
-        $from = Mockery::mock();
-        $from->shouldReceive('from')->withArgs(['TestModel2s'])->andReturn($where);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select')->withArgs(['count(*)'])->andReturn($from);
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(1);
+
+        TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
         $this->assertTrue($model->exists());
@@ -462,8 +455,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testNotExists()
     {
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->scalar')->andReturn(0);
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(0);
+
+        TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
         $this->assertFalse($model->exists());
@@ -887,13 +884,16 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $errorStack = self::$app['errors'];
         $errorStack->clear();
 
-        // select query mock for uniqueness
-        $scalar = Mockery::mock();
-        $scalar->shouldReceive('scalar')->andReturn(1);
-        $where = Mockery::mock();
-        $where->shouldReceive('where')->withArgs([['unique' => 'fail']])->andReturn($scalar);
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from')->andReturn($where);
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', ['unique' => 'fail']])
+               ->andReturn(1);
+
+        $driver->shouldReceive('serializeValue')
+               ->andReturn('fail');
+
+        TestModel2::setDriver($driver);
 
         $model = new TestModel2();
 
@@ -1033,14 +1033,15 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUnique()
     {
-        // select query mock for uniqueness
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->scalar')
-                        ->andReturn(0);
-
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue');
+        $driver->shouldReceive('serializeValue')
+               ->andReturn('works');
+
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', ['unique' => 'works']])
+               ->andReturn(0);
+
         $driver->shouldReceive('loadModel');
 
         $driver->shouldReceive('updateModel')

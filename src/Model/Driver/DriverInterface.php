@@ -64,4 +64,14 @@ interface DriverInterface
      * @return bool
      */
     public function deleteModel(Model $model);
+
+    /**
+     * Gets the toal number of records matching an optional criteria.
+     *
+     * @param string $modelClass
+     * @param array  $criteria   parameters to match
+     *
+     * @return int total
+     */
+    public function totalRecords($modelClass, array $criteria);
 }

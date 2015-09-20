@@ -98,6 +98,20 @@ class DatabaseDriver implements DriverInterface
         return false;
     }
 
+    public function totalRecords($model, array $criteria)
+    {
+        try {
+            return (int) $this->db->select('count(*)')
+                ->from($model::tablename())
+                ->where($criteria)
+                ->scalar();
+        } catch (\Exception $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return 0;
+    }
+
     public function serializeValue(array $property, $value)
     {
         // encode JSON
