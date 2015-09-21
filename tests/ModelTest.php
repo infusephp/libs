@@ -411,7 +411,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
         TestModel::setDriver($driver);
+
         $this->assertEquals($driver, TestModel::getDriver());
+
+        // setting the driver for a single model sets
+        // the driver for all models
+        $this->assertEquals($driver, TestModel2::getDriver());
     }
 
     public function testGetMultipleProperties()

@@ -219,45 +219,13 @@ class Person extends Model
 class IteratorTestModel extends Model
 {
     public static $properties = [
-        'id' => [
-            'type' => 'number', ],
-        'id2' => [
-            'type' => 'number', ],
         'name' => [
-            'type' => 'string',
-            'searchable' => true, ],
+            'searchable' => true,
+        ],
     ];
 
-    public static function idProperty()
-    {
-        return ['id', 'id2'];
-    }
     protected function hasPermission($permission, Model $requester)
     {
         return true;
-    }
-
-    public static function totalRecords(array $where = [])
-    {
-        return 123;
-    }
-
-    public static function find(array $params = [])
-    {
-        if ($params[ 'sort' ] != 'id ASC,id2 ASC') {
-            return ['models' => [], 'count' => 0];
-        }
-
-        $range = range($params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1);
-        $models = [];
-        $modelClass = get_called_class();
-
-        foreach ($range as $k) {
-            $models[] = new $modelClass($k);
-        }
-
-        return [
-            'models' => $models,
-            'count' => self::totalRecords(), ];
     }
 }

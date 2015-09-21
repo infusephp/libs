@@ -206,15 +206,13 @@ class Iterator implements \Iterator
     {
         $start = $this->rangeStart($this->pointer, $this->limit);
         if ($this->loadedStart !== $start) {
-            $model = $this->modelClass;
-            $result = $model::find([
-                'where' => $this->where,
-                'start' => $start,
-                'limit' => $this->limit,
-                'sort' => $this->sort,
-            ]);
+            $query = new Query($this->modelClass);
+            $query->setWhere($this->where)
+                  ->setStart($start)
+                  ->setLimit($this->limit)
+                  ->setSort($this->sort);
 
-            $this->models = $result['models'];
+            $this->models = $query->execute();
             $this->loadedStart = $start;
 
             return true;

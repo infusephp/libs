@@ -9,26 +9,53 @@
  * @license MIT
  */
 use infuse\Model\Iterator;
-use Pimple\Container;
 
 require_once 'tests/test_models.php';
 
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
-    public static $app;
+    public static $originalDriver;
+    public static $driver;
     public static $iterator;
     public static $start = 10;
     public static $limit = 50;
 
     public static function setUpBeforeClass()
     {
-        self::$app = new Container();
-        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
-        IteratorTestModel::inject(self::$app);
+        self::$originalDriver = IteratorTestModel::getDriver();
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('unserializeValue')
+                     ->andReturnUsing(function ($property, $value) {
+                            return $value;
+                       });
+
+        $driver->shouldReceive('queryModels')
+               ->andReturnUsing(function ($model, $query) {
+                    $range = range($query->getStart(), $query->getStart() + $query->getLimit() - 1);
+
+                    foreach ($range as &$i) {
+                        $i = ['id' => $i];
+                    }
+
+                    return $range;
+               });
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(123);
+
+        IteratorTestModel::setDriver($driver);
+        self::$driver = $driver;
 
         self::$iterator = new Iterator('IteratorTestModel', [
             'start' => self::$start,
             'limit' => self::$limit, ]);
+    }
+
+    public static function tearDownAfterClass()
+    {
+        IteratorTestModel::setDriver(self::$originalDriver);
     }
 
     public function testConstructSearch()
@@ -80,9 +107,10 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         for ($i = self::$start; $i < $count + 1; ++$i) {
             $current = self::$iterator->current();
             if ($i < $count) {
+                $this->assertInstanceOf('IteratorTestModel', $current);
                 $this->assertEquals($i, $current->id());
             } else {
-                $this->assertEquals(null, $current);
+                $this->assertNull($current);
             }
 
             self::$iterator->next();
@@ -104,6 +132,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $i = self::$start;
         foreach (self::$iterator as $k => $model) {
             $this->assertEquals($i, $k);
+            $this->assertInstanceOf('IteratorTestModel', $model);
             $this->assertEquals($i, $model->id());
             ++$i;
         }
@@ -118,6 +147,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $i = 0;
         foreach ($iterator as $k => $model) {
             $this->assertEquals($i, $k);
+            $this->assertInstanceOf('IteratorTestModel', $model);
             $this->assertEquals($i, $model->id());
             ++$i;
         }
@@ -136,6 +166,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $i = $start;
         foreach ($iterator as $k => $model) {
             $this->assertEquals($i, $k);
+            $this->assertInstanceOf('IteratorTestModel', $model);
             $this->assertEquals($i, $model->id());
             ++$i;
         }
@@ -150,6 +181,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 
         $found = [];
         foreach ($iterator as $model) {
+            $this->assertInstanceOf('IteratorTestModel', $model);
             $found[] = $model->id();
         }
 

@@ -639,11 +639,21 @@ abstract class Model extends Acl
     // DRIVERS
     /////////////////////////////
 
+    /**
+     * Sets the driver for all models.
+     *
+     * @param DriverInterface $driver
+     */
     public static function setDriver(DriverInterface $driver)
     {
         self::$driver = $driver;
     }
 
+    /**
+     * Gets the driver for all models.
+     *
+     * @return DriverInterface
+     */
     public static function getDriver()
     {
         // use the DatabaseDriver by default
