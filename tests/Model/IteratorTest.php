@@ -8,9 +8,10 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model;
 use infuse\Model\Iterator;
 use Pimple\Container;
+
+require_once 'tests/test_models.php';
 
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -155,51 +156,5 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $expected = [0, 1, 2, 3, 4];
 
         $this->assertEquals($expected, $found);
-    }
-}
-
-class IteratorTestModel extends Model
-{
-    public static $properties = [
-        'id' => [
-            'type' => 'number', ],
-        'id2' => [
-            'type' => 'number', ],
-        'name' => [
-            'type' => 'string',
-            'searchable' => true, ],
-    ];
-
-    public static function idProperty()
-    {
-        return ['id', 'id2'];
-    }
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
-    public static function totalRecords(array $where = [])
-    {
-        return 123;
-    }
-
-    public static function find(array $params = [])
-    {
-        if ($params[ 'sort' ] != 'id ASC,id2 ASC') {
-            return ['models' => [], 'count' => 0];
-        }
-
-        $range = range($params[ 'start' ], $params[ 'start' ] + $params[ 'limit' ] - 1);
-        $models = [];
-        $modelClass = get_called_class();
-
-        foreach ($range as $k) {
-            $models[] = new $modelClass($k);
-        }
-
-        return [
-            'models' => $models,
-            'count' => self::totalRecords(), ];
     }
 }

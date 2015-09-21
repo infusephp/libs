@@ -414,58 +414,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($driver, TestModel::getDriver());
     }
 
-    public function testTotalRecords()
-    {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', ['name' => 'John']])
-               ->andReturn(1);
-
-        TestModel2::setDriver($driver);
-
-        $this->assertEquals(1, TestModel2::totalRecords(['name' => 'John']));
-    }
-
-    public function testTotalRecordsNoCriteria()
-    {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', []])
-               ->andReturn(2);
-
-        TestModel2::setDriver($driver);
-
-        $this->assertEquals(2, TestModel2::totalRecords());
-    }
-
-    public function testExists()
-    {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('totalRecords')
-               ->andReturn(1);
-
-        TestModel2::setDriver($driver);
-
-        $model = new TestModel2(12);
-        $this->assertTrue($model->exists());
-    }
-
-    public function testNotExists()
-    {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('totalRecords')
-               ->andReturn(0);
-
-        TestModel2::setDriver($driver);
-
-        $model = new TestModel2(12);
-        $this->assertFalse($model->exists());
-    }
-
     public function testGetMultipleProperties()
     {
         $model = new TestModel(3);
@@ -650,7 +598,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'relation.updated_at',
                 'relation.validate',
                 'relation.unique',
-                'relation.person.address', ],
+                'relation.person.email', ],
             [
                 'relation.hidden',
                 'relation.person', ],
@@ -1147,6 +1095,145 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel2::setDriver($driver);
 
         $this->assertFalse($model->delete());
+    }
+
+    /////////////////////////////
+    // MODEL LOOKUPS
+    /////////////////////////////
+
+    public function testFindAll()
+    {
+        $all = TestModel::findAll();
+
+        $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
+    }
+
+    public function testFind()
+    {
+        $query = Mockery::mock('infuse\\Model\\Query');
+
+        $query->shouldReceive('setLimit')
+              ->withArgs([10]);
+
+        $query->shouldReceive('setStart')
+              ->withArgs([5]);
+
+        $query->shouldReceive('setSort')
+              ->withArgs(['name asc']);
+
+        $query->shouldReceive('setWhere')
+              ->withArgs([['test' => true]]);
+
+        $query->shouldReceive('getWhere')
+              ->andReturn(['test' => true]);
+
+        $query->shouldReceive('execute')
+              ->andReturn(['result']);
+
+        $params = [
+            'where' => ['test' => true],
+            'start' => 5,
+            'limit' => 10,
+            'sort' => 'name asc',
+        ];
+
+        TestModel::setQuery($query);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(1);
+
+        TestModel::setDriver($driver);
+
+        $expected = [
+            'models' => ['result'],
+            'count' => 1,
+        ];
+
+        $this->assertEquals($expected, TestModel::find($params));
+    }
+
+    public function testFindOne()
+    {
+        $query = Mockery::mock('infuse\\Model\\Query');
+
+        $query->shouldReceive('setLimit')
+              ->withArgs([1]);
+
+        $query->shouldReceive('setStart')
+              ->withArgs([5]);
+
+        $query->shouldReceive('setSort')
+              ->withArgs(['name asc']);
+
+        $query->shouldReceive('setWhere')
+              ->withArgs([['test' => true]]);
+
+        $query->shouldReceive('execute')
+              ->andReturn(['result']);
+
+        $params = [
+            'where' => ['test' => true],
+            'start' => 5,
+            'sort' => 'name asc',
+        ];
+
+        TestModel::setQuery($query);
+
+        $this->assertEquals('result', TestModel::findOne($params));
+    }
+
+    public function testTotalRecords()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', ['name' => 'John']])
+               ->andReturn(1);
+
+        TestModel2::setDriver($driver);
+
+        $this->assertEquals(1, TestModel2::totalRecords(['name' => 'John']));
+    }
+
+    public function testTotalRecordsNoCriteria()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->withArgs(['TestModel2', []])
+               ->andReturn(2);
+
+        TestModel2::setDriver($driver);
+
+        $this->assertEquals(2, TestModel2::totalRecords());
+    }
+
+    public function testExists()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(1);
+
+        TestModel2::setDriver($driver);
+
+        $model = new TestModel2(12);
+        $this->assertTrue($model->exists());
+    }
+
+    public function testNotExists()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('totalRecords')
+               ->andReturn(0);
+
+        TestModel2::setDriver($driver);
+
+        $model = new TestModel2(12);
+        $this->assertFalse($model->exists());
     }
 
     /////////////////////////////

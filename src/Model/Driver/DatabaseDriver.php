@@ -3,6 +3,7 @@
 namespace infuse\Model\Driver;
 
 use infuse\Model;
+use infuse\Model\Query;
 use JAQB\QueryBuilder;
 use PDOException;
 use PDOStatement;
@@ -105,11 +106,27 @@ class DatabaseDriver implements DriverInterface
                 ->from($model::tablename())
                 ->where($criteria)
                 ->scalar();
-        } catch (\Exception $e) {
+        } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
 
         return 0;
+    }
+
+    public function queryModels($model, Query $query)
+    {
+        try {
+            return $this->db->select('*')
+                ->from($model::tablename())
+                ->where($query->getWhere())
+                ->limit($query->getLimit(), $query->getStart())
+                ->orderBy($query->getSort())
+                ->all();
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return [];
     }
 
     public function serializeValue(array $property, $value)

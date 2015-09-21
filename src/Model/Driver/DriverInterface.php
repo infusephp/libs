@@ -3,30 +3,10 @@
 namespace infuse\Model\Driver;
 
 use infuse\Model;
+use infuse\Model\Query;
 
 interface DriverInterface
 {
-    /**
-     * Marshals a value for a given property to storage, and
-     * checks the validity of a value.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return mixed serialized value
-     */
-    public function serializeValue(array $property, $value);
-
-    /**
-     * Marshals a value for a given property from storage.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return mixed unserialized value
-     */
-    public function unserializeValue(array $property, $value);
-
     /**
      * Creates a model.
      *
@@ -74,4 +54,35 @@ interface DriverInterface
      * @return int total
      */
     public function totalRecords($modelClass, array $criteria);
+
+    /**
+     * Performs a query to find models of the given type.
+     *
+     * @param string $modelClass
+     * @param Query  $query
+     *
+     * @return array raw data from storage
+     */
+    public function queryModels($modelClass, Query $query);
+
+    /**
+     * Marshals a value for a given property to storage, and
+     * checks the validity of a value.
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return mixed serialized value
+     */
+    public function serializeValue(array $property, $value);
+
+    /**
+     * Marshals a value for a given property from storage.
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return mixed unserialized value
+     */
+    public function unserializeValue(array $property, $value);
 }

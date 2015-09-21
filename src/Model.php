@@ -92,6 +92,7 @@ namespace infuse;
 use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
 use infuse\Model\Driver\DriverInterface;
+use infuse\Model\Query;
 use Pimple\Container;
 use Stash\Pool;
 use Stash\Item;
@@ -233,6 +234,11 @@ abstract class Model extends Acl
     ];
 
     /**
+     * @staticvar Query
+     */
+    private static $query;
+
+    /**
      * @staticvar Stash\Pool
      */
     private static $defaultCache;
@@ -313,9 +319,10 @@ abstract class Model extends Acl
     /**
      * Creates a new model object.
      *
-     * @param array|string $id ordered array of ids or comma-separated id string
+     * @param array|string $id     ordered array of ids or comma-separated id string
+     * @param array        $values optional key-value map to pre-seed model
      */
-    public function __construct($id = false)
+    public function __construct($id = false, array $values = [])
     {
         // load the driver
         static::getDriver();
@@ -334,6 +341,11 @@ abstract class Model extends Acl
 
         if (self::$defaultCache) {
             $this->_cache = &self::$defaultCache;
+        }
+
+        // cache the loaded values
+        if (count($values) > 0) {
+            $this->loadFromStorage($values)->cache();
         }
     }
 
@@ -449,16 +461,6 @@ abstract class Model extends Acl
     public function getApp()
     {
         return $this->app;
-    }
-
-    /**
-     * Checks if the model exists in the database.
-     *
-     * @return bool
-     */
-    public function exists()
-    {
-        return static::totalRecords($this->id(true)) == 1;
     }
 
     /**
@@ -1043,127 +1045,87 @@ abstract class Model extends Acl
     /////////////////////////////
 
     /**
-     * Fetches models with pagination support.
+     * Creates an iterator for a search.
      *
-     * @param array key-value parameters
-     * @param array $params optional parameters ['where', 'start', 'limit', 'search', 'sort']
+     * @param array $params
      *
-     * @return array array( 'models' => models, 'count' => 'total found' )
+     * @return Iterator
      */
-    public static function find(array $params = [])
-    {
-        $params = array_replace(static::$defaultFindParameters, $params);
-
-        $modelName = get_called_class();
-        $properties = static::properties();
-
-        // WARNING: using MYSQL LIKE for search, this is very inefficient
-
-        if (!empty($params['search'])) {
-            $w = [];
-            $search = addslashes($params['search']);
-            foreach ($properties as $name => $property) {
-                if ($property['searchable']) {
-                    $w[] = "`$name` LIKE '%$search%'";
-                }
-            }
-
-            if (count($w) > 0) {
-                $params['where'][] = '('.implode(' OR ', $w).')';
-            }
-        }
-
-        // verify sort
-        $sortParams = [];
-
-        $columns = explode(',', $params['sort']);
-        foreach ($columns as $column) {
-            $c = explode(' ', trim($column));
-
-            if (count($c) != 2) {
-                continue;
-            }
-
-            $propertyName = $c[0];
-
-            // validate property
-            if (!isset($properties[$propertyName])) {
-                continue;
-            }
-
-            // validate direction
-            $direction = strtolower($c[1]);
-            if (!in_array($direction, ['asc', 'desc'])) {
-                continue;
-            }
-
-            $sortParams[] = [$propertyName, $direction];
-        }
-
-        $return = [
-            'count' => static::totalRecords($params['where']),
-            'models' => [], ];
-
-        $limit = min($params['limit'], 1000);
-        $offset = max($params['start'], 0);
-
-        // load models
-        $models = false;
-
-        try {
-            $models = self::$injectedApp['db']->select('*')
-                ->from(static::tablename())
-                ->where($params['where'])
-                ->limit($limit, $offset)
-                ->orderBy($sortParams)
-                ->all();
-        } catch (\Exception $e) {
-            self::$injectedApp['logger']->error($e);
-        }
-
-        if (is_array($models)) {
-            foreach ($models as $values) {
-                // determine the model id
-                $id = false;
-                $idProperty = static::idProperty();
-                if (is_array($idProperty)) {
-                    $id = [];
-
-                    foreach ($idProperty as $f) {
-                        $id[] = $values[$f];
-                    }
-                } else {
-                    $id = $values[$idProperty];
-                }
-
-                // create the model and cache the loaded values
-                $model = new $modelName($id);
-                $model->loadFromStorage($values)->cache();
-
-                $return['models'][] = $model;
-            }
-        }
-
-        return $return;
-    }
-
     public static function findAll(array $params = [])
     {
         return new Iterator(get_called_class(), $params);
     }
 
     /**
-     * Fetches a single model according to criteria.
+     * Fetches a group of models based on the search critera.
      *
-     * @param array $params array( start, limit, sort, search, where )
+     * @param array key-value parameters
+     * @param array $params optional parameters ['where', 'start', 'limit', 'sort']
+     *
+     * @return array array( 'models' => models, 'count' => 'total found' )
+     */
+    public static function find(array $params = [])
+    {
+        if (self::$query) {
+            $query = self::$query;
+        } else {
+            $query = new Query(get_called_class());
+        }
+
+        if (isset($params['where'])) {
+            $query->setWhere($params['where']);
+        }
+
+        if (isset($params['limit'])) {
+            $query->setLimit($params['limit']);
+        }
+
+        if (isset($params['start'])) {
+            $query->setStart($params['start']);
+        }
+
+        if (isset($params['sort'])) {
+            $query->setSort($params['sort']);
+        }
+
+        return [
+            'count' => static::totalRecords($query->getWhere()),
+            'models' => $query->execute(),
+        ];
+    }
+
+    /**
+     * Finds a single model based on the search criteria.
+     *
+     * @param array $params parameters ['where', 'start', 'limit', 'sort']
      *
      * @return Model|false
      */
     public static function findOne(array $params)
     {
-        $models = static::find($params);
+        if (self::$query) {
+            $query = self::$query;
+        } else {
+            $query = new Query(get_called_class());
+        }
 
-        return ($models['count'] > 0) ? reset($models['models']) : false;
+        if (isset($params['where'])) {
+            $query->setWhere($params['where']);
+        }
+
+        $query->setLimit(1);
+
+        if (isset($params['start'])) {
+            $query->setStart($params['start']);
+        }
+
+        if (isset($params['sort'])) {
+            $query->setSort($params['sort']);
+        }
+
+        $result = $query->execute();
+
+        return (count($result) == 1) ? $result[0] : false;
     }
 
     /**
@@ -1176,6 +1138,26 @@ abstract class Model extends Acl
     public static function totalRecords(array $where = [])
     {
         return self::getDriver()->totalRecords(get_called_class(), $where);
+    }
+
+    /**
+     * Checks if the model exists in the database.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        return static::totalRecords($this->id(true)) == 1;
+    }
+
+    /**
+     * Used for testing queries.
+     *
+     * @param Query $query
+     */
+    public static function setQuery(Query $query)
+    {
+        self::$query = $query;
     }
 
     /**
@@ -1465,7 +1447,7 @@ abstract class Model extends Acl
      *
      * @return self
      */
-    private function loadFromStorage($values = false)
+    public function loadFromStorage($values = false)
     {
         if (!is_array($values)) {
             $values = self::$driver->loadModel($this);
