@@ -28,7 +28,7 @@ class Query
     private $start;
 
     /**
-     * @var string
+     * @var array
      */
     private $sort;
 

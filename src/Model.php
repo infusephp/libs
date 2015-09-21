@@ -145,7 +145,7 @@ abstract class Model extends Acl
     protected $_id;
 
     /**
-     * @var App
+     * @var \Pimple\Container
      */
     protected $app;
 
@@ -176,12 +176,12 @@ abstract class Model extends Acl
         'sort' => '', ];
 
     /**
-     * @staticvar App
+     * @staticvar \Pimple\Container
      */
     protected static $injectedApp;
 
     /**
-     * @var Stash\Pool
+     * @var \Stash\Pool
      */
     protected $_cache;
 
