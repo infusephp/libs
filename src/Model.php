@@ -234,12 +234,12 @@ abstract class Model extends Acl
     ];
 
     /**
-     * @staticvar Query
+     * @staticvar Model\Query
      */
     private static $query;
 
     /**
-     * @staticvar Stash\Pool
+     * @staticvar \Stash\Pool
      */
     private static $defaultCache;
 
@@ -254,7 +254,7 @@ abstract class Model extends Acl
     private static $cachePrefix = [];
 
     /**
-     * @var DriverInterface
+     * @var Model\Driver\DriverInterface
      */
     private static $driver;
 
@@ -274,7 +274,7 @@ abstract class Model extends Acl
     private $_relationModels = [];
 
     /**
-     * @var Stash\Item
+     * @var \Stash\Item
      */
     private $_cacheItem;
 
@@ -305,7 +305,7 @@ abstract class Model extends Acl
     /**
      * Injects a DI container.
      *
-     * @param Container $app
+     * @param \Pimple\Container $app
      */
     public static function inject(Container $app)
     {
@@ -642,7 +642,7 @@ abstract class Model extends Acl
     /**
      * Sets the driver for all models.
      *
-     * @param DriverInterface $driver
+     * @param Model\Driver\DriverInterface $driver
      */
     public static function setDriver(DriverInterface $driver)
     {
@@ -652,7 +652,7 @@ abstract class Model extends Acl
     /**
      * Gets the driver for all models.
      *
-     * @return DriverInterface
+     * @return Model\Driver\DriverInterface
      */
     public static function getDriver()
     {
@@ -1059,7 +1059,7 @@ abstract class Model extends Acl
      *
      * @param array $params
      *
-     * @return Iterator
+     * @return Model\Iterator
      */
     public static function findAll(array $params = [])
     {
@@ -1163,7 +1163,7 @@ abstract class Model extends Acl
     /**
      * Used for testing queries.
      *
-     * @param Query $query
+     * @param Model\Query $query
      */
     public static function setQuery(Query $query)
     {
@@ -1218,7 +1218,7 @@ abstract class Model extends Acl
     /**
      * Sets the default cache instance used by new models.
      *
-     * @param Stash\Pool $pool
+     * @param \Stash\Pool $pool
      */
     public static function setDefaultCache(Pool $pool)
     {
@@ -1236,7 +1236,7 @@ abstract class Model extends Acl
     /**
      * Sets the cache instance.
      *
-     * @param Stash/Pool $pool
+     * @param \Stash\Pool $pool
      *
      * @return self
      */
@@ -1250,7 +1250,7 @@ abstract class Model extends Acl
     /**
      * Returns the cache instance.
      *
-     * @return Stash/Pool|false
+     * @return \Stash\Pool|false
      */
     public function getCache()
     {
@@ -1287,7 +1287,7 @@ abstract class Model extends Acl
     /**
      * Returns the cache item for this model.
      *
-     * @return Stash\Item|null
+     * @return \Stash\Item|null
      */
     public function cacheItem()
     {
