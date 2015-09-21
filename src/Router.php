@@ -8,7 +8,6 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 use Pimple\Container;
@@ -21,6 +20,9 @@ class Router
 {
     const SKIP_ROUTE = -1;
 
+    /**
+     * @staticvar array
+     */
     private static $config = [
         'namespace' => '',
         'defaultController' => '',
@@ -40,12 +42,12 @@ class Router
     /**
      * Routes a request and resopnse to the appropriate controller.
      *
-     * @param array     $routes
-     * @param Request   $req
-     * @param Response  $res
-     * @param Container $app    DI container
+     * @param array             $routes
+     * @param Request           $req
+     * @param Response          $res
+     * @param \Pimple\Container $app    DI container
      *
-     * @return boolean was a route match made?
+     * @return bool was a route match made?
      */
     public static function route(array $routes, Container $app, Request $req, Response $res)
     {
@@ -65,7 +67,7 @@ class Router
             if (strpos($routeStr, ':')) {
                 $dynamicRoutes[$routeStr] = $route;
             } else {
-                $staticRoutes[$routeStr]  = $route;
+                $staticRoutes[$routeStr] = $route;
             }
         }
 
@@ -101,11 +103,11 @@ class Router
      *
      * @param array|string $route array('controller','method') or array('controller')
      *                            or 'method'
-     * @param Container DI container
-     * @param Request      $req
-     * @param Response     $res
+     * @param \Pimple\Container DI container
+     * @param Request  $req
+     * @param Response $res
      *
-     * @return boolean
+     * @return bool
      */
     private static function performRoute($route, Container $app, $req, $res)
     {
@@ -167,7 +169,7 @@ class Router
      * @param string  $routeStr route template we are trying to match
      * @param Request $req
      *
-     * @return boolean
+     * @return bool
      */
     private static function matchRouteToRequest($routeStr, $req)
     {

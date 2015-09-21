@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse\ViewEngine;
 
 use infuse\ViewEngine;
@@ -24,7 +24,7 @@ class Smarty extends ViewEngine
     const EXTENSION = '.tpl';
 
     /**
-     * Creates a new Smarty ViewEngine
+     * Creates a new Smarty ViewEngine.
      *
      * @param string $viewsDir   optional dir containing templates
      * @param string $compileDir optional dir to save compiled templates
@@ -69,9 +69,9 @@ class Smarty extends ViewEngine
     }
 
     /**
-     * Gets (and creates) a Smarty instance
+     * Gets (and creates) a Smarty instance.
      *
-     * @return Smarty
+     * @return \Smarty
      */
     public function smarty()
     {

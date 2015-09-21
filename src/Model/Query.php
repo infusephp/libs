@@ -162,7 +162,7 @@ class Query
     /**
      * Executes the query against the model's driver.
      *
-     * @return array(Model) result
+     * @return array result
      */
     public function execute()
     {

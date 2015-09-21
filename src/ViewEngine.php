@@ -1,20 +1,35 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 abstract class ViewEngine
 {
+    /**
+     * @var string
+     */
     private $assetMapFile = 'assets/static.assets.json';
+
+    /**
+     * @var array
+     */
     private $assetMap;
+
+    /**
+     * @var string
+     */
     private $assetsBaseUrl;
+
+    /**
+     * @var array
+     */
     private $templateParameters = [];
 
     ///////////////////////
@@ -22,7 +37,7 @@ abstract class ViewEngine
     ///////////////////////
 
     /**
-     * Sets the file where static assets can be located
+     * Sets the file where static assets can be located.
      *
      * @param string $filename
      *
@@ -37,7 +52,7 @@ abstract class ViewEngine
     }
 
     /**
-     * Sets the base URL to be prepended to static assets
+     * Sets the base URL to be prepended to static assets.
      *
      * @param string $url
      *
@@ -53,7 +68,7 @@ abstract class ViewEngine
     /**
      * Attempts to look up the versioned URL for a given asset in the asset map if available.
      * If not found in the asset map, the original URL will be returned.
-     * i.e. asset_url( '/img/logo.png' ) -> http://cdn.example.com/img/logo.2d82lf9sd8f.png
+     * i.e. asset_url( '/img/logo.png' ) -> http://cdn.example.com/img/logo.2d82lf9sd8f.png.
      *
      * @param string $path path portion of URL (everything after host name beginning with /)
      *
@@ -80,7 +95,7 @@ abstract class ViewEngine
     ///////////////////////
 
     /**
-     * Updates the global template parameters for views rendered with this engine
+     * Updates the global template parameters for views rendered with this engine.
      *
      * @param array $parameters
      *
@@ -94,7 +109,7 @@ abstract class ViewEngine
     }
 
     /**
-     * Gets the global template parameters
+     * Gets the global template parameters.
      *
      * @return array
      */
@@ -104,7 +119,7 @@ abstract class ViewEngine
     }
 
     /**
-     * Renders a view into a string
+     * Renders a view into a string.
      *
      * @return string
      */

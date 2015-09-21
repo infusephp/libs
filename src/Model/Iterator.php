@@ -13,7 +13,7 @@ namespace infuse\Model;
 class Iterator implements \Iterator
 {
     /**
-     * @var \infuse\Model
+     * @var string
      */
     private $modelClass;
 

@@ -8,24 +8,78 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 class Request
 {
+    /**
+     * @var array
+     */
     private $params;
+
+    /**
+     * @var array
+     */
     private $query;
+
+    /**
+     * @var array
+     */
     private $request;
+
+    /**
+     * @var array
+     */
     private $cookies;
+
+    /**
+     * @var array
+     */
     private $session;
+
+    /**
+     * @var array
+     */
     private $files;
+
+    /**
+     * @var array
+     */
     private $server;
+
+    /**
+     * @var array
+     */
     private $headers;
+
+    /**
+     * @var array
+     */
     private $accept;
+
+    /**
+     * @var array
+     */
     private $charsets;
+
+    /**
+     * @var array
+     */
     private $languages;
+
+    /**
+     * @var string
+     */
     private $basePath;
+
+    /**
+     * @var string
+     */
     private $path;
+
+    /**
+     * @var array
+     */
     private $paths;
 
     /**
@@ -228,7 +282,7 @@ class Request
     /**
      * Checks if the request uses a secure protocol.
      *
-     * @return boolean
+     * @return bool
      */
     public function isSecure()
     {
@@ -313,7 +367,7 @@ class Request
     public function url()
     {
         $port = $this->port();
-        if (!in_array($port, [ 80, 443 ])) {
+        if (!in_array($port, [80, 443])) {
             $port = ':'.$port;
         } else {
             $port = '';
@@ -336,6 +390,8 @@ class Request
 
     /**
      * Gets the path associated with the request minus the bse path.
+     *
+     * @return string
      */
     public function path()
     {
@@ -417,7 +473,7 @@ class Request
     /**
      * Checks if the request accepts HTML.
      *
-     * @return boolean
+     * @return bool
      */
     public function isHtml()
     {
@@ -433,7 +489,7 @@ class Request
     /**
      * Checks if the request accepts JSON.
      *
-     * @return boolean
+     * @return bool
      */
     public function isJson()
     {
@@ -449,7 +505,7 @@ class Request
     /**
      * Checks if the request accepts XML.
      *
-     * @return boolean
+     * @return bool
      */
     public function isXml()
     {
@@ -465,7 +521,7 @@ class Request
     /**
      * Checks if the request was sent using AJAX.
      *
-     * @return boolean
+     * @return bool
      */
     public function isXhr()
     {
@@ -475,7 +531,7 @@ class Request
     /**
      * Checks if the request is for the API. This is used to decide if a request is stateless or not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isApi()
     {
@@ -487,7 +543,7 @@ class Request
     /**
      * Checks if the request was made over the command line.
      *
-     * @return boolean
+     * @return bool
      */
     public function isCli()
     {
@@ -558,16 +614,16 @@ class Request
     /**
      * Sets a cookie with the same signature as PHP's setcookie().
      *
-     * @param string  $name
-     * @param string  $value
-     * @param int     $expire
-     * @param string  $path
-     * @param string  $domain
-     * @param boolean $secure
-     * @param boolean $httponly
-     * @param boolean $mock
+     * @param string $name
+     * @param string $value
+     * @param int    $expire
+     * @param string $path
+     * @param string $domain
+     * @param bool   $secure
+     * @param bool   $httponly
+     * @param bool   $mock
      *
-     * @return boolean success
+     * @return bool success
      */
     public function setCookie($name, $value, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = false, $mock = false)
     {
@@ -666,7 +722,7 @@ class Request
                 $headers[ substr($key, 5) ] = $value;
             }
             // CONTENT_* are not prefixed with HTTP_
-            elseif (in_array($key, [ 'CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE' ])) {
+            elseif (in_array($key, ['CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'])) {
                 $headers[ $key ] = $value;
             }
         }

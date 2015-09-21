@@ -12,18 +12,18 @@ use Pimple\Container;
 class DatabaseDriver implements DriverInterface
 {
     /**
-     * @var QueryBuilder
+     * @var \JAQB\QueryBuilder
      */
     private $db;
 
     /**
-     * @var Container
+     * @var \Pimple\Container
      */
     private $app;
 
     /**
-     * @param QueryBuilder $db
-     * @param Container    $app
+     * @param \JAQB\QueryBuilder $db
+     * @param \Pimple\Container  $app
      */
     public function __construct(QueryBuilder $db, Container $app = null)
     {
@@ -34,7 +34,7 @@ class DatabaseDriver implements DriverInterface
     /**
      * Returns the query builder instance used by this driver.
      *
-     * @return QueryBuilder
+     * @return \JAQB\QueryBuilder
      */
     public function getDatabase()
     {

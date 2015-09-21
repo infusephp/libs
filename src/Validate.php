@@ -1,23 +1,26 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 class Validate
 {
+    /**
+     * @staticvar array
+     */
     private static $config = [
         'salt' => '',
     ];
 
     /**
-     * Changes settings for the validator
+     * Changes settings for the validator.
      *
      * @param array $config
      */
@@ -28,7 +31,7 @@ class Validate
 
     /**
      * Validates one or more fields based upon certain filters. Filters may be chained and will be executed in order
-     * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' )
+     * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' ).
      *
      * NOTE: some filters may modify the data, which is passed in by reference
      *
@@ -52,12 +55,12 @@ class Validate
     }
 
     /**
-     * Validates a value according to its requirement
+     * Validates a value according to its requirement.
      *
      * @param mixed  $value
      * @param string $requirement
      *
-     * @return boolean
+     * @return bool
      */
     private static function processRequirement(&$value, $requirement)
     {
@@ -80,12 +83,12 @@ class Validate
 
     /**
      * Validates an alpha string.
-     * OPTIONAL alpha:5 can specify minimum length
+     * OPTIONAL alpha:5 can specify minimum length.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function alpha(&$value, $parameters)
     {
@@ -94,12 +97,12 @@ class Validate
 
     /**
      * Validates an alpha-numeric string
-     * OPTIONAL alpha_numeric:6 can specify minimum length
+     * OPTIONAL alpha_numeric:6 can specify minimum length.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function alpha_numeric(&$value, $parameters)
     {
@@ -108,12 +111,12 @@ class Validate
 
     /**
      * Validates an alpha-numeric string with dashes and underscores
-     * OPTIONAL alpha_dash:7 can specify minimum length
+     * OPTIONAL alpha_dash:7 can specify minimum length.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function alpha_dash(&$value, $parameters)
     {
@@ -121,12 +124,12 @@ class Validate
     }
 
     /**
-     * Validates a boolean value
+     * Validates a boolean value.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function boolean(&$value, $parameters)
     {
@@ -136,13 +139,13 @@ class Validate
     }
 
     /**
-    * Validates an e-mail address
-    *
-    * @param string $email e-mail address
-    * @param array $parameters parameters for validation
-    *
-    * @return boolean success
-    */
+     * Validates an e-mail address.
+     *
+     * @param string $email      e-mail address
+     * @param array  $parameters parameters for validation
+     *
+     * @return bool success
+     */
     private static function email(&$value, $parameters)
     {
         $value = trim(strtolower($value));
@@ -151,12 +154,12 @@ class Validate
     }
 
     /**
-     * Validates a value exists in an array. i.e. enum:blue,red,green,yellow
+     * Validates a value exists in an array. i.e. enum:blue,red,green,yellow.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function enum(&$value, $parameters)
     {
@@ -166,12 +169,12 @@ class Validate
     }
 
     /**
-     * Validates a date string
+     * Validates a date string.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function date(&$value, $parameters)
     {
@@ -179,12 +182,12 @@ class Validate
     }
 
     /**
-     * Validates an IP address
+     * Validates an IP address.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function ip(&$value, $parameters)
     {
@@ -198,7 +201,7 @@ class Validate
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function matching(&$value, $parameters)
     {
@@ -222,12 +225,12 @@ class Validate
 
     /**
      * Validates a number.
-     * OPTIONAL numeric:int specifies a type
+     * OPTIONAL numeric:int specifies a type.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function numeric(&$value, $parameters)
     {
@@ -238,12 +241,12 @@ class Validate
 
     /**
      * Validates a password and hashes the value.
-     * OPTIONAL password:10 sets the minimum length
+     * OPTIONAL password:10 sets the minimum length.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function password(&$value, $parameters)
     {
@@ -259,12 +262,12 @@ class Validate
     }
 
     /**
-     * Validates that a number falls within a range
+     * Validates that a number falls within a range.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function range(&$value, $parameters)
     {
@@ -282,12 +285,12 @@ class Validate
     }
 
     /**
-     * Makes sure that a variable is not empty
+     * Makes sure that a variable is not empty.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function required(&$value, $parameters)
     {
@@ -297,12 +300,12 @@ class Validate
     /**
      * Validates a string.
      * OPTIONAL string:5 supplies a minimum length
-     *          string:1:5 supplies a minimum and maximum length
+     *          string:1:5 supplies a minimum and maximum length.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function string(&$value, $parameters)
     {
@@ -318,12 +321,12 @@ class Validate
     }
 
     /**
-     * Validates a PHP time zone identifier
+     * Validates a PHP time zone identifier.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function time_zone(&$value, $parameters)
     {
@@ -342,12 +345,12 @@ class Validate
 
     /**
      * Validates a Unix timestamp. If the value is not a timestamp it will be
-     * converted to one with strtotime()
+     * converted to one with strtotime().
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function timestamp(&$value, $parameters)
     {
@@ -367,7 +370,7 @@ class Validate
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function db_timestamp(&$value, $parameters)
     {
@@ -381,12 +384,12 @@ class Validate
     }
 
     /**
-     * Validates a URL
+     * Validates a URL.
      *
      * @param $value
      * @param $parameters
      *
-     * @return boolean
+     * @return bool
      */
     private static function url(&$value, $parameters)
     {

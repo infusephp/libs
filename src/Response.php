@@ -1,18 +1,21 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 class Response
 {
-    static $codes = [
+    /**
+     * @staticvar array
+     */
+    public static $codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
@@ -56,14 +59,33 @@ class Response
         505 => 'HTTP Version Not Supported',
     ];
 
+    /**
+     * @var string
+     */
     private $version = '1.1';
+
+    /**
+     * @var int
+     */
     private $code = 200;
+
+    /**
+     * @var string
+     */
     private $contentType = 'text/html';
+
+    /**
+     * @var array
+     */
     private $headers = [];
+
+    /**
+     * @var string
+     */
     private $body;
 
     /**
-     * Gets one or all headers
+     * Gets one or all headers.
      *
      * @param string $index optional header to look up
      *
@@ -75,7 +97,7 @@ class Response
     }
 
     /**
-     * Sets a specific header
+     * Sets a specific header.
      *
      * @param string $header
      * @param string $value
@@ -90,7 +112,7 @@ class Response
     }
 
     /**
-     * Sets the HTTP version
+     * Sets the HTTP version.
      *
      * @param string $version HTTP version
      *
@@ -104,7 +126,7 @@ class Response
     }
 
     /**
-     * Gets the HTTP version
+     * Gets the HTTP version.
      *
      * @return string version
      */
@@ -114,7 +136,7 @@ class Response
     }
 
     /**
-     * Sets the HTTP status code for the response
+     * Sets the HTTP status code for the response.
      *
      * @param int $code
      *
@@ -128,7 +150,7 @@ class Response
     }
 
     /**
-     * Gets the HTTP status code for the response
+     * Gets the HTTP status code for the response.
      *
      * @return int code
      */
@@ -176,7 +198,7 @@ class Response
     }
 
     /**
-     * Gets the response body
+     * Gets the response body.
      *
      * @return string
      */
@@ -252,7 +274,7 @@ class Response
     }
 
     /**
-     * Sends the headers
+     * Sends the headers.
      *
      * @return Response
      */
@@ -275,7 +297,7 @@ class Response
     }
 
     /**
-     * Sends the content
+     * Sends the content.
      *
      * @return Response
      */

@@ -1,20 +1,20 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 class Utility
 {
     /**
      * Looks up a key in an array. If the key follows dot-notation then a nested lookup will be performed.
-     * i.e. users.sherlock.address.lat -> ['users']['sherlock']['address']['lat']
+     * i.e. users.sherlock.address.lat -> ['users']['sherlock']['address']['lat'].
      *
      * @param array  $a array to be searched
      * @param string $k key to search for
@@ -35,7 +35,7 @@ class Utility
             foreach ($pieces as $piece) {
                 if (!is_array($a) || !array_key_exists($piece, $a)) {
                     // not found
-                    return null;
+                    return;
                 }
 
                 $a = &$a[ $piece ];
@@ -44,11 +44,11 @@ class Utility
             return $a;
         }
 
-        return null;
+        return;
     }
 
     /**
-     * Sets an element in an array using dot notation (i.e. fruit.apples.qty sets ['fruit']['apples']['qty']
+     * Sets an element in an array using dot notation (i.e. fruit.apples.qty sets ['fruit']['apples']['qty'].
      *
      * @param array  $a
      * @param string $key
@@ -71,7 +71,7 @@ class Utility
     /**
      * Flattens a multi-dimensional array using dot notation
      * i.e. [ 'fruit' => [ 'apples' => [ 'qty' => 1 ] ] ] produces
-     * [ fruit.apples.qty => 1 ]
+     * [ fruit.apples.qty => 1 ].
      *
      * @param array  $a      input array
      * @param string $prefix key prefix
@@ -100,7 +100,7 @@ class Utility
     }
 
     /**
-     * Securely hashes a string, useful for passwords
+     * Securely hashes a string, useful for passwords.
      *
      * @param string $password
      * @param string $salt
@@ -114,9 +114,9 @@ class Utility
     }
 
     /**
-     * Generates a unique 32-digit GUID. i.e. 12345678-1234-5678-123456789012
+     * Generates a unique 32-digit GUID. i.e. 12345678-1234-5678-123456789012.
      *
-     * @param boolean $dashes whether or not to separate guid with dashes
+     * @param bool $dashes whether or not to separate guid with dashes
      *
      * @return string
      */
@@ -140,7 +140,7 @@ class Utility
     }
 
     /**
-     * Makes a string SEO compliant (numbers, digits, and dashes only)
+     * Makes a string SEO compliant (numbers, digits, and dashes only).
      *
      * @param string $string
      * @param int    $maxLength   maximum length of result
@@ -154,11 +154,11 @@ class Utility
         // kill HTML entities
         $string = preg_replace('/&.+?;/', '', $string);
         // kill anything that is not a letter, digit, space, dash
-        $string = preg_replace("/[^a-zA-Z0-9 -]/", "", $string);
+        $string = preg_replace('/[^a-zA-Z0-9 -]/', '', $string);
         // turn it to an array and strip common words by comparing against c.w. array
         $seo_slug_array = array_diff(explode(' ', $string), $commonWords);
         // turn the sanitized array into a string of max length
-        $return = substr(join("-", $seo_slug_array), 0, $maxLength);
+        $return = substr(implode('-', $seo_slug_array), 0, $maxLength);
         // allow only single runs of dashes
         $return = strtolower(preg_replace('/--+/u', '-', $return));
         // first character cannot be '-'
@@ -170,7 +170,7 @@ class Utility
     }
 
     /**
-     * Converts a human friendly metric string (i.e. 1G) into a number
+     * Converts a human friendly metric string (i.e. 1G) into a number.
      *
      * @param string $str
      * @param string $use1024 when true, increment by 1,024 instead of 1,000
@@ -185,7 +185,7 @@ class Utility
         // strip off all letters and find suffix
         $i = strlen($str) - 1;
         while ($i >= 0 && !is_numeric($str[ $i ])) {
-            $i--;
+            --$i;
         }
 
         // last letter
@@ -210,7 +210,7 @@ class Utility
 
     /**
      * Formats a number with a set number of decimals and a metric suffix
-     * i.e. number_abbreviate( 12345, 2 ) -> 12.35K
+     * i.e. number_abbreviate( 12345, 2 ) -> 12.35K.
      *
      * @param int $number
      * @param int $decimals number of places after decimal
@@ -220,15 +220,15 @@ class Utility
     public static function number_abbreviate($number, $decimals = 1)
     {
         $abbrevs = [
-            24 => "Y",
-            21 => "Z",
-            18 => "E",
-            15 => "P",
-            12 => "T",
-            9 => "G",
-            6 => "M",
-            3 => "K",
-            0 => "",
+            24 => 'Y',
+            21 => 'Z',
+            18 => 'E',
+            15 => 'P',
+            12 => 'T',
+            9 => 'G',
+            6 => 'M',
+            3 => 'K',
+            0 => '',
         ];
 
         foreach ($abbrevs as $exponent => $abbrev) {
@@ -244,18 +244,18 @@ class Utility
     }
 
     /**
-     * Sets the cookie with a properly formatted domain to fix older versions of IE dropping sessions
+     * Sets the cookie with a properly formatted domain to fix older versions of IE dropping sessions.
      *
      * from php.net user comments
      *
-     * @param string  $name
-     * @param string  $value
-     * @param int     $expires
-     * @param string  $path
-     * @param string  $domain
-     * @param boolean $secure
-     * @param boolean $httponly
-     * @param boolean $setHeader when true, sets the header, otherwise returns header string
+     * @param string $name
+     * @param string $value
+     * @param int    $expires
+     * @param string $path
+     * @param string $domain
+     * @param bool   $secure
+     * @param bool   $httponly
+     * @param bool   $setHeader when true, sets the header, otherwise returns header string
      *
      * @return string
      */
@@ -290,7 +290,7 @@ class Utility
     }
 
     /**
-     * Converts a UNIX timestamp to the database timestamp format
+     * Converts a UNIX timestamp to the database timestamp format.
      *
      * @param int $timestamp
      *
@@ -303,10 +303,10 @@ class Utility
 
     /**
      * Generates a string for how long ago a timestamp happened.
-     * i.e. '2 minutes ago' or 'just now'
+     * i.e. '2 minutes ago' or 'just now'.
      *
-     * @param int     $timestamp timestamp
-     * @param boolean $full      true: time ago has every granularity, false: time ago has biggest granularity only
+     * @param int  $timestamp timestamp
+     * @param bool $full      true: time ago has every granularity, false: time ago has biggest granularity only
      *
      * @return string computed time ago
      */
@@ -327,10 +327,10 @@ class Utility
 
     /**
      * Generates a string for how long until a timestamp will happen
-     * i.e. '2 days' or 'now'
+     * i.e. '2 days' or 'now'.
      *
-     * @param int     $timestamp timestamp
-     * @param boolean $full      true: time ago has every granularity, false: time ago has biggest granularity only
+     * @param int  $timestamp timestamp
+     * @param bool $full      true: time ago has every granularity, false: time ago has biggest granularity only
      *
      * @return string computed time until
      */
@@ -351,10 +351,10 @@ class Utility
 
     /**
      * Calculates the time difference between two DateTime objects
-     * Borrowed from http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
+     * Borrowed from http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago.
      *
-     * @param DateTime $a "now"
-     * @param DateTime $b "then"
+     * @param \DateTime $a "now"
+     * @param \DateTime $b "then"
      *
      * @return array delta at time each granularity
      */

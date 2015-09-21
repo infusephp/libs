@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 use Pimple\Container;
@@ -21,6 +21,9 @@ if (!defined('QUEUE_TYPE_SYNCHRONOUS')) {
 
 class Queue
 {
+    /**
+     * @staticvar array
+     */
     private static $config = [
         'queues' => [],
         'namespace' => '',
@@ -30,22 +33,43 @@ class Queue
         'project' => '',
     ];
 
-    // used for synchronous mode
+    /**
+     * Used for synchronous mode.
+     *
+     * @staticvar array
+     */
     private static $queues = [];
+
+    /**
+     * @var int
+     */
     private static $idCounter = 1;
 
+    /**
+     * @staticvar \Pimple\Container
+     */
     private static $app;
 
+    /**
+     * @staticvar array
+     */
     private static $queueTypes = [
         QUEUE_TYPE_IRON,
         QUEUE_TYPE_SYNCHRONOUS,
     ];
 
+    /**
+     * @var string
+     */
     private $type;
+
+    /**
+     * @var array
+     */
     private $listeners;
 
     /**
-     * Changes the queue settings
+     * Changes the queue settings.
      *
      * @param array $config
      */
@@ -65,7 +89,7 @@ class Queue
     }
 
     /**
-     * Returns the type of the queue
+     * Returns the type of the queue.
      *
      * @return string synchronous|iron
      */
@@ -75,13 +99,13 @@ class Queue
     }
 
     /**
-     * Puts a message onto the queue
+     * Puts a message onto the queue.
      *
      * @param string $queue      queue name
      * @param mixed  $message
      * @param array  $parameters
      *
-     * @return boolean success
+     * @return bool success
      */
     public function enqueue($queue, $message, $parameters = [])
     {
@@ -111,7 +135,7 @@ class Queue
             $messageWrapper->id = self::$idCounter;
             $messageWrapper->body = $message;
 
-            self::$idCounter++;
+            ++self::$idCounter;
 
             // add the serialized message wrapper to the queue
             $json = json_encode($messageWrapper);
@@ -126,7 +150,7 @@ class Queue
 
     /**
      * Takes one or messages off the queue
-     * WARNING remember to delete the message when finished
+     * WARNING remember to delete the message when finished.
      *
      * @param string $queue queue name
      * @param int    $n     number of messages to dequeue
@@ -143,7 +167,7 @@ class Queue
             } catch (\Exception $e) {
                 self::$app[ 'logger' ]->error($e);
 
-                return null;
+                return;
             }
         }
         // synchronous queue
@@ -162,7 +186,7 @@ class Queue
         } elseif ($n > 1) {
             return $messages;
         } else {
-            return null;
+            return;
         }
     }
 
@@ -173,7 +197,7 @@ class Queue
      * @param string $queue   queue name
      * @param object $message
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteMessage($queue, $message)
     {
@@ -213,7 +237,7 @@ class Queue
     }
 
     /**
-     * Notifies all listeners that a message has been received from the queue
+     * Notifies all listeners that a message has been received from the queue.
      *
      * @param string $queue   queue name
      * @param string $message message
@@ -250,9 +274,9 @@ class Queue
 
     /**
      * Sets up the queue(s) according to the configuration. Usually only needs to be
-     * called when the configuration changes, and certainly not on every request
+     * called when the configuration changes, and certainly not on every request.
      *
-     * @return boolean success
+     * @return bool success
      */
     public function install()
     {
@@ -266,7 +290,7 @@ class Queue
                 try {
                     $success = $ironmq->updateQueue($q, [
                         'push_type' => self::$config[ 'push_type' ],
-                        'subscribers' => $subscribers ]) && $success;
+                        'subscribers' => $subscribers, ]) && $success;
                 } catch (\Exception $e) {
                     self::$app[ 'logger' ]->error($e);
                     $success = false;
@@ -305,7 +329,7 @@ class Queue
                     $subscribers[ $q ] = [];
                 }
 
-                $subscribers[ $q ][] = [ 'url' => $url ];
+                $subscribers[ $q ][] = ['url' => $url];
             }
         }
 
@@ -313,9 +337,9 @@ class Queue
     }
 
     /**
-     * Injects a DI container
+     * Injects a DI container.
      *
-     * @param Container $app
+     * @param \Pimple\Container $app
      */
     public static function inject(Container $app)
     {

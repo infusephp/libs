@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse\ViewEngine;
 
 use infuse\ViewEngine;
@@ -22,7 +22,7 @@ class Mustache extends ViewEngine
     const EXTENSION = '.mustache';
 
     /**
-     * Creates a new Mustache ViewEngine
+     * Creates a new Mustache ViewEngine.
      *
      * @param string $viewsDir optional dir containing templates
      */
@@ -57,9 +57,9 @@ class Mustache extends ViewEngine
     }
 
     /**
-     * Gets (and creates) a Mustache instance
+     * Gets (and creates) a Mustache instance.
      *
-     * @return Mustache
+     * @return \Mustache_Engine
      */
     public function mustache()
     {

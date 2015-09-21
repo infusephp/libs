@@ -8,7 +8,6 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse\Session;
 
 use Pimple\Container;
@@ -17,7 +16,7 @@ use SessionHandlerInterface;
 class Redis implements SessionHandlerInterface
 {
     /**
-     * @var Container
+     * @var \Pimple\Container
      */
     private $app;
 
@@ -29,9 +28,9 @@ class Redis implements SessionHandlerInterface
     /**
      * Starts the session using this handler.
      *
-     * @param Session $app
+     * @param Redis $app
      *
-     * @return boolean
+     * @return bool
      */
     public static function registerHandler(Redis $handler)
     {
@@ -41,7 +40,7 @@ class Redis implements SessionHandlerInterface
     /**
      * Creates a new session handler.
      *
-     * @param Container $app
+     * @param \Pimple\Container $app
      */
     public function __construct(Container $app, $prefix = '')
     {
@@ -67,7 +66,7 @@ class Redis implements SessionHandlerInterface
      * @param string $id   session id
      * @param string $data data
      *
-     * @return boolean
+     * @return bool
      */
     public function write($id, $data)
     {
@@ -83,7 +82,7 @@ class Redis implements SessionHandlerInterface
      *
      * @param string $id session id
      *
-     * @return boolean
+     * @return bool
      */
     public function destroy($id)
     {

@@ -1,28 +1,46 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 use Pimple\Container;
 
 class View
 {
+    /**
+     * @staticvar \Pimple\Container
+     */
     private static $container;
+
+    /**
+     * @staticvar ViewEngine
+     */
     private static $defaultEngine;
 
+    /**
+     * @var string
+     */
     private $template;
+
+    /**
+     * @var array
+     */
     private $data;
+
+    /**
+     * @var ViewEngine
+     */
     private $engine;
 
     /**
-     * Sets the default ViewEngine used by views
+     * Sets the default ViewEngine used by views.
      *
      * @param ViewEngine $engine
      */
@@ -33,7 +51,7 @@ class View
     }
 
     /**
-     * Gets the default ViewEngine used by views
+     * Gets the default ViewEngine used by views.
      *
      * @return ViewEngine
      */
@@ -52,7 +70,7 @@ class View
     }
 
     /**
-     * Creates a new View
+     * Creates a new View.
      *
      * @param string $template           template name
      * @param array  $templateParameters optional parameters to render template with
@@ -83,7 +101,7 @@ class View
     }
 
     /**
-     * Returns the template this view represents
+     * Returns the template this view represents.
      *
      * @return string
      */
@@ -93,7 +111,7 @@ class View
     }
 
     /**
-     * Updates the template parameters associated with this view
+     * Updates the template parameters associated with this view.
      *
      * @param array $parameters template parameters
      *
@@ -107,7 +125,7 @@ class View
     }
 
     /**
-     * Gets the template parameters associated with this view
+     * Gets the template parameters associated with this view.
      *
      * @return array
      */
@@ -117,7 +135,7 @@ class View
     }
 
     /**
-     * Sets the ViewEngine associated with this view
+     * Sets the ViewEngine associated with this view.
      *
      * @param ViewEngine $engine
      *
@@ -131,7 +149,7 @@ class View
     }
 
     /**
-     * Gets the ViewEngine associated with this view
+     * Gets the ViewEngine associated with this view.
      *
      * @return ViewEngine
      */
@@ -145,7 +163,7 @@ class View
     }
 
     /**
-     * Renders this view using the associated ViewEngine
+     * Renders this view using the associated ViewEngine.
      *
      * @return string compiled view
      */
