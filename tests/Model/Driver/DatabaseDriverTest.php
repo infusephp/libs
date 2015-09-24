@@ -201,9 +201,10 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testDeleteModel()
     {
+        $stmt = Mockery::mock('PDOStatement');
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('delete->where->execute')
-           ->andReturn(true);
+           ->andReturn($stmt);
 
         $driver = new DatabaseDriver($db);
         Person::setDriver($driver);

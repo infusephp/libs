@@ -91,7 +91,7 @@ class DatabaseDriver implements DriverInterface
         try {
             return $this->db->delete($model::tablename())
                 ->where($model->id(true))
-                ->execute();
+                ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
