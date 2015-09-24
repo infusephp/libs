@@ -8,12 +8,14 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+use infuse\Model;
 use infuse\Model\Iterator;
 
 require_once 'tests/test_models.php';
 
 class IteratorTest extends \PHPUnit_Framework_TestCase
 {
+    public static $app;
     public static $originalDriver;
     public static $driver;
     public static $iterator;
@@ -22,6 +24,12 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
+        // set up DI
+        self::$app = new \Pimple\Container();
+        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
+
+        Model::inject(self::$app);
+
         self::$originalDriver = IteratorTestModel::getDriver();
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
@@ -127,11 +135,6 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(self::$iterator->valid());
     }
 
-    public function testCount()
-    {
-        $this->assertCount(123, self::$iterator);
-    }
-
     public function testForeach()
     {
         $i = self::$start;
@@ -143,6 +146,45 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertEquals($i, IteratorTestModel::totalRecords());
+    }
+
+    public function testCount()
+    {
+        $this->assertCount(123, self::$iterator);
+    }
+
+    public function testOffsetExists()
+    {
+        $this->assertTrue(isset(self::$iterator[0]));
+        $this->assertFalse(isset(self::$iterator[123]));
+        $this->assertFalse(isset(self::$iterator['blah']));
+    }
+
+    public function testOffsetGet()
+    {
+        $this->assertEquals(0, self::$iterator[0]->id());
+        $this->assertEquals(1, self::$iterator[1]->id());
+    }
+
+    public function testOffsetGetOOB()
+    {
+        $this->setExpectedException('OutOfBoundsException');
+
+        $fail = self::$iterator[100000];
+    }
+
+    public function testOffsetSet()
+    {
+        $this->setExpectedException('Exception');
+
+        self::$iterator[0] = null;
+    }
+
+    public function testOffsetUnset()
+    {
+        $this->setExpectedException('Exception');
+
+        unset(self::$iterator[0]);
     }
 
     public function testFindAll()
@@ -184,6 +226,7 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $iterator = new Iterator('IteratorTestModel');
         $iterator->setMax(5);
 
+        // test Iterator
         $found = [];
         foreach ($iterator as $model) {
             $this->assertInstanceOf('IteratorTestModel', $model);
@@ -193,6 +236,11 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $expected = [0, 1, 2, 3, 4];
 
         $this->assertEquals($expected, $found);
+
+        // test Countable
         $this->assertCount(5, $iterator);
+
+        // test ArrayAccess
+        $this->assertTrue(isset($iterator[0]));
     }
 }

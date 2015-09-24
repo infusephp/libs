@@ -10,7 +10,7 @@
  */
 namespace infuse\Model;
 
-class Iterator implements \Iterator, \Countable
+class Iterator implements \Iterator, \Countable, \ArrayAccess
 {
     /**
      * @var string
@@ -125,6 +125,10 @@ class Iterator implements \Iterator, \Countable
         return $this->max;
     }
 
+    //////////////////////////
+    // Iterator Interface
+    //////////////////////////
+
     /**
      * Rewind the Iterator to the first element.
      */
@@ -181,6 +185,10 @@ class Iterator implements \Iterator, \Countable
         return $this->pointer < $this->count();
     }
 
+    //////////////////////////
+    // Countable Interface
+    //////////////////////////
+
     /**
      * Get total number of models matching query.
      *
@@ -196,6 +204,42 @@ class Iterator implements \Iterator, \Countable
 
         return $this->count;
     }
+
+    //////////////////////////
+    // ArrayAccess Interface
+    //////////////////////////
+
+    public function offsetExists($offset)
+    {
+        return is_numeric($offset) && $offset < $this->count();
+    }
+
+    public function offsetGet($offset)
+    {
+        if (!$this->offsetExists($offset)) {
+            throw new \OutOfBoundsException("$offset does not exist on this Iterator");
+        }
+
+        $this->pointer = $offset;
+
+        return $this->current();
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        // iterators are immutable
+        throw new \Exception('Cannot perform set on immutable Iterator');
+    }
+
+    public function offsetUnset($offset)
+    {
+        // iterators are immutable
+        throw new \Exception('Cannot perform unset on immutable Iterator');
+    }
+
+    //////////////////////////
+    // Private Methods
+    //////////////////////////
 
     /**
      * Load the next round of models.
