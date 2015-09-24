@@ -118,7 +118,7 @@ abstract class Model extends Acl implements \ArrayAccess
 
     const IMMUTABLE = 0;
     const MUTABLE_CREATE_ONLY = 1;
-    const MUTABLE = 1;
+    const MUTABLE = 2;
 
     const TYPE_STRING = 'string';
     const TYPE_NUMBER = 'number';
@@ -786,7 +786,7 @@ abstract class Model extends Acl implements \ArrayAccess
             foreach ($idProperties as $property) {
                 // attempt use the supplied value if the id property is mutable
                 $id = null;
-                if ($properties[$property]['mutable'] == self::MUTABLE && isset($data[$property])) {
+                if (in_array($properties[$property]['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($data[$property])) {
                     $id = $data[$property];
                 } else {
                     $id = $this->app['pdo']->lastInsertId();
