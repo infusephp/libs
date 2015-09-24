@@ -46,7 +46,7 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
 
         try {
-            return $this->db->insert($parameters)
+            return $this->db->insert($values)
                 ->into($model::tablename())
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
@@ -80,7 +80,7 @@ class DatabaseDriver implements DriverInterface
 
         try {
             return $this->db->update($model::tablename())
-                ->values($parameters)
+                ->values($values)
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {

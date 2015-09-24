@@ -71,7 +71,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
              ->withArgs(['People'])
              ->andReturn($execute);
         $db->shouldReceive('insert')
-           ->withArgs([['answer' => 42]])
+           ->withArgs([['answer' => 42, 'array' => '{"test":true}']])
            ->andReturn($into)
            ->once();
 
@@ -79,7 +79,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         Person::setDriver($driver);
 
         $model = new Person();
-        $this->assertTrue($driver->createModel($model, ['answer' => 42]));
+        $this->assertTrue($driver->createModel($model, ['answer' => 42, 'array' => ['test' => true]]));
     }
 
     public function testCreateModelFail()
@@ -157,7 +157,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
               ->andReturn($execute);
         $values = Mockery::mock();
         $values->shouldReceive('values')
-               ->withArgs([['name' => 'John']])
+               ->withArgs([['name' => 'John', 'array' => '{"test":true}']])
                ->andReturn($where);
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('update')
@@ -171,7 +171,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($driver->updateModel($model, []));
 
-        $parameters = ['name' => 'John'];
+        $parameters = ['name' => 'John', 'array' => ['test' => true]];
         $this->assertTrue($driver->updateModel($model, $parameters));
     }
 
