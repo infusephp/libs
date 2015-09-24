@@ -127,6 +127,11 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(self::$iterator->valid());
     }
 
+    public function testCount()
+    {
+        $this->assertCount(123, self::$iterator);
+    }
+
     public function testForeach()
     {
         $i = self::$start;
@@ -188,5 +193,6 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
         $expected = [0, 1, 2, 3, 4];
 
         $this->assertEquals($expected, $found);
+        $this->assertCount(5, $iterator);
     }
 }

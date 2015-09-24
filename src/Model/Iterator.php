@@ -10,7 +10,7 @@
  */
 namespace infuse\Model;
 
-class Iterator implements \Iterator
+class Iterator implements \Iterator, \Countable
 {
     /**
      * @var string
@@ -186,7 +186,7 @@ class Iterator implements \Iterator
      *
      * @return int
      */
-    private function count()
+    public function count()
     {
         $this->updateCount();
 
