@@ -21,12 +21,10 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $driver = new DatabaseDriver($db);
 
-        $property = ['type' => Model::TYPE_STRING];
-        $this->assertEquals('string', $driver->serializeValue($property, 'string'));
+        $this->assertEquals('string', $driver->serializeValue('string'));
 
-        $property = ['type' => Model::TYPE_JSON];
         $obj = ['test' => true];
-        $this->assertEquals('{"test":true}', $driver->serializeValue($property, $obj));
+        $this->assertEquals('{"test":true}', $driver->serializeValue($obj));
     }
 
     public function testUnserializeValue()

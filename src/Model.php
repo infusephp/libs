@@ -1366,9 +1366,6 @@ abstract class Model extends Acl
         // validate
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
-        // marshal the value
-        $value = self::$driver->serializeValue($property, $value);
-
         // unique?
         if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);

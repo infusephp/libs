@@ -661,14 +661,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel::properties('answer'), 42])
-               ->andReturn(42);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel::properties('filter'), 'BLAH'])
-               ->andReturn('BLAH');
-
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
                 'filter' => 'BLAH',
@@ -708,9 +700,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue')
-               ->andReturn('value');
-
         $driver->shouldReceive('createModel')
                ->andReturn(true)
                ->once();
@@ -733,42 +722,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('unserializeValue');
 
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('id'), 1])
-               ->andReturn(1);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('id2'), 2])
-               ->andReturn(2);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('required'), 25])
-               ->andReturn(25);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('mutable_create_only'), 'test'])
-               ->andReturn('test');
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('default'), 'some default value'])
-               ->andReturn('some default value');
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('hidden'), false])
-               ->andReturn(false);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('person'), 20])
-               ->andReturn(20);
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel2::properties('json'), [
-                    'tax' => '%',
-                    'discounts' => false,
-                    'shipping' => false,
-                ]])
-               ->andReturn('{"tax":"%","discounts":false,"shipping":false}');
-
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
                     'id' => 1,
@@ -777,7 +730,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
                     'default' => 'some default value',
                     'hidden' => false,
                     'created_at' => null,
-                    'json' => '{"tax":"%","discounts":false,"shipping":false}',
+                    'json' => [
+                        'tax' => '%',
+                        'discounts' => false,
+                        'shipping' => false,
+                    ],
                     'person' => 20,
                     'mutable_create_only' => 'test', ]])
                ->andReturn(true);
@@ -790,8 +747,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     public function testCreateImmutableId()
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('serializeValue');
 
         $driver->shouldReceive('createModel')
                ->andReturn(true);
@@ -843,9 +798,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->withArgs(['TestModel2', ['unique' => 'fail']])
                ->andReturn(1);
 
-        $driver->shouldReceive('serializeValue')
-               ->andReturn('fail');
-
         TestModel2::setDriver($driver);
 
         $model = new TestModel2();
@@ -883,8 +835,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue');
-
         $driver->shouldReceive('createModel')
                ->andReturn(false);
 
@@ -904,17 +854,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel::properties('answer'), 41])
-               ->andReturn(42);
-
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, ['answer' => 42]])
                ->andReturn(true);
 
         TestModel::setDriver($driver);
 
-        $this->assertTrue($model->set('answer', 41));
+        $this->assertTrue($model->set('answer', 42));
     }
 
     public function testSetMultiple()
@@ -922,14 +868,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(11);
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel::properties('answer'), 'hello'])
-               ->andReturn('hello');
-
-        $driver->shouldReceive('serializeValue')
-               ->withArgs([TestModel::properties('filter'), 'BLAH'])
-               ->andReturn('BLAH');
 
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, ['answer' => 'hello', 'filter' => 'BLAH', 'relation' => null]])
@@ -988,9 +926,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue')
-               ->andReturn('works');
-
         $driver->shouldReceive('totalRecords')
                ->withArgs(['TestModel2', ['unique' => 'works']])
                ->andReturn(0);
@@ -1008,14 +943,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUniqueSkip()
     {
-        // select query mock for uniqueness
-        self::$app['db'] = Mockery::mock();
-        self::$app['db']->shouldReceive('select->from->where->one')
-                        ->andReturn(['unique' => 'works']);
-
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('serializeValue');
         $driver->shouldReceive('loadModel');
 
         $driver->shouldReceive('updateModel')
@@ -1024,6 +953,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
+        $model->unique = 'works';
         $this->assertTrue($model->set('unique', 'works'));
     }
 

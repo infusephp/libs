@@ -66,17 +66,6 @@ interface DriverInterface
     public function queryModels($modelClass, Query $query);
 
     /**
-     * Marshals a value for a given property to storage, and
-     * checks the validity of a value.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return mixed serialized value
-     */
-    public function serializeValue(array $property, $value);
-
-    /**
      * Marshals a value for a given property from storage.
      *
      * @param array $property

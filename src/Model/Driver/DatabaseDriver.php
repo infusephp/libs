@@ -43,6 +43,8 @@ class DatabaseDriver implements DriverInterface
 
     public function createModel(Model $model, array $parameters)
     {
+        $values = $this->serialize($parameters);
+
         try {
             return $this->db->insert($parameters)
                 ->into($model::tablename())
@@ -73,6 +75,8 @@ class DatabaseDriver implements DriverInterface
         if (count($parameters) == 0) {
             return true;
         }
+
+        $values = $this->serialize($parameters);
 
         try {
             return $this->db->update($model::tablename())
@@ -129,16 +133,6 @@ class DatabaseDriver implements DriverInterface
         return [];
     }
 
-    public function serializeValue(array $property, $value)
-    {
-        // encode JSON
-        if ($property['type'] == Model::TYPE_JSON && !is_string($value)) {
-            $value = json_encode($value);
-        }
-
-        return $value;
-    }
-
     public function unserializeValue(array $property, $value)
     {
         // handle empty strings as null
@@ -173,5 +167,38 @@ class DatabaseDriver implements DriverInterface
         }
 
         return $value;
+    }
+
+    /**
+     * Marshals a value to storage.
+     *
+     * @param mixed $value
+     *
+     * @return mixed serialized value
+     */
+    public function serializeValue($value)
+    {
+        // encode arrays/objects as JSON
+        if (is_array($value) || is_object($value)) {
+            return json_encode($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Serializes an array of values.
+     *
+     * @param array $values
+     *
+     * @return array
+     */
+    private function serialize(array $values)
+    {
+        foreach ($values as &$value) {
+            $value = $this->serializeValue($value);
+        }
+
+        return $values;
     }
 }
