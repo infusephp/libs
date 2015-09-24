@@ -64,9 +64,10 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db = Mockery::mock('JAQB\\QueryBuilder');
 
         // insert query mock
+        $stmt = Mockery::mock('PDOStatement');
         $execute = Mockery::mock();
         $execute->shouldReceive('execute')
-                ->andReturn(true);
+                ->andReturn($stmt);
         $into = Mockery::mock();
         $into->shouldReceive('into')
              ->withArgs(['People'])

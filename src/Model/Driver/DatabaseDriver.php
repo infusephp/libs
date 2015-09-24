@@ -46,7 +46,7 @@ class DatabaseDriver implements DriverInterface
         try {
             return $this->db->insert($parameters)
                 ->into($model::tablename())
-                ->execute();
+                ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
