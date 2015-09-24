@@ -795,11 +795,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateNoPermission()
     {
-        $errorStack = self::$app['errors'];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
+
         $newModel = new TestModelNoPermission();
         $this->assertFalse($newModel->create([]));
-        $this->assertCount(1, $errorStack->errors('TestModelNoPermission.create'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testCreateHookFail()
@@ -810,8 +810,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateNotUnique()
     {
-        $errorStack = self::$app['errors'];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
@@ -831,25 +830,25 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($model->create($create));
 
         // verify error
-        $this->assertCount(1, $errorStack->errors('TestModel2.create'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testCreateInvalid()
     {
-        $errorStack = self::$app['errors'];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
+
         $newModel = new TestModel2();
         $this->assertFalse($newModel->create(['id' => 10, 'id2' => 1, 'validate' => 'notanemail', 'required' => true]));
-        $this->assertCount(1, $errorStack->errors('TestModel2.create'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testCreateMissingRequired()
     {
-        $errorStack = self::$app[ 'errors' ];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
+
         $newModel = new TestModel2();
         $this->assertFalse($newModel->create(['id' => 10, 'id2' => 1]));
-        $this->assertCount(1, $errorStack->errors('TestModel2.create'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testCreateFail()
@@ -930,11 +929,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetNoPermission()
     {
-        $errorStack = self::$app['errors'];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
+
         $model = new TestModelNoPermission(5);
         $this->assertFalse($model->set('answer', 42));
-        $this->assertCount(1, $errorStack->errors('TestModelNoPermission.set'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testSetHookFail()
@@ -980,12 +979,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetInvalid()
     {
-        $errorStack = self::$app['errors'];
-        $errorStack->clear();
+        $errorStack = self::$app['errors']->clear();
+
         $model = new TestModel2(15);
 
         $this->assertFalse($model->set('validate2', 'invalid'));
-        $this->assertCount(1, $errorStack->errors('TestModel2.set'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     /////////////////////////////
@@ -1028,10 +1027,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testDeleteNoPermission()
     {
-        $errorStack = self::$app[ 'errors' ];
+        $errorStack = self::$app['errors']->clear();
         $model = new TestModelNoPermission(5);
         $this->assertFalse($model->delete());
-        $this->assertCount(1, $errorStack->errors('TestModelNoPermission.delete'));
+        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testDeleteHookFail()

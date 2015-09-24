@@ -702,16 +702,13 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public function create(array $data = [])
     {
-        $errorStack = $this->app['errors'];
-        $errorStack->setCurrentContext(static::modelName().'.create');
-
         if ($this->_id !== false) {
             return false;
         }
 
         // permission?
         if (!$this->can('create', static::$config['requester'])) {
-            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
+            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -968,12 +965,9 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
-        $errorStack = $this->app['errors'];
-        $errorStack->setCurrentContext(static::modelName().'.set');
-
         // permission?
         if (!$this->can('edit', static::$config['requester'])) {
-            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
+            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
@@ -1044,12 +1038,9 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
-        $errorStack = $this->app['errors'];
-        $errorStack->setCurrentContext(static::modelName().'.delete');
-
         // permission?
         if (!$this->can('delete', static::$config['requester'])) {
-            $errorStack->push(['error' => ERROR_NO_PERMISSION]);
+            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
         }
