@@ -151,29 +151,12 @@ abstract class Model extends Acl implements \ArrayAccess
 
     /**
      * @staticvar array
-     * Property names that are excluded from the database
-     */
-    protected static $propertiesNotInDatabase = [];
-
-    /**
-     * @staticvar array
      * Default model configuration
      */
     protected static $config = [
         'cache' => [
             'expires' => 0, ],
         'requester' => false, ];
-
-    /**
-     * @staticvar array
-     * Default parameters for Model::find() queries
-     */
-    protected static $defaultFindParameters = [
-        'where' => [],
-        'start' => 0,
-        'limit' => 100,
-        'search' => '',
-        'sort' => '', ];
 
     /**
      * @staticvar \Pimple\Container
@@ -753,7 +736,7 @@ abstract class Model extends Acl implements \ArrayAccess
                 continue;
             }
 
-            $validated = $validated && $this->validateAndMarshal($property, $field, $value);
+            $validated = $validated && $this->filterAndValidate($property, $field, $value);
             $insertArray[$field] = $value;
         }
 
@@ -1003,7 +986,7 @@ abstract class Model extends Acl implements \ArrayAccess
                 continue;
             }
 
-            $validated = $validated && $this->validateAndMarshal($property, $propertyName, $value);
+            $validated = $validated && $this->filterAndValidate($property, $propertyName, $value);
             $updateArray[$propertyName] = $value;
         }
 
@@ -1226,6 +1209,33 @@ abstract class Model extends Acl implements \ArrayAccess
         return $this;
     }
 
+    /**
+     * Loads the model from the database and caches it.
+     *
+     * @param array $values optional values (if already loaded from DB)
+     *
+     * @return self
+     */
+    public function loadFromStorage($values = false)
+    {
+        if (!is_array($values)) {
+            $values = self::$driver->loadModel($this);
+        }
+
+        if (is_array($values)) {
+            // unserialize values from database
+            $this->_local = [];
+            foreach ($values as $k => &$v) {
+                $property = static::properties($k);
+                if (is_array($property)) {
+                    $this->_local[$k] = self::$driver->unserializeValue($property, $v);
+                }
+            }
+        }
+
+        return $this;
+    }
+
     /////////////////////////////
     // CACHE
     /////////////////////////////
@@ -1365,7 +1375,7 @@ abstract class Model extends Acl implements \ArrayAccess
      *
      * @return bool
      */
-    private function validateAndMarshal(array $property, $propertyName, &$value)
+    private function filterAndValidate(array $property, $propertyName, &$value)
     {
         // assume empty string is a null value for properties
         // that are marked as optionally-null
@@ -1460,33 +1470,6 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         return true;
-    }
-
-    /**
-     * Loads the model from the database and caches it.
-     *
-     * @param array $values optional values (if already loaded from DB)
-     *
-     * @return self
-     */
-    public function loadFromStorage($values = false)
-    {
-        if (!is_array($values)) {
-            $values = self::$driver->loadModel($this);
-        }
-
-        if (is_array($values)) {
-            // marshal values from database
-            $this->_local = [];
-            foreach ($values as $k => &$v) {
-                $property = static::properties($k);
-                if (is_array($property)) {
-                    $this->_local[$k] = self::$driver->unserializeValue($property, $v);
-                }
-            }
-        }
-
-        return $this;
     }
 
     /**
