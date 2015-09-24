@@ -1057,24 +1057,24 @@ abstract class Model extends Acl
     /**
      * Creates an iterator for a search.
      *
-     * @param array $params
+     * @param array $parameters
      *
      * @return Model\Iterator
      */
-    public static function findAll(array $params = [])
+    public static function findAll(array $parameters = [])
     {
-        return new Iterator(get_called_class(), $params);
+        return new Iterator(get_called_class(), $parameters);
     }
 
     /**
      * Fetches a group of models based on the search critera.
      *
      * @param array key-value parameters
-     * @param array $params optional parameters ['where', 'start', 'limit', 'sort']
+     * @param array $parameters optional parameters ['where', 'start', 'limit', 'sort']
      *
      * @return array array( 'models' => models, 'count' => 'total found' )
      */
-    public static function find(array $params = [])
+    public static function find(array $parameters = [])
     {
         if (self::$query) {
             $query = self::$query;
@@ -1082,20 +1082,20 @@ abstract class Model extends Acl
             $query = new Query(get_called_class());
         }
 
-        if (isset($params['where'])) {
-            $query->setWhere($params['where']);
+        if (isset($parameters['where'])) {
+            $query->setWhere($parameters['where']);
         }
 
-        if (isset($params['limit'])) {
-            $query->setLimit($params['limit']);
+        if (isset($parameters['limit'])) {
+            $query->setLimit($parameters['limit']);
         }
 
-        if (isset($params['start'])) {
-            $query->setStart($params['start']);
+        if (isset($parameters['start'])) {
+            $query->setStart($parameters['start']);
         }
 
-        if (isset($params['sort'])) {
-            $query->setSort($params['sort']);
+        if (isset($parameters['sort'])) {
+            $query->setSort($parameters['sort']);
         }
 
         return [
@@ -1107,11 +1107,11 @@ abstract class Model extends Acl
     /**
      * Finds a single model based on the search criteria.
      *
-     * @param array $params parameters ['where', 'start', 'limit', 'sort']
+     * @param array $parameters parameters ['where', 'start', 'limit', 'sort']
      *
      * @return Model|false
      */
-    public static function findOne(array $params)
+    public static function findOne(array $parameters)
     {
         if (self::$query) {
             $query = self::$query;
@@ -1119,18 +1119,18 @@ abstract class Model extends Acl
             $query = new Query(get_called_class());
         }
 
-        if (isset($params['where'])) {
-            $query->setWhere($params['where']);
+        if (isset($parameters['where'])) {
+            $query->setWhere($parameters['where']);
         }
 
         $query->setLimit(1);
 
-        if (isset($params['start'])) {
-            $query->setStart($params['start']);
+        if (isset($parameters['start'])) {
+            $query->setStart($parameters['start']);
         }
 
-        if (isset($params['sort'])) {
-            $query->setSort($params['sort']);
+        if (isset($parameters['sort'])) {
+            $query->setSort($parameters['sort']);
         }
 
         $result = $query->execute();
