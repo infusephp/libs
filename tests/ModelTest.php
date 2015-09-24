@@ -644,6 +644,27 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('{"id":"5","test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
     }
 
+    public function testArrayAccess()
+    {
+        $model = new TestModel();
+
+        // test offsetExists
+        $this->assertFalse(isset($model['test']));
+        $model->test = true;
+        $this->assertTrue(isset($model['test']));
+
+        // test offsetGet
+        $this->assertEquals(true, $model['test']);
+
+        // test offsetSet
+        $model['test'] = 'hello world';
+        $this->assertEquals('hello world', $model['test']);
+
+        // test offsetUnset
+        unset($model['test']);
+        $this->assertFalse(isset($model['test']));
+    }
+
     /////////////////////////////
     // CREATE
     /////////////////////////////

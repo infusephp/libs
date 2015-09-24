@@ -110,7 +110,7 @@ if (!defined('VALIDATION_NOT_UNIQUE')) {
     define('VALIDATION_NOT_UNIQUE', 'not_unique');
 }
 
-abstract class Model extends Acl
+abstract class Model extends Acl implements \ArrayAccess
 {
     /////////////////////////////
     // CONSTANTS
@@ -312,10 +312,6 @@ abstract class Model extends Acl
         self::$injectedApp = $app;
     }
 
-    /////////////////////////////
-    // MAGIC METHODS
-    /////////////////////////////
-
     /**
      * Creates a new model object.
      *
@@ -348,6 +344,10 @@ abstract class Model extends Acl
             $this->loadFromStorage($values)->cache();
         }
     }
+
+    /////////////////////////////
+    // Magic Methods
+    /////////////////////////////
 
     /**
      * Converts the model into a string.
@@ -414,6 +414,30 @@ abstract class Model extends Acl
 
             unset($this->_unsaved[$name]);
         }
+    }
+
+    /////////////////////////////
+    // ArrayAccess Interface
+    /////////////////////////////
+
+    public function offsetExists($offset)
+    {
+        return isset($this->$offset);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->$offset;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        $this->$offset = $value;
+    }
+
+    public function offsetUnset($offset)
+    {
+        unset($this->$offset);
     }
 
     /////////////////////////////
