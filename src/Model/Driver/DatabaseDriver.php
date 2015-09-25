@@ -56,13 +56,30 @@ class DatabaseDriver implements DriverInterface
         return false;
     }
 
+    public function getCreatedID(Model $model, $propertyName)
+    {
+        try {
+            $id = $this->db->getPDO()->lastInsertId();
+
+            return $this->unserializeValue($model::properties($propertyName), $id);
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+    }
+
     public function loadModel(Model $model)
     {
         try {
-            return $this->db->select('*')
+            $row = $this->db->select('*')
                 ->from($model::tablename())
                 ->where($model->id(true))
                 ->one();
+
+            if (is_array($row)) {
+                $row = $this->unserialize($row, $model::properties());
+            }
+
+            return $row;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
@@ -120,12 +137,19 @@ class DatabaseDriver implements DriverInterface
     public function queryModels($model, Query $query)
     {
         try {
-            return $this->db->select('*')
+            $data = $this->db->select('*')
                 ->from($model::tablename())
                 ->where($query->getWhere())
                 ->limit($query->getLimit(), $query->getStart())
                 ->orderBy($query->getSort())
                 ->all();
+
+            $properties = $model::properties();
+            foreach ($data as &$row) {
+                $row = $this->unserialize($row, $properties);
+            }
+
+            return $data;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
@@ -133,6 +157,31 @@ class DatabaseDriver implements DriverInterface
         return [];
     }
 
+    /**
+     * Marshals a value to storage.
+     *
+     * @param mixed $value
+     *
+     * @return mixed serialized value
+     */
+    public function serializeValue($value)
+    {
+        // encode arrays/objects as JSON
+        if (is_array($value) || is_object($value)) {
+            return json_encode($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Marshals a value for a given property from storage.
+     *
+     * @param array $property
+     * @param mixed $value
+     *
+     * @return mixed unserialized value
+     */
     public function unserializeValue(array $property, $value)
     {
         // handle empty strings as null
@@ -170,23 +219,6 @@ class DatabaseDriver implements DriverInterface
     }
 
     /**
-     * Marshals a value to storage.
-     *
-     * @param mixed $value
-     *
-     * @return mixed serialized value
-     */
-    public function serializeValue($value)
-    {
-        // encode arrays/objects as JSON
-        if (is_array($value) || is_object($value)) {
-            return json_encode($value);
-        }
-
-        return $value;
-    }
-
-    /**
      * Serializes an array of values.
      *
      * @param array $values
@@ -197,6 +229,25 @@ class DatabaseDriver implements DriverInterface
     {
         foreach ($values as &$value) {
             $value = $this->serializeValue($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Unserializes an array of values.
+     *
+     * @param array $values
+     * @param array $properties model properties
+     *
+     * @return array
+     */
+    private function unserialize(array $values, array $properties)
+    {
+        foreach ($values as $k => &$value) {
+            if (isset($properties[$k])) {
+                $value = $this->unserializeValue($properties[$k], $value);
+            }
         }
 
         return $values;

@@ -34,11 +34,6 @@ class IteratorTest extends \PHPUnit_Framework_TestCase
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('unserializeValue')
-                     ->andReturnUsing(function ($property, $value) {
-                            return $value;
-                       });
-
         $driver->shouldReceive('queryModels')
                ->andReturnUsing(function ($model, $query) {
                     $range = range($query->getStart(), $query->getStart() + $query->getLimit() - 1);

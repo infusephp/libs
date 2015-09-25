@@ -77,11 +77,6 @@ class QueryTest extends PHPUnit_Framework_TestCase
                ->withArgs(['Person', $query])
                ->andReturn($data);
 
-        $driver->shouldReceive('unserializeValue')
-               ->andReturnUsing(function ($property, $value) {
-                    return $value;
-               });
-
         Person::setDriver($driver);
 
         $result = $query->execute();

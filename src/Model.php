@@ -767,12 +767,10 @@ abstract class Model extends Acl implements \ArrayAccess
                 // attempt use the supplied value if the id property is mutable
                 $id = null;
                 if (in_array($properties[$property]['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($data[$property])) {
-                    $id = $data[$property];
+                    $ids[] = $data[$property];
                 } else {
-                    $id = $this->app['pdo']->lastInsertId();
+                    $ids[] = self::$driver->getCreatedID($this, $property);
                 }
-
-                $ids[] = self::$driver->unserializeValue(static::properties($property), $id);
             }
 
             $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
@@ -1223,13 +1221,9 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         if (is_array($values)) {
-            // unserialize values from database
             $this->_local = [];
-            foreach ($values as $k => &$v) {
-                $property = static::properties($k);
-                if (is_array($property)) {
-                    $this->_local[$k] = self::$driver->unserializeValue($property, $v);
-                }
+            foreach ($values as $k => $v) {
+                $this->_local[$k] = $v;
             }
         }
 

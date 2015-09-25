@@ -18,6 +18,17 @@ interface DriverInterface
     public function createModel(Model $model, array $parameters);
 
     /**
+     * Gets the last inserted ID. Used for drivers that generate
+     * IDs for models after creation.
+     *
+     * @param \infuse\Model $model
+     * @param string        $propertyName
+     *
+     * @return mixed
+     */
+    public function getCreatedID(Model $model, $propertyName);
+
+    /**
      * Loads a model.
      *
      * @param \infuse\Model $model
@@ -64,14 +75,4 @@ interface DriverInterface
      * @return array raw data from storage
      */
     public function queryModels($modelClass, Query $query);
-
-    /**
-     * Marshals a value for a given property from storage.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return mixed unserialized value
-     */
-    public function unserializeValue(array $property, $value);
 }

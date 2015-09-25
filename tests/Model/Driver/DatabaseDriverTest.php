@@ -101,6 +101,36 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($driver->createModel($model, ['answer' => 42]));
     }
 
+    public function testGetCreatedID()
+    {
+        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db->shouldReceive('getPDO->lastInsertId')
+            ->andReturn('1');
+
+        $driver = new DatabaseDriver($db);
+
+        $model = new Person();
+        $this->assertEquals(1, $driver->getCreatedID($model, 'id'));
+    }
+
+    public function testGetCreatedIDFail()
+    {
+        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db->shouldReceive('getPDO->lastInsertId')
+            ->andThrow(new PDOException());
+
+        // logger mock
+        $app = new Container();
+        $app['logger'] = Mockery::mock();
+        $app['logger']->shouldReceive('error')
+                      ->once();
+
+        $driver = new DatabaseDriver($db, $app);
+
+        $model = new Person();
+        $this->assertNull($driver->getCreatedID($model, 'id'));
+    }
+
     public function testLoadModel()
     {
         // select query mock

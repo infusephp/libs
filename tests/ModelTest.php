@@ -442,12 +442,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('loadModel')
                ->withArgs([$model])
-               ->andReturn(['answer' => 20])
+               ->andReturn(['answer' => 42])
                ->once();
-
-        $driver->shouldReceive('unserializeValue')
-               ->withArgs([TestModel::properties('answer'), 20])
-               ->andReturn(42);
 
         TestModel::setDriver($driver);
 
@@ -462,9 +458,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
-
-        $driver->shouldReceive('unserializeValue')
-               ->andReturn('some default value');
 
         TestModel2::setDriver($driver);
 
@@ -673,13 +666,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $newModel = new TestModel();
 
-        // lastInsertId mock
-        $pdo = Mockery::mock();
-        $pdo->shouldReceive('lastInsertId')
-            ->andReturn(1)
-            ->once();
-        self::$app['pdo'] = $pdo;
-
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('createModel')
@@ -690,17 +676,9 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->andReturn(true)
                ->once();
 
-        $driver->shouldReceive('unserializeValue')
-               ->withArgs([TestModel::properties('id'), 1])
+        $driver->shouldReceive('getCreatedID')
+               ->withArgs([$newModel, 'id'])
                ->andReturn(1);
-
-        $driver->shouldReceive('unserializeValue')
-               ->withArgs([TestModel::properties('relation'), null])
-               ->andReturn(null);
-
-        $driver->shouldReceive('unserializeValue')
-               ->withArgs([TestModel::properties('answer'), 42])
-               ->andReturn(42);
 
         TestModel::setDriver($driver);
 
@@ -725,14 +703,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->andReturn(true)
                ->once();
 
-        $driver->shouldReceive('unserializeValue')
-               ->andReturn('1');
-
         TestModel2::setDriver($driver);
 
         $newModel = new TestModel2();
         $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25]));
-        $this->assertEquals('1,1', $newModel->id());
+        $this->assertEquals('1,2', $newModel->id());
     }
 
     public function testCreateImmutable()
@@ -740,8 +715,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $newModel = new TestModel2();
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('unserializeValue');
 
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
@@ -767,22 +740,18 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateImmutableId()
     {
+        $newModel = new TestModel();
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->andReturn(true);
 
-        $driver->shouldReceive('unserializeValue')
+        $driver->shouldReceive('getCreatedID')
                ->andReturn(1);
 
         TestModel::setDriver($driver);
 
-        $pdo = Mockery::mock();
-        $pdo->shouldReceive('lastInsertId')
-            ->andReturn(1);
-        self::$app['pdo'] = $pdo;
-
-        $newModel = new TestModel();
         $this->assertTrue($newModel->create(['id' => 100]));
         $this->assertNotEquals(100, $newModel->id());
     }
@@ -1258,16 +1227,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
 
-        $driver->shouldReceive('unserializeValue')
-               ->andReturn(42);
-
         TestModel2::setDriver($driver);
 
         // load from the db first
-        $model->load(true);
+        $this->assertEquals($model, $model->load(true));
+        // load without skipping cache
+        $this->assertEquals($model, $model->load(false));
 
-        $this->assertEquals($model, $model->load());
-
+        // this should be a hit from the cache
         $this->assertEquals(42, $model->get('answer'));
     }
 
@@ -1282,9 +1249,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
-
-        $driver->shouldReceive('unserializeValue')
-               ->andReturn(42);
 
         TestModel2::setDriver($driver);
 
@@ -1310,9 +1274,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
-
-        $driver->shouldReceive('unserializeValue')
-               ->andReturn(42);
 
         TestModel2::setDriver($driver);
 
