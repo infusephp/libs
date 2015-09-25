@@ -154,7 +154,7 @@ class Query
      */
     public function where(array $where)
     {
-        $this->where = $where;
+        $this->where = array_merge($this->where, $where);
 
         return $this;
     }
