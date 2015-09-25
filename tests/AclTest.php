@@ -12,7 +12,7 @@ use infuse\Acl;
 
 require_once 'test_models.php';
 
-class AclTest extends \PHPUnit_Framework_TestCase
+class AclTest extends PHPUnit_Framework_TestCase
 {
     public static function setUpBeforeClass()
     {

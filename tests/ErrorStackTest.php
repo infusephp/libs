@@ -1,18 +1,18 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\ErrorStack;
 use infuse\Locale;
 use Pimple\Container;
 
-class ErrorStackTest extends \PHPUnit_Framework_TestCase
+class ErrorStackTest extends PHPUnit_Framework_TestCase
 {
     public static $app;
     public static $stack;
@@ -79,11 +79,11 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
 
         $errors = self::$stack->errors();
         $this->assertEquals(3, count($errors));
-        $this->assertEquals([ $expected1, $expected2, $expected3 ], $errors);
+        $this->assertEquals([$expected1, $expected2, $expected3], $errors);
 
         $errors = self::$stack->errors('user.create');
         $this->assertEquals(1, count($errors));
-        $this->assertEquals([ $expected2 ], $errors);
+        $this->assertEquals([$expected2], $errors);
     }
 
     /**
@@ -100,7 +100,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, count($messages));
         $this->assertEquals($expected, $messages);
 
-        $expected = [ 'Username is invalid' ];
+        $expected = ['Username is invalid'];
 
         $messages = self::$stack->messages('user.create');
         $this->assertEquals(1, count($messages));
@@ -152,7 +152,7 @@ class ErrorStackTest extends \PHPUnit_Framework_TestCase
             'context' => 'test.context',
             'params' => [],
             'message' => 'test_error', ];
-        $this->assertEquals([ $expected ], self::$stack->errors('test.context'));
+        $this->assertEquals([$expected], self::$stack->errors('test.context'));
     }
 
     /**

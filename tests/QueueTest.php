@@ -1,17 +1,17 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Queue;
 use Pimple\Container;
 
-class QueueTest extends \PHPUnit_Framework_TestCase
+class QueueTest extends PHPUnit_Framework_TestCase
 {
     public function testConfigure()
     {
@@ -37,7 +37,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($q->enqueue('test1', 'test string!'));
 
-        $this->assertTrue($q->enqueue('test2', [ 'does' => 'this', 'thing' => 'work?' ]));
+        $this->assertTrue($q->enqueue('test2', ['does' => 'this', 'thing' => 'work?']));
 
         $obj = new stdClass();
         $obj->name = 'test';
@@ -112,12 +112,12 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
-        $iron->shouldReceive('getMessages')->with('test1', 1)->andReturn([ [ 'id' => 'test', 'body' => 'message' ] ])->once();
+        $iron->shouldReceive('getMessages')->with('test1', 1)->andReturn([['id' => 'test', 'body' => 'message']])->once();
         $iron->shouldReceive('getMessages')->with('test2', 1)->andReturn([])->once();
         $c[ 'ironmq' ] = $iron;
         Queue::inject($c);
 
-        $this->assertEquals([ 'id' => 'test', 'body' => 'message' ], $q->dequeue('test1'));
+        $this->assertEquals(['id' => 'test', 'body' => 'message'], $q->dequeue('test1'));
 
         $this->assertEquals(null, $q->dequeue('test2'));
     }
@@ -200,9 +200,9 @@ class QueueTest extends \PHPUnit_Framework_TestCase
     {
         $q = new Queue(QUEUE_TYPE_SYNCHRONOUS, [
                 'test1' => [
-                    [ 'QueueMockController', 'receiveMessageListener1' ], ],
+                    ['QueueMockController', 'receiveMessageListener1'], ],
                 'test2' => [
-                    [ 'QueueMockController', 'receiveMessageListener2' ], ] ]);
+                    ['QueueMockController', 'receiveMessageListener2'], ], ]);
 
         $q->enqueue('test1', 'test');
         $this->assertInstanceOf('stdClass', QueueMockController::$test1Message);
@@ -230,11 +230,11 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
         $expected = [
             'test1' => [
-                [ 'url' => 'https://example.com/?q=test1&auth_token=testing' ],
-                [ 'url' => 'https://example.com/endpoint?q=test1&auth_token=testing' ], ],
+                ['url' => 'https://example.com/?q=test1&auth_token=testing'],
+                ['url' => 'https://example.com/endpoint?q=test1&auth_token=testing'], ],
             'test2' => [
-                [ 'url' => 'https://example.com/?q=test2&auth_token=testing' ],
-                [ 'url' => 'https://example.com/endpoint?q=test2&auth_token=testing' ], ], ];
+                ['url' => 'https://example.com/?q=test2&auth_token=testing'],
+                ['url' => 'https://example.com/endpoint?q=test2&auth_token=testing'], ], ];
         $this->assertEquals($expected, $q->pushQueueSubscribers());
     }
 
@@ -260,13 +260,13 @@ class QueueTest extends \PHPUnit_Framework_TestCase
         $iron->shouldReceive('updateQueue')->with('test1', [
             'push_type' => 'unicast',
             'subscribers' => [
-                [ 'url' => 'https://example.com/?q=test1&auth_token=testing' ],
-                [ 'url' => 'https://example.com/endpoint?q=test1&auth_token=testing' ], ] ])->andReturn(true)->once();
+                ['url' => 'https://example.com/?q=test1&auth_token=testing'],
+                ['url' => 'https://example.com/endpoint?q=test1&auth_token=testing'], ], ])->andReturn(true)->once();
         $iron->shouldReceive('updateQueue')->with('test2', [
             'push_type' => 'unicast',
             'subscribers' => [
-                [ 'url' => 'https://example.com/?q=test2&auth_token=testing' ],
-                [ 'url' => 'https://example.com/endpoint?q=test2&auth_token=testing' ], ] ])->andReturn(true)->once();
+                ['url' => 'https://example.com/?q=test2&auth_token=testing'],
+                ['url' => 'https://example.com/endpoint?q=test2&auth_token=testing'], ], ])->andReturn(true)->once();
         $c[ 'ironmq' ] = $iron;
         Queue::inject($c);
 

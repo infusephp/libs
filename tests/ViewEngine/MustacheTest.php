@@ -1,17 +1,17 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\ViewEngine;
 use infuse\View;
 
-class MustacheViewEngineTest extends \PHPUnit_Framework_TestCase
+class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
 {
     public static $engine;
 

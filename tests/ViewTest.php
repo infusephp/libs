@@ -1,18 +1,18 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\View;
 use infuse\ViewEngine;
 use Pimple\Container;
 
-class ViewTest extends \PHPUnit_Framework_TestCase
+class ViewTest extends PHPUnit_Framework_TestCase
 {
     public static $viewsDir;
 

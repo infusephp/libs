@@ -1,16 +1,16 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Locale;
 
-class LocaleTest extends \PHPUnit_Framework_TestCase
+class LocaleTest extends PHPUnit_Framework_TestCase
 {
     public static $locale;
 

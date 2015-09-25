@@ -1,17 +1,17 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Utility as U;
 use infuse\Validate;
 
-class ValidateTest extends \PHPUnit_Framework_TestCase
+class ValidateTest extends PHPUnit_Framework_TestCase
 {
     public function testAlpha()
     {
@@ -98,17 +98,17 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
         $match = 'notarray';
         $this->assertTrue(Validate::is($match, 'matching'));
 
-        $match = [ 'test', 'test' ];
+        $match = ['test', 'test'];
         $this->assertTrue(Validate::is($match, 'matching'));
         $this->assertEquals('test', $match);
 
-        $match = [ 'test', 'test', 'test', 'test' ];
+        $match = ['test', 'test', 'test', 'test'];
         $this->assertTrue(Validate::is($match, 'matching'));
         $this->assertEquals('test', $match);
 
-        $notmatching = [ 'test', 'nope' ];
+        $notmatching = ['test', 'nope'];
         $this->assertFalse(Validate::is($notmatching, 'matching'));
-        $this->assertEquals([ 'test', 'nope' ], $notmatching);
+        $this->assertEquals(['test', 'nope'], $notmatching);
     }
 
     public function testNumeric()
@@ -128,7 +128,7 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
     public function testPassword()
     {
         $salt = 'saltvalue';
-        Validate::configure([ 'salt' => $salt ]);
+        Validate::configure(['salt' => $salt]);
 
         $password = 'testpassword';
         $this->assertTrue(Validate::is($password, 'password:8'));
@@ -211,7 +211,7 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
 
     public function testMultipleRequirements()
     {
-        $t = [ 'test', 'test' ];
+        $t = ['test', 'test'];
         $this->assertTrue(Validate::is($t, 'matching|string:2'));
         $this->assertEquals('test', $t);
     }
@@ -219,7 +219,7 @@ class ValidateTest extends \PHPUnit_Framework_TestCase
     public function testKeyValueRequirements()
     {
         $test = [
-            'test' => [ 'test', 'test' ],
+            'test' => ['test', 'test'],
             'test2' => 'alphanumer1c',
         ];
 

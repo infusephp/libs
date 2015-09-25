@@ -1,16 +1,16 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 use infuse\Utility as U;
 
-class UtilityTest extends \PHPUnit_Framework_TestCase
+class UtilityTest extends PHPUnit_Framework_TestCase
 {
     public function testArrayValue()
     {
@@ -27,7 +27,7 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals(U::array_value($a, 'test'), 2);
-        $this->assertEquals(U::array_value($a, 'test2.3.4'), [ 'asldfj' ]);
+        $this->assertEquals(U::array_value($a, 'test2.3.4'), ['asldfj']);
         $this->assertEquals(U::array_value($a, 'test2.5'), 1234);
 
         $this->assertNull(U::array_value($a, 'nonexistent'));
@@ -39,7 +39,7 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $a = [];
 
         U::array_set($a, '1.2.3.4.5', 'test');
-        $expected = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
+        $expected = ['1' => ['2' => ['3' => ['4' => ['5' => 'test']]]]];
         $this->assertEquals($expected, $a);
 
         U::array_set($a, 'test', 'ok?');
@@ -53,8 +53,8 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
 
     public function testArrayDot()
     {
-        $a = [ '1' => [ '2' => [ '3' => [ '4' => [ '5' => 'test' ] ] ] ] ];
-        $expected = [ '1.2.3.4.5' => 'test' ];
+        $a = ['1' => ['2' => ['3' => ['4' => ['5' => 'test']]]]];
+        $expected = ['1.2.3.4.5' => 'test'];
 
         $this->assertEquals($expected, U::array_dot($a));
 
@@ -93,8 +93,8 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
             U::encrypt_password($password, 'this is our salt', 123456), ];
 
         // test each combination once to ensure they are not equal
-        for ($i = 0; $i < count($test); $i++) {
-            for ($j = $i + 1; $j < count($test); $j++) {
+        for ($i = 0; $i < count($test); ++$i) {
+            for ($j = $i + 1; $j < count($test); ++$j) {
                 $this->assertTrue($test[ $i ] != $test[ $j ]);
             }
         }

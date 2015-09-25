@@ -13,7 +13,7 @@ use infuse\Model\Iterator;
 
 require_once 'tests/test_models.php';
 
-class IteratorTest extends \PHPUnit_Framework_TestCase
+class IteratorTest extends PHPUnit_Framework_TestCase
 {
     public static $app;
     public static $originalDriver;
