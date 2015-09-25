@@ -8,15 +8,12 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model;
 use infuse\Model\Iterator;
 
 require_once 'tests/test_models.php';
 
 class IteratorTest extends PHPUnit_Framework_TestCase
 {
-    public static $app;
-    public static $originalDriver;
     public static $driver;
     public static $iterator;
     public static $start = 10;
@@ -24,14 +21,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        // set up DI
-        self::$app = new \Pimple\Container();
-        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
-
-        Model::inject(self::$app);
-
-        self::$originalDriver = IteratorTestModel::getDriver();
-
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('queryModels')
@@ -54,11 +43,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         self::$iterator = new Iterator('IteratorTestModel', [
             'start' => self::$start,
             'limit' => self::$limit, ]);
-    }
-
-    public static function tearDownAfterClass()
-    {
-        IteratorTestModel::setDriver(self::$originalDriver);
     }
 
     public function testConstructSearch()

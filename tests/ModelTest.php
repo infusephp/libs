@@ -11,6 +11,7 @@
 use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
+use Pimple\Container;
 
 require_once 'test_models.php';
 
@@ -23,14 +24,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         // set up DI
-        self::$app = new \Pimple\Container();
+        self::$app = new Container();
         self::$app['locale'] = function () {
             return new Locale();
         };
         self::$app['errors'] = function ($app) {
             return new ErrorStack($app);
         };
-        self::$app['db'] = Mockery::mock('JAQB\\QueryBuilder');
 
         Model::inject(self::$app);
 
@@ -370,24 +370,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(isset($model->test));
     }
 
-    public function testInfo()
-    {
-        $expected = [
-            'model' => 'TestModel',
-            'class_name' => 'TestModel',
-            'singular_key' => 'test_model',
-            'plural_key' => 'test_models',
-            'proper_name' => 'Test Model',
-            'proper_name_plural' => 'Test Models', ];
-
-        $this->assertEquals($expected, TestModel::info());
-    }
-
-    public function testTablename()
-    {
-        $this->assertEquals('TestModels', TestModel::tablename());
-    }
-
     public function testHasNoId()
     {
         $model = new TestModel();
@@ -401,12 +383,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(TestModel2::isIdProperty('id2'));
     }
 
-    public function testDefaultDriver()
-    {
-        $driver = TestModel::getDriver();
-        $this->assertInstanceOf('infuse\\Model\\Driver\\DatabaseDriver', $driver);
-    }
-
     public function testDriver()
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
@@ -417,6 +393,19 @@ class ModelTest extends PHPUnit_Framework_TestCase
         // setting the driver for a single model sets
         // the driver for all models
         $this->assertEquals($driver, TestModel2::getDriver());
+    }
+
+    public function testModelName()
+    {
+        $this->assertEquals('TestModel', TestModel::modelName());
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver->shouldReceive('getTablename')
+               ->withArgs(['TestModel'])
+               ->andReturn('TestModels');
+        TestModel::setDriver($driver);
+
+        $this->assertEquals('TestModels', TestModel::tablename());
     }
 
     public function testGetMultipleProperties()

@@ -6,18 +6,6 @@ require_once 'tests/test_models.php';
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {
-    public static $originalDriver;
-
-    public static function setUpBeforeClass()
-    {
-        self::$originalDriver = Person::getDriver();
-    }
-
-    public static function tearDownAfterClass()
-    {
-        Person::setDriver(self::$originalDriver);
-    }
-
     public function testLimit()
     {
         $query = new Query('Person');

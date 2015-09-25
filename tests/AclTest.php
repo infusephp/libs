@@ -9,6 +9,7 @@
  * @license MIT
  */
 use infuse\Acl;
+use infuse\Model;
 
 require_once 'test_models.php';
 
@@ -17,7 +18,7 @@ class AclTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-        TestModel::setDriver($driver);
+        Model::setDriver($driver);
     }
 
     public function testRequester()

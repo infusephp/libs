@@ -112,10 +112,6 @@ if (!defined('VALIDATION_NOT_UNIQUE')) {
 
 abstract class Model extends Acl implements \ArrayAccess
 {
-    /////////////////////////////
-    // CONSTANTS
-    /////////////////////////////
-
     const IMMUTABLE = 0;
     const MUTABLE_CREATE_ONLY = 1;
     const MUTABLE = 2;
@@ -262,37 +258,6 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     private $_cacheTTL;
 
-    /////////////////////////////
-    // GLOBAL CONFIGURATION
-    /////////////////////////////
-
-    /**
-     * Changes the default model settings.
-     *
-     * @param array $config
-     */
-    public static function configure(array $config)
-    {
-        // TODO deprecate this function
-        if (isset($config['cache']) && isset($config['cache']['expires'])) {
-            static::$cacheTTL = $config['cache']['expires'];
-        }
-
-        if (isset($config['requester'])) {
-            static::setRequester($config['requester']);
-        }
-    }
-
-    /**
-     * Injects a DI container.
-     *
-     * @param \Pimple\Container $app
-     */
-    public static function inject(Container $app)
-    {
-        self::$injectedApp = $app;
-    }
-
     /**
      * Creates a new model object.
      *
@@ -326,6 +291,66 @@ abstract class Model extends Acl implements \ArrayAccess
         if (count($values) > 0) {
             $this->loadFromStorage($values)->cache();
         }
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function configure(array $config)
+    {
+        if (isset($config['cache']) && isset($config['cache']['expires'])) {
+            static::$cacheTTL = $config['cache']['expires'];
+        }
+
+        if (isset($config['requester'])) {
+            static::setRequester($config['requester']);
+        }
+    }
+
+    /**
+     * Injects a DI container.
+     *
+     * @param \Pimple\Container $app
+     */
+    public static function inject(Container $app)
+    {
+        self::$injectedApp = $app;
+    }
+
+    /**
+     * Gets the DI container used for this model.
+     *
+     * @return Container
+     */
+    public function getApp()
+    {
+        return $this->app;
+    }
+
+    /**
+     * Sets the driver for all models.
+     *
+     * @param Model\Driver\DriverInterface $driver
+     */
+    public static function setDriver(DriverInterface $driver)
+    {
+        self::$driver = $driver;
+    }
+
+    /**
+     * Gets the driver for all models.
+     *
+     * @return Model\Driver\DriverInterface
+     */
+    public static function getDriver()
+    {
+        // use the DatabaseDriver by default
+        // TODO deprecated
+        if (!self::$driver) {
+            self::$driver = new Model\Driver\DatabaseDriver(self::$injectedApp['db'], self::$injectedApp);
+        }
+
+        return self::$driver;
     }
 
     /////////////////////////////
@@ -424,79 +449,7 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /////////////////////////////
-    // MODEL PROPERTIES
-    /////////////////////////////
-
-    /**
-     * Gets the model identifier(s).
-     *
-     * @param bool $keyValue return key-value array of id
-     *
-     * @return array|string key-value if specified, otherwise comma-separated id string
-     */
-    public function id($keyValue = false)
-    {
-        if (!$keyValue) {
-            return $this->_id;
-        }
-
-        $idProperties = (array) static::idProperty();
-
-        // get id(s) into key-value format
-        $return = [];
-
-        // match up id values from comma-separated id string with property names
-        $ids = explode(',', $this->_id);
-        $ids = array_reverse($ids);
-
-        // TODO need to store the id as an array
-        // instead of a string to maintain type integrity
-        foreach ($idProperties as $k => $f) {
-            $id = (count($ids) > 0) ? array_pop($ids) : false;
-
-            $return[$f] = $id;
-        }
-
-        return $return;
-    }
-
-    /**
-     * Gets the DI container used for this model.
-     *
-     * @return Container
-     */
-    public function getApp()
-    {
-        return $this->app;
-    }
-
-    /**
-     * Gets the model object corresponding to a relation
-     * WARNING no check is used to see if the model returned actually exists.
-     *
-     * @param string $property property
-     *
-     * @return Object|false model
-     */
-    public function relation($property)
-    {
-        $properties = static::properties();
-
-        if (!static::hasProperty($property) || !isset($properties[$property]['relation'])) {
-            return false;
-        }
-
-        $relationModelName = $properties[$property]['relation'];
-
-        if (!isset($this->_relationModels[$property])) {
-            $this->_relationModels[$property] = new $relationModelName($this->$property);
-        }
-
-        return $this->_relationModels[$property];
-    }
-
-    /////////////////////////////
-    // STATIC MODEL PROPERTIES
+    // Model Properties
     /////////////////////////////
 
     /**
@@ -525,46 +478,11 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * Generates metadata about the model.
-     *
-     * @return array
-     */
-    public static function metadata()
-    {
-        $class_name = get_called_class();
-        $modelName = static::modelName();
-
-        $inflector = Inflector::get();
-        $singularKey = $inflector->underscore($modelName);
-        $pluralKey = $inflector->pluralize($singularKey);
-
-        return [
-            'model' => $modelName,
-            'class_name' => $class_name,
-            'singular_key' => $singularKey,
-            'plural_key' => $pluralKey,
-            'proper_name' => $inflector->titleize($singularKey),
-            'proper_name_plural' => $inflector->titleize($pluralKey), ];
-    }
-
-    /**
      * @deprecated
-     */
-    public static function info()
-    {
-        return static::metadata();
-    }
-
-    /**
-     * Generates the tablename for the model.
-     *
-     * @return string
      */
     public static function tablename()
     {
-        $inflector = Inflector::get();
-
-        return $inflector->camelize($inflector->pluralize(static::modelName()));
+        return self::getDriver()->getTablename(get_called_class());
     }
 
     /**
@@ -642,37 +560,41 @@ abstract class Model extends Acl implements \ArrayAccess
                $property == $idProperty;
     }
 
-    /////////////////////////////
-    // DRIVERS
-    /////////////////////////////
-
     /**
-     * Sets the driver for all models.
+     * Gets the model identifier(s).
      *
-     * @param Model\Driver\DriverInterface $driver
-     */
-    public static function setDriver(DriverInterface $driver)
-    {
-        self::$driver = $driver;
-    }
-
-    /**
-     * Gets the driver for all models.
+     * @param bool $keyValue return key-value array of id
      *
-     * @return Model\Driver\DriverInterface
+     * @return array|string key-value if specified, otherwise comma-separated id string
      */
-    public static function getDriver()
+    public function id($keyValue = false)
     {
-        // use the DatabaseDriver by default
-        if (!self::$driver) {
-            self::$driver = new Model\Driver\DatabaseDriver(self::$injectedApp['db'], self::$injectedApp);
+        if (!$keyValue) {
+            return $this->_id;
         }
 
-        return self::$driver;
+        $idProperties = (array) static::idProperty();
+
+        // get id(s) into key-value format
+        $return = [];
+
+        // match up id values from comma-separated id string with property names
+        $ids = explode(',', $this->_id);
+        $ids = array_reverse($ids);
+
+        // TODO need to store the id as an array
+        // instead of a string to maintain type integrity
+        foreach ($idProperties as $k => $f) {
+            $id = (count($ids) > 0) ? array_pop($ids) : false;
+
+            $return[$f] = $id;
+        }
+
+        return $return;
     }
 
     /////////////////////////////
-    // CRUD OPERATIONS
+    // CRUD Operations
     /////////////////////////////
 
     /**
@@ -1053,7 +975,7 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /////////////////////////////
-    // MODEL LOOKUPS
+    // Queries
     /////////////////////////////
 
     /**
@@ -1236,8 +1158,33 @@ abstract class Model extends Acl implements \ArrayAccess
         return $this;
     }
 
+    /**
+     * Gets the model object corresponding to a relation
+     * WARNING no check is used to see if the model returned actually exists.
+     *
+     * @param string $property property
+     *
+     * @return Object|false model
+     */
+    public function relation($property)
+    {
+        $properties = static::properties();
+
+        if (!static::hasProperty($property) || !isset($properties[$property]['relation'])) {
+            return false;
+        }
+
+        $relationModelName = $properties[$property]['relation'];
+
+        if (!isset($this->_relationModels[$property])) {
+            $this->_relationModels[$property] = new $relationModelName($this->$property);
+        }
+
+        return $this->_relationModels[$property];
+    }
+
     /////////////////////////////
-    // CACHE
+    // Caching
     /////////////////////////////
 
     /**
@@ -1375,7 +1322,7 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /////////////////////////////
-    // PRIVATE METHODS
+    // Validation
     /////////////////////////////
 
     /**

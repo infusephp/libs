@@ -20,7 +20,7 @@ class ErrorStackTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::$app = new Container();
-        self::$app[ 'locale' ] = new Locale();
+        self::$app['locale'] = new Locale();
         self::$stack = new ErrorStack(self::$app);
     }
 

@@ -9,17 +9,35 @@ require_once 'tests/test_models.php';
 
 class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 {
+    public static $db;
+
+    public static function setUpBeforeClass()
+    {
+        self::$db = Mockery::mock('JAQB\\QueryBuilder');
+
+        $driver = new DatabaseDriver(self::$db);
+        Model::setDriver($driver);
+    }
+
     public function testDatabase()
     {
-        $db = Mockery::mock('JAQB\\QueryBuilder');
-        $driver = new DatabaseDriver($db);
-        $this->assertEquals($db, $driver->getDatabase());
+        $driver = new DatabaseDriver(self::$db);
+        $this->assertEquals(self::$db, $driver->getDatabase());
+    }
+
+    public function testTablename()
+    {
+        $driver = new DatabaseDriver(self::$db);
+
+        $this->assertEquals('TestModels', $driver->getTablename('TestModel'));
+
+        $model = new TestModel(4);
+        $this->assertEquals('TestModels', $driver->getTablename($model));
     }
 
     public function testSerializeValue()
     {
-        $db = Mockery::mock('JAQB\\QueryBuilder');
-        $driver = new DatabaseDriver($db);
+        $driver = new DatabaseDriver(self::$db);
 
         $this->assertEquals('string', $driver->serializeValue('string'));
 
@@ -29,8 +47,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testUnserializeValue()
     {
-        $db = Mockery::mock('JAQB\\QueryBuilder');
-        $driver = new DatabaseDriver($db);
+        $driver = new DatabaseDriver(self::$db);
 
         $property = ['null' => true];
         $this->assertEquals(null, $driver->unserializeValue($property, ''));

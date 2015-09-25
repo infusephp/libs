@@ -2,6 +2,7 @@
 
 namespace infuse\Model\Driver;
 
+use ICanBoogie\Inflector;
 use infuse\Model;
 use infuse\Model\Query;
 use JAQB\QueryBuilder;
@@ -47,7 +48,7 @@ class DatabaseDriver implements DriverInterface
 
         try {
             return $this->db->insert($values)
-                ->into($model::tablename())
+                ->into($this->getTablename($model))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
@@ -71,7 +72,7 @@ class DatabaseDriver implements DriverInterface
     {
         try {
             $row = $this->db->select('*')
-                ->from($model::tablename())
+                ->from($this->getTablename($model))
                 ->where($model->id(true))
                 ->one();
 
@@ -96,7 +97,7 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
 
         try {
-            return $this->db->update($model::tablename())
+            return $this->db->update($this->getTablename($model))
                 ->values($values)
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
@@ -110,7 +111,7 @@ class DatabaseDriver implements DriverInterface
     public function deleteModel(Model $model)
     {
         try {
-            return $this->db->delete($model::tablename())
+            return $this->db->delete($this->getTablename($model))
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
@@ -124,7 +125,7 @@ class DatabaseDriver implements DriverInterface
     {
         try {
             return (int) $this->db->select('count(*)')
-                ->from($model::tablename())
+                ->from($this->getTablename($model))
                 ->where($criteria)
                 ->scalar();
         } catch (PDOException $e) {
@@ -138,7 +139,7 @@ class DatabaseDriver implements DriverInterface
     {
         try {
             $data = $this->db->select('*')
-                ->from($model::tablename())
+                ->from($this->getTablename($model))
                 ->where($query->getWhere())
                 ->limit($query->getLimit(), $query->getStart())
                 ->orderBy($query->getSort())
@@ -155,6 +156,20 @@ class DatabaseDriver implements DriverInterface
         }
 
         return [];
+    }
+
+    /**
+     * Generates the tablename for the model.
+     *
+     * @param string|Model $model
+     *
+     * @return string
+     */
+    public function getTablename($model)
+    {
+        $inflector = Inflector::get();
+
+        return $inflector->camelize($inflector->pluralize($model::modelName()));
     }
 
     /**
