@@ -140,6 +140,21 @@ abstract class Model extends Acl implements \ArrayAccess
     /////////////////////////////
 
     /**
+     * @staticvar Model|false
+     */
+    protected static $requester;
+
+    /**
+     * @staticvar \Pimple\Container
+     */
+    protected static $injectedApp;
+
+    /**
+     * @staticvar int
+     */
+    protected static $cacheTTL = 0;
+
+    /**
      * @var number|string
      */
     protected $_id;
@@ -148,20 +163,6 @@ abstract class Model extends Acl implements \ArrayAccess
      * @var \Pimple\Container
      */
     protected $app;
-
-    /**
-     * @staticvar array
-     * Default model configuration
-     */
-    protected static $config = [
-        'cache' => [
-            'expires' => 0, ],
-        'requester' => false, ];
-
-    /**
-     * @staticvar \Pimple\Container
-     */
-    protected static $injectedApp;
 
     /**
      * @var \Stash\Pool
@@ -261,6 +262,11 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     private $_cacheItem;
 
+    /**
+     * @var int
+     */
+    private $_cacheTTL;
+
     /////////////////////////////
     // GLOBAL CONFIGURATION
     /////////////////////////////
@@ -272,17 +278,14 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public static function configure(array $config)
     {
-        static::$config = array_replace(static::$config, $config);
-    }
+        // TODO deprecate this function
+        if (isset($config['cache']) && isset($config['cache']['expires'])) {
+            static::$cacheTTL = $config['cache']['expires'];
+        }
 
-    /**
-     * Gets a config parameter.
-     *
-     * @return mixed
-     */
-    public static function getConfigValue($key)
-    {
-        return Utility::array_value(static::$config, $key);
+        if (isset($config['requester'])) {
+            static::setRequester($config['requester']);
+        }
     }
 
     /**
@@ -293,6 +296,27 @@ abstract class Model extends Acl implements \ArrayAccess
     public static function inject(Container $app)
     {
         self::$injectedApp = $app;
+    }
+
+    /**
+     * Sets the requester.
+     *
+     * @param Model $requester
+     */
+    public static function setRequester(Model $requester)
+    {
+        // TODO requester logic should be in the ACL and optional
+        static::$requester = $requester;
+    }
+
+    /**
+     * Gets the requester.
+     *
+     * @return Model|false
+     */
+    public static function getRequester()
+    {
+        return static::$requester;
     }
 
     /**
@@ -321,6 +345,8 @@ abstract class Model extends Acl implements \ArrayAccess
         if (self::$defaultCache) {
             $this->_cache = &self::$defaultCache;
         }
+
+        $this->setCacheTTL(self::$cacheTTL);
 
         // cache the loaded values
         if (count($values) > 0) {
@@ -690,7 +716,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('create', static::$config['requester'])) {
+        if (!$this->can('create', static::$requester)) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
@@ -947,7 +973,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('edit', static::$config['requester'])) {
+        if (!$this->can('edit', static::$requester)) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
@@ -1020,7 +1046,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('delete', static::$config['requester'])) {
+        if (!$this->can('delete', static::$requester)) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
@@ -1277,15 +1303,27 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
+     * Sets the cache TTL.
+     *
+     * @param int $expires
+     *
+     * @return self
+     */
+    public function setCacheTTL($expires)
+    {
+        $this->_cacheTTL = $expires;
+
+        return $this;
+    }
+
+    /**
      * Returns the cache TTL.
      *
-     * @return number|null
+     * @return int|null
      */
     public function getCacheTTL()
     {
-        $expires = static::$config['cache']['expires'];
-
-        return ($expires < 1) ? null : $expires;
+        return ($this->_cacheTTL < 1) ? null : $this->_cacheTTL;
     }
 
     /**

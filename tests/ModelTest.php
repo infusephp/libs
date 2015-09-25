@@ -35,8 +35,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         Model::inject(self::$app);
 
         self::$requester = new Person(1);
-
-        Model::configure(['requester' => self::$requester]);
+        Model::setRequester(self::$requester);
 
         self::$defaultDriver = TestModel::getDriver();
     }
@@ -44,18 +43,19 @@ class ModelTest extends PHPUnit_Framework_TestCase
     protected function tearDown()
     {
         Model::inject(self::$app);
+        TestModel::setRequester(self::$requester);
         TestModel::setDriver(self::$defaultDriver);
         TestModel2::setDriver(self::$defaultDriver);
     }
 
     public function testConfigure()
     {
-        TestModel::configure([
-            'test' => 123,
-            'test2' => 12345, ]);
+        $requester = new Person(3);
+        TestModel::configure(['requester' => $requester, 'cache' => ['expires' => 2]]);
 
-        $this->assertEquals(123, TestModel::getConfigValue('test'));
-        $this->assertEquals(12345, TestModel::getConfigValue('test2'));
+        $this->assertEquals($requester, TestModel::getRequester());
+        $model = new TestModel(3);
+        $this->assertEquals(2, $model->getCacheTTL());
     }
 
     public function testInjectContainer()
@@ -65,6 +65,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel();
         $this->assertEquals($c, $model->getApp());
+    }
+
+    public function testRequester()
+    {
+        $requester = new Person(2);
+        TestModel::setRequester($requester);
+        $this->assertEquals($requester, TestModel::getRequester());
     }
 
     public function testProperties()
