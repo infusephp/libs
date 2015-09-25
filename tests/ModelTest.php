@@ -67,13 +67,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($c, $model->getApp());
     }
 
-    public function testRequester()
-    {
-        $requester = new Person(2);
-        TestModel::setRequester($requester);
-        $this->assertEquals($requester, TestModel::getRequester());
-    }
-
     public function testProperties()
     {
         $expected = [

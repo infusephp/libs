@@ -1,5 +1,6 @@
 <?php
 
+use infuse\Acl;
 use infuse\Model;
 
 class TestModel extends Model
@@ -227,5 +228,26 @@ class IteratorTestModel extends Model
     protected function hasPermission($permission, Model $requester)
     {
         return true;
+    }
+}
+
+class AclObject extends Acl
+{
+    public $first = true;
+
+    protected function hasPermission($permission, Model $requester)
+    {
+        if ($permission == 'whatever') {
+            // always say no the first time
+            if ($this->first) {
+                $this->first = false;
+
+                return false;
+            }
+
+            return true;
+        } elseif ($permission == 'do nothing') {
+            return $requester->id() == 5;
+        }
     }
 }

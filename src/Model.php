@@ -140,11 +140,6 @@ abstract class Model extends Acl implements \ArrayAccess
     /////////////////////////////
 
     /**
-     * @staticvar Model|false
-     */
-    protected static $requester;
-
-    /**
      * @staticvar \Pimple\Container
      */
     protected static $injectedApp;
@@ -296,27 +291,6 @@ abstract class Model extends Acl implements \ArrayAccess
     public static function inject(Container $app)
     {
         self::$injectedApp = $app;
-    }
-
-    /**
-     * Sets the requester.
-     *
-     * @param Model $requester
-     */
-    public static function setRequester(Model $requester)
-    {
-        // TODO requester logic should be in the ACL and optional
-        static::$requester = $requester;
-    }
-
-    /**
-     * Gets the requester.
-     *
-     * @return Model|false
-     */
-    public static function getRequester()
-    {
-        return static::$requester;
     }
 
     /**
@@ -716,7 +690,9 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('create', static::$requester)) {
+        // TODO permission system should be optional for models
+        // by extending Acl instead of Model
+        if (!$this->can('create', static::getRequester())) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
@@ -973,7 +949,9 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('edit', static::$requester)) {
+        // TODO permission system should be optional for models
+        // by extending Acl instead of Model
+        if (!$this->can('edit', static::getRequester())) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
@@ -1046,7 +1024,9 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // permission?
-        if (!$this->can('delete', static::$requester)) {
+        // TODO permission system should be optional for models
+        // by extending Acl instead of Model
+        if (!$this->can('delete', static::getRequester())) {
             $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
 
             return false;
