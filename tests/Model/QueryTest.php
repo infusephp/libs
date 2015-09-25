@@ -4,6 +4,12 @@ use infuse\Model\Query;
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {
+    public function testGetModel()
+    {
+        $query = new Query('TestModel');
+        $this->assertEquals('TestModel', $query->getModel());
+    }
+
     public function testLimit()
     {
         $query = new Query();
@@ -60,7 +66,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         ];
 
         $driver->shouldReceive('queryModels')
-               ->withArgs(['Person', $query])
+               ->withArgs([$query])
                ->andReturn($data);
 
         Person::setDriver($driver);
@@ -94,6 +100,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         ];
 
         $driver->shouldReceive('queryModels')
+               ->withArgs([$query])
                ->andReturn($data);
 
         Person::setDriver($driver);

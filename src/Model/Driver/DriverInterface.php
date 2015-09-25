@@ -57,22 +57,20 @@ interface DriverInterface
     public function deleteModel(Model $model);
 
     /**
-     * Gets the toal number of records matching an optional criteria.
+     * Gets the toal number of records matching the given query.
      *
-     * @param string $modelClass
-     * @param array  $criteria   parameters to match
+     * @param \infuse\Model\Query $query
      *
      * @return int total
      */
-    public function totalRecords($modelClass, array $criteria);
+    public function totalRecords(Query $query);
 
     /**
      * Performs a query to find models of the given type.
      *
-     * @param string              $modelClass
      * @param \infuse\Model\Query $query
      *
      * @return array raw data from storage
      */
-    public function queryModels($modelClass, Query $query);
+    public function queryModels(Query $query);
 }

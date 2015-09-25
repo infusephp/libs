@@ -34,10 +34,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         Model::inject(self::$app);
 
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        Model::setDriver($driver);
+        self::$defaultDriver = $driver;
+
         self::$requester = new Person(1);
         Model::setRequester(self::$requester);
-
-        self::$defaultDriver = TestModel::getDriver();
     }
 
     protected function tearDown()
@@ -745,10 +747,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $errorStack = self::$app['errors']->clear();
 
+        $query = TestModel2::query();
+        TestModel2::setQuery($query);
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', ['unique' => 'fail']])
                ->andReturn(1);
 
         TestModel2::setDriver($driver);
@@ -764,6 +768,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         // verify error
         $this->assertCount(1, $errorStack->errors());
+
+        $this->assertEquals(['unique' => 'fail'], $query->getWhere());
     }
 
     public function testCreateInvalid()
@@ -877,10 +883,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUnique()
     {
+        $query = TestModel2::query();
+        TestModel2::setQuery($query);
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', ['unique' => 'works']])
                ->andReturn(0);
 
         $driver->shouldReceive('loadModel');
@@ -892,6 +900,9 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel2(12);
         $this->assertTrue($model->set('unique', 'works'));
+
+        // validate query where statement
+        $this->assertEquals(['unique' => 'works'], $query->getWhere());
     }
 
     public function testSetUniqueSkip()
@@ -989,6 +1000,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
     // MODEL LOOKUPS
     /////////////////////////////
 
+    public function testQuery()
+    {
+        $query = TestModel::query();
+
+        $this->assertInstanceOf('infuse\\Model\\Query', $query);
+        $this->assertEquals('TestModel', $query->getModel());
+    }
+
     public function testFindAll()
     {
         $all = TestModel::findAll();
@@ -1016,7 +1035,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
               ->andReturn(['test' => true]);
 
         $query->shouldReceive('execute')
-              ->withArgs(['TestModel'])
               ->andReturn(['result']);
 
         $params = [
@@ -1060,7 +1078,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
               ->withArgs([['test' => true]]);
 
         $query->shouldReceive('first')
-              ->withArgs(['TestModel'])
               ->andReturn('result');
 
         $params = [
@@ -1076,28 +1093,36 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testTotalRecords()
     {
+        $query = TestModel2::query();
+        TestModel2::setQuery($query);
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', ['name' => 'John']])
                ->andReturn(1);
 
         TestModel2::setDriver($driver);
 
         $this->assertEquals(1, TestModel2::totalRecords(['name' => 'John']));
+
+        $this->assertEquals(['name' => 'John'], $query->getWhere());
     }
 
     public function testTotalRecordsNoCriteria()
     {
+        $query = TestModel2::query();
+        TestModel2::setQuery($query);
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
-               ->withArgs(['TestModel2', []])
                ->andReturn(2);
 
         TestModel2::setDriver($driver);
 
         $this->assertEquals(2, TestModel2::totalRecords());
+
+        $this->assertEquals([], $query->getWhere());
     }
 
     public function testExists()

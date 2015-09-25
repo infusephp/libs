@@ -41,7 +41,7 @@ abstract class Relation
 
         $this->relation = $relation;
 
-        $this->query = new Query();
+        $this->query = new Query($this->model);
         $this->initQuery();
     }
 

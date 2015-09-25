@@ -22,7 +22,7 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('queryModels')
-               ->andReturnUsing(function ($model, $query) {
+               ->andReturnUsing(function ($query) {
                     $range = range($query->getStart(), $query->getStart() + $query->getLimit() - 1);
 
                     foreach ($range as &$i) {

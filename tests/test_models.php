@@ -2,6 +2,7 @@
 
 use infuse\Acl;
 use infuse\Model;
+use infuse\Model\Query;
 
 class TestModel extends Model
 {
@@ -21,6 +22,8 @@ class TestModel extends Model
     ];
     public $preDelete;
     public $postDelete;
+
+    public static $query;
 
     protected static function propertiesHook()
     {
@@ -79,6 +82,22 @@ class TestModel extends Model
         if (!isset($exclude[ 'toArray' ])) {
             $result[ 'toArray' ] = true;
         }
+    }
+
+    public static function query()
+    {
+        if ($query = self::$query) {
+            self::$query = false;
+
+            return $query;
+        }
+
+        return parent::query();
+    }
+
+    public static function setQuery(Query $query)
+    {
+        self::$query = $query;
     }
 
     protected function uppercase($value)
@@ -147,6 +166,8 @@ class TestModel2 extends Model
 
     public static $autoTimestamps;
 
+    public static $query;
+
     protected function hasPermission($permission, Model $requester)
     {
         return true;
@@ -162,6 +183,22 @@ class TestModel2 extends Model
     public static function idProperty()
     {
         return ['id', 'id2'];
+    }
+
+    public static function query()
+    {
+        if ($query = self::$query) {
+            self::$query = false;
+
+            return $query;
+        }
+
+        return parent::query();
+    }
+
+    public static function setQuery(Query $query)
+    {
+        self::$query = $query;
     }
 }
 

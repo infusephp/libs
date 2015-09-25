@@ -15,7 +15,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     /**
      * @var string
      */
-    private $modelClass;
+    private $model;
 
     /**
      * @var int
@@ -63,12 +63,12 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $max;
 
     /**
-     * @param string $modelClass
+     * @param string $model
      * @param array  $parameters
      */
-    public function __construct($modelClass, array $parameters = [])
+    public function __construct($model, array $parameters = [])
     {
-        $this->modelClass = $modelClass;
+        $this->model = $model;
         $this->models = [];
 
         $this->start = (isset($parameters['start'])) ? $parameters['start'] : 0;
@@ -81,7 +81,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         if (!empty($parameters['search'])) {
             $w = [];
             $search = addslashes($parameters['search']);
-            foreach ($modelClass::properties() as $name => $property) {
+            foreach ($model::properties() as $name => $property) {
                 if ($property['searchable']) {
                     $w[] = "`$name` LIKE '%$search%'";
                 }
@@ -93,7 +93,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         }
 
         if (empty($this->sort)) {
-            $idProperties = (array) $modelClass::idProperty();
+            $idProperties = (array) $model::idProperty();
             foreach ($idProperties as $k => $property) {
                 $idProperties[$k] .= ' ASC';
             }
@@ -250,13 +250,14 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     {
         $start = $this->rangeStart($this->pointer, $this->limit);
         if ($this->loadedStart !== $start) {
-            $query = new Query();
+            $model = $this->model;
+            $query = $model::query();
             $query->where($this->where)
                   ->start($start)
                   ->limit($this->limit)
                   ->sort($this->sort);
 
-            $this->models = $query->execute($this->modelClass);
+            $this->models = $query->execute($this->model);
             $this->loadedStart = $start;
 
             return true;
@@ -279,7 +280,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
             return;
         }
 
-        $model = $this->modelClass;
+        $model = $this->model;
         $count = $model::totalRecords($this->where);
 
         // Often when iterating over models they are

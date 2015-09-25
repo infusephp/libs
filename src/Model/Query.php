@@ -32,12 +32,26 @@ class Query
      */
     private $sort;
 
-    public function __construct()
+    /**
+     * @param string $model model class
+     */
+    public function __construct($model = false)
     {
+        $this->model = $model;
         $this->where = [];
         $this->start = 0;
         $this->limit = self::DEFAULT_LIMIT;
         $this->sort = [];
+    }
+
+    /**
+     * Gets the model class associated with this query.
+     *
+     * @return string
+     */
+    public function getModel()
+    {
+        return $this->model;
     }
 
     /**
@@ -158,15 +172,18 @@ class Query
     /**
      * Executes the query against the model's driver.
      *
-     * @param string $model model class
-     * @param array results
+     * @param string $model optionalmodel class
+     *
+     * @return array results
      */
-    public function execute($model)
+    public function execute($model = false)
     {
+        $model = $model ? $model : $this->model;
+
         $driver = $model::getDriver();
 
         $models = [];
-        foreach ($driver->queryModels($model, $this) as $row) {
+        foreach ($driver->queryModels($this) as $row) {
             // determine the model id
             $id = false;
             $idProperty = $model::idProperty();
@@ -194,7 +211,7 @@ class Query
      *
      * @return \infuse\Model|null
      */
-    public function first($model)
+    public function first($model = false)
     {
         $models = $this->execute($model);
 

@@ -121,22 +121,10 @@ class DatabaseDriver implements DriverInterface
         return false;
     }
 
-    public function totalRecords($model, array $criteria)
+    public function queryModels(Query $query)
     {
-        try {
-            return (int) $this->db->select('count(*)')
-                ->from($this->getTablename($model))
-                ->where($criteria)
-                ->scalar();
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
+        $model = $query->getModel();
 
-        return 0;
-    }
-
-    public function queryModels($model, Query $query)
-    {
         try {
             $data = $this->db->select('*')
                 ->from($this->getTablename($model))
@@ -156,6 +144,20 @@ class DatabaseDriver implements DriverInterface
         }
 
         return [];
+    }
+
+    public function totalRecords(Query $query)
+    {
+        try {
+            return (int) $this->db->select('count(*)')
+                ->from($this->getTablename($query->getModel()))
+                ->where($query->getWhere())
+                ->scalar();
+        } catch (PDOException $e) {
+            $this->app['logger']->error($e);
+        }
+
+        return 0;
     }
 
     /**

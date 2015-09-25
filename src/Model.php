@@ -213,11 +213,6 @@ abstract class Model extends Acl implements \ArrayAccess
     ];
 
     /**
-     * @staticvar Model\Query
-     */
-    private static $query;
-
-    /**
      * @staticvar \Stash\Pool
      */
     private static $defaultCache;
@@ -982,6 +977,11 @@ abstract class Model extends Acl implements \ArrayAccess
     // Queries
     /////////////////////////////
 
+    public static function query()
+    {
+        return new Query(get_called_class());
+    }
+
     /**
      * Creates an iterator for a search.
      *
@@ -1004,11 +1004,9 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public static function find(array $parameters = [])
     {
-        if (self::$query) {
-            $query = self::$query;
-        } else {
-            $query = new Query();
-        }
+        // TODO deprecated
+
+        $query = static::query();
 
         if (isset($parameters['where'])) {
             $query->where($parameters['where']);
@@ -1027,8 +1025,8 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         return [
+            'models' => $query->execute(),
             'count' => static::totalRecords($query->getWhere()),
-            'models' => $query->execute(get_called_class()),
         ];
     }
 
@@ -1041,11 +1039,7 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public static function findOne(array $parameters)
     {
-        if (self::$query) {
-            $query = self::$query;
-        } else {
-            $query = new Query(get_called_class());
-        }
+        $query = static::query();
 
         if (isset($parameters['where'])) {
             $query->where($parameters['where']);
@@ -1061,7 +1055,7 @@ abstract class Model extends Acl implements \ArrayAccess
             $query->sort($parameters['sort']);
         }
 
-        return $query->first(get_called_class());
+        return $query->first();
     }
 
     /**
@@ -1073,7 +1067,10 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public static function totalRecords(array $where = [])
     {
-        return self::getDriver()->totalRecords(get_called_class(), $where);
+        $query = static::query();
+        $query->where($where);
+
+        return self::getDriver()->totalRecords($query);
     }
 
     /**
@@ -1084,16 +1081,6 @@ abstract class Model extends Acl implements \ArrayAccess
     public function exists()
     {
         return static::totalRecords($this->id(true)) == 1;
-    }
-
-    /**
-     * Used for testing queries.
-     *
-     * @param Model\Query $query
-     */
-    public static function setQuery(Query $query)
-    {
-        self::$query = $query;
     }
 
     /**

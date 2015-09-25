@@ -14,6 +14,6 @@ class HasOne extends Relation
 
     public function getResults()
     {
-        return $this->query->first($this->model);
+        return $this->query->first();
     }
 }

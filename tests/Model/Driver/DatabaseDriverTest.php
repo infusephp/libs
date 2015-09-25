@@ -277,6 +277,8 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testTotalRecords()
     {
+        $query = new Query('Person');
+
         // select query mock
         $scalar = Mockery::mock();
         $scalar->shouldReceive('scalar')
@@ -297,11 +299,13 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $driver = new DatabaseDriver($db);
         Person::setDriver($driver);
 
-        $this->assertEquals(1, $driver->totalRecords('Person', []));
+        $this->assertEquals(1, $driver->totalRecords($query));
     }
 
     public function testTotalRecordsFail()
     {
+        $query = new Query('Person');
+
         // select query mock
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('select->from->where->scalar')
@@ -316,7 +320,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $driver = new DatabaseDriver($db, $app);
         Person::setDriver($driver);
 
-        $this->assertEquals(0, $driver->totalRecords('Person', []));
+        $this->assertEquals(0, $driver->totalRecords($query));
     }
 
     public function testQueryModels()
@@ -355,7 +359,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $driver = new DatabaseDriver($db);
         Person::setDriver($driver);
 
-        $this->assertEquals([['test' => true]], $driver->queryModels('Person', $query));
+        $this->assertEquals([['test' => true]], $driver->queryModels($query));
     }
 
     public function testQueryModelsFail()
@@ -376,6 +380,6 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $driver = new DatabaseDriver($db, $app);
         Person::setDriver($driver);
 
-        $this->assertEquals([], $driver->queryModels('Person', $query));
+        $this->assertEquals([], $driver->queryModels($query));
     }
 }

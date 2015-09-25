@@ -13,6 +13,6 @@ class HasMany extends Relation
 
     public function getResults()
     {
-        return $this->query->execute($this->model);
+        return $this->query->execute();
     }
 }
