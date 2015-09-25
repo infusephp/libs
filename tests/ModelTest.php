@@ -453,30 +453,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('some default value', $model->get('default'));
     }
 
-    public function testRelation()
-    {
-        $model = new TestModel();
-        $model->relation = 2;
-
-        $relation = $model->relation('relation');
-        $this->assertInstanceOf('TestModel2', $relation);
-        $this->assertEquals(2, $relation->id());
-
-        // test if relation model is cached
-        $relation->test = 'hello';
-        $relation2 = $model->relation('relation');
-        $this->assertEquals('hello', $relation2->test);
-
-        // reset the relation
-        $model->relation = 3;
-        $this->assertEquals(3, $model->relation('relation')->id());
-
-        // check other methods for thorougness...
-        unset($model->relation);
-        $model->relation = 4;
-        $this->assertEquals(4, $model->relation('relation')->id());
-    }
-
     public function testToArray()
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
@@ -590,8 +566,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'relation.hidden',
                 'relation.person', ],
             [
-                'relation.person',
-                'answer', ]);
+                'relation.person', ]);
 
         $expected = [
             'answer' => 42,
@@ -1025,22 +1000,23 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $query = Mockery::mock('infuse\\Model\\Query');
 
-        $query->shouldReceive('setLimit')
+        $query->shouldReceive('limit')
               ->withArgs([10]);
 
-        $query->shouldReceive('setStart')
+        $query->shouldReceive('start')
               ->withArgs([5]);
 
-        $query->shouldReceive('setSort')
+        $query->shouldReceive('sort')
               ->withArgs(['name asc']);
 
-        $query->shouldReceive('setWhere')
+        $query->shouldReceive('where')
               ->withArgs([['test' => true]]);
 
         $query->shouldReceive('getWhere')
               ->andReturn(['test' => true]);
 
         $query->shouldReceive('execute')
+              ->withArgs(['TestModel'])
               ->andReturn(['result']);
 
         $params = [
@@ -1071,20 +1047,21 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $query = Mockery::mock('infuse\\Model\\Query');
 
-        $query->shouldReceive('setLimit')
+        $query->shouldReceive('limit')
               ->withArgs([1]);
 
-        $query->shouldReceive('setStart')
+        $query->shouldReceive('start')
               ->withArgs([5]);
 
-        $query->shouldReceive('setSort')
+        $query->shouldReceive('sort')
               ->withArgs(['name asc']);
 
-        $query->shouldReceive('setWhere')
+        $query->shouldReceive('where')
               ->withArgs([['test' => true]]);
 
-        $query->shouldReceive('execute')
-              ->andReturn(['result']);
+        $query->shouldReceive('first')
+              ->withArgs(['TestModel'])
+              ->andReturn('result');
 
         $params = [
             'where' => ['test' => true],
@@ -1147,6 +1124,86 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel2(12);
         $this->assertFalse($model->exists());
+    }
+
+    /////////////////////////////
+    // Relationships
+    /////////////////////////////
+
+    public function testRelation()
+    {
+        $model = new TestModel();
+        $model->relation = 2;
+
+        $relation = $model->relation('relation');
+        $this->assertInstanceOf('TestModel2', $relation);
+        $this->assertEquals(2, $relation->id());
+
+        // test if relation model is cached
+        $relation->test = 'hello';
+        $relation2 = $model->relation('relation');
+        $this->assertEquals('hello', $relation2->test);
+
+        // reset the relation
+        $model->relation = 3;
+        $this->assertEquals(3, $model->relation('relation')->id());
+
+        // check other methods for thorougness...
+        unset($model->relation);
+        $model->relation = 4;
+        $this->assertEquals(4, $model->relation('relation')->id());
+    }
+
+    public function testHasOne()
+    {
+        $model = new TestModel();
+
+        $relation = $model->hasOne('TestModel2');
+
+        $this->assertInstanceOf('infuse\\Model\\Relation\\HasOne', $relation);
+        $this->assertEquals('TestModel2', $relation->getModel());
+        $this->assertEquals('test_model_id', $relation->getForeignKey());
+        $this->assertEquals('id', $relation->getLocalKey());
+        $this->assertEquals($model, $relation->getRelation());
+    }
+
+    public function testBelongsTo()
+    {
+        $model = new TestModel();
+
+        $relation = $model->belongsTo('TestModel2');
+
+        $this->assertInstanceOf('infuse\\Model\\Relation\\BelongsTo', $relation);
+        $this->assertEquals('TestModel2', $relation->getModel());
+        $this->assertEquals('id', $relation->getForeignKey());
+        $this->assertEquals('test_model2_id', $relation->getLocalKey());
+        $this->assertEquals($model, $relation->getRelation());
+    }
+
+    public function testHasMany()
+    {
+        $model = new TestModel();
+
+        $relation = $model->hasMany('TestModel2');
+
+        $this->assertInstanceOf('infuse\\Model\\Relation\\HasMany', $relation);
+        $this->assertEquals('TestModel2', $relation->getModel());
+        $this->assertEquals('test_model_id', $relation->getForeignKey());
+        $this->assertEquals('id', $relation->getLocalKey());
+        $this->assertEquals($model, $relation->getRelation());
+    }
+
+    public function testBelongsToMany()
+    {
+        $model = new TestModel();
+
+        $relation = $model->belongsToMany('TestModel2');
+
+        $this->assertInstanceOf('infuse\\Model\\Relation\\BelongsToMany', $relation);
+        $this->assertEquals('TestModel2', $relation->getModel());
+        $this->assertEquals('id', $relation->getForeignKey());
+        $this->assertEquals('test_model2_id', $relation->getLocalKey());
+        $this->assertEquals($model, $relation->getRelation());
     }
 
     /////////////////////////////

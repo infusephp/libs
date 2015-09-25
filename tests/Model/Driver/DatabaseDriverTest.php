@@ -5,8 +5,6 @@ use infuse\Model\Driver\DatabaseDriver;
 use infuse\Model\Query;
 use Pimple\Container;
 
-require_once 'tests/test_models.php';
-
 class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 {
     public static $db;
@@ -324,10 +322,10 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
     public function testQueryModels()
     {
         $query = new Query('Person');
-        $query->setWhere(['id', 50, '>'])
-              ->setSort('name asc')
-              ->setLimit(5)
-              ->setStart(10);
+        $query->where(['id', 50, '>'])
+              ->sort('name asc')
+              ->limit(5)
+              ->start(10);
 
         // select query mock
         $all = Mockery::mock();

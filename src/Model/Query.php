@@ -32,12 +32,8 @@ class Query
      */
     private $sort;
 
-    /**
-     * @param string $model model class
-     */
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
         $this->where = [];
         $this->start = 0;
         $this->limit = self::DEFAULT_LIMIT;
@@ -51,7 +47,7 @@ class Query
      *
      * @return self
      */
-    public function setLimit($limit)
+    public function limit($limit)
     {
         $this->limit = min($limit, self::MAX_LIMIT);
 
@@ -75,7 +71,7 @@ class Query
      *
      * @return self
      */
-    public function setStart($start)
+    public function start($start)
     {
         $this->start = max($start, 0);
 
@@ -99,7 +95,7 @@ class Query
      *
      * @return self
      */
-    public function setSort($sort)
+    public function sort($sort)
     {
         $columns = explode(',', $sort);
 
@@ -142,7 +138,7 @@ class Query
      *
      * @return self
      */
-    public function setWhere(array $where)
+    public function where(array $where)
     {
         $this->where = $where;
 
@@ -162,18 +158,18 @@ class Query
     /**
      * Executes the query against the model's driver.
      *
-     * @return array result
+     * @param string $model model class
+     * @param array results
      */
-    public function execute()
+    public function execute($model)
     {
-        $modelClass = $this->model;
-        $driver = $modelClass::getDriver();
+        $driver = $model::getDriver();
 
         $models = [];
-        foreach ($driver->queryModels($modelClass, $this) as $row) {
+        foreach ($driver->queryModels($model, $this) as $row) {
             // determine the model id
             $id = false;
-            $idProperty = $modelClass::idProperty();
+            $idProperty = $model::idProperty();
             if (is_array($idProperty)) {
                 $id = [];
 
@@ -185,9 +181,23 @@ class Query
             }
 
             // create the model and cache the loaded values
-            $models[] = new $modelClass($id, $row);
+            $models[] = new $model($id, $row);
         }
 
         return $models;
+    }
+
+    /**
+     * Executes the query against the model's driver and returns the first result.
+     *
+     * @param string $model model class
+     *
+     * @return \infuse\Model|null
+     */
+    public function first($model)
+    {
+        $models = $this->execute($model);
+
+        return (count($models) > 0) ? $models[0] : null;
     }
 }

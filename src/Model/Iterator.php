@@ -250,13 +250,13 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     {
         $start = $this->rangeStart($this->pointer, $this->limit);
         if ($this->loadedStart !== $start) {
-            $query = new Query($this->modelClass);
-            $query->setWhere($this->where)
-                  ->setStart($start)
-                  ->setLimit($this->limit)
-                  ->setSort($this->sort);
+            $query = new Query();
+            $query->where($this->where)
+                  ->start($start)
+                  ->limit($this->limit)
+                  ->sort($this->sort);
 
-            $this->models = $query->execute();
+            $this->models = $query->execute($this->modelClass);
             $this->loadedStart = $start;
 
             return true;

@@ -93,6 +93,10 @@ use ICanBoogie\Inflector;
 use infuse\Model\Iterator;
 use infuse\Model\Driver\DriverInterface;
 use infuse\Model\Query;
+use infuse\Model\Relation\HasOne;
+use infuse\Model\Relation\BelongsTo;
+use infuse\Model\Relation\HasMany;
+use infuse\Model\Relation\BelongsToMany;
 use Pimple\Container;
 use Stash\Pool;
 use Stash\Item;
@@ -1003,28 +1007,28 @@ abstract class Model extends Acl implements \ArrayAccess
         if (self::$query) {
             $query = self::$query;
         } else {
-            $query = new Query(get_called_class());
+            $query = new Query();
         }
 
         if (isset($parameters['where'])) {
-            $query->setWhere($parameters['where']);
+            $query->where($parameters['where']);
         }
 
         if (isset($parameters['limit'])) {
-            $query->setLimit($parameters['limit']);
+            $query->limit($parameters['limit']);
         }
 
         if (isset($parameters['start'])) {
-            $query->setStart($parameters['start']);
+            $query->start($parameters['start']);
         }
 
         if (isset($parameters['sort'])) {
-            $query->setSort($parameters['sort']);
+            $query->sort($parameters['sort']);
         }
 
         return [
             'count' => static::totalRecords($query->getWhere()),
-            'models' => $query->execute(),
+            'models' => $query->execute(get_called_class()),
         ];
     }
 
@@ -1033,7 +1037,7 @@ abstract class Model extends Acl implements \ArrayAccess
      *
      * @param array $parameters parameters ['where', 'start', 'limit', 'sort']
      *
-     * @return Model|false
+     * @return Model|null
      */
     public static function findOne(array $parameters)
     {
@@ -1044,22 +1048,20 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         if (isset($parameters['where'])) {
-            $query->setWhere($parameters['where']);
+            $query->where($parameters['where']);
         }
 
-        $query->setLimit(1);
+        $query->limit(1);
 
         if (isset($parameters['start'])) {
-            $query->setStart($parameters['start']);
+            $query->start($parameters['start']);
         }
 
         if (isset($parameters['sort'])) {
-            $query->setSort($parameters['sort']);
+            $query->sort($parameters['sort']);
         }
 
-        $result = $query->execute();
-
-        return (count($result) == 1) ? $result[0] : false;
+        return $query->first(get_called_class());
     }
 
     /**
@@ -1158,29 +1160,129 @@ abstract class Model extends Acl implements \ArrayAccess
         return $this;
     }
 
+    /////////////////////////////
+    // Relationships
+    /////////////////////////////
+
     /**
      * Gets the model object corresponding to a relation
      * WARNING no check is used to see if the model returned actually exists.
      *
-     * @param string $property property
+     * @param string $propertyName property
      *
-     * @return Object|false model
+     * @return \infuse\Model model
      */
-    public function relation($property)
+    public function relation($propertyName)
     {
-        $properties = static::properties();
+        // TODO deprecated
+        $property = static::properties($propertyName);
 
-        if (!static::hasProperty($property) || !isset($properties[$property]['relation'])) {
-            return false;
+        if (!isset($this->_relationModels[$propertyName])) {
+            $relationModelName = $property['relation'];
+            $this->_relationModels[$propertyName] = new $relationModelName($this->$propertyName);
         }
 
-        $relationModelName = $properties[$property]['relation'];
+        return $this->_relationModels[$propertyName];
+    }
 
-        if (!isset($this->_relationModels[$property])) {
-            $this->_relationModels[$property] = new $relationModelName($this->$property);
+    /**
+     * Creates the parent side of a One-To-One relationship.
+     *
+     * @param string $model      foreign model class
+     * @param string $foriegnKey identifying key on foreign model
+     * @param string $localKey   identifying key on local model
+     *
+     * @return Relation
+     */
+    public function hasOne($model, $foreignKey = false, $localKey = false)
+    {
+        // the default local key would look like `user_id`
+        // for a model named User
+        if (!$foreignKey) {
+            $inflector = Inflector::get();
+            $foreignKey = strtolower($inflector->underscore(static::modelName())).'_id';
         }
 
-        return $this->_relationModels[$property];
+        if (!$localKey) {
+            $localKey = 'id';
+        }
+
+        return new HasOne($model, $foreignKey, $localKey, $this);
+    }
+
+    /**
+     * Creates the child side of a One-To-One or One-To-Many relationship.
+     *
+     * @param string $model      foreign model class
+     * @param string $foriegnKey identifying key on foreign model
+     * @param string $localKey   identifying key on local model
+     *
+     * @return Relation
+     */
+    public function belongsTo($model, $foreignKey = false, $localKey = false)
+    {
+        if (!$foreignKey) {
+            $foreignKey = 'id';
+        }
+
+        // the default local key would look like `user_id`
+        // for a model named User
+        if (!$localKey) {
+            $inflector = Inflector::get();
+            $localKey = strtolower($inflector->underscore($model::modelName())).'_id';
+        }
+
+        return new BelongsTo($model, $foreignKey, $localKey, $this);
+    }
+
+    /**
+     * Creates the parent side of a Many-To-One or Many-To-Many relationship.
+     *
+     * @param string $model      foreign model class
+     * @param string $foriegnKey identifying key on foreign model
+     * @param string $localKey   identifying key on local model
+     *
+     * @return Relation
+     */
+    public function hasMany($model, $foreignKey = false, $localKey = false)
+    {
+        // the default local key would look like `user_id`
+        // for a model named User
+        if (!$foreignKey) {
+            $inflector = Inflector::get();
+            $foreignKey = strtolower($inflector->underscore(static::modelName())).'_id';
+        }
+
+        if (!$localKey) {
+            $localKey = 'id';
+        }
+
+        return new HasMany($model, $foreignKey, $localKey, $this);
+    }
+
+    /**
+     * Creates the child side of a Many-To-Many relationship.
+     *
+     * @param string $model      foreign model class
+     * @param string $foriegnKey identifying key on foreign model
+     * @param string $localKey   identifying key on local model
+     *
+     * @return Relation
+     */
+    public function belongsToMany($model, $foreignKey = false, $localKey = false)
+    {
+        if (!$foreignKey) {
+            $foreignKey = 'id';
+        }
+
+        // the default local key would look like `user_id`
+        // for a model named User
+        if (!$localKey) {
+            $inflector = Inflector::get();
+            $localKey = strtolower($inflector->underscore($model::modelName())).'_id';
+        }
+
+        return new BelongsToMany($model, $foreignKey, $localKey, $this);
     }
 
     /////////////////////////////
