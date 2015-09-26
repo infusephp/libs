@@ -995,42 +995,6 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * Fetches a group of models based on the search critera.
-     *
-     * @param array key-value parameters
-     * @param array $parameters optional parameters ['where', 'start', 'limit', 'sort']
-     *
-     * @return array array( 'models' => models, 'count' => 'total found' )
-     */
-    public static function find(array $parameters = [])
-    {
-        // TODO deprecated
-
-        $query = static::query();
-
-        if (isset($parameters['where'])) {
-            $query->where($parameters['where']);
-        }
-
-        if (isset($parameters['limit'])) {
-            $query->limit($parameters['limit']);
-        }
-
-        if (isset($parameters['start'])) {
-            $query->start($parameters['start']);
-        }
-
-        if (isset($parameters['sort'])) {
-            $query->sort($parameters['sort']);
-        }
-
-        return [
-            'models' => $query->execute(),
-            'count' => static::totalRecords($query->getWhere()),
-        ];
-    }
-
-    /**
      * Finds a single model based on the search criteria.
      *
      * @param array $parameters parameters ['where', 'start', 'limit', 'sort']

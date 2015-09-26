@@ -997,7 +997,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     }
 
     /////////////////////////////
-    // MODEL LOOKUPS
+    // Queries
     /////////////////////////////
 
     public function testQuery()
@@ -1013,52 +1013,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $all = TestModel::findAll();
 
         $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
-    }
-
-    public function testFind()
-    {
-        $query = Mockery::mock('infuse\\Model\\Query');
-
-        $query->shouldReceive('limit')
-              ->withArgs([10]);
-
-        $query->shouldReceive('start')
-              ->withArgs([5]);
-
-        $query->shouldReceive('sort')
-              ->withArgs(['name asc']);
-
-        $query->shouldReceive('where')
-              ->withArgs([['test' => true]]);
-
-        $query->shouldReceive('getWhere')
-              ->andReturn(['test' => true]);
-
-        $query->shouldReceive('execute')
-              ->andReturn(['result']);
-
-        $params = [
-            'where' => ['test' => true],
-            'start' => 5,
-            'limit' => 10,
-            'sort' => 'name asc',
-        ];
-
-        TestModel::setQuery($query);
-
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-
-        $driver->shouldReceive('totalRecords')
-               ->andReturn(1);
-
-        TestModel::setDriver($driver);
-
-        $expected = [
-            'models' => ['result'],
-            'count' => 1,
-        ];
-
-        $this->assertEquals($expected, TestModel::find($params));
     }
 
     public function testFindOne()
