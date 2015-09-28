@@ -18,6 +18,8 @@ class IteratorTest extends PHPUnit_Framework_TestCase
     public static $iterator;
     public static $start = 10;
     public static $limit = 50;
+    public static $totalRecords = 123;
+    public static $noResults;
 
     public static function setUpBeforeClass()
     {
@@ -25,6 +27,10 @@ class IteratorTest extends PHPUnit_Framework_TestCase
 
         $driver->shouldReceive('queryModels')
                ->andReturnUsing(function ($query) {
+                    if (IteratorTest::$noResults) {
+                        return [];
+                    }
+
                     $range = range($query->getStart(), $query->getStart() + $query->getLimit() - 1);
 
                     foreach ($range as &$i) {
@@ -35,15 +41,24 @@ class IteratorTest extends PHPUnit_Framework_TestCase
                });
 
         $driver->shouldReceive('totalRecords')
-               ->andReturn(123);
+               ->andReturnUsing(function () {
+                    return IteratorTest::$totalRecords;
+                });
 
-        IteratorTestModel::setDriver($driver);
         self::$driver = $driver;
+        IteratorTestModel::setDriver(self::$driver);
 
         self::$query = new Query('IteratorTestModel');
         self::$query->start(self::$start)
                     ->limit(self::$limit);
         self::$iterator = new Iterator(self::$query);
+    }
+
+    protected function tearDown()
+    {
+        self::$totalRecords = 123;
+        self::$noResults = false;
+        self::$iterator->rewind();
     }
 
     public function testGetQuery()
@@ -118,7 +133,71 @@ class IteratorTest extends PHPUnit_Framework_TestCase
     public function testForeach()
     {
         $i = self::$start;
+        $n = 0;
         foreach (self::$iterator as $k => $model) {
+            $this->assertEquals($i, $k);
+            $this->assertInstanceOf('IteratorTestModel', $model);
+            $this->assertEquals($i, $model->id());
+            ++$i;
+            ++$n;
+        }
+
+        // last model ID that should have been produced
+        $this->assertEquals(IteratorTestModel::totalRecords(), $i);
+
+        // total # of records we should have iterated over
+        $this->assertEquals(IteratorTestModel::totalRecords() - self::$start, $n);
+    }
+
+    public function testForeachChangingCount()
+    {
+        self::$totalRecords = 200;
+
+        $i = self::$start;
+        $n = 0;
+        foreach (self::$iterator as $k => $model) {
+            $this->assertEquals($i, $k);
+            $this->assertInstanceOf('IteratorTestModel', $model);
+            $this->assertEquals($i, $model->id());
+            ++$i;
+            ++$n;
+
+            // simulate increasing the # of records midway
+            if ($i == 51) {
+                self::$totalRecords = 300;
+                $this->assertCount(300, self::$iterator);
+            // simulate decreasing the # of records midway
+            } elseif ($i == 101) {
+                self::$totalRecords = 26;
+                $this->assertCount(26, self::$iterator);
+
+                // The assumption is that the deleted records were
+                // before the pointer. In order to not skip over
+                // potential records the pointer is shifted
+                // backwards. After the shift there should be N
+                // records left to iterate over.
+                $this->assertEquals(0, self::$iterator->key());
+                $i = 1;
+            }
+        }
+
+        // last model ID that should have been produced
+        $this->assertEquals(26, $i);
+
+        // total # of records we should have iterated over
+        $this->assertEquals(116, $n);
+    }
+
+    public function testForeachFromZero()
+    {
+        $start = 0;
+        $limit = 101;
+        $query = new Query('IteratorTestModel');
+        $query->limit(101);
+        $iterator = new Iterator($query);
+
+        $i = $start;
+        foreach ($iterator as $k => $model) {
             $this->assertEquals($i, $k);
             $this->assertInstanceOf('IteratorTestModel', $model);
             $this->assertEquals($i, $model->id());
@@ -182,25 +261,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($i, IteratorTestModel::totalRecords());
     }
 
-    public function testFromZero()
-    {
-        $start = 0;
-        $limit = 101;
-        $query = new Query('IteratorTestModel');
-        $query->limit(101);
-        $iterator = new Iterator($query);
-
-        $i = $start;
-        foreach ($iterator as $k => $model) {
-            $this->assertEquals($i, $k);
-            $this->assertInstanceOf('IteratorTestModel', $model);
-            $this->assertEquals($i, $model->id());
-            ++$i;
-        }
-
-        $this->assertEquals($i, IteratorTestModel::totalRecords());
-    }
-
     public function testWithMax()
     {
         $query = new Query('IteratorTestModel');
@@ -223,5 +283,16 @@ class IteratorTest extends PHPUnit_Framework_TestCase
 
         // test ArrayAccess
         $this->assertTrue(isset($iterator[0]));
+    }
+
+    public function testQueryModelsMismatchCount()
+    {
+        // simulate the queryModels() method acting up
+        self::$noResults = true;
+
+        foreach (self::$iterator as $k => $model) {
+            // should always return a null model
+            $this->assertNull($model);
+        }
     }
 }

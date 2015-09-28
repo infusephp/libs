@@ -129,7 +129,11 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         $this->loadModels();
         $k = $this->pointer % $this->limit;
 
-        return (isset($this->models[$k])) ? $this->models[$k] : null;
+        if (isset($this->models[$k])) {
+            return $this->models[$k];
+        }
+
+        return;
     }
 
     /**
@@ -218,8 +222,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
 
     /**
      * Load the next round of models.
-     *
-     * @return bool success
      */
     private function loadModels()
     {
@@ -229,17 +231,13 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
 
             $this->models = $this->query->execute();
             $this->loadedStart = $start;
-
-            return true;
-        } else {
-            return false;
         }
     }
 
     /**
-     * Updates the total count of models. For better performance, the
-     * count is only updated on edges, i.e. when new models need to
-     * be loaded.
+     * Updates the total count of models. For better performance
+     * the count is only updated on edges, which is when new models
+     * need to be loaded.
      */
     private function updateCount()
     {
@@ -251,22 +249,31 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         }
 
         $model = $this->query->getModel();
-        $count = $model::totalRecords($this->query->getWhere());
+        $newCount = $model::totalRecords($this->query->getWhere());
 
-        // Often when iterating over models they are
-        // mutated DURING iteration. Thus, the model count is not
-        // a fixed value like we would hope. Each call to updateCount()
-        // could yield a different count. To counteract this we
-        // can shift the pointer as needed each time updateCount() is called.
-        if ($this->count != 0 && $count < $this->count) {
-            $this->pointer -= $this->count - $count;
+        // It's possible when iterating over models that something
+        // is modified or deleted that causes the model count
+        // to decrease. If the count has decreased then we
+        // shift the pointer to prevent overflow.
+        // This calculation is based on the assumption that
+        // the first N (count - count') models are deleted.
+        if ($this->count != 0 && $newCount < $this->count) {
+            $this->pointer = max(0, $this->pointer - ($this->count - $newCount));
         }
 
-        $this->count = $count;
+        // If the count has increased then the pointer is still
+        // valid. Update the count to include the extra models.
+        $this->count = $newCount;
     }
 
-    private function rangeStart($n, $limit)
+    /**
+     * Generates the starting page given a pointer and limit.
+     *
+     * @param int $pointer
+     * @param int $limit
+     */
+    private function rangeStart($pointer, $limit)
     {
-        return floor($n / $limit) * $limit;
+        return floor($pointer / $limit) * $limit;
     }
 }

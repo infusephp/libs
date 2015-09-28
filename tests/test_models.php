@@ -109,7 +109,8 @@ class TestModel extends Model
 function validate()
 {
     return false;
-};
+}
+
 class TestModel2 extends Model
 {
     public static $properties = [
