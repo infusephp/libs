@@ -48,6 +48,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel::setRequester(self::$requester);
         TestModel::setDriver(self::$defaultDriver);
         TestModel2::setDriver(self::$defaultDriver);
+
+        // discard the cached dispatcher to
+        // remove any event listeners
+        TestModel::getDispatcher(true);
     }
 
     public function testConfigure()
@@ -737,6 +741,36 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertCount(1, $errorStack->errors());
     }
 
+    public function testCreatingListenerFail()
+    {
+        TestModel::creating(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $newModel = new TestModel();
+        $this->assertFalse($newModel->create([]));
+    }
+
+    public function testCreatedListenerFail()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('createModel')
+               ->andReturn(true);
+
+        $driver->shouldReceive('getCreatedID')
+               ->andReturn(1);
+
+        TestModel::setDriver($driver);
+
+        TestModel::created(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $newModel = new TestModel();
+        $this->assertFalse($newModel->create([]));
+    }
+
     public function testCreateHookFail()
     {
         $newModel = new TestModelHookFail();
@@ -811,6 +845,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(10);
 
+        $this->assertTrue($model->set([]));
+
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
         $driver->shouldReceive('updateModel')
@@ -873,6 +909,33 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModelNoPermission(5);
         $this->assertFalse($model->set('answer', 42));
         $this->assertCount(1, $errorStack->errors());
+    }
+
+    public function testUpdatingListenerFail()
+    {
+        TestModel::updating(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $model = new TestModel(100);
+        $this->assertFalse($model->set('answer', 42));
+    }
+
+    public function testUpdatedListenerFail()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('updateModel')
+               ->andReturn(true);
+
+        TestModel::setDriver($driver);
+
+        TestModel::updated(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $model = new TestModel(100);
+        $this->assertFalse($model->set('answer', 42));
     }
 
     public function testSetHookFail()
@@ -975,6 +1038,33 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModelNoPermission(5);
         $this->assertFalse($model->delete());
         $this->assertCount(1, $errorStack->errors());
+    }
+
+    public function testDeletingListenerFail()
+    {
+        TestModel::deleting(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $model = new TestModel(100);
+        $this->assertFalse($model->delete());
+    }
+
+    public function testDeletedListenerFail()
+    {
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('deleteModel')
+               ->andReturn(true);
+
+        TestModel::setDriver($driver);
+
+        TestModel::deleted(function ($event) {
+            $event->stopPropagation();
+        });
+
+        $model = new TestModel(100);
+        $this->assertFalse($model->delete());
     }
 
     public function testDeleteHookFail()

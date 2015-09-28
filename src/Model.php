@@ -90,6 +90,7 @@
 namespace infuse;
 
 use ICanBoogie\Inflector;
+use infuse\Model\ModelEvent;
 use infuse\Model\Iterator;
 use infuse\Model\Driver\DriverInterface;
 use infuse\Model\Query;
@@ -100,6 +101,7 @@ use infuse\Model\Relation\BelongsToMany;
 use Pimple\Container;
 use Stash\Pool;
 use Stash\Item;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 if (!defined('ERROR_NO_PERMISSION')) {
     define('ERROR_NO_PERMISSION', 'no_permission');
@@ -148,6 +150,11 @@ abstract class Model extends Acl implements \ArrayAccess
      * @staticvar int
      */
     protected static $cacheTTL = 0;
+
+    /**
+     * @staticvar array
+     */
+    protected static $dispatchers;
 
     /**
      * @var number|string
@@ -627,12 +634,10 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
-        // pre-hook
-        if (method_exists($this, 'preCreateHook') && !$this->preCreateHook($data)) {
+        // call the before create hook
+        if (!$this->beforeCreate($data)) {
             return false;
         }
-
-        $validated = true;
 
         $properties = static::properties();
 
@@ -654,6 +659,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // loop through each supplied field and validate
+        $validated = true;
         $insertArray = [];
         foreach ($data as $field => $value) {
             if (!in_array($field, $propertyNames)) {
@@ -706,8 +712,8 @@ abstract class Model extends Acl implements \ArrayAccess
 
             $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
 
-            // post-hook
-            if (method_exists($this, 'postCreateHook') && $this->postCreateHook() === false) {
+            // call the after create hook
+            if (!$this->afterCreate()) {
                 return false;
             }
         }
@@ -891,8 +897,8 @@ abstract class Model extends Acl implements \ArrayAccess
             return true;
         }
 
-        // pre-hook
-        if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
+        // call the before update hook
+        if (!$this->beforeUpdate($data)) {
             return false;
         }
 
@@ -931,8 +937,8 @@ abstract class Model extends Acl implements \ArrayAccess
             // clear the cache
             $this->clearCache();
 
-            // post-hook
-            if (method_exists($this, 'postSetHook') && $this->postSetHook() === false) {
+            // call the after create hook
+            if (!$this->afterUpdate()) {
                 return false;
             }
         }
@@ -961,8 +967,8 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
-        // pre-hook
-        if (method_exists($this, 'preDeleteHook') && !$this->preDeleteHook()) {
+        // call the before delete hook
+        if (!$this->beforeDelete()) {
             return false;
         }
 
@@ -972,9 +978,9 @@ abstract class Model extends Acl implements \ArrayAccess
             // clear the cache
             $this->clearCache();
 
-            // post-hook
-            if (method_exists($this, 'postDeleteHook')) {
-                return $this->postDeleteHook() !== false;
+            // call the after delete hook
+            if (!$this->afterDelete()) {
+                return false;
             }
         }
 
@@ -1281,6 +1287,242 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         return new BelongsToMany($model, $foreignKey, $localKey, $this);
+    }
+
+    /////////////////////////////
+    // Events
+    /////////////////////////////
+
+    /**
+     * Gets the event dispatcher.
+     *
+     * @return \Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    public static function getDispatcher($ignoreCache = false)
+    {
+        $class = get_called_class();
+        if ($ignoreCache || !isset(self::$dispatchers[$class])) {
+            self::$dispatchers[$class] = new EventDispatcher();
+        }
+
+        return self::$dispatchers[$class];
+    }
+
+    /**
+     * Subscribes to a listener to an event.
+     *
+     * @param string   $event    event name
+     * @param callable $listener
+     * @param int      $priority optional priority, higher #s get called first
+     */
+    public static function listen($event, callable $listener, $priority = 0)
+    {
+        static::getDispatcher()->addListener($event, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.creating event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function creating(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::CREATING, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.created event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function created(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::CREATED, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.updating event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function updating(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::UPDATING, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.updated event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function updated(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::UPDATED, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.deleting event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function deleting(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::DELETING, $listener, $priority);
+    }
+
+    /**
+     * Adds a listener to the model.deleted event.
+     *
+     * @param callable $listener
+     * @param int      $priority
+     */
+    public static function deleted(callable $listener, $priority = 0)
+    {
+        static::listen(ModelEvent::DELETED, $listener, $priority);
+    }
+
+    /**
+     * Dispatches an event.
+     *
+     * @param string $eventName
+     * @param $data
+     *
+     * @return Model\ModelEvent
+     */
+    protected function dispatch($eventName, array $data = [])
+    {
+        $event = new ModelEvent($this, $data);
+
+        return static::getDispatcher()->dispatch($eventName, $event);
+    }
+
+    /**
+     * Dispatches the model.creating event.
+     *
+     * @param array $data
+     *
+     * @return bool
+     */
+    private function beforeCreate(array &$data)
+    {
+        $event = $this->dispatch(ModelEvent::CREATING, $data);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'preCreateHook') && !$this->preCreateHook($data)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Dispatches the model.created event.
+     *
+     * @return bool
+     */
+    private function afterCreate()
+    {
+        $event = $this->dispatch(ModelEvent::CREATED);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'postCreateHook') && $this->postCreateHook() === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Dispatches the model.updating event.
+     *
+     * @param array $data
+     *
+     * @return bool
+     */
+    private function beforeUpdate(array &$data)
+    {
+        $event = $this->dispatch(ModelEvent::UPDATING, $data);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'preSetHook') && !$this->preSetHook($data)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Dispatches the model.updated event.
+     *
+     * @return bool
+     */
+    private function afterUpdate()
+    {
+        $event = $this->dispatch(ModelEvent::UPDATED);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'postSetHook') && $this->postSetHook() === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Dispatches the model.deleting event.
+     *
+     * @return bool
+     */
+    private function beforeDelete()
+    {
+        $event = $this->dispatch(ModelEvent::DELETING);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'preDeleteHook') && !$this->preDeleteHook()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Dispatches the model.created event.
+     *
+     * @return bool
+     */
+    private function afterDelete()
+    {
+        $event = $this->dispatch(ModelEvent::DELETED);
+        if ($event->isPropagationStopped()) {
+            return false;
+        }
+
+        // TODO deprecated
+        if (method_exists($this, 'postDeleteHook') && $this->postDeleteHook() === false) {
+            return false;
+        }
+
+        return true;
     }
 
     /////////////////////////////

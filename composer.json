@@ -22,7 +22,8 @@
 	"require": {
 		"php": ">=5.4.0",
 		"icanboogie/inflector": "v1.3.2",
-		"pimple/pimple": ">=v2.1.0"
+		"pimple/pimple": ">=v2.1.0",
+		"symfony/event-dispatcher": "~2.7"
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master",
