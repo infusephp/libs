@@ -13,9 +13,9 @@ namespace infuse\Model;
 class Iterator implements \Iterator, \Countable, \ArrayAccess
 {
     /**
-     * @var string
+     * @var Query
      */
-    private $model;
+    private $query;
 
     /**
      * @var int
@@ -38,11 +38,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $where;
 
     /**
-     * @var string
-     */
-    private $sort;
-
-    /**
      * @var bool
      */
     private $loadedStart;
@@ -50,7 +45,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     /**
      * @var array
      */
-    private $models = [];
+    private $models;
 
     /**
      * @var int
@@ -66,39 +61,19 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
      * @param string $model
      * @param array  $parameters
      */
-    public function __construct($model, array $parameters = [])
+    public function __construct(Query $query)
     {
-        $this->model = $model;
+        $this->query = $query;
         $this->models = [];
-
-        $this->start = (isset($parameters['start'])) ? $parameters['start'] : 0;
+        $this->start = $query->getStart();
+        $this->limit = $query->getLimit();
         $this->pointer = $this->start;
-        $this->limit = (isset($parameters['limit'])) ? $parameters['limit'] : 100;
-        $this->where = (isset($parameters['where'])) ? $parameters['where'] : [];
-        $this->sort = (isset($parameters['sort'])) ? $parameters['sort'] : '';
         $this->max = -1;
+    }
 
-        if (!empty($parameters['search'])) {
-            $w = [];
-            $search = addslashes($parameters['search']);
-            foreach ($model::properties() as $name => $property) {
-                if ($property['searchable']) {
-                    $w[] = "`$name` LIKE '%$search%'";
-                }
-            }
-
-            if (count($w) > 0) {
-                $this->where[] = '('.implode(' OR ', $w).')';
-            }
-        }
-
-        if (empty($this->sort)) {
-            $idProperties = (array) $model::idProperty();
-            foreach ($idProperties as $k => $property) {
-                $idProperties[$k] .= ' ASC';
-            }
-            $this->sort = implode(',', $idProperties);
-        }
+    public function getQuery()
+    {
+        return $this->query;
     }
 
     /**
@@ -250,14 +225,9 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     {
         $start = $this->rangeStart($this->pointer, $this->limit);
         if ($this->loadedStart !== $start) {
-            $model = $this->model;
-            $query = $model::query();
-            $query->where($this->where)
-                  ->start($start)
-                  ->limit($this->limit)
-                  ->sort($this->sort);
+            $this->query->start($start);
 
-            $this->models = $query->execute($this->model);
+            $this->models = $this->query->execute();
             $this->loadedStart = $start;
 
             return true;
@@ -280,8 +250,8 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
             return;
         }
 
-        $model = $this->model;
-        $count = $model::totalRecords($this->where);
+        $model = $this->query->getModel();
+        $count = $model::totalRecords($this->query->getWhere());
 
         // Often when iterating over models they are
         // mutated DURING iteration. Thus, the model count is not

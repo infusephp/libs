@@ -985,29 +985,68 @@ abstract class Model extends Acl implements \ArrayAccess
     // Queries
     /////////////////////////////
 
+    /**
+     * Generates a new query instance.
+     *
+     * @return Model\Query
+     */
     public static function query()
     {
         return new Query(get_called_class());
     }
 
     /**
-     * Creates an iterator for a search.
-     *
-     * @param array $parameters
-     *
-     * @return Model\Iterator
+     * @deprecated
      */
     public static function findAll(array $parameters = [])
     {
-        return new Iterator(get_called_class(), $parameters);
+        $query = static::query();
+
+        if (isset($parameters['start'])) {
+            $query->start($parameters['start']);
+        }
+
+        if (isset($parameters['limit'])) {
+            $query->limit($parameters['limit']);
+        }
+
+        $where = (isset($parameters['where'])) ? $parameters['where'] : [];
+        if (!empty($parameters['search'])) {
+            $w = [];
+            $search = addslashes($parameters['search']);
+            foreach (static::properties() as $name => $property) {
+                if ($property['searchable']) {
+                    $w[] = "`$name` LIKE '%$search%'";
+                }
+            }
+
+            if (count($w) > 0) {
+                $where[] = '('.implode(' OR ', $w).')';
+            }
+        }
+
+        $query->where($where);
+
+        $sort = '';
+        if (isset($parameters['sort'])) {
+            $sort = $parameters['sort'];
+        }
+
+        if (empty($sort)) {
+            $idProperties = (array) static::idProperty();
+            foreach ($idProperties as $k => $property) {
+                $idProperties[$k] .= ' ASC';
+            }
+            $sort = implode(',', $idProperties);
+        }
+
+        $query->sort($sort);
+
+        return new Iterator($query);
     }
 
     /**
-     * Finds a single model based on the search criteria.
-     *
-     * @param array $parameters parameters ['where', 'start', 'limit', 'sort']
-     *
-     * @return Model|null
+     * @deprecated
      */
     public static function findOne(array $parameters)
     {

@@ -1015,6 +1015,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('infuse\\Model\\Query', $query);
     }
 
+    public function testFindAll()
+    {
+        $all = TestModel::findAll();
+        $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
+    }
+
     public function testFindOne()
     {
         $query = Mockery::mock('infuse\\Model\\Query');

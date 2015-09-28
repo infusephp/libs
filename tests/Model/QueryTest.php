@@ -48,7 +48,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testExecute()
     {
-        $query = new Query();
+        $query = new Query('Person');
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
@@ -71,7 +71,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         Person::setDriver($driver);
 
-        $result = $query->execute('Person');
+        $result = $query->execute();
 
         $this->assertCount(2, $result);
         foreach ($result as $model) {
@@ -85,9 +85,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('John', $result[1]->name);
     }
 
+    public function testAll()
+    {
+        $query = new Query('TestModel');
+
+        $all = $query->all();
+        $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
+    }
+
     public function testFirst()
     {
-        $query = new Query();
+        $query = new Query('Person');
 
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
@@ -105,7 +113,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         Person::setDriver($driver);
 
-        $result = $query->first('Person');
+        $result = $query->first();
 
         $this->assertInstanceOf('Person', $result);
         $this->assertEquals(100, $result->id());

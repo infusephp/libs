@@ -172,13 +172,11 @@ class Query
     /**
      * Executes the query against the model's driver.
      *
-     * @param string $model optionalmodel class
-     *
      * @return array results
      */
-    public function execute($model = false)
+    public function execute()
     {
-        $model = $model ? $model : $this->model;
+        $model = $this->model;
 
         $driver = $model::getDriver();
 
@@ -205,16 +203,24 @@ class Query
     }
 
     /**
-     * Executes the query against the model's driver and returns the first result.
+     * Creates an iterator for a search.
      *
-     * @param string $model model class
+     * @return Model\Iterator
+     */
+    public function all()
+    {
+        return new Iterator($this);
+    }
+
+    /**
+     * Executes the query against the model's driver and returns the first result.
      *
      * @return \infuse\Model|null
      */
-    public function first($model = false)
+    public function first()
     {
-        $models = $this->execute($model);
+        $models = $this->limit(1)->execute();
 
-        return (count($models) > 0) ? $models[0] : null;
+        return (count($models) == 1) ? $models[0] : null;
     }
 }

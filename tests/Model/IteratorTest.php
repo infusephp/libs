@@ -9,10 +9,12 @@
  * @license MIT
  */
 use infuse\Model\Iterator;
+use infuse\Model\Query;
 
 class IteratorTest extends PHPUnit_Framework_TestCase
 {
     public static $driver;
+    public static $query;
     public static $iterator;
     public static $start = 10;
     public static $limit = 50;
@@ -38,20 +40,21 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         IteratorTestModel::setDriver($driver);
         self::$driver = $driver;
 
-        self::$iterator = new Iterator('IteratorTestModel', [
-            'start' => self::$start,
-            'limit' => self::$limit, ]);
+        self::$query = new Query('IteratorTestModel');
+        self::$query->start(self::$start)
+                    ->limit(self::$limit);
+        self::$iterator = new Iterator(self::$query);
     }
 
-    public function testConstructSearch()
+    public function testGetQuery()
     {
-        $iterator = new Iterator('IteratorTestModel', [
-            'search' => 'test', ]);
+        $this->assertEquals(self::$query, self::$iterator->getQuery());
     }
 
     public function testSetMax()
     {
-        $iterator = new Iterator('IteratorTestModel');
+        $query = new Query('IteratorTestModel');
+        $iterator = new Iterator($query);
 
         $this->assertEquals(-1, $iterator->getMax());
         $this->assertEquals($iterator, $iterator->setMax(100));
@@ -183,9 +186,9 @@ class IteratorTest extends PHPUnit_Framework_TestCase
     {
         $start = 0;
         $limit = 101;
-        $iterator = new Iterator('IteratorTestModel', [
-            'start' => $start,
-            'limit' => $limit, ]);
+        $query = new Query('IteratorTestModel');
+        $query->limit(101);
+        $iterator = new Iterator($query);
 
         $i = $start;
         foreach ($iterator as $k => $model) {
@@ -200,7 +203,8 @@ class IteratorTest extends PHPUnit_Framework_TestCase
 
     public function testWithMax()
     {
-        $iterator = new Iterator('IteratorTestModel');
+        $query = new Query('IteratorTestModel');
+        $iterator = new Iterator($query);
         $iterator->setMax(5);
 
         // test Iterator
