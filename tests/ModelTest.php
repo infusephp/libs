@@ -1008,11 +1008,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('TestModel', $query->getModel());
     }
 
-    public function testFindAll()
+    public function testQueryStatic()
     {
-        $all = TestModel::findAll();
+        $query = TestModel::where(['name' => 'Bob']);
 
-        $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
+        $this->assertInstanceOf('infuse\\Model\\Query', $query);
     }
 
     public function testFindOne()

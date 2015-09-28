@@ -447,6 +447,14 @@ abstract class Model extends Acl implements \ArrayAccess
         unset($this->$offset);
     }
 
+    public static function __callStatic($name, $parameters)
+    {
+        // Any calls to unkown static methods should be deferred to
+        // the query. This allows calls like User::where()
+        // to replace User::query()->where().
+        return call_user_func_array([static::query(), $name], $parameters);
+    }
+
     /////////////////////////////
     // Model Properties
     /////////////////////////////
