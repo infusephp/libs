@@ -612,6 +612,20 @@ abstract class Model extends Acl implements \ArrayAccess
     /////////////////////////////
 
     /**
+     * Saves the model.
+     *
+     * @return bool
+     */
+    public function save()
+    {
+        if ($this->_id === false) {
+            return $this->create($this->_unsaved);
+        }
+
+        return $this->set($this->_unsaved);
+    }
+
+    /**
      * Creates a new model
      * WARNING: requires 'create' permission from the requester.
      *

@@ -665,6 +665,34 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $newModel->id);
     }
 
+    public function testCreateWithSave()
+    {
+        $newModel = new TestModel();
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('createModel')
+               ->withArgs([$newModel, [
+                'filter' => 'BLAH',
+                'relation' => null,
+                'answer' => 42, ]])
+               ->andReturn(true)
+               ->once();
+
+        $driver->shouldReceive('getCreatedID')
+               ->andReturn(1);
+
+        TestModel::setDriver($driver);
+
+        $newModel->relation = '';
+        $newModel->answer = 42;
+        $newModel->extra = true;
+        $newModel->filter = 'blah';
+        $newModel->json = [];
+
+        $this->assertTrue($newModel->save());
+    }
+
     public function testCreateMutable()
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
@@ -856,6 +884,22 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel::setDriver($driver);
 
         $this->assertTrue($model->set('answer', 42));
+    }
+
+    public function testSetWithSave()
+    {
+        $model = new TestModel(10);
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $driver->shouldReceive('updateModel')
+               ->withArgs([$model, ['answer' => 42]])
+               ->andReturn(true);
+
+        TestModel::setDriver($driver);
+
+        $model->answer = 42;
+        $this->assertTrue($model->save());
     }
 
     public function testSetMultiple()
