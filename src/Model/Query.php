@@ -215,12 +215,18 @@ class Query
     /**
      * Executes the query against the model's driver and returns the first result.
      *
+     * @param int $limit
+     * 
      * @return \infuse\Model|null
      */
-    public function first()
+    public function first($limit = 1)
     {
-        $models = $this->limit(1)->execute();
+        $models = $this->limit($limit)->execute();
 
-        return (count($models) == 1) ? $models[0] : null;
+        if ($limit == 1) {
+            return (count($models) == 1) ? $models[0] : null;
+        }
+
+        return $models;
     }
 }

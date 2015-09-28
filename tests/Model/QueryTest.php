@@ -119,4 +119,45 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(100, $result->id());
         $this->assertEquals('Sherlock', $result->name);
     }
+
+    public function testFirstLimit()
+    {
+        $query = new Query('Person');
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $data = [
+            [
+                'id' => 100,
+                'name' => 'Sherlock',
+                'email' => 'sherlock@example.com',
+            ],
+            [
+                'id' => 102,
+                'name' => 'John',
+                'email' => 'john@example.com',
+            ],
+        ];
+
+        $driver->shouldReceive('queryModels')
+               ->withArgs([$query])
+               ->andReturn($data);
+
+        Person::setDriver($driver);
+
+        $result = $query->first(2);
+
+        $this->assertEquals(2, $query->getLimit());
+
+        $this->assertCount(2, $result);
+        foreach ($result as $model) {
+            $this->assertInstanceOf('Person', $model);
+        }
+
+        $this->assertEquals(100, $result[0]->id());
+        $this->assertEquals(102, $result[1]->id());
+
+        $this->assertEquals('Sherlock', $result[0]->name);
+        $this->assertEquals('John', $result[1]->name);
+    }
 }
