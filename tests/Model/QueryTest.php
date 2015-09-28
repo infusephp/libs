@@ -85,6 +85,40 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('John', $result[1]->name);
     }
 
+    public function testExecuteMultipleIds()
+    {
+        $query = new Query('TestModel2');
+
+        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+
+        $data = [
+            [
+                'id' => 100,
+                'id2' => 101,
+            ],
+            [
+                'id' => 102,
+                'id2' => 103,
+            ],
+        ];
+
+        $driver->shouldReceive('queryModels')
+               ->withArgs([$query])
+               ->andReturn($data);
+
+        TestModel2::setDriver($driver);
+
+        $result = $query->execute();
+
+        $this->assertCount(2, $result);
+        foreach ($result as $model) {
+            $this->assertInstanceOf('TestModel2', $model);
+        }
+
+        $this->assertEquals('100,101', $result[0]->id());
+        $this->assertEquals('102,103', $result[1]->id());
+    }
+
     public function testAll()
     {
         $query = new Query('TestModel');
