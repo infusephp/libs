@@ -733,7 +733,8 @@ abstract class Model extends Acl implements \ArrayAccess
 
             $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
 
-            $this->_unsaved = [];
+            // clear the cache
+            $this->clearCache();
 
             // call the after create hook
             if (!$this->afterCreate()) {
@@ -982,8 +983,6 @@ abstract class Model extends Acl implements \ArrayAccess
             if (!$this->afterUpdate()) {
                 return false;
             }
-
-            $this->_unsaved = [];
         }
 
         return $updated;
