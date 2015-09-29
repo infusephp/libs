@@ -410,8 +410,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->withArgs(['TestModel'])
                ->andReturn('TestModels');
         TestModel::setDriver($driver);
-
-        $this->assertEquals('TestModels', TestModel::tablename());
     }
 
     public function testGetMultipleProperties()

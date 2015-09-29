@@ -497,14 +497,6 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * @deprecated
-     */
-    public static function tablename()
-    {
-        return self::getDriver()->getTablename(get_called_class());
-    }
-
-    /**
      * Gets the properties for the model.
      *
      * @param string $property property to lookup
