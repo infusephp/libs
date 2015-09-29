@@ -1016,7 +1016,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
 
-        $driver->shouldReceive('loadModel');
+        $driver->shouldReceive('loadModel')
+               ->andReturn(['unique' => 'works']);
 
         $driver->shouldReceive('updateModel')
                ->andReturn(true);
@@ -1024,7 +1025,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
-        $model->unique = 'works';
         $this->assertTrue($model->set('unique', 'works'));
     }
 

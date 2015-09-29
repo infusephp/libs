@@ -730,6 +730,8 @@ abstract class Model extends Acl implements \ArrayAccess
             if (!$this->afterCreate()) {
                 return false;
             }
+
+            $this->_unsaved = [];
         }
 
         return $inserted;
@@ -747,18 +749,26 @@ abstract class Model extends Acl implements \ArrayAccess
      *
      * @return mixed Returns value when only 1 found or an array when multiple values found
      */
-    public function get($properties, $skipCache = false, $forceReturnArray = false)
+    public function get($properties, $skipCache = false, $forceReturnArray = false, $skipUnsaved = false)
     {
         if (!is_array($properties)) {
             $properties = explode(',', $properties);
         }
 
-        $values = array_replace($this->id(true), $this->_local, $this->_unsaved);
+        $values = array_replace($this->id(true), $this->_local);
+
+        if (!$skipUnsaved) {
+            $values = array_replace($values, $this->_unsaved);
+        }
 
         $numMissing = count(array_diff($properties, array_keys($values)));
         if ($numMissing > 0 || $skipCache) {
             $this->load($skipCache);
-            $values = array_replace($values, $this->_local, $this->_unsaved);
+            $values = array_replace($values, $this->_local);
+
+            if (!$skipUnsaved) {
+                $values = array_replace($values, $this->_unsaved);
+            }
         }
 
         // only return requested properties
@@ -955,6 +965,8 @@ abstract class Model extends Acl implements \ArrayAccess
             if (!$this->afterUpdate()) {
                 return false;
             }
+
+            $this->_unsaved = [];
         }
 
         return $updated;
@@ -1707,7 +1719,7 @@ abstract class Model extends Acl implements \ArrayAccess
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->$propertyName)) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->get($propertyName, false, false, true))) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
