@@ -710,20 +710,8 @@ abstract class Model extends Acl implements \ArrayAccess
         $created = self::$driver->createModel($this, $insertArray);
 
         if ($created) {
-            // set new id(s)
-            $ids = [];
-            $idProperties = (array) static::idProperty();
-            foreach ($idProperties as $property) {
-                // attempt use the supplied value if the id property is mutable
-                $id = null;
-                if (in_array($properties[$property]['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($this->_unsaved[$property])) {
-                    $ids[] = $this->_unsaved[$property];
-                } else {
-                    $ids[] = self::$driver->getCreatedID($this, $property);
-                }
-            }
-
-            $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
+            // determine the model's new ID
+            $this->_id = $this->getNewID();
 
             // clear the cache
             $this->clearCache();
@@ -735,6 +723,18 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         return $created;
+    }
+
+    /**
+     * Ignores unsaved values when fetching the next value.
+     *
+     * @return self
+     */
+    public function ignoreUnsaved()
+    {
+        $this->_ignoreUnsaved = true;
+
+        return $this;
     }
 
     /**
@@ -793,11 +793,27 @@ abstract class Model extends Acl implements \ArrayAccess
         return $return;
     }
 
-    public function ignoreUnsaved()
+    /**
+     * Gets the ID for a newly created model.
+     *
+     * @return string
+     */
+    protected function getNewID()
     {
-        $this->_ignoreUnsaved = true;
+        $ids = [];
+        $idProperties = (array) static::idProperty();
+        foreach ($idProperties as $k) {
+            // attempt use the supplied value if the ID property is mutable
+            $id = null;
+            $property = static::properties($k);
+            if (in_array($property['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($this->_unsaved[$k])) {
+                $ids[] = $this->_unsaved[$k];
+            } else {
+                $ids[] = self::$driver->getCreatedID($this, $k);
+            }
+        }
 
-        return $this;
+        return (count($ids) > 1) ? implode(',', $ids) : $ids[0];
     }
 
     /**
@@ -971,7 +987,7 @@ abstract class Model extends Acl implements \ArrayAccess
             // clear the cache
             $this->clearCache();
 
-            // call the after create hook
+            // call the after update hook
             if (!$this->afterUpdate()) {
                 return false;
             }
