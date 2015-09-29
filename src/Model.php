@@ -250,6 +250,11 @@ abstract class Model extends Acl implements \ArrayAccess
     private $_unsaved = [];
 
     /**
+     * @var bool
+     */
+    private $_skipUnsaved;
+
+    /**
      * @var array
      */
     private $_relationModels = [];
@@ -749,13 +754,16 @@ abstract class Model extends Acl implements \ArrayAccess
      *
      * @return mixed Returns value when only 1 found or an array when multiple values found
      */
-    public function get($properties, $skipCache = false, $forceReturnArray = false, $skipUnsaved = false)
+    public function get($properties, $skipCache = false, $forceReturnArray = false)
     {
         if (!is_array($properties)) {
             $properties = explode(',', $properties);
         }
 
         $values = array_replace($this->id(true), $this->_local);
+
+        $skipUnsaved = $this->_skipUnsaved;
+        $this->_skipUnsaved = false;
 
         if (!$skipUnsaved) {
             $values = array_replace($values, $this->_unsaved);
@@ -788,6 +796,13 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         return $return;
+    }
+
+    public function skipUnsaved()
+    {
+        $this->_skipUnsaved = true;
+
+        return $this;
     }
 
     /**
@@ -1719,7 +1734,7 @@ abstract class Model extends Acl implements \ArrayAccess
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->get($propertyName, false, false, true))) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->get($propertyName))) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
