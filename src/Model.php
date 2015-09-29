@@ -653,8 +653,10 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
+        $this->_unsaved = $data;
+
         // call the before create hook
-        if (!$this->beforeCreate($data)) {
+        if (!$this->beforeCreate()) {
             return false;
         }
 
@@ -672,15 +674,15 @@ abstract class Model extends Acl implements \ArrayAccess
 
         // add in default values
         foreach ($properties as $name => $fieldInfo) {
-            if (array_key_exists('default', $fieldInfo) && !array_key_exists($name, $data)) {
-                $data[$name] = $fieldInfo['default'];
+            if (array_key_exists('default', $fieldInfo) && !array_key_exists($name, $this->_unsaved)) {
+                $this->_unsaved[$name] = $fieldInfo['default'];
             }
         }
 
         // loop through each supplied field and validate
         $validated = true;
         $insertArray = [];
-        foreach ($data as $field => $value) {
+        foreach ($this->_unsaved as $field => $value) {
             if (!in_array($field, $propertyNames)) {
                 continue;
             }
@@ -722,8 +724,8 @@ abstract class Model extends Acl implements \ArrayAccess
             foreach ($idProperties as $property) {
                 // attempt use the supplied value if the id property is mutable
                 $id = null;
-                if (in_array($properties[$property]['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($data[$property])) {
-                    $ids[] = $data[$property];
+                if (in_array($properties[$property]['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($this->_unsaved[$property])) {
+                    $ids[] = $this->_unsaved[$property];
                 } else {
                     $ids[] = self::$driver->getCreatedID($this, $property);
                 }
@@ -731,12 +733,12 @@ abstract class Model extends Acl implements \ArrayAccess
 
             $this->_id = (count($ids) > 1) ? implode(',', $ids) : $ids[0];
 
+            $this->_unsaved = [];
+
             // call the after create hook
             if (!$this->afterCreate()) {
                 return false;
             }
-
-            $this->_unsaved = [];
         }
 
         return $inserted;
@@ -1444,11 +1446,9 @@ abstract class Model extends Acl implements \ArrayAccess
     /**
      * Dispatches the model.creating event.
      *
-     * @param array $data
-     *
      * @return bool
      */
-    private function beforeCreate(array &$data)
+    private function beforeCreate()
     {
         $event = $this->dispatch(ModelEvent::CREATING);
         if ($event->isPropagationStopped()) {
@@ -1456,7 +1456,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         // TODO deprecated
-        if (method_exists($this, 'preCreateHook') && !$this->preCreateHook($data)) {
+        if (method_exists($this, 'preCreateHook') && !$this->preCreateHook($this->_unsaved)) {
             return false;
         }
 
@@ -1733,7 +1733,7 @@ abstract class Model extends Acl implements \ArrayAccess
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->get([$propertyName]))) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->$propertyName)) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
