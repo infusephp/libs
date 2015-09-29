@@ -220,6 +220,11 @@ abstract class Model extends Acl implements \ArrayAccess
     ];
 
     /**
+     * @staticvar array
+     */
+    private static $initialized = [];
+
+    /**
      * @staticvar \Stash\Pool
      */
     private static $defaultCache;
@@ -230,12 +235,12 @@ abstract class Model extends Acl implements \ArrayAccess
     private static $cachedProperties = [];
 
     /**
-     * @var string
+     * @staticvar string
      */
     private static $cachePrefix = [];
 
     /**
-     * @var Model\Driver\DriverInterface
+     * @staticvar Model\Driver\DriverInterface
      */
     private static $driver;
 
@@ -277,8 +282,12 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public function __construct($id = false, array $values = [])
     {
-        // load the driver
-        static::getDriver();
+        // call the initialize function once
+        $k = static::modelName();
+        if (!isset(self::$initialized[$k])) {
+            $this->initialize();
+            self::$initialized[$k] = true;
+        }
 
         // TODO need to store the id as an array
         // instead of a string to maintain type integrity
@@ -302,6 +311,18 @@ abstract class Model extends Acl implements \ArrayAccess
         if (count($values) > 0) {
             $this->loadFromStorage($values)->cache();
         }
+    }
+
+    /**
+     * This method gets called once per model. It's used
+     * to perform any one-off tasks before the model
+     * can be created. It's only called if a model instance
+     * is constructed.
+     */
+    protected function initialize()
+    {
+        // load the driver
+        static::getDriver();
     }
 
     /**
