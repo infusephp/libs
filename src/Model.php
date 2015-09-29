@@ -1431,7 +1431,7 @@ abstract class Model extends Acl implements \ArrayAccess
     {
         $event = new ModelEvent($this);
 
-        return static::getDispatcher()->dispatch($eventName);
+        return static::getDispatcher()->dispatch($eventName, $event);
     }
 
     /**
