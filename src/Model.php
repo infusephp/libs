@@ -387,7 +387,7 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     public function __get($name)
     {
-        return $this->get($name);
+        return $this->get([$name]);
     }
 
     /**
@@ -1734,7 +1734,7 @@ abstract class Model extends Acl implements \ArrayAccess
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->get($propertyName))) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->get([$propertyName]))) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
