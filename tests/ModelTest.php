@@ -11,6 +11,7 @@
 use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
+use infuse\Model\ModelEvent;
 use Pimple\Container;
 
 require_once 'test_models.php';
@@ -769,7 +770,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreatingListenerFail()
     {
-        TestModel::creating(function ($event) {
+        TestModel::creating(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 
@@ -789,7 +790,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         TestModel::setDriver($driver);
 
-        TestModel::created(function ($event) {
+        TestModel::created(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 
@@ -955,7 +956,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testUpdatingListenerFail()
     {
-        TestModel::updating(function ($event) {
+        TestModel::updating(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 
@@ -972,7 +973,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         TestModel::setDriver($driver);
 
-        TestModel::updated(function ($event) {
+        TestModel::updated(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 
@@ -1084,7 +1085,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testDeletingListenerFail()
     {
-        TestModel::deleting(function ($event) {
+        TestModel::deleting(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 
@@ -1101,7 +1102,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         TestModel::setDriver($driver);
 
-        TestModel::deleted(function ($event) {
+        TestModel::deleted(function (ModelEvent $event) {
             $event->stopPropagation();
         });
 

@@ -714,6 +714,9 @@ abstract class Model extends Acl implements \ArrayAccess
             $this->_id = $this->getNewID();
 
             // clear the cache
+            // NOTE the cache is cleared before the model.created
+            // event so that fetching values forces a reload
+            // from the persistent storage layer
             $this->clearCache();
 
             // call the after create hook
@@ -985,6 +988,9 @@ abstract class Model extends Acl implements \ArrayAccess
 
         if ($updated) {
             // clear the cache
+            // NOTE the cache is cleared before the model.updated
+            // event so that fetching values forces a reload
+            // from the persistent storage layer
             $this->clearCache();
 
             // call the after update hook
@@ -1026,14 +1032,14 @@ abstract class Model extends Acl implements \ArrayAccess
 
         if ($deleted) {
             // call the after delete hook
-            // NOTE the model cache has not been cleared yet
-            // so it is possible to access any cached model
-            // properties
             if (!$this->afterDelete()) {
                 return false;
             }
 
             // clear the cache
+            // NOTE clear the cache after the model.deleted
+            // event is fired so that cached model values
+            // are still available
             $this->clearCache();
         }
 
