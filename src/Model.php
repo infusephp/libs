@@ -1025,13 +1025,16 @@ abstract class Model extends Acl implements \ArrayAccess
         $deleted = self::$driver->deleteModel($this);
 
         if ($deleted) {
-            // clear the cache
-            $this->clearCache();
-
             // call the after delete hook
+            // NOTE the model cache has not been cleared yet
+            // so it is possible to access any cached model
+            // properties
             if (!$this->afterDelete()) {
                 return false;
             }
+
+            // clear the cache
+            $this->clearCache();
         }
 
         return $deleted;
