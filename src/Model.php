@@ -252,7 +252,7 @@ abstract class Model extends Acl implements \ArrayAccess
     /**
      * @var bool
      */
-    private $_skipUnsaved;
+    private $_ignoreUnsaved;
 
     /**
      * @var array
@@ -765,10 +765,10 @@ abstract class Model extends Acl implements \ArrayAccess
 
         $values = array_replace($this->id(true), $this->_local);
 
-        $skipUnsaved = $this->_skipUnsaved;
-        $this->_skipUnsaved = false;
+        $ignoreUnsaved = $this->_ignoreUnsaved;
+        $this->_ignoreUnsaved = false;
 
-        if (!$skipUnsaved) {
+        if (!$ignoreUnsaved) {
             $values = array_replace($values, $this->_unsaved);
         }
 
@@ -777,7 +777,7 @@ abstract class Model extends Acl implements \ArrayAccess
             $this->load($skipCache);
             $values = array_replace($values, $this->_local);
 
-            if (!$skipUnsaved) {
+            if (!$ignoreUnsaved) {
                 $values = array_replace($values, $this->_unsaved);
             }
         }
@@ -801,9 +801,9 @@ abstract class Model extends Acl implements \ArrayAccess
         return $return;
     }
 
-    public function skipUnsaved()
+    public function ignoreUnsaved()
     {
-        $this->_skipUnsaved = true;
+        $this->_ignoreUnsaved = true;
 
         return $this;
     }
@@ -1732,7 +1732,7 @@ abstract class Model extends Acl implements \ArrayAccess
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
         // unique?
-        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->skipUnsaved()->$propertyName)) {
+        if ($valid && $property['unique'] && ($this->_id === false || $value != $this->ignoreUnsaved()->$propertyName)) {
             $valid = $this->checkUniqueness($property, $propertyName, $value);
         }
 
