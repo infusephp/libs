@@ -715,9 +715,9 @@ abstract class Model extends Acl implements \ArrayAccess
             return false;
         }
 
-        $inserted = self::$driver->createModel($this, $insertArray);
+        $created = self::$driver->createModel($this, $insertArray);
 
-        if ($inserted) {
+        if ($created) {
             // set new id(s)
             $ids = [];
             $idProperties = (array) static::idProperty();
@@ -742,7 +742,7 @@ abstract class Model extends Acl implements \ArrayAccess
             }
         }
 
-        return $inserted;
+        return $created;
     }
 
     /**
