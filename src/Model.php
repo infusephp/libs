@@ -1431,15 +1431,14 @@ abstract class Model extends Acl implements \ArrayAccess
      * Dispatches an event.
      *
      * @param string $eventName
-     * @param $data
      *
      * @return Model\ModelEvent
      */
-    protected function dispatch($eventName, array $data = [])
+    protected function dispatch($eventName)
     {
-        $event = new ModelEvent($this, $data);
+        $event = new ModelEvent($this);
 
-        return static::getDispatcher()->dispatch($eventName, $event);
+        return static::getDispatcher()->dispatch($eventName);
     }
 
     /**
@@ -1451,7 +1450,7 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     private function beforeCreate(array &$data)
     {
-        $event = $this->dispatch(ModelEvent::CREATING, $data);
+        $event = $this->dispatch(ModelEvent::CREATING);
         if ($event->isPropagationStopped()) {
             return false;
         }
@@ -1493,7 +1492,7 @@ abstract class Model extends Acl implements \ArrayAccess
      */
     private function beforeUpdate(array &$data)
     {
-        $event = $this->dispatch(ModelEvent::UPDATING, $data);
+        $event = $this->dispatch(ModelEvent::UPDATING);
         if ($event->isPropagationStopped()) {
             return false;
         }

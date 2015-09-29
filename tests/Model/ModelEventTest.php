@@ -10,11 +10,4 @@ class ModelEventTest extends PHPUnit_Framework_TestCase
         $event = new ModelEvent($model);
         $this->assertEquals($model, $event->getModel());
     }
-
-    public function testGetData()
-    {
-        $model = Mockery::mock('infuse\Model');
-        $event = new ModelEvent($model, ['test' => true]);
-        $this->assertEquals(['test' => true], $event->getData());
-    }
 }

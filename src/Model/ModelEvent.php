@@ -20,17 +20,11 @@ class ModelEvent extends Event
     protected $model;
 
     /**
-     * @var array
-     */
-    protected $data;
-
-    /**
      * @param \infuse\Model $model
      */
-    public function __construct(Model $model, $data = [])
+    public function __construct(Model $model)
     {
         $this->model = $model;
-        $this->data = $data;
     }
 
     /**
@@ -41,15 +35,5 @@ class ModelEvent extends Event
     public function getModel()
     {
         return $this->model;
-    }
-
-    /**
-     * Gets the data associated with this event.
-     *
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
     }
 }
