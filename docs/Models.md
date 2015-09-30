@@ -80,7 +80,7 @@ Boolean, Optional, Default: `false`
 
 Title of the property that shows up in admin panel
 
-String, Optional, Default: Derived from property `name`
+String, Optional, Default: Derived from property name
 
 #### `relation`
 
