@@ -8,8 +8,8 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model\Iterator;
-use infuse\Model\Query;
+use Infuse\Model\Iterator;
+use Infuse\Model\Query;
 
 class IteratorTest extends PHPUnit_Framework_TestCase
 {
@@ -23,7 +23,7 @@ class IteratorTest extends PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('queryModels')
                ->andReturnUsing(function ($query) {

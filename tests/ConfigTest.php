@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Config;
+use Infuse\Config;
 
 class ConfigTest extends PHPUnit_Framework_TestCase
 {

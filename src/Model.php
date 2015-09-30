@@ -8,18 +8,18 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse;
+namespace Infuse;
 
 use ICanBoogie\Inflector;
-use infuse\Model\ACLModel;
-use infuse\Model\ModelEvent;
-use infuse\Model\Driver\DatabaseDriver;
-use infuse\Model\Driver\DriverInterface;
-use infuse\Model\Query;
-use infuse\Model\Relation\HasOne;
-use infuse\Model\Relation\BelongsTo;
-use infuse\Model\Relation\HasMany;
-use infuse\Model\Relation\BelongsToMany;
+use Infuse\Model\ACLModel;
+use Infuse\Model\ModelEvent;
+use Infuse\Model\Driver\DatabaseDriver;
+use Infuse\Model\Driver\DriverInterface;
+use Infuse\Model\Query;
+use Infuse\Model\Relation\HasOne;
+use Infuse\Model\Relation\BelongsTo;
+use Infuse\Model\Relation\HasMany;
+use Infuse\Model\Relation\BelongsToMany;
 use Pimple\Container;
 use Stash\Pool;
 use Stash\Item;
@@ -1086,7 +1086,7 @@ abstract class Model implements \ArrayAccess
      *
      * @param string $propertyName property
      *
-     * @return \infuse\Model model
+     * @return \Infuse\Model model
      */
     public function relation($propertyName)
     {

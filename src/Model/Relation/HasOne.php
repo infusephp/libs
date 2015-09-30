@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model\Relation;
+namespace Infuse\Model\Relation;
 
 class HasOne extends Relation
 {

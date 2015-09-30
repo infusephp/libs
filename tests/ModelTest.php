@@ -8,11 +8,11 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\ErrorStack;
-use infuse\Locale;
-use infuse\Model;
-use infuse\Model\ACLModel;
-use infuse\Model\ModelEvent;
+use Infuse\ErrorStack;
+use Infuse\Locale;
+use Infuse\Model;
+use Infuse\Model\ACLModel;
+use Infuse\Model\ModelEvent;
 use Pimple\Container;
 
 require_once 'test_models.php';
@@ -381,7 +381,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testDriver()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
         TestModel::setDriver($driver);
 
         $this->assertEquals($driver, TestModel::getDriver());
@@ -395,7 +395,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $this->assertEquals('TestModel', TestModel::modelName());
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
         $driver->shouldReceive('getTablename')
                ->withArgs(['TestModel'])
                ->andReturn('TestModels');
@@ -421,7 +421,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(12);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->withArgs([$model])
@@ -437,7 +437,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel2(12);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -449,7 +449,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArray()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -472,7 +472,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayExcluded()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -491,7 +491,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayAutoTimestamps()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -512,7 +512,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayIncluded()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -535,7 +535,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToArrayExpand()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -582,7 +582,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testToJson()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn([]);
@@ -624,7 +624,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $newModel = new TestModel();
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
@@ -657,7 +657,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $newModel = new TestModel();
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
@@ -683,7 +683,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateMutable()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->andReturn(true)
@@ -700,7 +700,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $newModel = new TestModel2();
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
@@ -728,7 +728,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $newModel = new TestModel();
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->andReturn(true);
@@ -760,7 +760,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreatedListenerFail()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->andReturn(true);
@@ -791,7 +791,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel2::query();
         TestModel2::setQuery($query);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(1);
@@ -833,7 +833,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testCreateFail()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('createModel')
                ->andReturn(false);
@@ -854,7 +854,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($model->set([]));
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, ['answer' => 42]])
@@ -869,7 +869,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(10);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, ['answer' => 42]])
@@ -885,7 +885,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(11);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, ['answer' => 'hello', 'filter' => 'BLAH', 'relation' => null]])
@@ -904,7 +904,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(10);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('updateModel')
                ->withArgs([$model, []])
@@ -937,7 +937,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testUpdatedListenerFail()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('updateModel')
                ->andReturn(true);
@@ -963,7 +963,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel2::query();
         TestModel2::setQuery($query);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(0);
@@ -984,7 +984,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetUniqueSkip()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['unique' => 'works']);
@@ -1016,7 +1016,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel2(1);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
         $driver->shouldReceive('deleteModel')
                ->withArgs([$model])
                ->andReturn(true);
@@ -1035,7 +1035,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel(100);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
         $driver->shouldReceive('deleteModel')
                ->withArgs([$model])
                ->andReturn(true);
@@ -1058,7 +1058,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testDeletedListenerFail()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('deleteModel')
                ->andReturn(true);
@@ -1083,7 +1083,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel2(1);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
         $driver->shouldReceive('deleteModel')
                ->withArgs([$model])
                ->andReturn(false);
@@ -1100,7 +1100,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $query = TestModel::query();
 
-        $this->assertInstanceOf('infuse\\Model\\Query', $query);
+        $this->assertInstanceOf('Infuse\Model\Query', $query);
         $this->assertEquals('TestModel', $query->getModel());
     }
 
@@ -1108,12 +1108,12 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $query = TestModel::where(['name' => 'Bob']);
 
-        $this->assertInstanceOf('infuse\\Model\\Query', $query);
+        $this->assertInstanceOf('Infuse\Model\Query', $query);
     }
 
     public function testFindOne()
     {
-        $query = Mockery::mock('infuse\\Model\\Query');
+        $query = Mockery::mock('Infuse\Model\Query');
 
         $query->shouldReceive('limit')
               ->withArgs([1]);
@@ -1146,7 +1146,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel2::query();
         TestModel2::setQuery($query);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(1);
@@ -1163,7 +1163,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel2::query();
         TestModel2::setQuery($query);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(2);
@@ -1177,7 +1177,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testExists()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(1);
@@ -1190,7 +1190,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testNotExists()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('totalRecords')
                ->andReturn(0);
@@ -1235,7 +1235,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $relation = $model->hasOne('TestModel2');
 
-        $this->assertInstanceOf('infuse\\Model\\Relation\\HasOne', $relation);
+        $this->assertInstanceOf('Infuse\Model\Relation\HasOne', $relation);
         $this->assertEquals('TestModel2', $relation->getModel());
         $this->assertEquals('test_model_id', $relation->getForeignKey());
         $this->assertEquals('id', $relation->getLocalKey());
@@ -1248,7 +1248,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $relation = $model->belongsTo('TestModel2');
 
-        $this->assertInstanceOf('infuse\\Model\\Relation\\BelongsTo', $relation);
+        $this->assertInstanceOf('Infuse\Model\Relation\BelongsTo', $relation);
         $this->assertEquals('TestModel2', $relation->getModel());
         $this->assertEquals('id', $relation->getForeignKey());
         $this->assertEquals('test_model2_id', $relation->getLocalKey());
@@ -1261,7 +1261,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $relation = $model->hasMany('TestModel2');
 
-        $this->assertInstanceOf('infuse\\Model\\Relation\\HasMany', $relation);
+        $this->assertInstanceOf('Infuse\Model\Relation\HasMany', $relation);
         $this->assertEquals('TestModel2', $relation->getModel());
         $this->assertEquals('test_model_id', $relation->getForeignKey());
         $this->assertEquals('id', $relation->getLocalKey());
@@ -1274,7 +1274,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $relation = $model->belongsToMany('TestModel2');
 
-        $this->assertInstanceOf('infuse\\Model\\Relation\\BelongsToMany', $relation);
+        $this->assertInstanceOf('Infuse\Model\Relation\BelongsToMany', $relation);
         $this->assertEquals('TestModel2', $relation->getModel());
         $this->assertEquals('id', $relation->getForeignKey());
         $this->assertEquals('test_model2_id', $relation->getLocalKey());
@@ -1287,7 +1287,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetDefaultCache()
     {
-        $cache = Mockery::mock('Stash\\Pool');
+        $cache = Mockery::mock('Stash\Pool');
 
         TestModel::setDefaultCache($cache);
         for ($i = 0; $i < 5; ++$i) {
@@ -1300,7 +1300,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testSetCache()
     {
-        $cache = Mockery::mock('Stash\\Pool');
+        $cache = Mockery::mock('Stash\Pool');
 
         $model = new TestModel();
         $this->assertEquals($model, $model->setCache($cache));
@@ -1326,13 +1326,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model->setCache($cache);
         $item = $model->cacheItem();
-        $this->assertInstanceOf('Stash\\Item', $item);
+        $this->assertInstanceOf('Stash\Item', $item);
         $this->assertEquals('models/testmodel/5', $item->getKey());
 
         $model = new TestModel2(5);
         $model->setCache($cache);
         $item = $model->cacheItem();
-        $this->assertInstanceOf('Stash\\Item', $item);
+        $this->assertInstanceOf('Stash\Item', $item);
         $this->assertEquals('models/testmodel2/5', $item->getKey());
     }
 
@@ -1343,7 +1343,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(100);
         $model->setCache($cache);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
@@ -1366,7 +1366,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(101);
         $model->setCache($cache);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
@@ -1391,7 +1391,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(102);
         $model->setCache($cache);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(['answer' => 42]);
@@ -1422,7 +1422,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel(12);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->withArgs([$model])
@@ -1436,7 +1436,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
     public function testLoadFromStorageFail()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(false);

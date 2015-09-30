@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Request;
+use Infuse\Request;
 
 class RequestTest extends PHPUnit_Framework_TestCase
 {
@@ -66,7 +66,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     protected function assertPreConditions()
     {
-        $this->assertInstanceOf('\\infuse\\Request', self::$req);
+        $this->assertInstanceOf('Infuse\Request', self::$req);
     }
 
     public function testIp()

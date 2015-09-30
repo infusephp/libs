@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Session;
+namespace Infuse\Session;
 
 use Pimple\Container;
 use SessionHandlerInterface;

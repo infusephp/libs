@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model;
+namespace Infuse\Model;
 
 class Query
 {
@@ -247,7 +247,7 @@ class Query
      *
      * @param int $limit
      * 
-     * @return \infuse\Model|null
+     * @return \Infuse\Model|null
      */
     public function first($limit = 1)
     {

@@ -8,10 +8,10 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\ViewEngine;
+namespace Infuse\ViewEngine;
 
-use infuse\ViewEngine;
-use infuse\View;
+use Infuse\ViewEngine;
+use Infuse\View;
 use Smarty as SmartyClass;
 
 class Smarty extends ViewEngine

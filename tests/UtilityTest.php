@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Utility as U;
+use Infuse\Utility as U;
 
 class UtilityTest extends PHPUnit_Framework_TestCase
 {

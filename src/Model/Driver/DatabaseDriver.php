@@ -8,11 +8,11 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model\Driver;
+namespace Infuse\Model\Driver;
 
 use ICanBoogie\Inflector;
-use infuse\Model;
-use infuse\Model\Query;
+use Infuse\Model;
+use Infuse\Model\Query;
 use PDOException;
 use PDOStatement;
 use Pimple\Container;

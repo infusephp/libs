@@ -8,17 +8,17 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model\Driver;
+namespace Infuse\Model\Driver;
 
-use infuse\Model;
-use infuse\Model\Query;
+use Infuse\Model;
+use Infuse\Model\Query;
 
 interface DriverInterface
 {
     /**
      * Creates a model.
      *
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      * @param array         $parameters
      *
      * @return mixed result
@@ -29,7 +29,7 @@ interface DriverInterface
      * Gets the last inserted ID. Used for drivers that generate
      * IDs for models after creation.
      *
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      * @param string        $propertyName
      *
      * @return mixed
@@ -39,7 +39,7 @@ interface DriverInterface
     /**
      * Loads a model.
      *
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      *
      * @return array
      */
@@ -48,7 +48,7 @@ interface DriverInterface
     /**
      * Updates a model.
      *
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      * @param array         $parameters
      *
      * @return bool
@@ -58,7 +58,7 @@ interface DriverInterface
     /**
      * Deletes a model.
      *
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      *
      * @return bool
      */
@@ -67,7 +67,7 @@ interface DriverInterface
     /**
      * Gets the toal number of records matching the given query.
      *
-     * @param \infuse\Model\Query $query
+     * @param \Infuse\Model\Query $query
      *
      * @return int total
      */
@@ -76,7 +76,7 @@ interface DriverInterface
     /**
      * Performs a query to find models of the given type.
      *
-     * @param \infuse\Model\Query $query
+     * @param \Infuse\Model\Query $query
      *
      * @return array raw data from storage
      */

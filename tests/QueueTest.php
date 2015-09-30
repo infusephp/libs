@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Queue;
+use Infuse\Queue;
 use Pimple\Container;
 
 class QueueTest extends PHPUnit_Framework_TestCase

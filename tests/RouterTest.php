@@ -8,10 +8,10 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Request;
-use infuse\Response;
-use infuse\Router;
-use infuse\View;
+use Infuse\Request;
+use Infuse\Response;
+use Infuse\Router;
+use Infuse\View;
 use Pimple\Container;
 
 class RouterTest extends PHPUnit_Framework_TestCase
@@ -143,7 +143,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $req = new Request();
         $req->setPath('/view');
 
-        $res = Mockery::mock('\\infuse\\Response');
+        $res = Mockery::mock('Infuse\Response');
         $res->shouldReceive('render')->withArgs([$view])->once();
 
         $this->assertTrue(Router::route(['/view' => ['MockController', 'view']], self::$app, $req, $res));

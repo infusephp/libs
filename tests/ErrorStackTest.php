@@ -8,8 +8,8 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\ErrorStack;
-use infuse\Locale;
+use Infuse\ErrorStack;
+use Infuse\Locale;
 use Pimple\Container;
 
 class ErrorStackTest extends PHPUnit_Framework_TestCase

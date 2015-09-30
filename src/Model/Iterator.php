@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model;
+namespace Infuse\Model;
 
 class Iterator implements \Iterator, \Countable, \ArrayAccess
 {

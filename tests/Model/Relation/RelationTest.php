@@ -8,13 +8,13 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model\Relation\Relation;
+use Infuse\Model\Relation\Relation;
 
 class RelationTest extends PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $this->assertTrue($relation->initQuery);
@@ -22,7 +22,7 @@ class RelationTest extends PHPUnit_Framework_TestCase
 
     public function testGetModel()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $this->assertEquals('TestModel', $relation->getModel());
@@ -30,7 +30,7 @@ class RelationTest extends PHPUnit_Framework_TestCase
 
     public function testGetForeignKey()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $this->assertEquals('id', $relation->getForeignKey());
@@ -38,7 +38,7 @@ class RelationTest extends PHPUnit_Framework_TestCase
 
     public function testGetLocalKey()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $this->assertEquals('user_id', $relation->getLocalKey());
@@ -46,7 +46,7 @@ class RelationTest extends PHPUnit_Framework_TestCase
 
     public function testGetRelation()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $this->assertEquals($model, $relation->getRelation());
@@ -54,16 +54,16 @@ class RelationTest extends PHPUnit_Framework_TestCase
 
     public function testGetQuery()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $query = $relation->getQuery();
-        $this->assertInstanceOf('infuse\\Model\\Query', $query);
+        $this->assertInstanceOf('Infuse\Model\Query', $query);
     }
 
     public function testCallOnQuery()
     {
-        $model = Mockery::mock('infuse\\Model');
+        $model = Mockery::mock('Infuse\Model');
         $relation = new DistantRelation('TestModel', 'id', 'user_id', $model);
 
         $relation->where(['name' => 'Bob']);

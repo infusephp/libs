@@ -1,16 +1,16 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
+namespace Infuse\Session;
 
-namespace infuse\Session;
-
-use infuse\Session\Redis as RedisSession;
+use Infuse\Session\Redis as RedisSession;
 use Mockery;
 use Pimple\Container;
 

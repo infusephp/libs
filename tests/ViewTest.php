@@ -8,8 +8,8 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\View;
-use infuse\ViewEngine;
+use Infuse\View;
+use Infuse\ViewEngine;
 use Pimple\Container;
 
 class ViewTest extends PHPUnit_Framework_TestCase
@@ -18,7 +18,7 @@ class ViewTest extends PHPUnit_Framework_TestCase
 
     public function testDefaultEngine()
     {
-        $this->assertInstanceOf('\\infuse\\ViewEngine\\PHP', View::defaultEngine());
+        $this->assertInstanceOf('Infuse\ViewEngine\PHP', View::defaultEngine());
 
         $engine = new ViewEngine\PHP();
         $container = new Container();
@@ -55,7 +55,7 @@ class ViewTest extends PHPUnit_Framework_TestCase
         $engine = new ViewEngine\PHP();
         $view = new View('test');
 
-        $this->assertInstanceOf('\\infuse\\ViewEngine\\PHP', $view->getEngine());
+        $this->assertInstanceOf('Infuse\ViewEngine\PHP', $view->getEngine());
 
         $view->setEngine($engine);
         $this->assertEquals($engine, $view->getEngine());

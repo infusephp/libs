@@ -8,8 +8,8 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Utility as U;
-use infuse\Validate;
+use Infuse\Utility as U;
+use Infuse\Validate;
 
 class ValidateTest extends PHPUnit_Framework_TestCase
 {

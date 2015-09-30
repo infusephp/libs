@@ -8,8 +8,8 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\ViewEngine;
-use infuse\View;
+use Infuse\ViewEngine;
+use Infuse\View;
 
 class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
 {

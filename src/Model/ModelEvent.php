@@ -8,9 +8,9 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model;
+namespace Infuse\Model;
 
-use infuse\Model;
+use Infuse\Model;
 use Symfony\Component\EventDispatcher\Event;
 
 class ModelEvent extends Event
@@ -23,12 +23,12 @@ class ModelEvent extends Event
     const DELETED = 'model.deleted';
 
     /**
-     * @var \infuse\Model
+     * @var \Infuse\Model
      */
     protected $model;
 
     /**
-     * @param \infuse\Model $model
+     * @param \Infuse\Model $model
      */
     public function __construct(Model $model)
     {
@@ -38,7 +38,7 @@ class ModelEvent extends Event
     /**
      * Gets the model for this event.
      *
-     * @return \infuse\Model
+     * @return \Infuse\Model
      */
     public function getModel()
     {

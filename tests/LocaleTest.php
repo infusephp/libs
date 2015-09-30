@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Locale;
+use Infuse\Locale;
 
 class LocaleTest extends PHPUnit_Framework_TestCase
 {

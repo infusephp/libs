@@ -8,9 +8,9 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model;
-use infuse\Model\Driver\DatabaseDriver;
-use infuse\Model\Query;
+use Infuse\Model;
+use Infuse\Model\Driver\DatabaseDriver;
+use Infuse\Model\Query;
 use Pimple\Container;
 
 class DatabaseDriverTest extends PHPUnit_Framework_TestCase
@@ -73,7 +73,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testCreateModel()
     {
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
 
         // insert query mock
         $stmt = Mockery::mock('PDOStatement');
@@ -103,7 +103,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $app = new Container();
 
         // insert query mock
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('insert->into->execute')
            ->andThrow(new PDOException());
 
@@ -122,7 +122,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testGetCreatedID()
     {
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('getPDO->lastInsertId')
             ->andReturn('1');
 
@@ -138,7 +138,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
     {
         $app = new Container();
 
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('getPDO->lastInsertId')
             ->andThrow(new PDOException());
 
@@ -169,7 +169,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $from->shouldReceive('from')
              ->withArgs(['People'])
              ->andReturn($where);
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select')
            ->andReturn($from)
            ->once();
@@ -187,7 +187,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $app = new Container();
 
         // select query mock
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select->from->where->one')
            ->andThrow(new PDOException());
 
@@ -218,7 +218,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $values->shouldReceive('values')
                ->withArgs([['name' => 'John', 'array' => '{"test":true}']])
                ->andReturn($where);
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('update')
            ->withArgs(['People'])
            ->andReturn($values);
@@ -241,7 +241,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $app = new Container();
 
         // update query mock
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('update->values->where->execute')
            ->andThrow(new PDOException());
 
@@ -264,7 +264,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
     public function testDeleteModel()
     {
         $stmt = Mockery::mock('PDOStatement');
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('delete->where->execute')
            ->andReturn($stmt);
 
@@ -281,7 +281,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
     {
         $app = new Container();
 
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('delete->where->execute')
            ->andThrow(new PDOException());
 
@@ -315,7 +315,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $from->shouldReceive('from')
              ->withArgs(['People'])
              ->andReturn($where);
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select')
            ->withArgs(['count(*)'])
            ->andReturn($from);
@@ -334,7 +334,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $query = new Query('Person');
 
         // select query mock
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select->from->where->scalar')
            ->andThrow(new PDOException());
 
@@ -379,7 +379,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $from->shouldReceive('from')
              ->withArgs(['People'])
              ->andReturn($where);
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select')
            ->withArgs(['*'])
            ->andReturn($from);
@@ -398,7 +398,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $query = new Query('Person');
 
         // select query mock
-        $db = Mockery::mock('JAQB\\QueryBuilder');
+        $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select->from->where->limit->orderBy->all')
            ->andThrow(new PDOException());
 

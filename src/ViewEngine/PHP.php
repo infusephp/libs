@@ -1,17 +1,17 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
+namespace Infuse\ViewEngine;
 
-namespace infuse\ViewEngine;
-
-use infuse\ViewEngine;
-use infuse\View;
+use Infuse\ViewEngine;
+use Infuse\View;
 
 class PHP extends ViewEngine
 {
@@ -20,7 +20,7 @@ class PHP extends ViewEngine
     const EXTENSION = '.php';
 
     /**
-     * Creates a new PHP ViewEngine
+     * Creates a new PHP ViewEngine.
      *
      * @param string $viewsDir
      */

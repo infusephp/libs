@@ -8,9 +8,9 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\ErrorStack;
-use infuse\Locale;
-use infuse\Model\ACLModel;
+use Infuse\ErrorStack;
+use Infuse\Locale;
+use Infuse\Model\ACLModel;
 use Pimple\Container;
 
 require_once 'tests/test_models.php';

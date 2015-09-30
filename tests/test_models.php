@@ -8,9 +8,9 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model;
-use infuse\Model\ACLModel;
-use infuse\Model\Query;
+use Infuse\Model;
+use Infuse\Model\ACLModel;
+use Infuse\Model\Query;
 
 class TestModel extends Model
 {

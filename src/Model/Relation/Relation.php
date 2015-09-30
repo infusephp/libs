@@ -8,10 +8,10 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse\Model\Relation;
+namespace Infuse\Model\Relation;
 
-use infuse\Model;
-use infuse\Model\Query;
+use Infuse\Model;
+use Infuse\Model\Query;
 
 abstract class Relation
 {
@@ -31,12 +31,12 @@ abstract class Relation
     protected $localKey;
 
     /**
-     * @var \infuse\Model\Query
+     * @var \Infuse\Model\Query
      */
     protected $query;
 
     /**
-     * @var \infuse\Model
+     * @var \Infuse\Model
      */
     protected $relation;
 
@@ -86,7 +86,7 @@ abstract class Relation
     /**
      * Gets the relation model.
      *
-     * @return \infuse\Model
+     * @return \Infuse\Model
      */
     public function getRelation()
     {
@@ -96,7 +96,7 @@ abstract class Relation
     /**
      * Returns the query instance for this relation.
      *
-     * @return \infuse\Model\Query
+     * @return \Infuse\Model\Query
      */
     public function getQuery()
     {

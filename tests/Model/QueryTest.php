@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model\Query;
+use Infuse\Model\Query;
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {
@@ -67,7 +67,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $query = new Query('Person');
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $data = [
             [
@@ -106,7 +106,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $query = new Query('TestModel2');
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $data = [
             [
@@ -141,14 +141,14 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $query = new Query('TestModel');
 
         $all = $query->all();
-        $this->assertInstanceOf('infuse\\Model\\Iterator', $all);
+        $this->assertInstanceOf('Infuse\Model\Iterator', $all);
     }
 
     public function testFirst()
     {
         $query = new Query('Person');
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $data = [
             [
@@ -175,7 +175,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $query = new Query('Person');
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $data = [
             [

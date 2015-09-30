@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
-namespace infuse;
+namespace Infuse;
 
 class Config
 {
@@ -20,7 +20,7 @@ class Config
     }
 
     /**
-     * Gets a global configuration value, section, or all values
+     * Gets a global configuration value, section, or all values.
      *
      * @param string $property dot value property name
      *
@@ -36,7 +36,7 @@ class Config
     }
 
     /**
-     * Sets a configuration value (only persists for the duration of the script)
+     * Sets a configuration value (only persists for the duration of the script).
      *
      * @param string $property dot value property name
      * @param string $value    value to set

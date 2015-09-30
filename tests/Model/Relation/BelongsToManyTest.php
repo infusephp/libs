@@ -8,14 +8,14 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use infuse\Model;
-use infuse\Model\Relation\BelongsToMany;
+use Infuse\Model;
+use Infuse\Model\Relation\BelongsToMany;
 
 class BelongsToManyTest extends PHPUnit_Framework_TestCase
 {
     public static function setUpBeforeClass()
     {
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('queryModels')
                ->andReturn([['id' => 'result'], ['id' => 'result2']]);

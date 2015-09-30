@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @package infuse\libs
  * @author Jared King <j@jaredtking.com>
+ *
  * @link http://jaredtking.com
+ *
  * @copyright 2015 Jared King
  * @license MIT
  */
-
-namespace infuse;
+namespace Infuse;
 
 function headers_sent()
 {
@@ -69,7 +69,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testRender()
     {
-        $view = \Mockery::mock('infuse\\View');
+        $view = \Mockery::mock('Infuse\View');
         $view->shouldReceive('render')->andReturn('Hello, world!')->once();
 
         $this->assertEquals(self::$res, self::$res->render($view));
@@ -109,7 +109,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $req = new Request(null, null, null, null, [
             'HTTP_HOST' => 'example.com',
             'DOCUMENT_URI' => '/some/start',
-            'REQUEST_URI' => '/some/start/test/index.php' ]);
+            'REQUEST_URI' => '/some/start/test/index.php', ]);
         $res = new Response();
 
         $this->assertEquals($res, $res->redirect('/', 302, $req));
@@ -133,7 +133,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com:1234',
             'DOCUMENT_URI' => '/some/start',
             'REQUEST_URI' => '/some/start/test/index.php',
-            'SERVER_PORT' => 5000 ]);
+            'SERVER_PORT' => 5000, ]);
         $res = new Response();
 
         $this->assertEquals($res, $res->redirect('/', 302, $req));
