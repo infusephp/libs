@@ -147,14 +147,36 @@ class Query
 
     /**
      * Sets the where parameters.
+     * Accepts the following forms:
+     *   i)   where(['name' => 'Bob'])
+     *   ii)  where('name', 'Bob')
+     *   iii) where('balance', 100, >)
+     *   iv)  where('balance > 100').
      *
-     * @param array $where
+     * @param array|string $where
+     * @param mixed        $value optional value
+     * @param 
      *
      * @return self
      */
-    public function where(array $where)
+    public function where($where, $value = null, $condition = null)
     {
-        $this->where = array_merge($this->where, $where);
+        // handles i.
+        if (is_array($where)) {
+            $this->where = array_merge($this->where, $where);
+        } else {
+            // handles iii.
+            $args = func_num_args();
+            if ($args > 2) {
+                $this->where[] = [$where, $value, $condition];
+            // handles ii.
+            } elseif ($args == 2) {
+                $this->where[$where] = $value;
+            // handles iv.
+            } else {
+                $this->where[] = $where;
+            }
+        }
 
         return $this;
     }
