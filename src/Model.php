@@ -91,7 +91,6 @@ namespace infuse;
 
 use ICanBoogie\Inflector;
 use infuse\Model\ModelEvent;
-use infuse\Model\Iterator;
 use infuse\Model\Driver\DriverInterface;
 use infuse\Model\Query;
 use infuse\Model\Relation\HasOne;
@@ -1096,33 +1095,15 @@ abstract class Model extends Acl implements \ArrayAccess
             $query->limit($parameters['limit']);
         }
 
-        $where = (isset($parameters['where'])) ? $parameters['where'] : [];
-
-        // perform a search
-        // WARNING LIKE queries are extremely inefficient
-        // use sparingly
-        // TODO move into the rest-api module
-        if (!empty($parameters['search'])) {
-            $w = [];
-            $search = addslashes($parameters['search']);
-            foreach (static::properties() as $name => $property) {
-                if ($property['searchable']) {
-                    $w[] = "`$name` LIKE '%$search%'";
-                }
-            }
-
-            if (count($w) > 0) {
-                $where[] = '('.implode(' OR ', $w).')';
-            }
+        if (isset($parameters['where'])) {
+            $query->where($parameters['where']);
         }
-
-        $query->where($where);
 
         if (isset($parameters['sort'])) {
             $query->sort($parameters['sort']);
         }
 
-        return new Iterator($query);
+        return $query->all();
     }
 
     /**
