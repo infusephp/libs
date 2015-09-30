@@ -11,7 +11,6 @@
 use Infuse\ErrorStack;
 use Infuse\Locale;
 use Infuse\Model;
-use Infuse\Model\ACLModel;
 use Infuse\Model\ModelEvent;
 use Pimple\Container;
 
@@ -42,16 +41,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         // discard the cached dispatcher to
         // remove any event listeners
         TestModel::getDispatcher(true);
-    }
-
-    public function testConfigure()
-    {
-        $requester = new Person(3);
-        TestModel::configure(['requester' => $requester, 'cache' => ['expires' => 2]]);
-
-        $this->assertEquals($requester, ACLModel::getRequester());
-        $model = new TestModel(3);
-        $this->assertEquals(2, $model->getCacheTTL());
     }
 
     public function testInjectContainer()
@@ -1109,36 +1098,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel::where(['name' => 'Bob']);
 
         $this->assertInstanceOf('Infuse\Model\Query', $query);
-    }
-
-    public function testFindOne()
-    {
-        $query = Mockery::mock('Infuse\Model\Query');
-
-        $query->shouldReceive('limit')
-              ->withArgs([1]);
-
-        $query->shouldReceive('start')
-              ->withArgs([5]);
-
-        $query->shouldReceive('sort')
-              ->withArgs(['name asc']);
-
-        $query->shouldReceive('where')
-              ->withArgs([['test' => true]]);
-
-        $query->shouldReceive('first')
-              ->andReturn('result');
-
-        $params = [
-            'where' => ['test' => true],
-            'start' => 5,
-            'sort' => 'name asc',
-        ];
-
-        TestModel::setQuery($query);
-
-        $this->assertEquals('result', TestModel::findOne($params));
     }
 
     public function testTotalRecords()

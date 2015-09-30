@@ -11,7 +11,6 @@
 namespace Infuse;
 
 use ICanBoogie\Inflector;
-use Infuse\Model\ACLModel;
 use Infuse\Model\ModelEvent;
 use Infuse\Model\Driver\DatabaseDriver;
 use Infuse\Model\Driver\DriverInterface;
@@ -236,20 +235,6 @@ abstract class Model implements \ArrayAccess
     {
         // load the driver
         static::getDriver();
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function configure(array $config)
-    {
-        if (isset($config['cache']) && isset($config['cache']['expires'])) {
-            static::$cacheTTL = $config['cache']['expires'];
-        }
-
-        if (isset($config['requester'])) {
-            ACLModel::setRequester($config['requester']);
-        }
     }
 
     /**
@@ -963,28 +948,6 @@ abstract class Model implements \ArrayAccess
     public static function query()
     {
         return new Query(get_called_class());
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function findOne(array $parameters)
-    {
-        $query = static::query();
-
-        if (isset($parameters['where'])) {
-            $query->where($parameters['where']);
-        }
-
-        if (isset($parameters['start'])) {
-            $query->start($parameters['start']);
-        }
-
-        if (isset($parameters['sort'])) {
-            $query->sort($parameters['sort']);
-        }
-
-        return $query->first();
     }
 
     /**
