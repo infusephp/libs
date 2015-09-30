@@ -35,10 +35,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         Model::inject(self::$app);
 
-        $driver = Mockery::mock('infuse\\Model\\Driver\\DriverInterface');
-        Model::setDriver($driver);
-        self::$defaultDriver = $driver;
-
         self::$requester = new Person(1);
         Model::setRequester(self::$requester);
     }
@@ -47,8 +43,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         Model::inject(self::$app);
         TestModel::setRequester(self::$requester);
-        TestModel::setDriver(self::$defaultDriver);
-        TestModel2::setDriver(self::$defaultDriver);
 
         // discard the cached dispatcher to
         // remove any event listeners

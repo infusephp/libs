@@ -7,25 +7,16 @@ use Pimple\Container;
 
 class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 {
-    public static $db;
+    public static $app;
 
     public static function setUpBeforeClass()
     {
-        self::$db = Mockery::mock('JAQB\\QueryBuilder');
-
-        $driver = new DatabaseDriver(self::$db);
-        Model::setDriver($driver);
-    }
-
-    public function testDatabase()
-    {
-        $driver = new DatabaseDriver(self::$db);
-        $this->assertEquals(self::$db, $driver->getDatabase());
+        self::$app = new Container();
     }
 
     public function testTablename()
     {
-        $driver = new DatabaseDriver(self::$db);
+        $driver = new DatabaseDriver(self::$app);
 
         $this->assertEquals('TestModels', $driver->getTablename('TestModel'));
 
@@ -35,7 +26,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testSerializeValue()
     {
-        $driver = new DatabaseDriver(self::$db);
+        $driver = new DatabaseDriver(self::$app);
 
         $this->assertEquals('string', $driver->serializeValue('string'));
 
@@ -45,7 +36,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testUnserializeValue()
     {
-        $driver = new DatabaseDriver(self::$db);
+        $driver = new DatabaseDriver(self::$app);
 
         $property = ['null' => true];
         $this->assertEquals(null, $driver->unserializeValue($property, ''));
@@ -90,7 +81,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
            ->andReturn($into)
            ->once();
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
         Person::setDriver($driver);
 
         $model = new Person();
@@ -99,18 +92,21 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testCreateModelFail()
     {
+        $app = new Container();
+
         // insert query mock
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('insert->into->execute')
            ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
 
         $model = new Person();
         $this->assertFalse($driver->createModel($model, ['answer' => 42]));
@@ -122,7 +118,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db->shouldReceive('getPDO->lastInsertId')
             ->andReturn('1');
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
 
         $model = new Person();
         $this->assertEquals(1, $driver->getCreatedID($model, 'id'));
@@ -130,17 +128,20 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testGetCreatedIDFail()
     {
+        $app = new Container();
+
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('getPDO->lastInsertId')
             ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
 
         $model = new Person();
         $this->assertNull($driver->getCreatedID($model, 'id'));
@@ -165,7 +166,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
            ->andReturn($from)
            ->once();
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
 
         $model = new Person(12);
         $this->assertEquals(['name' => 'John'], $driver->loadModel($model));
@@ -173,18 +176,21 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testLoadModelFail()
     {
+        $app = new Container();
+
         // select query mock
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('select->from->where->one')
            ->andThrow(new PDOException());
 
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $app['db'] = $db;
+
+        $driver = new DatabaseDriver($app);
 
         $model = new Person(12);
         $this->assertEquals([], $driver->loadModel($model));
@@ -209,7 +215,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
            ->withArgs(['People'])
            ->andReturn($values);
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
         Person::setDriver($driver);
 
         $model = new Person(11);
@@ -222,18 +230,21 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testUpdateModelFail()
     {
+        $app = new Container();
+
         // update query mock
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('update->values->where->execute')
            ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
         Person::setDriver($driver);
 
         $model = new Person(10);
@@ -249,7 +260,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db->shouldReceive('delete->where->execute')
            ->andReturn($stmt);
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
         Person::setDriver($driver);
 
         $model = new Person(10);
@@ -258,17 +271,20 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testDeleteModelFail()
     {
+        $app = new Container();
+
         $db = Mockery::mock('JAQB\\QueryBuilder');
         $db->shouldReceive('delete->where->execute')
            ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
         Person::setDriver($driver);
 
         $model = new Person(10);
@@ -296,7 +312,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
            ->withArgs(['count(*)'])
            ->andReturn($from);
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
         Person::setDriver($driver);
 
         $this->assertEquals(1, $driver->totalRecords($query));
@@ -304,6 +322,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testTotalRecordsFail()
     {
+        $app = new Container();
         $query = new Query('Person');
 
         // select query mock
@@ -311,13 +330,14 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db->shouldReceive('select->from->where->scalar')
            ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
         Person::setDriver($driver);
 
         $this->assertEquals(0, $driver->totalRecords($query));
@@ -356,7 +376,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
            ->withArgs(['*'])
            ->andReturn($from);
 
-        $driver = new DatabaseDriver($db);
+        self::$app['db'] = $db;
+
+        $driver = new DatabaseDriver(self::$app);
         Person::setDriver($driver);
 
         $this->assertEquals([['test' => true]], $driver->queryModels($query));
@@ -364,6 +386,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
     public function testQueryModelsFail()
     {
+        $app = new Container();
         $query = new Query('Person');
 
         // select query mock
@@ -371,13 +394,14 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $db->shouldReceive('select->from->where->limit->orderBy->all')
            ->andThrow(new PDOException());
 
+        $app['db'] = $db;
+
         // logger mock
-        $app = new Container();
         $app['logger'] = Mockery::mock();
         $app['logger']->shouldReceive('error')
                       ->once();
 
-        $driver = new DatabaseDriver($db, $app);
+        $driver = new DatabaseDriver($app);
         Person::setDriver($driver);
 
         $this->assertEquals([], $driver->queryModels($query));

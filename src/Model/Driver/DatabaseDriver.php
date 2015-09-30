@@ -5,7 +5,6 @@ namespace infuse\Model\Driver;
 use ICanBoogie\Inflector;
 use infuse\Model;
 use infuse\Model\Query;
-use JAQB\QueryBuilder;
 use PDOException;
 use PDOStatement;
 use Pimple\Container;
@@ -13,33 +12,16 @@ use Pimple\Container;
 class DatabaseDriver implements DriverInterface
 {
     /**
-     * @var \JAQB\QueryBuilder
-     */
-    private $db;
-
-    /**
      * @var \Pimple\Container
      */
     private $app;
 
     /**
-     * @param \JAQB\QueryBuilder $db
-     * @param \Pimple\Container  $app
+     * @param \Pimple\Container $app
      */
-    public function __construct(QueryBuilder $db, Container $app = null)
+    public function __construct(Container $app = null)
     {
-        $this->db = $db;
         $this->app = $app;
-    }
-
-    /**
-     * Returns the query builder instance used by this driver.
-     *
-     * @return \JAQB\QueryBuilder
-     */
-    public function getDatabase()
-    {
-        return $this->db;
     }
 
     public function createModel(Model $model, array $parameters)
@@ -47,7 +29,7 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
 
         try {
-            return $this->db->insert($values)
+            return $this->app['db']->insert($values)
                 ->into($this->getTablename($model))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
@@ -60,7 +42,7 @@ class DatabaseDriver implements DriverInterface
     public function getCreatedID(Model $model, $propertyName)
     {
         try {
-            $id = $this->db->getPDO()->lastInsertId();
+            $id = $this->app['db']->getPDO()->lastInsertId();
 
             return $this->unserializeValue($model::properties($propertyName), $id);
         } catch (PDOException $e) {
@@ -71,7 +53,7 @@ class DatabaseDriver implements DriverInterface
     public function loadModel(Model $model)
     {
         try {
-            $row = $this->db->select('*')
+            $row = $this->app['db']->select('*')
                 ->from($this->getTablename($model))
                 ->where($model->id(true))
                 ->one();
@@ -97,7 +79,7 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
 
         try {
-            return $this->db->update($this->getTablename($model))
+            return $this->app['db']->update($this->getTablename($model))
                 ->values($values)
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
@@ -111,7 +93,7 @@ class DatabaseDriver implements DriverInterface
     public function deleteModel(Model $model)
     {
         try {
-            return $this->db->delete($this->getTablename($model))
+            return $this->app['db']->delete($this->getTablename($model))
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
@@ -126,7 +108,7 @@ class DatabaseDriver implements DriverInterface
         $model = $query->getModel();
 
         try {
-            $data = $this->db->select('*')
+            $data = $this->app['db']->select('*')
                 ->from($this->getTablename($model))
                 ->where($query->getWhere())
                 ->limit($query->getLimit(), $query->getStart())
@@ -149,7 +131,7 @@ class DatabaseDriver implements DriverInterface
     public function totalRecords(Query $query)
     {
         try {
-            return (int) $this->db->select('count(*)')
+            return (int) $this->app['db']->select('count(*)')
                 ->from($this->getTablename($query->getModel()))
                 ->where($query->getWhere())
                 ->scalar();
