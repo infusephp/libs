@@ -90,6 +90,7 @@
 namespace infuse;
 
 use ICanBoogie\Inflector;
+use infuse\Model\ACLModel;
 use infuse\Model\ModelEvent;
 use infuse\Model\Driver\DatabaseDriver;
 use infuse\Model\Driver\DriverInterface;
@@ -103,9 +104,6 @@ use Stash\Pool;
 use Stash\Item;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-if (!defined('ERROR_NO_PERMISSION')) {
-    define('ERROR_NO_PERMISSION', 'no_permission');
-}
 if (!defined('VALIDATION_REQUIRED_FIELD_MISSING')) {
     define('VALIDATION_REQUIRED_FIELD_MISSING', 'required_field_missing');
 }
@@ -116,7 +114,7 @@ if (!defined('VALIDATION_NOT_UNIQUE')) {
     define('VALIDATION_NOT_UNIQUE', 'not_unique');
 }
 
-abstract class Model extends Acl implements \ArrayAccess
+abstract class Model implements \ArrayAccess
 {
     const IMMUTABLE = 0;
     const MUTABLE_CREATE_ONLY = 1;
@@ -335,7 +333,7 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         if (isset($config['requester'])) {
-            static::setRequester($config['requester']);
+            ACLModel::setRequester($config['requester']);
         }
     }
 
@@ -643,8 +641,7 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * Creates a new model
-     * WARNING: requires 'create' permission from the requester.
+     * Creates a new model.
      *
      * @param array $data key-value properties
      *
@@ -653,15 +650,6 @@ abstract class Model extends Acl implements \ArrayAccess
     public function create(array $data = [])
     {
         if ($this->_id !== false) {
-            return false;
-        }
-
-        // permission?
-        // TODO permission system should be optional for models
-        // by extending Acl instead of Model
-        if (!$this->can('create', static::getRequester())) {
-            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
-
             return false;
         }
 
@@ -940,8 +928,7 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * Updates the model
-     * WARNING: requires 'edit' permission from the requester.
+     * Updates the model.
      *
      * @param array|string $data  key-value properties or name of property
      * @param string new   $value value to set if name supplied
@@ -955,15 +942,6 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         if ($this->_id === false) {
-            return false;
-        }
-
-        // permission?
-        // TODO permission system should be optional for models
-        // by extending Acl instead of Model
-        if (!$this->can('edit', static::getRequester())) {
-            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
-
             return false;
         }
 
@@ -1025,23 +1003,13 @@ abstract class Model extends Acl implements \ArrayAccess
     }
 
     /**
-     * Delete the model
-     * WARNING: requires 'delete' permission from the requester.
+     * Delete the model.
      *
      * @return bool success
      */
     public function delete()
     {
         if ($this->_id === false) {
-            return false;
-        }
-
-        // permission?
-        // TODO permission system should be optional for models
-        // by extending Acl instead of Model
-        if (!$this->can('delete', static::getRequester())) {
-            $this->app['errors']->push(['error' => ERROR_NO_PERMISSION]);
-
             return false;
         }
 

@@ -8,10 +8,16 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-namespace infuse;
+namespace infuse\Model;
 
-abstract class Acl
+use infuse\Model;
+
+abstract class ACLModel extends Model
 {
+    const ERROR_NO_PERMISSION = 'no_permission';
+
+    const LISTENER_PRIORITY = 1000;
+
     /**
      * @staticvar Model|false
      */
@@ -76,6 +82,8 @@ abstract class Acl
         return $perm;
     }
 
+    abstract protected function hasPermission($permission, Model $requester);
+
     /**
      * Disables all permissions checking in can() for this object
      * DANGER: this should only be used when objects are mutated from application code
@@ -102,5 +110,44 @@ abstract class Acl
         return $this;
     }
 
-    abstract protected function hasPermission($permission, Model $requester);
+    public function initialize()
+    {
+        parent::initialize();
+
+        // check the if the requester has the `create`
+        // permission before creating
+        static::creating(function (ModelEvent $event) {
+            $model = $event->getModel();
+
+            if (!$model->can('create', ACLModel::getRequester())) {
+                $model->getApp()['errors']->push(['error' => ACLModel::ERROR_NO_PERMISSION]);
+
+                $event->stopPropagation();
+            }
+        }, self::LISTENER_PRIORITY);
+
+        // check the if the requester has the `edit`
+        // permission before updating
+        static::updating(function (ModelEvent $event) {
+            $model = $event->getModel();
+
+            if (!$model->can('edit', ACLModel::getRequester())) {
+                $model->getApp()['errors']->push(['error' => ACLModel::ERROR_NO_PERMISSION]);
+
+                $event->stopPropagation();
+            }
+        }, self::LISTENER_PRIORITY);
+
+        // check the if the requester has the `delete`
+        // permission before deleting
+        static::deleting(function (ModelEvent $event) {
+            $model = $event->getModel();
+
+            if (!$model->can('delete', ACLModel::getRequester())) {
+                $model->getApp()['errors']->push(['error' => ACLModel::ERROR_NO_PERMISSION]);
+
+                $event->stopPropagation();
+            }
+        }, self::LISTENER_PRIORITY);
+    }
 }

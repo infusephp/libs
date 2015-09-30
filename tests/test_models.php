@@ -1,7 +1,7 @@
 <?php
 
-use infuse\Acl;
 use infuse\Model;
+use infuse\Model\ACLModel;
 use infuse\Model\Query;
 
 class TestModel extends Model
@@ -34,11 +34,6 @@ class TestModel extends Model
             'null' => true, ];
 
         return $properties;
-    }
-
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
     }
 
     public function preCreateHook()
@@ -169,11 +164,6 @@ class TestModel2 extends Model
 
     public static $query;
 
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
     public function toArrayHook(array &$result, array $exclude, array $include, array $expand)
     {
         if (isset($include['toArrayHook'])) {
@@ -203,7 +193,7 @@ class TestModel2 extends Model
     }
 }
 
-class TestModelNoPermission extends Model
+class TestModelNoPermission extends ACLModel
 {
     protected function hasPermission($permission, Model $requester)
     {
@@ -213,11 +203,6 @@ class TestModelNoPermission extends Model
 
 class TestModelHookFail extends Model
 {
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
-
     public function preCreateHook()
     {
         return false;
@@ -234,7 +219,7 @@ class TestModelHookFail extends Model
     }
 }
 
-class Person extends Model
+class Person extends ACLModel
 {
     public static $properties = [
         'id' => [
@@ -262,14 +247,9 @@ class IteratorTestModel extends Model
             'searchable' => true,
         ],
     ];
-
-    protected function hasPermission($permission, Model $requester)
-    {
-        return true;
-    }
 }
 
-class AclObject extends Acl
+class AclObject extends ACLModel
 {
     public $first = true;
 

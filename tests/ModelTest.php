@@ -11,6 +11,7 @@
 use infuse\ErrorStack;
 use infuse\Locale;
 use infuse\Model;
+use infuse\Model\ACLModel;
 use infuse\Model\ModelEvent;
 use Pimple\Container;
 
@@ -18,9 +19,7 @@ require_once 'test_models.php';
 
 class ModelTest extends PHPUnit_Framework_TestCase
 {
-    public static $requester;
     public static $app;
-    public static $defaultDriver;
 
     public static function setUpBeforeClass()
     {
@@ -34,15 +33,11 @@ class ModelTest extends PHPUnit_Framework_TestCase
         };
 
         Model::inject(self::$app);
-
-        self::$requester = new Person(1);
-        Model::setRequester(self::$requester);
     }
 
     protected function tearDown()
     {
         Model::inject(self::$app);
-        TestModel::setRequester(self::$requester);
 
         // discard the cached dispatcher to
         // remove any event listeners
@@ -54,7 +49,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $requester = new Person(3);
         TestModel::configure(['requester' => $requester, 'cache' => ['expires' => 2]]);
 
-        $this->assertEquals($requester, TestModel::getRequester());
+        $this->assertEquals($requester, ACLModel::getRequester());
         $model = new TestModel(3);
         $this->assertEquals(2, $model->getCacheTTL());
     }
@@ -753,15 +748,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($model->create(['relation' => '', 'answer' => 42]));
     }
 
-    public function testCreateNoPermission()
-    {
-        $errorStack = self::$app['errors']->clear();
-
-        $newModel = new TestModelNoPermission();
-        $this->assertFalse($newModel->create([]));
-        $this->assertCount(1, $errorStack->errors());
-    }
-
     public function testCreatingListenerFail()
     {
         TestModel::creating(function (ModelEvent $event) {
@@ -939,15 +925,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($model->set(['answer' => 42]));
     }
 
-    public function testSetNoPermission()
-    {
-        $errorStack = self::$app['errors']->clear();
-
-        $model = new TestModelNoPermission(5);
-        $this->assertFalse($model->set('answer', 42));
-        $this->assertCount(1, $errorStack->errors());
-    }
-
     public function testUpdatingListenerFail()
     {
         TestModel::updating(function (ModelEvent $event) {
@@ -1067,14 +1044,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($model->delete());
         $this->assertTrue($model->preDelete);
         $this->assertTrue($model->postDelete);
-    }
-
-    public function testDeleteNoPermission()
-    {
-        $errorStack = self::$app['errors']->clear();
-        $model = new TestModelNoPermission(5);
-        $this->assertFalse($model->delete());
-        $this->assertCount(1, $errorStack->errors());
     }
 
     public function testDeletingListenerFail()
