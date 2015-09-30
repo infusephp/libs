@@ -104,16 +104,6 @@ use Stash\Pool;
 use Stash\Item;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-if (!defined('VALIDATION_REQUIRED_FIELD_MISSING')) {
-    define('VALIDATION_REQUIRED_FIELD_MISSING', 'required_field_missing');
-}
-if (!defined('VALIDATION_FAILED')) {
-    define('VALIDATION_FAILED', 'validation_failed');
-}
-if (!defined('VALIDATION_NOT_UNIQUE')) {
-    define('VALIDATION_NOT_UNIQUE', 'not_unique');
-}
-
 abstract class Model implements \ArrayAccess
 {
     const IMMUTABLE = 0;
@@ -125,6 +115,10 @@ abstract class Model implements \ArrayAccess
     const TYPE_BOOLEAN = 'boolean';
     const TYPE_DATE = 'date';
     const TYPE_JSON = 'json';
+
+    const ERROR_REQUIRED_FIELD_MISSING = 'required_field_missing';
+    const ERROR_VALIDATION_FAILED = 'validation_failed';
+    const ERROR_NOT_UNIQUE = 'not_unique';
 
     /////////////////////////////
     // Public variables
@@ -702,7 +696,7 @@ abstract class Model implements \ArrayAccess
         foreach ($requiredProperties as $name) {
             if (!isset($insertArray[$name])) {
                 $this->app['errors']->push([
-                    'error' => VALIDATION_REQUIRED_FIELD_MISSING,
+                    'error' => self::ERROR_REQUIRED_FIELD_MISSING,
                     'params' => [
                         'field' => $name,
                         'field_name' => (isset($properties[$name]['title'])) ? $properties[$name]['title'] : Inflector::get()->titleize($name), ], ]);
@@ -1734,7 +1728,7 @@ abstract class Model implements \ArrayAccess
 
         if (!$valid) {
             $this->app['errors']->push([
-                'error' => VALIDATION_FAILED,
+                'error' => self::ERROR_VALIDATION_FAILED,
                 'params' => [
                     'field' => $propertyName,
                     'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($propertyName), ], ]);
@@ -1756,7 +1750,7 @@ abstract class Model implements \ArrayAccess
     {
         if (static::totalRecords([$propertyName => $value]) > 0) {
             $this->app['errors']->push([
-                'error' => VALIDATION_NOT_UNIQUE,
+                'error' => self::ERROR_NOT_UNIQUE,
                 'params' => [
                     'field' => $propertyName,
                     'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($propertyName), ], ]);
