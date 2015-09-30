@@ -48,11 +48,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $count;
 
     /**
-     * @var int
-     */
-    private $max;
-
-    /**
      * @param string $model
      * @param array  $parameters
      */
@@ -63,7 +58,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         $this->start = $query->getStart();
         $this->limit = $query->getLimit();
         $this->pointer = $this->start;
-        $this->max = -1;
 
         if (empty($query->getSort())) {
             $model = $query->getModel();
@@ -79,30 +73,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     public function getQuery()
     {
         return $this->query;
-    }
-
-    /**
-     * Sets the maximum number of results to return.
-     *
-     * @param int $n
-     *
-     * @return self
-     */
-    public function setMax($n)
-    {
-        $this->max = $n;
-
-        return $this;
-    }
-
-    /**
-     * Gets the maximum number of results to return.
-     *
-     * @return int
-     */
-    public function getMax()
-    {
-        return $this->max;
     }
 
     //////////////////////////
@@ -181,10 +151,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     public function count()
     {
         $this->updateCount();
-
-        if ($this->max >= 0) {
-            return min($this->max, $this->count);
-        }
 
         return $this->count;
     }

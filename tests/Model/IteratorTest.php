@@ -69,16 +69,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([['id', 'asc']], self::$iterator->getQuery()->getSort());
     }
 
-    public function testSetMax()
-    {
-        $query = new Query('IteratorTestModel');
-        $iterator = new Iterator($query);
-
-        $this->assertEquals(-1, $iterator->getMax());
-        $this->assertEquals($iterator, $iterator->setMax(100));
-        $this->assertEquals(100, $iterator->getMax());
-    }
-
     public function testKey()
     {
         $this->assertEquals(self::$start, self::$iterator->key());
@@ -262,30 +252,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         }
 
         $this->assertEquals($i, IteratorTestModel::totalRecords());
-    }
-
-    public function testWithMax()
-    {
-        $query = new Query('IteratorTestModel');
-        $iterator = new Iterator($query);
-        $iterator->setMax(5);
-
-        // test Iterator
-        $found = [];
-        foreach ($iterator as $model) {
-            $this->assertInstanceOf('IteratorTestModel', $model);
-            $found[] = $model->id();
-        }
-
-        $expected = [0, 1, 2, 3, 4];
-
-        $this->assertEquals($expected, $found);
-
-        // test Countable
-        $this->assertCount(5, $iterator);
-
-        // test ArrayAccess
-        $this->assertTrue(isset($iterator[0]));
     }
 
     public function testQueryModelsMismatchCount()
