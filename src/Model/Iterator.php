@@ -59,7 +59,8 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         $this->limit = $query->getLimit();
         $this->pointer = $this->start;
 
-        if (empty($query->getSort())) {
+        $sort = $query->getSort();
+        if (empty($sort)) {
             $model = $query->getModel();
             $idProperties = (array) $model::idProperty();
             foreach ($idProperties as $k => $property) {
