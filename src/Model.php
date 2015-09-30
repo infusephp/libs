@@ -562,32 +562,31 @@ abstract class Model implements \ArrayAccess
 
         $properties = static::properties();
 
-        // get the required properties
         $requiredProperties = [];
         foreach ($properties as $name => $property) {
+            // build a list of the required properties
             if ($property['required']) {
                 $requiredProperties[] = $name;
             }
-        }
 
-        // add in default values
-        foreach ($properties as $name => $property) {
+            // add in default values
             if (array_key_exists('default', $property) && !array_key_exists($name, $this->_unsaved)) {
                 $this->_unsaved[$name] = $property['default'];
             }
         }
 
-        // validate and filter the supplied values
+        // filter and validate the values being saved
         $validated = true;
         $insertArray = [];
         foreach ($this->_unsaved as $name => $value) {
+            // exclude if value does not map to a property
             if (!isset($properties[$name])) {
                 continue;
             }
 
             $property = $properties[$name];
 
-            // cannot insert keys, unless explicitly allowed
+            // cannot insert immutable values
             if ($property['mutable'] == self::IMMUTABLE && !array_key_exists('default', $property)) {
                 continue;
             }
@@ -855,11 +854,11 @@ abstract class Model implements \ArrayAccess
 
         $properties = static::properties();
 
-        // loop through each supplied field and validate
+        // filter and validate the values being saved
         $validated = true;
         $updateArray = [];
         foreach ($data as $name => $value) {
-            // exclude if field does not map to a property
+            // exclude if value does not map to a property
             if (!isset($properties[$name])) {
                 continue;
             }
