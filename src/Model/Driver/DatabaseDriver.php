@@ -27,10 +27,11 @@ class DatabaseDriver implements DriverInterface
     public function createModel(Model $model, array $parameters)
     {
         $values = $this->serialize($parameters);
+        $tablename = $this->getTablename($model);
 
         try {
             return $this->app['db']->insert($values)
-                ->into($this->getTablename($model))
+                ->into($tablename)
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
@@ -52,9 +53,11 @@ class DatabaseDriver implements DriverInterface
 
     public function loadModel(Model $model)
     {
+        $tablename = $this->getTablename($model);
+
         try {
             $row = $this->app['db']->select('*')
-                ->from($this->getTablename($model))
+                ->from($tablename)
                 ->where($model->id(true))
                 ->one();
 
@@ -77,9 +80,10 @@ class DatabaseDriver implements DriverInterface
         }
 
         $values = $this->serialize($parameters);
+        $tablename = $this->getTablename($model);
 
         try {
-            return $this->app['db']->update($this->getTablename($model))
+            return $this->app['db']->update($tablename)
                 ->values($values)
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
@@ -92,8 +96,10 @@ class DatabaseDriver implements DriverInterface
 
     public function deleteModel(Model $model)
     {
+        $tablename = $this->getTablename($model);
+
         try {
-            return $this->app['db']->delete($this->getTablename($model))
+            return $this->app['db']->delete($tablename)
                 ->where($model->id(true))
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
@@ -106,10 +112,11 @@ class DatabaseDriver implements DriverInterface
     public function queryModels(Query $query)
     {
         $model = $query->getModel();
+        $tablename = $this->getTablename($model);
 
         try {
             $data = $this->app['db']->select('*')
-                ->from($this->getTablename($model))
+                ->from($tablename)
                 ->where($query->getWhere())
                 ->limit($query->getLimit(), $query->getStart())
                 ->orderBy($query->getSort())
@@ -130,9 +137,12 @@ class DatabaseDriver implements DriverInterface
 
     public function totalRecords(Query $query)
     {
+        $model = $query->getModel();
+        $tablename = $this->getTablename($model);
+
         try {
             return (int) $this->app['db']->select('count(*)')
-                ->from($this->getTablename($query->getModel()))
+                ->from($tablename)
                 ->where($query->getWhere())
                 ->scalar();
         } catch (PDOException $e) {

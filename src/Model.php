@@ -836,6 +836,8 @@ abstract class Model extends Acl implements \ArrayAccess
             }
         }
 
+        // TODO need to store the id as an array
+        // instead of a string to maintain type integrity
         return (count($ids) > 1) ? implode(',', $ids) : $ids[0];
     }
 
