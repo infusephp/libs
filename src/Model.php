@@ -1083,32 +1083,6 @@ abstract class Model extends Acl implements \ArrayAccess
     /**
      * @deprecated
      */
-    public static function findAll(array $parameters = [])
-    {
-        $query = static::query();
-
-        if (isset($parameters['start'])) {
-            $query->start($parameters['start']);
-        }
-
-        if (isset($parameters['limit'])) {
-            $query->limit($parameters['limit']);
-        }
-
-        if (isset($parameters['where'])) {
-            $query->where($parameters['where']);
-        }
-
-        if (isset($parameters['sort'])) {
-            $query->sort($parameters['sort']);
-        }
-
-        return $query->all();
-    }
-
-    /**
-     * @deprecated
-     */
     public static function findOne(array $parameters)
     {
         $query = static::query();

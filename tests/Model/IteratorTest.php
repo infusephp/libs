@@ -239,21 +239,6 @@ class IteratorTest extends PHPUnit_Framework_TestCase
         unset(self::$iterator[0]);
     }
 
-    public function testFindAll()
-    {
-        $iterator = IteratorTestModel::findAll();
-
-        $i = 0;
-        foreach ($iterator as $k => $model) {
-            $this->assertEquals($i, $k);
-            $this->assertInstanceOf('IteratorTestModel', $model);
-            $this->assertEquals($i, $model->id());
-            ++$i;
-        }
-
-        $this->assertEquals($i, IteratorTestModel::totalRecords());
-    }
-
     public function testQueryModelsMismatchCount()
     {
         // simulate the queryModels() method acting up
