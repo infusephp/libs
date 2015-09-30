@@ -562,40 +562,38 @@ abstract class Model implements \ArrayAccess
 
         $properties = static::properties();
 
-        // get the property names, and required properties
-        $propertyNames = [];
+        // get the required properties
         $requiredProperties = [];
         foreach ($properties as $name => $property) {
-            $propertyNames[] = $name;
             if ($property['required']) {
                 $requiredProperties[] = $name;
             }
         }
 
         // add in default values
-        foreach ($properties as $name => $fieldInfo) {
-            if (array_key_exists('default', $fieldInfo) && !array_key_exists($name, $this->_unsaved)) {
-                $this->_unsaved[$name] = $fieldInfo['default'];
+        foreach ($properties as $name => $property) {
+            if (array_key_exists('default', $property) && !array_key_exists($name, $this->_unsaved)) {
+                $this->_unsaved[$name] = $property['default'];
             }
         }
 
-        // loop through each supplied field and validate
+        // validate and filter the supplied values
         $validated = true;
         $insertArray = [];
-        foreach ($this->_unsaved as $field => $value) {
-            if (!in_array($field, $propertyNames)) {
+        foreach ($this->_unsaved as $name => $value) {
+            if (!isset($properties[$name])) {
                 continue;
             }
 
-            $property = $properties[$field];
+            $property = $properties[$name];
 
             // cannot insert keys, unless explicitly allowed
             if ($property['mutable'] == self::IMMUTABLE && !array_key_exists('default', $property)) {
                 continue;
             }
 
-            $validated = $validated && $this->filterAndValidate($property, $field, $value);
-            $insertArray[$field] = $value;
+            $validated = $validated && $this->filterAndValidate($property, $name, $value);
+            $insertArray[$name] = $value;
         }
 
         // check for required fields
@@ -855,29 +853,26 @@ abstract class Model implements \ArrayAccess
             return false;
         }
 
-        $validated = true;
-        $updateArray = [];
         $properties = static::properties();
 
-        // get the property names
-        $propertyNames = array_keys($properties);
-
         // loop through each supplied field and validate
-        foreach ($data as $propertyName => $value) {
+        $validated = true;
+        $updateArray = [];
+        foreach ($data as $name => $value) {
             // exclude if field does not map to a property
-            if (!in_array($propertyName, $propertyNames)) {
+            if (!isset($properties[$name])) {
                 continue;
             }
 
-            $property = $properties[$propertyName];
+            $property = $properties[$name];
 
             // can only modify mutable properties
             if ($property['mutable'] != self::MUTABLE) {
                 continue;
             }
 
-            $validated = $validated && $this->filterAndValidate($property, $propertyName, $value);
-            $updateArray[$propertyName] = $value;
+            $validated = $validated && $this->filterAndValidate($property, $name, $value);
+            $updateArray[$name] = $value;
         }
 
         if (!$validated) {
