@@ -1142,8 +1142,6 @@ abstract class Model extends Acl implements \ArrayAccess
             $query->where($parameters['where']);
         }
 
-        $query->limit(1);
-
         if (isset($parameters['start'])) {
             $query->start($parameters['start']);
         }
