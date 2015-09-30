@@ -1097,6 +1097,11 @@ abstract class Model extends Acl implements \ArrayAccess
         }
 
         $where = (isset($parameters['where'])) ? $parameters['where'] : [];
+
+        // perform a search
+        // WARNING LIKE queries are extremely inefficient
+        // use sparingly
+        // TODO move into the rest-api module
         if (!empty($parameters['search'])) {
             $w = [];
             $search = addslashes($parameters['search']);
@@ -1113,20 +1118,9 @@ abstract class Model extends Acl implements \ArrayAccess
 
         $query->where($where);
 
-        $sort = '';
         if (isset($parameters['sort'])) {
-            $sort = $parameters['sort'];
+            $query->sort($parameters['sort']);
         }
-
-        if (empty($sort)) {
-            $idProperties = (array) static::idProperty();
-            foreach ($idProperties as $k => $property) {
-                $idProperties[$k] .= ' ASC';
-            }
-            $sort = implode(',', $idProperties);
-        }
-
-        $query->sort($sort);
 
         return new Iterator($query);
     }

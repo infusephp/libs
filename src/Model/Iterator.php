@@ -33,11 +33,6 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $limit;
 
     /**
-     * @var array
-     */
-    private $where;
-
-    /**
      * @var bool
      */
     private $loadedStart;
@@ -69,6 +64,16 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         $this->limit = $query->getLimit();
         $this->pointer = $this->start;
         $this->max = -1;
+
+        if (empty($query->getSort())) {
+            $model = $query->getModel();
+            $idProperties = (array) $model::idProperty();
+            foreach ($idProperties as $k => $property) {
+                $idProperties[$k] .= ' ASC';
+            }
+
+            $query->sort(implode(',', $idProperties));
+        }
     }
 
     public function getQuery()

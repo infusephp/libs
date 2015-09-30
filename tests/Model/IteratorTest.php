@@ -64,6 +64,9 @@ class IteratorTest extends PHPUnit_Framework_TestCase
     public function testGetQuery()
     {
         $this->assertEquals(self::$query, self::$iterator->getQuery());
+
+        // the default sorting should be by ID in ascending order
+        $this->assertEquals([['id', 'asc']], self::$iterator->getQuery()->getSort());
     }
 
     public function testSetMax()
