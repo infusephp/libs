@@ -218,7 +218,7 @@ abstract class Model implements \ArrayAccess
             $this->_cache = &self::$defaultCache;
         }
 
-        $this->setCacheTTL(self::$cacheTTL);
+        $this->setCacheTTL(static::$cacheTTL);
 
         // cache the loaded values
         if (count($values) > 0) {
@@ -1478,6 +1478,16 @@ abstract class Model implements \ArrayAccess
     public function getCache()
     {
         return $this->_cache;
+    }
+
+    /**
+     * Sets the default cache TTL.
+     *
+     * @param int $expires
+     */
+    public static function setDefaultCacheTTL($expires)
+    {
+        static::$cacheTTL = $expires;
     }
 
     /**

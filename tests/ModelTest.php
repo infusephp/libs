@@ -1298,6 +1298,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel::clearDefaultCache();
     }
 
+    public function testSetDefaultCacheTTL()
+    {
+        TestModel::setDefaultCacheTTL(2);
+
+        $model = new TestModel();
+        $this->assertEquals(2, $model->getCacheTTL());
+    }
+
     public function testSetCache()
     {
         $cache = Mockery::mock('Stash\Pool');
