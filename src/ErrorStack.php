@@ -8,7 +8,6 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-
 namespace infuse;
 
 use Pimple\Container;
@@ -156,7 +155,7 @@ class ErrorStack
      * @param string $value value we are searching for
      * @param string $param parameter name
      *
-     * @return boolean
+     * @return bool
      */
     public function has($value, $param = 'field')
     {
