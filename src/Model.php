@@ -559,7 +559,7 @@ abstract class Model implements \ArrayAccess
             }
 
             // add in default values
-            if (array_key_exists('default', $property) && !array_key_exists($name, $this->_unsaved)) {
+            if (!array_key_exists($name, $this->_unsaved) && array_key_exists('default', $property)) {
                 $this->_unsaved[$name] = $property['default'];
             }
         }
@@ -576,7 +576,8 @@ abstract class Model implements \ArrayAccess
             $property = $properties[$name];
 
             // cannot insert immutable values
-            if ($property['mutable'] == self::IMMUTABLE && !array_key_exists('default', $property)) {
+            // (unless using the default value)
+            if ($property['mutable'] == self::IMMUTABLE && $value !== $this->getDefaultValue($property)) {
                 continue;
             }
 
@@ -673,13 +674,14 @@ abstract class Model implements \ArrayAccess
 
         // only return requested properties
         $return = [];
-        foreach ($properties as $key) {
-            if (array_key_exists($key, $values)) {
-                $return[$key] = $values[$key];
+        foreach ($properties as $k) {
+            if (array_key_exists($k, $values)) {
+                $return[$k] = $values[$k];
+            // set any missing values to the default value
+            } elseif (static::hasProperty($k)) {
+                $return[$k] = $this->_local[$k] = $this->getDefaultValue(static::$properties[$k]);
             } else {
-                // set any missing values to the default value
-                $return[$key] = $this->getDefaultValueFor($key);
-                $this->_local[$key] = $return[$key];
+                $return[$k] = null;
             }
         }
 
@@ -1659,14 +1661,8 @@ abstract class Model implements \ArrayAccess
      *
      * @return mixed
      */
-    private function getDefaultValueFor($property)
+    private function getDefaultValue(array $property)
     {
-        $property = static::properties($property);
-
-        if (!is_array($property) || !isset($property['default'])) {
-            return;
-        }
-
-        return $property['default'];
+        return Utility::array_value($property, 'default');
     }
 }

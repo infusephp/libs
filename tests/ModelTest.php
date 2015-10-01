@@ -696,6 +696,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                     'id' => 1,
                     'id2' => 2,
                     'required' => 25,
+                    'mutable_create_only' => 'test',
                     'default' => 'some default value',
                     'hidden' => false,
                     'created_at' => null,
@@ -705,7 +706,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                         'shipping' => false,
                     ],
                     'person' => 20,
-                    'mutable_create_only' => 'test', ]])
+                 ]])
                ->andReturn(true);
 
         TestModel2::setDriver($driver);
