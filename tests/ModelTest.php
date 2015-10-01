@@ -581,7 +581,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(5);
         $model->relation = 10;
 
-        $this->assertEquals('{"id":"5","test_hook":null,"relation":10,"answer":null}', $model->toJson(['toArray']));
+        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null}', $model->toJson(['toArray']));
     }
 
     public function testArrayAccess()

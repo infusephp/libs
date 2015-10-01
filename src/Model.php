@@ -40,6 +40,8 @@ abstract class Model implements \ArrayAccess
     const ERROR_VALIDATION_FAILED = 'validation_failed';
     const ERROR_NOT_UNIQUE = 'not_unique';
 
+    const DEFAULT_ID_PROPERTY = 'id';
+
     /////////////////////////////
     // Public variables
     /////////////////////////////
@@ -90,7 +92,7 @@ abstract class Model implements \ArrayAccess
     /**
      * @staticvar array
      */
-    private static $propertyBase = [
+    private static $propertyDefinitionBase = [
         'type' => self::TYPE_STRING,
         'mutable' => self::MUTABLE,
         'null' => false,
@@ -103,12 +105,10 @@ abstract class Model implements \ArrayAccess
     /**
      * @staticvar array
      */
-    private static $idProperties = [
-        'id' => [
-            'type' => self::TYPE_NUMBER,
-            'mutable' => self::IMMUTABLE,
-            'admin_hidden_property' => true,
-        ],
+    private static $defaultIDProperty = [
+        'type' => self::TYPE_NUMBER,
+        'mutable' => self::IMMUTABLE,
+        'admin_hidden_property' => true,
     ];
 
     /**
@@ -140,11 +140,6 @@ abstract class Model implements \ArrayAccess
      * @staticvar \Stash\Pool
      */
     private static $defaultCache;
-
-    /**
-     * @staticvar array
-     */
-    private static $cachedProperties = [];
 
     /**
      * @staticvar string
@@ -194,12 +189,8 @@ abstract class Model implements \ArrayAccess
      */
     public function __construct($id = false, array $values = [])
     {
-        // call the initialize function once
-        $k = static::modelName();
-        if (!isset(self::$initialized[$k])) {
-            $this->initialize();
-            self::$initialized[$k] = true;
-        }
+        // initialize the model
+        $this->init();
 
         // TODO need to store the id as an array
         // instead of a string to maintain type integrity
@@ -226,15 +217,51 @@ abstract class Model implements \ArrayAccess
     }
 
     /**
-     * This method gets called once per model. It's used
-     * to perform any one-off tasks before the model
-     * can be created. It's only called if a model instance
-     * is constructed.
+     * Performs initialization on this model.
+     */
+    private function init()
+    {
+        // ensure the initialize function is called only once
+        $k = get_called_class();
+        if (!isset(self::$initialized[$k])) {
+            $this->initialize();
+            self::$initialized[$k] = true;
+        }
+    }
+
+    /**
+     * The initialize() method is called once per model. It's used
+     * to perform any one-off tasks before the model gets
+     * constructed. This is a great place to add any model
+     * properties. When extending this method be sure to call
+     * parent::initialize() as some important stuff happens here.
+     * If extending this method to add properties then you should
+     * call parent::initialize() after adding any properties.
      */
     protected function initialize()
     {
         // load the driver
         static::getDriver();
+
+        // add in the default ID property
+        if (static::idProperty() == self::DEFAULT_ID_PROPERTY && !isset(static::$properties[self::DEFAULT_ID_PROPERTY])) {
+            static::$properties[self::DEFAULT_ID_PROPERTY] = self::$defaultIDProperty;
+        }
+
+        // add in the auto timestamp properties
+        if (property_exists(get_called_class(), 'autoTimestamps')) {
+            static::$properties = array_replace(self::$timestampProperties, static::$properties);
+        }
+
+        // fill in each property by extending the property
+        // definition base
+        foreach (static::$properties as &$property) {
+            $property = array_replace(self::$propertyDefinitionBase, $property);
+        }
+
+        // order the properties array by name for consistency
+        // since it is constructed in a random order
+        ksort(static::$properties);
     }
 
     /**
@@ -396,7 +423,7 @@ abstract class Model implements \ArrayAccess
      */
     public static function idProperty()
     {
-        return 'id';
+        return self::DEFAULT_ID_PROPERTY;
     }
 
     /**
@@ -423,43 +450,11 @@ abstract class Model implements \ArrayAccess
      */
     public static function properties($property = false)
     {
-        $k = get_called_class();
-
-        if (!isset(self::$cachedProperties[$k])) {
-            self::$cachedProperties[$k] = array_replace(static::propertiesHook(), static::$properties);
-
-            foreach (self::$cachedProperties[$k] as &$cachedProperty) {
-                $cachedProperty = array_replace(self::$propertyBase, $cachedProperty);
-            }
-        }
-
         if ($property !== false) {
-            return Utility::array_value(self::$cachedProperties[$k], $property);
+            return Utility::array_value(static::$properties, $property);
         } else {
-            return self::$cachedProperties[$k];
+            return static::$properties;
         }
-    }
-
-    /**
-     * Adds extra properties that have not been explicitly defined.
-     * If overriding, be sure to extend parent::propertiesHook().
-     *
-     * @return array
-     */
-    protected static function propertiesHook()
-    {
-        $properties = [];
-
-        $idProperty = static::idProperty();
-        if ($idProperty == 'id') {
-            $properties = self::$idProperties;
-        }
-
-        if (property_exists(get_called_class(), 'autoTimestamps')) {
-            return array_replace(self::$timestampProperties, $properties);
-        }
-
-        return $properties;
     }
 
     /**
@@ -471,9 +466,7 @@ abstract class Model implements \ArrayAccess
      */
     public static function hasProperty($property)
     {
-        $properties = static::properties();
-
-        return isset($properties[$property]);
+        return isset(static::$properties[$property]);
     }
 
     /**
@@ -1088,7 +1081,7 @@ abstract class Model implements \ArrayAccess
         }
 
         if (!$localKey) {
-            $localKey = 'id';
+            $localKey = self::DEFAULT_ID_PROPERTY;
         }
 
         return new HasOne($model, $foreignKey, $localKey, $this);
@@ -1106,7 +1099,7 @@ abstract class Model implements \ArrayAccess
     public function belongsTo($model, $foreignKey = false, $localKey = false)
     {
         if (!$foreignKey) {
-            $foreignKey = 'id';
+            $foreignKey = self::DEFAULT_ID_PROPERTY;
         }
 
         // the default local key would look like `user_id`
@@ -1138,7 +1131,7 @@ abstract class Model implements \ArrayAccess
         }
 
         if (!$localKey) {
-            $localKey = 'id';
+            $localKey = self::DEFAULT_ID_PROPERTY;
         }
 
         return new HasMany($model, $foreignKey, $localKey, $this);
@@ -1156,7 +1149,7 @@ abstract class Model implements \ArrayAccess
     public function belongsToMany($model, $foreignKey = false, $localKey = false)
     {
         if (!$foreignKey) {
-            $foreignKey = 'id';
+            $foreignKey = self::DEFAULT_ID_PROPERTY;
         }
 
         // the default local key would look like `user_id`

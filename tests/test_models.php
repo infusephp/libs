@@ -33,15 +33,14 @@ class TestModel extends Model
 
     public static $query;
 
-    protected static function propertiesHook()
+    protected function initialize()
     {
-        $properties = parent::propertiesHook();
-
-        $properties[ 'test_hook' ] = [
+        self::$properties['test_hook'] = [
             'type' => Model::TYPE_STRING,
-            'null' => true, ];
+            'null' => true,
+        ];
 
-        return $properties;
+        parent::initialize();
     }
 
     public function preCreateHook()
@@ -82,8 +81,8 @@ class TestModel extends Model
 
     public function toArrayHook(array &$result, array $exclude, array $include, array $expand)
     {
-        if (!isset($exclude[ 'toArray' ])) {
-            $result[ 'toArray' ] = true;
+        if (!isset($exclude['toArray'])) {
+            $result['toArray'] = true;
         }
     }
 
