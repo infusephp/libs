@@ -25,7 +25,7 @@ class Utility
     {
         $a = (array) $a;
         if (array_key_exists($k, $a)) {
-            return $a[ $k ];
+            return $a[$k];
         }
 
         $pieces = explode('.', $k);
@@ -38,7 +38,7 @@ class Utility
                     return;
                 }
 
-                $a = &$a[ $piece ];
+                $a = &$a[$piece];
             }
 
             return $a;
@@ -70,8 +70,8 @@ class Utility
 
     /**
      * Flattens a multi-dimensional array using dot notation
-     * i.e. [ 'fruit' => [ 'apples' => [ 'qty' => 1 ] ] ] produces
-     * [ fruit.apples.qty => 1 ].
+     * i.e. ['fruit' => ['apples' => ['qty' => 1]]] produces
+     * [fruit.apples.qty => 1].
      *
      * @param array  $a      input array
      * @param string $prefix key prefix
@@ -92,7 +92,7 @@ class Utility
                     $result,
                     self::array_dot($v, $prefix.$k));
             } else {
-                $result[ $prefix.$k ] = $v;
+                $result[$prefix.$k] = $v;
             }
         }
 
@@ -162,7 +162,7 @@ class Utility
         // allow only single runs of dashes
         $return = strtolower(preg_replace('/--+/u', '-', $return));
         // first character cannot be '-'
-        if ($return[ 0 ] == '-') {
+        if ($return[0] == '-') {
             $return = substr_replace($return, '', 0, 1);
         }
 
@@ -184,12 +184,12 @@ class Utility
 
         // strip off all letters and find suffix
         $i = strlen($str) - 1;
-        while ($i >= 0 && !is_numeric($str[ $i ])) {
+        while ($i >= 0 && !is_numeric($str[$i])) {
             --$i;
         }
 
         // last letter
-        $last = $str[ $i + 1 ];
+        $last = $str[$i + 1];
 
         // get the number
         $val = substr($str, 0, $i + 1);

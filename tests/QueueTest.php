@@ -52,7 +52,7 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('postMessage')->with('test1', 'message', [])->andReturn(true)->once();
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         Queue::inject($c);
 
         $this->assertTrue($q->enqueue('test1', 'message'));
@@ -65,10 +65,10 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('postMessage')->andThrow(new Exception());
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         $logger = Mockery::mock('Monolog\Monolog');
         $logger->shouldReceive('error')->once();
-        $c[ 'logger' ] = $logger;
+        $c['logger'] = $logger;
         Queue::inject($c);
 
         $this->assertFalse($q->enqueue('test1', 'message'));
@@ -90,13 +90,13 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $messages = $q->dequeue('test1', 2);
 
         $this->assertEquals(count($messages), 2);
-        $this->assertEquals($messages[ 0 ]->id, 1);
-        $this->assertEquals($messages[ 0 ]->body, 'test string!');
-        $this->assertEquals($messages[ 1 ]->id, 3);
+        $this->assertEquals($messages[0]->id, 1);
+        $this->assertEquals($messages[0]->body, 'test string!');
+        $this->assertEquals($messages[1]->id, 3);
         $expected = new stdClass();
         $expected->name = 'test';
         $expected->answer = 42;
-        $this->assertEquals($messages[ 1 ]->body, $expected);
+        $this->assertEquals($messages[1]->body, $expected);
 
         $test2 = $q->dequeue('test2');
         $this->assertEquals($test2->id, 2);
@@ -114,7 +114,7 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('getMessages')->with('test1', 1)->andReturn([['id' => 'test', 'body' => 'message']])->once();
         $iron->shouldReceive('getMessages')->with('test2', 1)->andReturn([])->once();
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         Queue::inject($c);
 
         $this->assertEquals(['id' => 'test', 'body' => 'message'], $q->dequeue('test1'));
@@ -129,10 +129,10 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('getMessages')->andThrow(new Exception());
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         $logger = Mockery::mock('Monolog\Monolog');
         $logger->shouldReceive('error')->once();
-        $c[ 'logger' ] = $logger;
+        $c['logger'] = $logger;
         Queue::inject($c);
 
         $this->assertNull($q->dequeue('test1'));
@@ -167,7 +167,7 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('deleteMessage')->with('test1', 10)->andReturn(true)->once();
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         Queue::inject($c);
 
         $message = new stdClass();
@@ -182,10 +182,10 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('deleteMessage')->andThrow(new Exception());
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         $logger = Mockery::mock('Monolog\Monolog');
         $logger->shouldReceive('error')->once();
-        $c[ 'logger' ] = $logger;
+        $c['logger'] = $logger;
         Queue::inject($c);
 
         $message = new stdClass();
@@ -267,7 +267,7 @@ class QueueTest extends PHPUnit_Framework_TestCase
             'subscribers' => [
                 ['url' => 'https://example.com/?q=test2&auth_token=testing'],
                 ['url' => 'https://example.com/endpoint?q=test2&auth_token=testing'], ], ])->andReturn(true)->once();
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         Queue::inject($c);
 
         $q = new Queue(QUEUE_TYPE_IRON);
@@ -289,7 +289,7 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('updateQueue')->andReturn(false)->twice();
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         Queue::inject($c);
 
         $q = new Queue(QUEUE_TYPE_IRON);
@@ -313,10 +313,10 @@ class QueueTest extends PHPUnit_Framework_TestCase
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
         $iron->shouldReceive('updateQueue')->andThrow(new Exception());
-        $c[ 'ironmq' ] = $iron;
+        $c['ironmq'] = $iron;
         $logger = Mockery::mock('Monolog\Monolog');
         $logger->shouldReceive('error')->twice();
-        $c[ 'logger' ] = $logger;
+        $c['logger'] = $logger;
         Queue::inject($c);
 
         $this->assertFalse($q->install());

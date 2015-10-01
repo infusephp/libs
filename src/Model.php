@@ -548,7 +548,7 @@ abstract class Model implements \ArrayAccess
 
         $this->_unsaved = $data;
 
-        // call the before create hook
+        // dispatch the model.creating event
         if (!$this->beforeCreate()) {
             return false;
         }
@@ -617,7 +617,7 @@ abstract class Model implements \ArrayAccess
             // from the persistent storage layer
             $this->clearCache();
 
-            // call the after create hook
+            // dispatch the model.created event
             if (!$this->afterCreate()) {
                 return false;
             }
@@ -851,7 +851,7 @@ abstract class Model implements \ArrayAccess
             return true;
         }
 
-        // call the before update hook
+        // dispatch the model.updating event
         if (!$this->beforeUpdate($data)) {
             return false;
         }
@@ -891,7 +891,7 @@ abstract class Model implements \ArrayAccess
             // from the persistent storage layer
             $this->clearCache();
 
-            // call the after update hook
+            // dispatch the model.updated event
             if (!$this->afterUpdate()) {
                 return false;
             }
@@ -911,7 +911,7 @@ abstract class Model implements \ArrayAccess
             return false;
         }
 
-        // call the before delete hook
+        // dispatch the model.deleting event
         if (!$this->beforeDelete()) {
             return false;
         }
@@ -919,7 +919,7 @@ abstract class Model implements \ArrayAccess
         $deleted = self::$driver->deleteModel($this);
 
         if ($deleted) {
-            // call the after delete hook
+            // dispatch the model.deleted event
             if (!$this->afterDelete()) {
                 return false;
             }

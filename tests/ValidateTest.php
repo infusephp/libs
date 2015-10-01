@@ -229,6 +229,6 @@ class ValidateTest extends PHPUnit_Framework_TestCase
         ];
 
         $this->assertTrue(Validate::is($test, $requirements));
-        $this->assertEquals('test', $test[ 'test' ]);
+        $this->assertEquals('test', $test['test']);
     }
 }

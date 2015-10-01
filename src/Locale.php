@@ -205,16 +205,16 @@ class Locale
      */
     private function loadLocaleData($locale)
     {
-        if (isset($this->localeData[ $locale ])) {
+        if (isset($this->localeData[$locale])) {
             return;
         }
 
         $filename = str_replace('//', '/', $this->localeDir.'/').$locale.'.php';
 
         if ($this->localeDir && file_exists($filename)) {
-            $this->localeData[ $locale ] = include $filename;
+            $this->localeData[$locale] = include $filename;
         } else {
-            $this->localeData[ $locale ] = [];
+            $this->localeData[$locale] = [];
         }
     }
 

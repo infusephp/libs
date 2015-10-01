@@ -47,7 +47,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'POST';
+        $server['REQUEST_METHOD'] = 'POST';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/this/is/a/test/route');
@@ -71,7 +71,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'PUT';
+        $server['REQUEST_METHOD'] = 'PUT';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/dynamic/1/2/3/4');
@@ -98,7 +98,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'POST';
+        $server['REQUEST_METHOD'] = 'POST';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/this/is/a/test/route');
@@ -123,7 +123,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'POST';
+        $server['REQUEST_METHOD'] = 'POST';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/this/is/a/test/route');
@@ -157,7 +157,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'POST';
+        $server['REQUEST_METHOD'] = 'POST';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/this/is/a/test/route');
@@ -177,7 +177,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'POST';
+        $server['REQUEST_METHOD'] = 'POST';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/this/is/a/test/route');
@@ -202,7 +202,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'GET';
+        $server['REQUEST_METHOD'] = 'GET';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/test');
@@ -226,7 +226,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ];
 
         $server = $_SERVER;
-        $server[ 'REQUEST_METHOD' ] = 'GET';
+        $server['REQUEST_METHOD'] = 'GET';
 
         $req = new Request(null, null, null, null, $server);
         $req->setPath('/test');

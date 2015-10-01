@@ -44,7 +44,7 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
         $app = new Container();
         $redis = Mockery::mock('Predis\Client');
         $redis->shouldReceive('get')->with('test:php.session.blah')->andReturn('ok')->once();
-        $app[ 'redis' ] = $redis;
+        $app['redis'] = $redis;
 
         $session = new RedisSession($app, 'test:');
 
@@ -58,7 +58,7 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
         $app = new Container();
         $redis = Mockery::mock('Predis\Client');
         $redis->shouldReceive('setex')->with('php.session.blah', $ttl, 'data')->once();
-        $app[ 'redis' ] = $redis;
+        $app['redis'] = $redis;
 
         $session = new RedisSession($app);
 
@@ -72,7 +72,7 @@ class RedisSessionTest extends \PHPUnit_Framework_TestCase
         $app = new Container();
         $redis = Mockery::mock('Predis\Client');
         $redis->shouldReceive('del')->with('test:php.session.blah')->once();
-        $app[ 'redis' ] = $redis;
+        $app['redis'] = $redis;
 
         $session = new RedisSession($app, 'test:');
 

@@ -43,11 +43,11 @@ class UtilityTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $a);
 
         U::array_set($a, 'test', 'ok?');
-        $expected[ 'test' ] = 'ok?';
+        $expected['test'] = 'ok?';
         $this->assertEquals($expected, $a);
 
         U::array_set($a, '1.2.3', 'test');
-        $expected[ '1' ][ '2' ][ '3' ] = 'test';
+        $expected['1']['2']['3'] = 'test';
         $this->assertEquals($expected, $a);
     }
 
@@ -95,7 +95,7 @@ class UtilityTest extends PHPUnit_Framework_TestCase
         // test each combination once to ensure they are not equal
         for ($i = 0; $i < count($test); ++$i) {
             for ($j = $i + 1; $j < count($test); ++$j) {
-                $this->assertTrue($test[ $i ] != $test[ $j ]);
+                $this->assertTrue($test[$i] != $test[$j]);
             }
         }
     }

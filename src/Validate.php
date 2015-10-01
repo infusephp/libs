@@ -31,7 +31,7 @@ class Validate
 
     /**
      * Validates one or more fields based upon certain filters. Filters may be chained and will be executed in order
-     * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( [ 'password1', 'password2' ], 'matching|password:8|required' ).
+     * i.e. Validate::is( 'gob@bluthfamily.com', 'email' ) or Validate::is( ['password1', 'password2'], 'matching|password:8|required' ).
      *
      * NOTE: some filters may modify the data, which is passed in by reference
      *
@@ -46,7 +46,7 @@ class Validate
             $validated = true;
 
             foreach ($requirements as $key => $requirement) {
-                $result = self::processRequirement($data[ $key ], $requirement);
+                $result = self::processRequirement($data[$key], $requirement);
                 $validated = $validated && $result;
             }
 
@@ -256,7 +256,7 @@ class Validate
             return false;
         }
 
-        $value = Utility::encrypt_password($value, self::$config[ 'salt' ]);
+        $value = Utility::encrypt_password($value, self::$config['salt']);
 
         return true;
     }
@@ -335,10 +335,10 @@ class Validate
         $tza = timezone_abbreviations_list();
         foreach ($tza as $zone) {
             foreach ($zone as $item) {
-                $valid[ $item[ 'timezone_id' ] ] = true;
+                $valid[$item['timezone_id']] = true;
             }
         }
-        unset($valid[ '' ]);
+        unset($valid['']);
 
         return !!Utility::array_value($valid, $value);
     }

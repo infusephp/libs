@@ -143,23 +143,23 @@ class Request
         ], $server);
 
         // remove slash in front of requested url
-        $this->server[ 'REQUEST_URI' ] = substr_replace(Utility::array_value($this->server, 'REQUEST_URI'), '', 0, 1);
+        $this->server['REQUEST_URI'] = substr_replace(Utility::array_value($this->server, 'REQUEST_URI'), '', 0, 1);
 
         // figure out the base path and REQUEST_URI
         $this->basePath = '/';
 
-        if (isset($this->server[ 'DOCUMENT_URI' ])) {
-            $docParts = explode('/', substr_replace($this->server[ 'DOCUMENT_URI' ], '', 0, 1));
-            $uriParts = explode('/', $this->server[ 'REQUEST_URI' ]);
+        if (isset($this->server['DOCUMENT_URI'])) {
+            $docParts = explode('/', substr_replace($this->server['DOCUMENT_URI'], '', 0, 1));
+            $uriParts = explode('/', $this->server['REQUEST_URI']);
 
             $basePaths = [];
 
             // uriParts = uriParts - $docParts
             // basePaths = docParts - uriParts
             foreach ($uriParts as $key => $part) {
-                if (isset($docParts[ $key ]) && $docParts[ $key ] == $part) {
-                    $basePaths[] = $uriParts[ $key ];
-                    unset($uriParts[ $key ]);
+                if (isset($docParts[$key]) && $docParts[$key] == $part) {
+                    $basePaths[] = $uriParts[$key];
+                    unset($uriParts[$key]);
                 }
 
                 if (strpos($part, '.php') !== false) {
@@ -170,12 +170,12 @@ class Request
             // ignore a trailing "/"
             end($uriParts);
             $key = key($uriParts);
-            if (empty($uriParts[ $key ])) {
-                unset($uriParts[ $key ]);
+            if (empty($uriParts[$key])) {
+                unset($uriParts[$key]);
             }
 
             // strip base path from REQUEST_URI
-            $this->server[ 'REQUEST_URI' ] = implode('/', $uriParts);
+            $this->server['REQUEST_URI'] = implode('/', $uriParts);
 
             $this->basePath .= implode('/', $basePaths);
         }
@@ -230,7 +230,7 @@ class Request
         $requestMethodFromPost = Utility::array_value((array) $this->request, 'method');
         if ($this->method() == 'POST' &&
             in_array($requestMethodFromPost, ['PUT', 'PATCH', 'DELETE'])) {
-            $this->server[ 'REQUEST_METHOD' ] = $requestMethodFromPost;
+            $this->server['REQUEST_METHOD'] = $requestMethodFromPost;
         }
     }
 
@@ -249,7 +249,7 @@ class Request
 
         // break the URL into paths
         $this->paths = explode('/', $this->path);
-        if ($this->paths[ 0 ] == '') {
+        if ($this->paths[0] == '') {
             array_splice($this->paths, 0, 1);
         }
     }
@@ -478,7 +478,7 @@ class Request
     public function isHtml()
     {
         foreach ($this->accept as $type) {
-            if ($type[ 'main_type' ] == 'text' && $type[ 'sub_type' ] == 'html') {
+            if ($type['main_type'] == 'text' && $type['sub_type'] == 'html') {
                 return true;
             }
         }
@@ -494,7 +494,7 @@ class Request
     public function isJson()
     {
         foreach ($this->accept as $type) {
-            if ($type[ 'main_type' ] == 'application' && $type[ 'sub_type' ] == 'json') {
+            if ($type['main_type'] == 'application' && $type['sub_type'] == 'json') {
                 return true;
             }
         }
@@ -510,7 +510,7 @@ class Request
     public function isXml()
     {
         foreach ($this->accept as $type) {
-            if ($type[ 'main_type' ] == 'application' && $type[ 'sub_type' ] == 'xml') {
+            if ($type['main_type'] == 'application' && $type['sub_type'] == 'xml') {
                 return true;
             }
         }
@@ -629,14 +629,14 @@ class Request
     {
         if (!$mock) {
             if (setcookie($name, $value, $expire, $path, $domain, $secure, $httponly)) {
-                $this->cookies[ $name ] = $value;
+                $this->cookies[$name] = $value;
 
                 return true;
             }
 
             return false;
         } else {
-            $this->cookies[ $name ] = $value;
+            $this->cookies[$name] = $value;
 
             return true;
         }
@@ -676,12 +676,12 @@ class Request
     {
         if (is_array($key)) {
             foreach ($key as $k => $v) {
-                $_SESSION[ $k ] = $v;
-                $this->session[ $k ] = $v;
+                $_SESSION[$k] = $v;
+                $this->session[$k] = $v;
             }
         } else {
-            $_SESSION[ $key ] = $value;
-            $this->session[ $key ] = $value;
+            $_SESSION[$key] = $value;
+            $this->session[$key] = $value;
         }
     }
 
@@ -719,17 +719,17 @@ class Request
         $headers = [];
         foreach ($parameters as $key => $value) {
             if (0 === strpos($key, 'HTTP_')) {
-                $headers[ substr($key, 5) ] = $value;
+                $headers[substr($key, 5)] = $value;
             }
             // CONTENT_* are not prefixed with HTTP_
             elseif (in_array($key, ['CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'])) {
-                $headers[ $key ] = $value;
+                $headers[$key] = $value;
             }
         }
 
-        if (isset($parameters[ 'PHP_AUTH_USER' ])) {
-            $headers[ 'PHP_AUTH_USER' ] = $parameters[ 'PHP_AUTH_USER' ];
-            $headers[ 'PHP_AUTH_PW' ] = isset($parameters['PHP_AUTH_PW']) ? $parameters[ 'PHP_AUTH_PW' ] : '';
+        if (isset($parameters['PHP_AUTH_USER'])) {
+            $headers['PHP_AUTH_USER'] = $parameters['PHP_AUTH_USER'];
+            $headers['PHP_AUTH_PW'] = isset($parameters['PHP_AUTH_PW']) ? $parameters['PHP_AUTH_PW'] : '';
         } else {
             /*
             * php-cgi under Apache does not pass HTTP Basic user/pass to PHP by default
@@ -746,25 +746,25 @@ class Request
             */
 
             $authorizationHeader = null;
-            if (isset($parameters[ 'HTTP_AUTHORIZATION' ])) {
-                $authorizationHeader = $parameters[ 'HTTP_AUTHORIZATION' ];
-            } elseif (isset($parameters[ 'REDIRECT_HTTP_AUTHORIZATION' ])) {
-                $authorizationHeader = $parameters[ 'REDIRECT_HTTP_AUTHORIZATION' ];
+            if (isset($parameters['HTTP_AUTHORIZATION'])) {
+                $authorizationHeader = $parameters['HTTP_AUTHORIZATION'];
+            } elseif (isset($parameters['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $authorizationHeader = $parameters['REDIRECT_HTTP_AUTHORIZATION'];
             }
 
             // Decode AUTHORIZATION header into PHP_AUTH_USER and PHP_AUTH_PW when authorization header is basic
             if ((null !== $authorizationHeader) && (0 === stripos($authorizationHeader, 'basic'))) {
                 $exploded = explode(':', base64_decode(substr($authorizationHeader, 6)));
                 if (count($exploded) == 2) {
-                    list($headers[ 'PHP_AUTH_USER' ], $headers[ 'PHP_AUTH_PW' ]) = $exploded;
+                    list($headers['PHP_AUTH_USER'], $headers['PHP_AUTH_PW']) = $exploded;
                 }
             }
         }
 
         // PHP_AUTH_USER/PHP_AUTH_PW
-        if (isset($headers[ 'PHP_AUTH_USER' ])) {
-            $userPassStr = $headers[ 'PHP_AUTH_USER' ].':'.$headers[  'PHP_AUTH_PW' ];
-            $headers[ 'AUTHORIZATION' ] = 'Basic '.base64_encode($userPassStr);
+        if (isset($headers['PHP_AUTH_USER'])) {
+            $userPassStr = $headers['PHP_AUTH_USER'].':'.$headers['PHP_AUTH_PW'];
+            $headers['AUTHORIZATION'] = 'Basic '.base64_encode($userPassStr);
         }
 
         return $headers;
@@ -783,8 +783,8 @@ class Request
             if ($type) {
                 list($precedence, $tokens) = $this->parseAcceptHeaderOptions($one_type);
                 $typeArr = explode('/', $type);
-                if (!isset($typeArr[ 1 ])) {
-                    $typeArr[ 1 ] = '';
+                if (!isset($typeArr[1])) {
+                    $typeArr[1] = '';
                 }
                 list($main_type, $sub_type) = array_map('trim', $typeArr);
                 $return[] = [

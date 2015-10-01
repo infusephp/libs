@@ -116,17 +116,17 @@ class Queue
             }
 
             try {
-                return self::$app[ 'ironmq' ]->postMessage($queue, $message, $parameters);
+                return self::$app['ironmq']->postMessage($queue, $message, $parameters);
             } catch (\Exception $e) {
-                self::$app[ 'logger' ]->error($e);
+                self::$app['logger']->error($e);
 
                 return false;
             }
         }
         // synchronous queue
         else {
-            if (!isset(self::$queues[ $queue ])) {
-                self::$queues[ $queue ] = [];
+            if (!isset(self::$queues[$queue])) {
+                self::$queues[$queue] = [];
             }
 
             // wrap the message inside of an object
@@ -139,7 +139,7 @@ class Queue
 
             // add the serialized message wrapper to the queue
             $json = json_encode($messageWrapper);
-            self::$queues[ $queue ][] = $json;
+            self::$queues[$queue][] = $json;
 
             // since this is synchronous mode, notify all listeners that we have a new message
             $this->receiveMessage($queue, $json);
@@ -163,20 +163,20 @@ class Queue
 
         if ($this->type == QUEUE_TYPE_IRON) {
             try {
-                $messages = self::$app[ 'ironmq' ]->getMessages($queue, $n);
+                $messages = self::$app['ironmq']->getMessages($queue, $n);
             } catch (\Exception $e) {
-                self::$app[ 'logger' ]->error($e);
+                self::$app['logger']->error($e);
 
                 return;
             }
         }
         // synchronous queue
         else {
-            if (isset(self::$queues[ $queue ])) {
-                $messages = array_slice(self::$queues[ $queue ], 0, $n);
+            if (isset(self::$queues[$queue])) {
+                $messages = array_slice(self::$queues[$queue], 0, $n);
 
                 foreach ($messages as $k => $m) {
-                    $messages[ $k ] = json_decode($m);
+                    $messages[$k] = json_decode($m);
                 }
             }
         }
@@ -207,26 +207,26 @@ class Queue
 
         if ($this->type == QUEUE_TYPE_IRON) {
             try {
-                return self::$app[ 'ironmq' ]->deleteMessage($queue, $message->id);
+                return self::$app['ironmq']->deleteMessage($queue, $message->id);
             } catch (\Exception $e) {
-                self::$app[ 'logger' ]->error($e);
+                self::$app['logger']->error($e);
 
                 return false;
             }
         }
         // synchronous queue
         else {
-            if (!isset(self::$queues[ $queue ])) {
+            if (!isset(self::$queues[$queue])) {
                 return false;
             }
 
             // find the message with the specified id, and delete it
-            foreach ((array) self::$queues[ $queue ] as $k => $str) {
+            foreach ((array) self::$queues[$queue] as $k => $str) {
                 $m = json_decode($str);
 
                 if ($m->id == $message->id) {
-                    unset(self::$queues[ $queue ][ $k ]);
-                    self::$queues[ $queue ] = array_values(self::$queues[ $queue ]);
+                    unset(self::$queues[$queue][$k]);
+                    self::$queues[$queue] = array_values(self::$queues[$queue]);
 
                     return true;
                 }
@@ -256,7 +256,7 @@ class Queue
         foreach ($listeners as $route) {
             list($controller, $method) = $route;
 
-            $controller = self::$config[ 'namespace' ].'\\'.$controller;
+            $controller = self::$config['namespace'].'\\'.$controller;
 
             if (!class_exists($controller)) {
                 continue;
@@ -282,17 +282,17 @@ class Queue
     {
         if ($this->type == QUEUE_TYPE_IRON) {
             // setup push queues with iron.io
-            $ironmq = self::$app[ 'ironmq' ];
+            $ironmq = self::$app['ironmq'];
             $subscribers = $this->pushQueueSubscribers();
 
             $success = true;
             foreach ($subscribers as $q => $subscribers) {
                 try {
                     $success = $ironmq->updateQueue($q, [
-                        'push_type' => self::$config[ 'push_type' ],
+                        'push_type' => self::$config['push_type'],
                         'subscribers' => $subscribers, ]) && $success;
                 } catch (\Exception $e) {
-                    self::$app[ 'logger' ]->error($e);
+                    self::$app['logger']->error($e);
                     $success = false;
                 }
             }
@@ -315,7 +315,7 @@ class Queue
 
         $authToken = Utility::array_value(self::$config, 'auth_token');
 
-        foreach (self::$config[ 'queues' ] as $q) {
+        foreach (self::$config['queues'] as $q) {
             // setup each push subscriber url with an auth token (if used)
 
             foreach ((array) Utility::array_value(self::$config, 'push_subscribers') as $s) {
@@ -325,11 +325,11 @@ class Queue
                     $url .= "&auth_token=$authToken";
                 }
 
-                if (!isset($subscribers[ $q ])) {
-                    $subscribers[ $q ] = [];
+                if (!isset($subscribers[$q])) {
+                    $subscribers[$q] = [];
                 }
 
-                $subscribers[ $q ][] = ['url' => $url];
+                $subscribers[$q][] = ['url' => $url];
             }
         }
 
