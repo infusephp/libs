@@ -946,7 +946,12 @@ abstract class Model implements \ArrayAccess
      */
     public static function query()
     {
-        return new Query(get_called_class());
+        // Create a new model instance for the query to ensure
+        // that the model's initialize() method gets called.
+        // Otherwise, the property definitions will be incomplete.
+        $model = new static();
+
+        return new Query($model);
     }
 
     /**

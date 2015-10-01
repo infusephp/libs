@@ -1091,7 +1091,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $query = TestModel::query();
 
         $this->assertInstanceOf('Infuse\Model\Query', $query);
-        $this->assertEquals('TestModel', $query->getModel());
+        $this->assertInstanceOf('TestModel', $query->getModel());
     }
 
     public function testQueryStatic()
