@@ -47,18 +47,20 @@ abstract class Model implements \ArrayAccess
     /////////////////////////////
 
     /**
-     * Property definitions.
-     *
-     * @staticvar array
-     */
-    public static $properties = [];
-
-    /**
      * List of model ID property names.
      *
      * @staticvar array
      */
     public static $ids = [self::DEFAULT_ID_PROPERTY];
+
+    /**
+     * Property definitions expressed as a key-value map with
+     * property names as the keys.
+     * i.e. ['enabled' => ['type' => Model::TYPE_BOOLEAN]].
+     *
+     * @staticvar array
+     */
+    public static $properties = [];
 
     /////////////////////////////
     // Protected variables
