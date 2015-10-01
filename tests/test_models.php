@@ -115,6 +115,8 @@ function validate()
 
 class TestModel2 extends Model
 {
+    public static $ids = ['id', 'id2'];
+
     public static $properties = [
         'id' => [
             'type' => Model::TYPE_NUMBER,
@@ -176,11 +178,6 @@ class TestModel2 extends Model
         if (isset($include['toArrayHook'])) {
             $result['toArrayHook'] = true;
         }
-    }
-
-    public static function idProperty()
-    {
-        return ['id', 'id2'];
     }
 
     public static function query()

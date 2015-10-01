@@ -212,17 +212,10 @@ class Query
 
         $models = [];
         foreach ($driver->queryModels($this) as $row) {
-            // determine the model ID
-            $id = false;
-            $idProperty = $model::idProperty();
-            if (is_array($idProperty)) {
-                $id = [];
-
-                foreach ($idProperty as $f) {
-                    $id[] = $row[$f];
-                }
-            } else {
-                $id = $row[$idProperty];
+            // get the model's ID
+            $id = [];
+            foreach ($model::$ids as $k) {
+                $id[] = $row[$k];
             }
 
             // create the model and cache the loaded values

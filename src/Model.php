@@ -47,9 +47,18 @@ abstract class Model implements \ArrayAccess
     /////////////////////////////
 
     /**
+     * Property definitions.
+     *
      * @staticvar array
      */
     public static $properties = [];
+
+    /**
+     * List of model ID property names.
+     *
+     * @staticvar array
+     */
+    public static $ids = [self::DEFAULT_ID_PROPERTY];
 
     /////////////////////////////
     // Protected variables
@@ -244,7 +253,7 @@ abstract class Model implements \ArrayAccess
         static::getDriver();
 
         // add in the default ID property
-        if (static::idProperty() == self::DEFAULT_ID_PROPERTY && !isset(static::$properties[self::DEFAULT_ID_PROPERTY])) {
+        if (static::$ids == [self::DEFAULT_ID_PROPERTY] && !isset(static::$properties[self::DEFAULT_ID_PROPERTY])) {
             static::$properties[self::DEFAULT_ID_PROPERTY] = self::$defaultIDProperty;
         }
 
@@ -417,16 +426,6 @@ abstract class Model implements \ArrayAccess
     /////////////////////////////
 
     /**
-     * Returns the id propert(ies) for the model.
-     *
-     * @return array|string
-     */
-    public static function idProperty()
-    {
-        return self::DEFAULT_ID_PROPERTY;
-    }
-
-    /**
      * Gets the name of the model without namespacing.
      *
      * @return string
@@ -476,10 +475,7 @@ abstract class Model implements \ArrayAccess
      */
     public static function isIdProperty($property)
     {
-        $idProperty = static::idProperty();
-
-        return (is_array($idProperty) && in_array($property, $idProperty)) ||
-               $property == $idProperty;
+        return in_array($property, static::$ids);
     }
 
     /**
@@ -495,8 +491,6 @@ abstract class Model implements \ArrayAccess
             return $this->_id;
         }
 
-        $idProperties = (array) static::idProperty();
-
         // get id(s) into key-value format
         $return = [];
 
@@ -506,7 +500,7 @@ abstract class Model implements \ArrayAccess
 
         // TODO need to store the id as an array
         // instead of a string to maintain type integrity
-        foreach ($idProperties as $k => $f) {
+        foreach (static::$ids as $k => $f) {
             $id = (count($ids) > 0) ? array_pop($ids) : false;
 
             $return[$f] = $id;
@@ -702,8 +696,7 @@ abstract class Model implements \ArrayAccess
     protected function getNewID()
     {
         $ids = [];
-        $idProperties = (array) static::idProperty();
-        foreach ($idProperties as $k) {
+        foreach (static::$ids as $k) {
             // attempt use the supplied value if the ID property is mutable
             $id = null;
             $property = static::properties($k);
@@ -773,7 +766,7 @@ abstract class Model implements \ArrayAccess
             $this->get($properties, false, true));
 
         // expand any relational model properties
-        $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
+        $result = $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
 
         // apply hooks, if available
         if (method_exists($this, 'toArrayHook')) {
@@ -790,8 +783,10 @@ abstract class Model implements \ArrayAccess
      * @param array $namedExc
      * @param array $namedInc
      * @param array $namedExp
+     *
+     * @return array
      */
-    private function toArrayExpand(array &$result, array $namedExc, array $namedInc, array $namedExp)
+    private function toArrayExpand(array $result, array $namedExc, array $namedInc, array $namedExp)
     {
         foreach ($namedExp as $k => $subExp) {
             // if the property is null, excluded, or not included
@@ -812,6 +807,8 @@ abstract class Model implements \ArrayAccess
             $relation = $this->relation($k);
             $result[$k] = $relation->toArray($flatExc, $flatInc, $flatExp);
         }
+
+        return $result;
     }
 
     /**
