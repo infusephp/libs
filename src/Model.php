@@ -739,8 +739,6 @@ abstract class Model implements \ArrayAccess
     {
         // TODO this method is ripe for some performance improvements
 
-        $properties = [];
-
         // apply namespacing to $exclude
         $namedExc = [];
         foreach ($exclude as $e) {
@@ -760,26 +758,48 @@ abstract class Model implements \ArrayAccess
         }
 
         // get the list of appropriate properties
-        foreach (static::properties() as $property => $pData) {
+        $properties = [];
+        foreach (static::properties() as $name => $property) {
             // skip excluded properties
-            if (isset($namedExc[$property]) && !is_array($namedExc[$property])) {
+            if (isset($namedExc[$name]) && !is_array($namedExc[$name])) {
                 continue;
             }
 
-            // skip hidden properties that are not explicitly included
-            if ($pData['hidden'] && !isset($namedInc[$property])) {
+            // skip hidden properties not explicitly included
+            if ($property['hidden'] && !isset($namedInc[$name])) {
                 continue;
             }
 
-            $properties[] = $property;
+            $properties[] = $name;
         }
 
         // make sure each property key at least has a null value
         // and then get the value for each property
-        $result = array_replace(array_fill_keys($properties, null),
-                                $this->get($properties, false, true));
+        $result = array_replace(
+            array_fill_keys($properties, null),
+            $this->get($properties, false, true));
 
-        // expand properties
+        // expand any relational model properties
+        $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
+
+        // apply hooks, if available
+        if (method_exists($this, 'toArrayHook')) {
+            $this->toArrayHook($result, $namedExc, $namedInc, $namedExp);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Expands any relational properties within a result.
+     *
+     * @param array $result
+     * @param array $namedExc
+     * @param array $namedInc
+     * @param array $namedExp
+     */
+    private function toArrayExpand(array &$result, array $namedExc, array $namedInc, array $namedExp)
+    {
         foreach ($namedExp as $k => $subExp) {
             // if the property is null, excluded, or not included
             // then we are not going to expand it
@@ -797,17 +817,8 @@ abstract class Model implements \ArrayAccess
             $flatExp = is_array($subExp) ? array_keys(Utility::array_dot($subExp)) : [];
 
             $relation = $this->relation($k);
-            if ($relation) {
-                $result[$k] = $relation->toArray($flatExc, $flatInc, $flatExp);
-            }
+            $result[$k] = $relation->toArray($flatExc, $flatInc, $flatExp);
         }
-
-        // apply hooks, if available
-        if (method_exists($this, 'toArrayHook')) {
-            $this->toArrayHook($result, $namedExc, $namedInc, $namedExp);
-        }
-
-        return $result;
     }
 
     /**

@@ -212,7 +212,7 @@ class Query
 
         $models = [];
         foreach ($driver->queryModels($this) as $row) {
-            // determine the model id
+            // determine the model ID
             $id = false;
             $idProperty = $model::idProperty();
             if (is_array($idProperty)) {
