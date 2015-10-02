@@ -52,7 +52,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($c, $model->getApp());
     }
 
-    public function testProperties()
+    public function testGetProperties()
     {
         $expected = [
             'id' => [
@@ -105,7 +105,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             ],
         ];
 
-        $this->assertEquals($expected, TestModel::properties());
+        $this->assertEquals($expected, TestModel::getProperties());
     }
 
     public function testPropertiesIdOverwrite()
@@ -120,10 +120,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'hidden' => false,
         ];
 
-        $this->assertEquals($expected, Person::properties('id'));
+        $this->assertEquals($expected, Person::getProperty('id'));
     }
 
-    public function testProperty()
+    public function testGetProperty()
     {
         $expected = [
             'type' => Model::TYPE_NUMBER,
@@ -135,7 +135,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'admin_hidden_property' => true,
             'hidden' => false,
         ];
-        $this->assertEquals($expected, TestModel::properties('id'));
+        $this->assertEquals($expected, TestModel::getProperty('id'));
 
         $expected = [
             'type' => Model::TYPE_NUMBER,
@@ -147,7 +147,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'mutable' => Model::MUTABLE,
             'hidden' => false,
         ];
-        $this->assertEquals($expected, TestModel::properties('relation'));
+        $this->assertEquals($expected, TestModel::getProperty('relation'));
     }
 
     public function testPropertiesAutoTimestamps()
@@ -299,7 +299,14 @@ class ModelTest extends PHPUnit_Framework_TestCase
             ],
         ];
 
-        $this->assertEquals($expected, TestModel2::properties());
+        $this->assertEquals($expected, TestModel2::getProperties());
+    }
+
+    public function testGetIDProperties()
+    {
+        $this->assertEquals(['id'], TestModel::getIDProperties());
+
+        $this->assertEquals(['id', 'id2'], TestModel2::getIDProperties());
     }
 
     public function testId()
@@ -368,13 +375,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel();
         $this->assertFalse($model->id());
-    }
-
-    public function testIsIdProperty()
-    {
-        $this->assertFalse(TestModel::isIdProperty('blah'));
-        $this->assertTrue(TestModel::isIdProperty('id'));
-        $this->assertTrue(TestModel2::isIdProperty('id2'));
     }
 
     public function testDriver()

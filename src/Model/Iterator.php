@@ -62,7 +62,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
         $sort = $query->getSort();
         if (empty($sort)) {
             $model = $query->getModel();
-            $idProperties = $model::$ids;
+            $idProperties = $model::getIDProperties();
             foreach ($idProperties as &$property) {
                 $property .= ' ASC';
             }

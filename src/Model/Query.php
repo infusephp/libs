@@ -214,7 +214,7 @@ class Query
         foreach ($driver->queryModels($this) as $row) {
             // get the model's ID
             $id = [];
-            foreach ($model::$ids as $k) {
+            foreach ($model::getIDProperties() as $k) {
                 $id[] = $row[$k];
             }
 

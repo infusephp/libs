@@ -53,7 +53,7 @@ class DatabaseDriver implements DriverInterface
         try {
             $id = $this->app['db']->getPDO()->lastInsertId();
 
-            return $this->unserializeValue($model::properties($propertyName), $id);
+            return $this->unserializeValue($model::getProperty($propertyName), $id);
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
         }
@@ -70,7 +70,7 @@ class DatabaseDriver implements DriverInterface
                 ->one();
 
             if (is_array($row)) {
-                $row = $this->unserialize($row, $model::properties());
+                $row = $this->unserialize($row, $model::getProperties());
             }
 
             return $row;
@@ -130,7 +130,7 @@ class DatabaseDriver implements DriverInterface
                 ->orderBy($query->getSort())
                 ->all();
 
-            $properties = $model::properties();
+            $properties = $model::getProperties();
             foreach ($data as &$row) {
                 $row = $this->unserialize($row, $properties);
             }

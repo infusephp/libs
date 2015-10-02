@@ -321,6 +321,52 @@ abstract class Model implements \ArrayAccess
         return self::$driver;
     }
 
+    /**
+     * Gets the name of the model without namespacing.
+     *
+     * @return string
+     */
+    public static function modelName()
+    {
+        $class_name = get_called_class();
+
+        // strip namespacing
+        $paths = explode('\\', $class_name);
+
+        return end($paths);
+    }
+
+    /**
+     * Gets the model identifier(s).
+     *
+     * @param bool $keyValue return key-value array of id
+     *
+     * @return array|string key-value if specified, otherwise comma-separated id string
+     */
+    public function id($keyValue = false)
+    {
+        if (!$keyValue) {
+            return $this->_id;
+        }
+
+        // get id(s) into key-value format
+        $return = [];
+
+        // match up id values from comma-separated id string with property names
+        $ids = explode(',', $this->_id);
+        $ids = array_reverse($ids);
+
+        // TODO need to store the id as an array
+        // instead of a string to maintain type integrity
+        foreach (static::$ids as $k => $f) {
+            $id = (count($ids) > 0) ? array_pop($ids) : false;
+
+            $return[$f] = $id;
+        }
+
+        return $return;
+    }
+
     /////////////////////////////
     // Magic Methods
     /////////////////////////////
@@ -425,38 +471,39 @@ abstract class Model implements \ArrayAccess
     }
 
     /////////////////////////////
-    // Model Properties
+    // Property Definitions
     /////////////////////////////
 
     /**
-     * Gets the name of the model without namespacing.
+     * Gets all the property definitions for the model.
      *
-     * @return string
+     * @return array key-value map of properties
      */
-    public static function modelName()
+    public static function getProperties()
     {
-        $class_name = get_called_class();
-
-        // strip namespacing
-        $paths = explode('\\', $class_name);
-
-        return end($paths);
+        return static::$properties;
     }
 
     /**
-     * Gets the properties for the model.
+     * Gets a property defition for the model.
      *
      * @param string $property property to lookup
      *
+     * @return array|null property
+     */
+    public static function getProperty($property)
+    {
+        return Utility::array_value(static::$properties, $property);
+    }
+
+    /**
+     * Gets the names of the model ID properties.
+     *
      * @return array
      */
-    public static function properties($property = false)
+    public static function getIDProperties()
     {
-        if ($property !== false) {
-            return Utility::array_value(static::$properties, $property);
-        } else {
-            return static::$properties;
-        }
+        return static::$ids;
     }
 
     /**
@@ -469,47 +516,6 @@ abstract class Model implements \ArrayAccess
     public static function hasProperty($property)
     {
         return isset(static::$properties[$property]);
-    }
-
-    /**
-     * Checks if a property name is an id property.
-     *
-     * @return bool
-     */
-    public static function isIdProperty($property)
-    {
-        return in_array($property, static::$ids);
-    }
-
-    /**
-     * Gets the model identifier(s).
-     *
-     * @param bool $keyValue return key-value array of id
-     *
-     * @return array|string key-value if specified, otherwise comma-separated id string
-     */
-    public function id($keyValue = false)
-    {
-        if (!$keyValue) {
-            return $this->_id;
-        }
-
-        // get id(s) into key-value format
-        $return = [];
-
-        // match up id values from comma-separated id string with property names
-        $ids = explode(',', $this->_id);
-        $ids = array_reverse($ids);
-
-        // TODO need to store the id as an array
-        // instead of a string to maintain type integrity
-        foreach (static::$ids as $k => $f) {
-            $id = (count($ids) > 0) ? array_pop($ids) : false;
-
-            $return[$f] = $id;
-        }
-
-        return $return;
     }
 
     /////////////////////////////
@@ -550,10 +556,8 @@ abstract class Model implements \ArrayAccess
             return false;
         }
 
-        $properties = static::properties();
-
         $requiredProperties = [];
-        foreach ($properties as $name => $property) {
+        foreach (static::$properties as $name => $property) {
             // build a list of the required properties
             if ($property['required']) {
                 $requiredProperties[] = $name;
@@ -570,11 +574,11 @@ abstract class Model implements \ArrayAccess
         $insertArray = [];
         foreach ($this->_unsaved as $name => $value) {
             // exclude if value does not map to a property
-            if (!isset($properties[$name])) {
+            if (!isset(static::$properties[$name])) {
                 continue;
             }
 
-            $property = $properties[$name];
+            $property = static::$properties[$name];
 
             // cannot insert immutable values
             // (unless using the default value)
@@ -589,11 +593,12 @@ abstract class Model implements \ArrayAccess
         // check for required fields
         foreach ($requiredProperties as $name) {
             if (!isset($insertArray[$name])) {
+                $property = static::$properties[$name];
                 $this->app['errors']->push([
                     'error' => self::ERROR_REQUIRED_FIELD_MISSING,
                     'params' => [
                         'field' => $name,
-                        'field_name' => (isset($properties[$name]['title'])) ? $properties[$name]['title'] : Inflector::get()->titleize($name), ], ]);
+                        'field_name' => (isset($property['title'])) ? $property['title'] : Inflector::get()->titleize($name), ], ]);
 
                 $validated = false;
             }
@@ -704,7 +709,7 @@ abstract class Model implements \ArrayAccess
         foreach (static::$ids as $k) {
             // attempt use the supplied value if the ID property is mutable
             $id = null;
-            $property = static::properties($k);
+            $property = static::getProperty($k);
             if (in_array($property['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($this->_unsaved[$k])) {
                 $ids[] = $this->_unsaved[$k];
             } else {
@@ -750,7 +755,7 @@ abstract class Model implements \ArrayAccess
 
         // get the list of appropriate properties
         $properties = [];
-        foreach (static::properties() as $name => $property) {
+        foreach (static::$properties as $name => $property) {
             // skip excluded properties
             if (isset($namedExc[$name]) && !is_array($namedExc[$name])) {
                 continue;
@@ -858,18 +863,16 @@ abstract class Model implements \ArrayAccess
             return false;
         }
 
-        $properties = static::properties();
-
         // filter and validate the values being saved
         $validated = true;
         $updateArray = [];
         foreach ($data as $name => $value) {
             // exclude if value does not map to a property
-            if (!isset($properties[$name])) {
+            if (!isset(static::$properties[$name])) {
                 continue;
             }
 
-            $property = $properties[$name];
+            $property = static::$properties[$name];
 
             // can only modify mutable properties
             if ($property['mutable'] != self::MUTABLE) {
@@ -1059,7 +1062,7 @@ abstract class Model implements \ArrayAccess
     public function relation($propertyName)
     {
         // TODO deprecated
-        $property = static::properties($propertyName);
+        $property = static::getProperty($propertyName);
 
         if (!isset($this->_relationModels[$propertyName])) {
             $relationModelName = $property['relation'];
