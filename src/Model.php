@@ -44,7 +44,7 @@ abstract class Model implements \ArrayAccess
     const DEFAULT_ID_PROPERTY = 'id';
 
     /////////////////////////////
-    // Public variables
+    // Model visible variables
     /////////////////////////////
 
     /**
@@ -52,7 +52,7 @@ abstract class Model implements \ArrayAccess
      *
      * @staticvar array
      */
-    public static $ids = [self::DEFAULT_ID_PROPERTY];
+    protected static $ids = [self::DEFAULT_ID_PROPERTY];
 
     /**
      * Property definitions expressed as a key-value map with
@@ -61,11 +61,7 @@ abstract class Model implements \ArrayAccess
      *
      * @staticvar array
      */
-    public static $properties = [];
-
-    /////////////////////////////
-    // Protected variables
-    /////////////////////////////
+    protected static $properties = [];
 
     /**
      * @staticvar \Pimple\Container
@@ -98,7 +94,7 @@ abstract class Model implements \ArrayAccess
     protected $_cache;
 
     /////////////////////////////
-    // Private variables
+    // Base model variables
     /////////////////////////////
 
     /**

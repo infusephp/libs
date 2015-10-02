@@ -14,7 +14,7 @@ use Infuse\Model\Query;
 
 class TestModel extends Model
 {
-    public static $properties = [
+    protected static $properties = [
         'relation' => [
             'type' => Model::TYPE_NUMBER,
             'relation' => 'TestModel2',
@@ -115,9 +115,9 @@ function validate()
 
 class TestModel2 extends Model
 {
-    public static $ids = ['id', 'id2'];
+    protected static $ids = ['id', 'id2'];
 
-    public static $properties = [
+    protected static $properties = [
         'id' => [
             'type' => Model::TYPE_NUMBER,
         ],
@@ -173,7 +173,7 @@ class TestModel2 extends Model
         ],
     ];
 
-    public static $autoTimestamps;
+    protected static $autoTimestamps;
 
     public static $query;
 
@@ -229,7 +229,7 @@ class TestModelHookFail extends Model
 
 class Person extends ACLModel
 {
-    public static $properties = [
+    protected static $properties = [
         'id' => [
             'type' => Model::TYPE_STRING,
         ],
@@ -250,7 +250,7 @@ class Person extends ACLModel
 
 class IteratorTestModel extends Model
 {
-    public static $properties = [
+    protected static $properties = [
         'name' => [
             'searchable' => true,
         ],
