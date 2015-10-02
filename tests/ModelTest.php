@@ -52,6 +52,29 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($c, $model->getApp());
     }
 
+    public function testDriver()
+    {
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
+        TestModel::setDriver($driver);
+
+        $this->assertEquals($driver, TestModel::getDriver());
+
+        // setting the driver for a single model sets
+        // the driver for all models
+        $this->assertEquals($driver, TestModel2::getDriver());
+    }
+
+    public function testModelName()
+    {
+        $this->assertEquals('TestModel', TestModel::modelName());
+
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
+        $driver->shouldReceive('getTablename')
+               ->withArgs(['TestModel'])
+               ->andReturn('TestModels');
+        TestModel::setDriver($driver);
+    }
+
     public function testGetProperties()
     {
         $expected = [
@@ -375,29 +398,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
     {
         $model = new TestModel();
         $this->assertFalse($model->id());
-    }
-
-    public function testDriver()
-    {
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-        TestModel::setDriver($driver);
-
-        $this->assertEquals($driver, TestModel::getDriver());
-
-        // setting the driver for a single model sets
-        // the driver for all models
-        $this->assertEquals($driver, TestModel2::getDriver());
-    }
-
-    public function testModelName()
-    {
-        $this->assertEquals('TestModel', TestModel::modelName());
-
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-        $driver->shouldReceive('getTablename')
-               ->withArgs(['TestModel'])
-               ->andReturn('TestModels');
-        TestModel::setDriver($driver);
     }
 
     public function testGetMultipleProperties()
