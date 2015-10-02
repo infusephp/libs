@@ -154,13 +154,17 @@ class TestModel2 extends Model
             'default' => 20,
             'hidden' => true,
         ],
-        'json' => [
-            'type' => Model::TYPE_JSON,
+        'array' => [
+            'type' => Model::TYPE_ARRAY,
             'default' => [
                 'tax' => '%',
                 'discounts' => false,
                 'shipping' => false,
             ],
+            'hidden' => true,
+        ],
+        'object' => [
+            'type' => Model::TYPE_OBJECT,
             'hidden' => true,
         ],
         'mutable_create_only' => [

@@ -240,8 +240,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'required' => false,
                 'searchable' => false,
             ],
-            'json' => [
-                'type' => Model::TYPE_JSON,
+            'array' => [
+                'type' => Model::TYPE_ARRAY,
                 'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
@@ -250,6 +250,15 @@ class ModelTest extends PHPUnit_Framework_TestCase
                     'discounts' => false,
                     'shipping' => false,
                 ],
+                'unique' => false,
+                'required' => false,
+                'searchable' => false,
+            ],
+            'object' => [
+                'type' => Model::TYPE_OBJECT,
+                'hidden' => true,
+                'mutable' => Model::MUTABLE,
+                'null' => false,
                 'unique' => false,
                 'required' => false,
                 'searchable' => false,
@@ -510,16 +519,18 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel2(5);
         $model->hidden = true;
+        $model->object = new stdClass();
 
         $expected = [
             'hidden' => true,
-            'json' => [
+            'array' => [
                 'tax' => '%',
                 'discounts' => false,
                 'shipping' => false, ],
+            'object' => new stdClass(),
             'toArrayHook' => true, ];
 
-        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at'], ['hidden', 'toArrayHook', 'json']));
+        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at'], ['hidden', 'toArrayHook', 'array', 'object']));
     }
 
     public function testToArrayExpand()
@@ -634,7 +645,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'answer' => 42,
             'extra' => true,
             'filter' => 'blah',
-            'json' => [],
+            'array' => [],
+            'object' => new stdClass(),
         ];
 
         $this->assertTrue($newModel->create($params));
@@ -665,7 +677,8 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $newModel->answer = 42;
         $newModel->extra = true;
         $newModel->filter = 'blah';
-        $newModel->json = [];
+        $newModel->array = [];
+        $newModel->object = new stdClass();
 
         $this->assertTrue($newModel->save());
     }
@@ -691,6 +704,9 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
+        $object = new stdClass();
+        $object->test = true;
+
         $driver->shouldReceive('createModel')
                ->withArgs([$newModel, [
                     'id' => 1,
@@ -700,18 +716,19 @@ class ModelTest extends PHPUnit_Framework_TestCase
                     'default' => 'some default value',
                     'hidden' => false,
                     'created_at' => null,
-                    'json' => [
+                    'array' => [
                         'tax' => '%',
                         'discounts' => false,
                         'shipping' => false,
                     ],
+                    'object' => $object,
                     'person' => 20,
                  ]])
                ->andReturn(true);
 
         TestModel2::setDriver($driver);
 
-        $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25, 'mutable_create_only' => 'test']));
+        $this->assertTrue($newModel->create(['id' => 1, 'id2' => 2, 'required' => 25, 'mutable_create_only' => 'test', 'object' => $object]));
     }
 
     public function testCreateImmutableId()

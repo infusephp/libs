@@ -38,7 +38,11 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('string', $driver->serializeValue('string'));
 
-        $obj = ['test' => true];
+        $arr = ['test' => true];
+        $this->assertEquals('{"test":true}', $driver->serializeValue($arr));
+
+        $obj = new stdClass();
+        $obj->test = true;
         $this->assertEquals('{"test":true}', $driver->serializeValue($obj));
     }
 
@@ -66,9 +70,15 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(123, $driver->unserializeValue($property, '123'));
         $this->assertEquals(mktime(0, 0, 0, 8, 20, 2015), $driver->unserializeValue($property, 'Aug-20-2015'));
 
-        $property = ['type' => Model::TYPE_JSON, 'null' => false];
+        $property = ['type' => Model::TYPE_ARRAY, 'null' => false];
         $this->assertEquals(['test' => true], $driver->unserializeValue($property, '{"test":true}'));
         $this->assertEquals(['test' => true], $driver->unserializeValue($property, ['test' => true]));
+
+        $property = ['type' => Model::TYPE_OBJECT, 'null' => false];
+        $expected = new stdClass();
+        $expected->test = true;
+        $this->assertEquals($expected, $driver->unserializeValue($property, '{"test":true}'));
+        $this->assertEquals($expected, $driver->unserializeValue($property, $expected));
     }
 
     public function testCreateModel()

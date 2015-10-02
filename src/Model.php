@@ -34,7 +34,8 @@ abstract class Model implements \ArrayAccess
     const TYPE_NUMBER = 'number';
     const TYPE_BOOLEAN = 'boolean';
     const TYPE_DATE = 'date';
-    const TYPE_JSON = 'json';
+    const TYPE_OBJECT = 'object';
+    const TYPE_ARRAY = 'array';
 
     const ERROR_REQUIRED_FIELD_MISSING = 'required_field_missing';
     const ERROR_VALIDATION_FAILED = 'validation_failed';

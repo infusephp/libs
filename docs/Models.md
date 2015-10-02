@@ -16,7 +16,8 @@ Accepted Types:
 - number
 - boolean
 - date
-- json
+- array
+- object
 
 String, Required
 

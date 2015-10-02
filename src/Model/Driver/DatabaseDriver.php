@@ -228,8 +228,13 @@ class DatabaseDriver implements DriverInterface
         }
 
         // decode JSON into an array
-        if ($type == Model::TYPE_JSON && is_string($value)) {
+        if ($type == Model::TYPE_ARRAY && is_string($value)) {
             return (array) json_decode($value, true);
+        }
+
+        // decode JSON into an object
+        if ($type == Model::TYPE_OBJECT && is_string($value)) {
+            return json_decode($value, false);
         }
 
         return $value;
