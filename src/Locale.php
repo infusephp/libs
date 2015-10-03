@@ -1054,7 +1054,7 @@ class Locale
         ],
         'NAD' => [
             'name' => 'Namibia Dollar',
-            'symbol' => '$',
+            'symbol' => 'N$',
         ],
         'NGN' => [
             'name' => 'Nigeria Naira',
