@@ -46,11 +46,7 @@ class ErrorStackTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(self::$stack, self::$stack->push($error2));
 
-        $this->assertEquals(self::$stack, self::$stack->push([
-            'message' => 'Username is invalid',
-            'context' => 'user.create', ]));
-
-        $this->assertEquals(self::$stack, self::$stack->push(['error' => 'some_error']));
+        $this->assertEquals(self::$stack, self::$stack->push('some_error'));
     }
 
     /**
@@ -181,5 +177,56 @@ class ErrorStackTest extends PHPUnit_Framework_TestCase
     {
         $this->assertEquals(self::$stack, self::$stack->clear());
         $this->assertCount(0, self::$stack->errors());
+    }
+
+    public function testIterator()
+    {
+        self::$stack->clear();
+        for ($i = 1; $i <= 5; ++$i) {
+            self::$stack->push("$i");
+        }
+
+        $result = [];
+        foreach (self::$stack as $k => $v) {
+            $result[$k] = $v['error'];
+        }
+
+        $this->assertEquals(['1', '2', '3', '4', '5'], $result);
+
+        self::$stack->next();
+        $this->assertNull(self::$stack->current());
+    }
+
+    public function testCount()
+    {
+        self::$stack->clear();
+        self::$stack->push('Test');
+        $this->assertCount(1, self::$stack);
+    }
+
+    public function testArrayAccess()
+    {
+        self::$stack->clear();
+
+        self::$stack[0] = 'test';
+        $this->assertTrue(isset(self::$stack[0]));
+        $this->assertFalse(isset(self::$stack[6]));
+
+        $this->assertEquals('test', self::$stack[0]['error']);
+        unset(self::$stack[0]);
+    }
+
+    public function testArrayGetFail()
+    {
+        $this->setExpectedException('OutOfBoundsException');
+
+        echo self::$stack['invalid'];
+    }
+
+    public function testArraySetFail()
+    {
+        $this->setExpectedException('Exception');
+
+        self::$stack['invalid'] = 'test';
     }
 }
