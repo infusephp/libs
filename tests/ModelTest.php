@@ -84,7 +84,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
                 'admin_hidden_property' => true,
             ],
@@ -94,7 +93,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => true,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'mutable' => Model::MUTABLE,
                 'hidden' => false,
             ],
@@ -104,7 +102,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'test_hook' => [
@@ -113,7 +110,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'filter' => [
@@ -122,7 +118,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => true,
                 'filter' => 'uppercase',
             ],
@@ -139,7 +134,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'null' => false,
             'unique' => false,
             'required' => false,
-            'searchable' => false,
             'hidden' => false,
         ];
 
@@ -154,7 +148,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'null' => false,
             'unique' => false,
             'required' => false,
-            'searchable' => false,
             'admin_hidden_property' => true,
             'hidden' => false,
         ];
@@ -166,7 +159,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'null' => true,
             'unique' => false,
             'required' => false,
-            'searchable' => false,
             'mutable' => Model::MUTABLE,
             'hidden' => false,
         ];
@@ -182,7 +174,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'id2' => [
@@ -191,7 +182,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'default' => [
@@ -201,7 +191,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'validate' => [
@@ -211,7 +200,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'validate2' => [
@@ -221,7 +209,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => true,
             ],
             'unique' => [
@@ -230,7 +217,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'required' => [
@@ -239,7 +225,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'unique' => false,
-                'searchable' => false,
                 'hidden' => false,
             ],
             'hidden' => [
@@ -250,7 +235,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
             ],
             'person' => [
                 'type' => Model::TYPE_NUMBER,
@@ -261,7 +245,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
             ],
             'array' => [
                 'type' => Model::TYPE_ARRAY,
@@ -275,7 +258,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 ],
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
             ],
             'object' => [
                 'type' => Model::TYPE_OBJECT,
@@ -284,7 +266,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
             ],
             'mutable_create_only' => [
                 'type' => Model::TYPE_STRING,
@@ -292,7 +273,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => true,
             ],
             'created_at' => [
@@ -302,7 +282,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => true,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'validate' => 'timestamp|db_timestamp',
                 'hidden' => false,
                 'admin_hidden_property' => true,
@@ -314,7 +293,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'searchable' => false,
                 'hidden' => false,
                 'validate' => 'timestamp|db_timestamp',
                 'admin_hidden_property' => true,

@@ -251,9 +251,7 @@ class Person extends ACLModel
 class IteratorTestModel extends Model
 {
     protected static $properties = [
-        'name' => [
-            'searchable' => true,
-        ],
+        'name' => [],
     ];
 }
 

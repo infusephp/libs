@@ -106,7 +106,6 @@ abstract class Model implements \ArrayAccess
         'null' => false,
         'unique' => false,
         'required' => false,
-        'searchable' => false,
         'hidden' => false,
     ];
 
