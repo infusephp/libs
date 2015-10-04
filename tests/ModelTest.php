@@ -420,7 +420,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         TestModel2::setDriver($driver);
 
-        $this->assertEquals('some default value', $model->get('default'));
+        $this->assertEquals('some default value', $model->default);
     }
 
     public function testToArray()
@@ -1319,7 +1319,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($model, $model->load(false));
 
         // this should be a hit from the cache
-        $this->assertEquals(42, $model->get('answer'));
+        $this->assertEquals(42, $model->answer);
     }
 
     public function testCacheMiss()

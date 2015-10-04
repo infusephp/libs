@@ -203,8 +203,6 @@ abstract class Model implements \ArrayAccess
         // instead of a string to maintain type integrity
         if (is_array($id)) {
             $id = implode(',', $id);
-        } elseif (strpos($id, ',') === false) {
-            $this->_id = $id;
         }
 
         $this->_id = $id;
@@ -385,7 +383,9 @@ abstract class Model implements \ArrayAccess
      */
     public function __get($name)
     {
-        return $this->get([$name]);
+        $result = $this->get([$name]);
+
+        return reset($result);
     }
 
     /**
@@ -642,18 +642,13 @@ abstract class Model implements \ArrayAccess
      * This method looks up values in this order:
      * unsaved values, local cache, cache, database, defaults
      *
-     * @param string|array $properties       list of properties to fetch values for
-     * @param bool         $skipLocalCache   skips local cache when true
-     * @param bool         $forceReturnArray always return an array when true
+     * @param array $properties     list of properties to fetch values for
+     * @param bool  $skipLocalCache skips local cache when true
      *
-     * @return mixed Returns value when only 1 found or an array when multiple values found
+     * @return array
      */
-    public function get($properties, $skipCache = false, $forceReturnArray = false)
+    public function get(array $properties, $skipCache = false)
     {
-        if (!is_array($properties)) {
-            $properties = explode(',', $properties);
-        }
-
         $values = array_replace($this->id(true), $this->_local);
 
         $ignoreUnsaved = $this->_ignoreUnsaved;
@@ -684,10 +679,6 @@ abstract class Model implements \ArrayAccess
             } else {
                 $return[$k] = null;
             }
-        }
-
-        if (!$forceReturnArray && count($return) == 1) {
-            return reset($return);
         }
 
         return $return;
@@ -768,7 +759,7 @@ abstract class Model implements \ArrayAccess
         // and then get the value for each property
         $result = array_replace(
             array_fill_keys($properties, null),
-            $this->get($properties, false, true));
+            $this->get($properties));
 
         // expand any relational model properties
         $result = $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
