@@ -640,17 +640,18 @@ abstract class Model implements \ArrayAccess
      * Fetches property values from the model.
      *
      * This method looks up values in this order:
-     * unsaved values, local cache, cache, database, defaults
+     * IDs, local cache, unsaved values, cache, database, defaults
      *
-     * @param array $properties     list of properties to fetch values for
-     * @param bool  $skipLocalCache skips local cache when true
+     * @param array $properties list of property names to fetch values of
      *
      * @return array
      */
-    public function get(array $properties, $skipCache = false)
+    public function get(array $properties)
     {
+        // load the values from the IDs and local model cache
         $values = array_replace($this->id(true), $this->_local);
 
+        // unless specified, use any unsaved values
         $ignoreUnsaved = $this->_ignoreUnsaved;
         $this->_ignoreUnsaved = false;
 
@@ -658,9 +659,10 @@ abstract class Model implements \ArrayAccess
             $values = array_replace($values, $this->_unsaved);
         }
 
+        // attempt to load any missing values from the storage layer
         $numMissing = count(array_diff($properties, array_keys($values)));
-        if ($numMissing > 0 || $skipCache) {
-            $this->load($skipCache);
+        if ($numMissing > 0) {
+            $this->load();
             $values = array_replace($values, $this->_local);
 
             if (!$ignoreUnsaved) {
@@ -668,7 +670,7 @@ abstract class Model implements \ArrayAccess
             }
         }
 
-        // only return requested properties
+        // build a key-value map of the requested properties
         $return = [];
         foreach ($properties as $k) {
             if (array_key_exists($k, $values)) {
@@ -676,6 +678,7 @@ abstract class Model implements \ArrayAccess
             // set any missing values to the default value
             } elseif (static::hasProperty($k)) {
                 $return[$k] = $this->_local[$k] = $this->getDefaultValue(static::$properties[$k]);
+            // use null for values of non-properties
             } else {
                 $return[$k] = null;
             }
@@ -755,11 +758,9 @@ abstract class Model implements \ArrayAccess
             $properties[] = $name;
         }
 
-        // make sure each property key at least has a null value
-        // and then get the value for each property
-        $result = array_replace(
-            array_fill_keys($properties, null),
-            $this->get($properties));
+        // fetch the values for all of the requested properties
+        // get() should fill in any missing values with null
+        $result = $this->get($properties);
 
         // expand any relational model properties
         $result = $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
