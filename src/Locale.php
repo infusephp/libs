@@ -1173,7 +1173,7 @@ class Locale
             'symbol' => '$',
         ],
         'STD' => [
-            'name' => '	São Tomé and Príncipe Dobra',
+            'name' => 'São Tomé and Príncipe Dobra',
             'symbol' => 'STD',
         ],
         'SVC' => [
