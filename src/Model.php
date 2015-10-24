@@ -106,7 +106,6 @@ abstract class Model implements \ArrayAccess
         'null' => false,
         'unique' => false,
         'required' => false,
-        'hidden' => false,
     ];
 
     /**
@@ -115,7 +114,6 @@ abstract class Model implements \ArrayAccess
     private static $defaultIDProperty = [
         'type' => self::TYPE_NUMBER,
         'mutable' => self::IMMUTABLE,
-        'admin_hidden_property' => true,
     ];
 
     /**
@@ -127,14 +125,10 @@ abstract class Model implements \ArrayAccess
             'default' => null,
             'null' => true,
             'validate' => 'timestamp|db_timestamp',
-            'admin_hidden_property' => true,
-            'admin_type' => 'datepicker',
         ],
         'updated_at' => [
             'type' => self::TYPE_DATE,
             'validate' => 'timestamp|db_timestamp',
-            'admin_hidden_property' => true,
-            'admin_type' => 'datepicker',
         ],
     ];
 
@@ -714,13 +708,38 @@ abstract class Model implements \ArrayAccess
     /**
      * Converts the model to an array.
      *
+     * @return array model array
+     */
+    public function toArray()
+    {
+        // build the list of properties to retrieve
+        $properties = array_keys(static::$properties);
+
+        // skip hidden properties
+        $hide = (property_exists($this, 'hidden')) ? static::$hidden : [];
+        $properties = array_diff($properties, $hide);
+
+        // get the values for the properties
+        $result = $this->get($properties);
+
+        // apply the transformation hook
+        if (method_exists($this, 'toArrayHook')) {
+            $this->toArrayHook($result, [], [], []);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Converts the model to an array.
+     *
      * @param array $exclude properties to exclude
      * @param array $include properties to include
      * @param array $expand  properties to expand
      *
      * @return array properties
      */
-    public function toArray(array $exclude = [], array $include = [], array $expand = [])
+    public function toArrayDeprecated(array $exclude = [], array $include = [], array $expand = [])
     {
         // TODO this method is ripe for some performance improvements
 
@@ -744,6 +763,7 @@ abstract class Model implements \ArrayAccess
 
         // get the list of appropriate properties
         $properties = [];
+        $hide = (property_exists($this, 'hidden')) ? static::$hidden : [];
         foreach (static::$properties as $name => $property) {
             // skip excluded properties
             if (isset($namedExc[$name]) && !is_array($namedExc[$name])) {
@@ -751,7 +771,7 @@ abstract class Model implements \ArrayAccess
             }
 
             // skip hidden properties not explicitly included
-            if ($property['hidden'] && !isset($namedInc[$name])) {
+            if (in_array($name, $hide) && !isset($namedInc[$name])) {
                 continue;
             }
 
@@ -802,24 +822,20 @@ abstract class Model implements \ArrayAccess
             $flatExp = is_array($subExp) ? array_keys(Utility::array_dot($subExp)) : [];
 
             $relation = $this->relation($k);
-            $result[$k] = $relation->toArray($flatExc, $flatInc, $flatExp);
+            $result[$k] = $relation->toArrayDeprecated($flatExc, $flatInc, $flatExp);
         }
 
         return $result;
     }
 
     /**
-     * Converts the object to JSON format.
-     *
-     * @param array $exclude properties to exclude
-     * @param array $include properties to include
-     * @param array $expand  properties to expand
+     * Converts the object to JSON.
      *
      * @return string json
      */
-    public function toJson(array $exclude = [], array $include = [], array $expand = [])
+    public function toJson()
     {
-        return json_encode($this->toArray($exclude, $include, $expand));
+        return json_encode($this->toArray());
     }
 
     /**

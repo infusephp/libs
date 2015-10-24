@@ -84,8 +84,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
-                'admin_hidden_property' => true,
             ],
             'relation' => [
                 'type' => Model::TYPE_NUMBER,
@@ -94,7 +92,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'unique' => false,
                 'required' => false,
                 'mutable' => Model::MUTABLE,
-                'hidden' => false,
             ],
             'answer' => [
                 'type' => Model::TYPE_STRING,
@@ -102,7 +99,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'test_hook' => [
                 'type' => Model::TYPE_STRING,
@@ -110,7 +106,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'filter' => [
                 'type' => Model::TYPE_STRING,
@@ -118,7 +113,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'hidden' => true,
                 'filter' => 'uppercase',
             ],
         ];
@@ -134,7 +128,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'null' => false,
             'unique' => false,
             'required' => false,
-            'hidden' => false,
         ];
 
         $this->assertEquals($expected, Person::getProperty('id'));
@@ -148,8 +141,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'null' => false,
             'unique' => false,
             'required' => false,
-            'admin_hidden_property' => true,
-            'hidden' => false,
         ];
         $this->assertEquals($expected, TestModel::getProperty('id'));
 
@@ -160,7 +151,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'unique' => false,
             'required' => false,
             'mutable' => Model::MUTABLE,
-            'hidden' => false,
         ];
         $this->assertEquals($expected, TestModel::getProperty('relation'));
     }
@@ -174,7 +164,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'id2' => [
                 'type' => Model::TYPE_NUMBER,
@@ -182,7 +171,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'default' => [
                 'type' => Model::TYPE_STRING,
@@ -191,7 +179,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'validate' => [
                 'type' => Model::TYPE_STRING,
@@ -200,7 +187,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'validate2' => [
                 'type' => Model::TYPE_STRING,
@@ -209,7 +195,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'unique' => false,
                 'required' => false,
-                'hidden' => true,
             ],
             'unique' => [
                 'type' => Model::TYPE_STRING,
@@ -217,7 +202,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'required' => false,
-                'hidden' => false,
             ],
             'required' => [
                 'type' => Model::TYPE_NUMBER,
@@ -225,12 +209,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'unique' => false,
-                'hidden' => false,
             ],
             'hidden' => [
                 'type' => Model::TYPE_BOOLEAN,
                 'default' => false,
-                'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'unique' => false,
@@ -240,7 +222,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'type' => Model::TYPE_NUMBER,
                 'relation' => 'Person',
                 'default' => 20,
-                'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'unique' => false,
@@ -248,7 +229,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             ],
             'array' => [
                 'type' => Model::TYPE_ARRAY,
-                'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'default' => [
@@ -261,7 +241,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
             ],
             'object' => [
                 'type' => Model::TYPE_OBJECT,
-                'hidden' => true,
                 'mutable' => Model::MUTABLE,
                 'null' => false,
                 'unique' => false,
@@ -273,7 +252,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => true,
             ],
             'created_at' => [
                 'type' => Model::TYPE_DATE,
@@ -283,9 +261,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'unique' => false,
                 'required' => false,
                 'validate' => 'timestamp|db_timestamp',
-                'hidden' => false,
-                'admin_hidden_property' => true,
-                'admin_type' => 'datepicker',
             ],
             'updated_at' => [
                 'type' => Model::TYPE_DATE,
@@ -293,10 +268,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'null' => false,
                 'unique' => false,
                 'required' => false,
-                'hidden' => false,
                 'validate' => 'timestamp|db_timestamp',
-                'admin_hidden_property' => true,
-                'admin_type' => 'datepicker',
             ],
         ];
 
@@ -443,10 +415,33 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'toArray' => true,
         ];
 
-        $this->assertEquals($expected, $model->toArray([], [], ['relation']));
+        $this->assertEquals($expected, $model->toArray());
     }
 
-    public function testToArrayExcluded()
+    public function testToArrayDeprecated()
+    {
+        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
+
+        $driver->shouldReceive('loadModel')
+               ->andReturn([]);
+
+        TestModel::setDriver($driver);
+
+        $model = new TestModel(5);
+
+        $expected = [
+            'id' => 5,
+            'relation' => null,
+            'answer' => null,
+            'test_hook' => null,
+            // this is tacked on in toArrayHook() below
+            'toArray' => true,
+        ];
+
+        $this->assertEquals($expected, $model->toArrayDeprecated([], [], ['relation']));
+    }
+
+    public function testToArrayDeprecatedExcluded()
     {
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
@@ -462,10 +457,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'relation' => 100,
         ];
 
-        $this->assertEquals($expected, $model->toArray(['id', 'answer', 'toArray', 'test_hook']));
+        $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'answer', 'toArray', 'test_hook']));
     }
 
-    public function testToArrayAutoTimestamps()
+    public function testToArrayDeprecatedAutoTimestamps()
     {
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
@@ -480,13 +475,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $expected = ['created_at' => 100, 'updated_at' => '102'];
 
-        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required']));
+        $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'id2', 'default', 'validate', 'unique', 'required']));
 
         $model->created_at = '-1';
         $this->assertEquals(-1, $model->created_at);
     }
 
-    public function testToArrayIncluded()
+    public function testToArrayDeprecatedIncluded()
     {
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
@@ -508,10 +503,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'object' => new stdClass(),
             'toArrayHook' => true, ];
 
-        $this->assertEquals($expected, $model->toArray(['id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at'], ['hidden', 'toArrayHook', 'array', 'object']));
+        $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'id2', 'default', 'validate', 'unique', 'required', 'created_at', 'updated_at'], ['hidden', 'toArrayHook', 'array', 'object']));
     }
 
-    public function testToArrayExpand()
+    public function testToArrayDeprecatedExpand()
     {
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
@@ -524,7 +519,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model->relation = 100;
         $model->answer = 42;
 
-        $result = $model->toArray(
+        $result = $model->toArrayDeprecated(
             [
                 'id',
                 'toArray',
@@ -570,7 +565,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(5);
         $model->relation = 10;
 
-        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null}', $model->toJson(['toArray']));
+        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null,"toArray":true}', $model->toJson());
     }
 
     public function testArrayAccess()

@@ -25,11 +25,12 @@ class TestModel extends Model
         ],
         'filter' => [
             'filter' => 'uppercase',
-            'hidden' => true,
         ],
     ];
     public $preDelete;
     public $postDelete;
+
+    protected static $hidden = ['filter'];
 
     public static $query;
 
@@ -133,7 +134,6 @@ class TestModel2 extends Model
         ],
         'validate2' => [
             'validate' => 'validate',
-            'hidden' => true,
             'null' => true,
         ],
         'unique' => [
@@ -146,13 +146,11 @@ class TestModel2 extends Model
         'hidden' => [
             'type' => Model::TYPE_BOOLEAN,
             'default' => false,
-            'hidden' => true,
         ],
         'person' => [
             'type' => Model::TYPE_NUMBER,
             'relation' => 'Person',
             'default' => 20,
-            'hidden' => true,
         ],
         'array' => [
             'type' => Model::TYPE_ARRAY,
@@ -161,19 +159,17 @@ class TestModel2 extends Model
                 'discounts' => false,
                 'shipping' => false,
             ],
-            'hidden' => true,
         ],
         'object' => [
             'type' => Model::TYPE_OBJECT,
-            'hidden' => true,
         ],
         'mutable_create_only' => [
             'mutable' => Model::MUTABLE_CREATE_ONLY,
-            'hidden' => true,
         ],
     ];
 
     protected static $autoTimestamps;
+    protected static $hidden = ['validate2', 'hidden', 'person', 'array', 'object', 'mutable_create_only'];
 
     public static $query;
 
