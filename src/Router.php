@@ -12,44 +12,161 @@ namespace Infuse;
 
 use Pimple\Container;
 
-if (!defined('SKIP_ROUTE')) {
-    define('SKIP_ROUTE', -1);
-}
-
 class Router
 {
     const SKIP_ROUTE = -1;
 
     /**
-     * @staticvar array
+     * @var array
      */
-    private static $config = [
-        'namespace' => '',
-        'defaultController' => '',
-        'defaultAction' => 'index',
-    ];
+    private $routes;
 
     /**
-     * Changes the router settings.
-     *
-     * @param array $config
+     * @var array
      */
-    public static function configure($config)
+    private $settings;
+
+    /**
+     * @param array $routes
+     * @param array $settings Router settings
+     */
+    public function __construct(array $routes = [], array $settings = [])
     {
-        self::$config = array_replace(self::$config, (array) $config);
+        $this->routes = $routes;
+        $this->settings = array_replace([
+            'namespace' => '',
+            'defaultController' => '',
+            'defaultAction' => 'index',
+        ], $settings);
+    }
+
+    /**
+     * Adds a handler to the routing table for a given GET route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function get($route, $handler)
+    {
+        $this->map('get', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given POST route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function post($route, $handler)
+    {
+        $this->map('post', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given PUT route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function put($route, $handler)
+    {
+        $this->map('put', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given DELETE route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function delete($route, $handler)
+    {
+        $this->map('delete', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given PATCH route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function patch($route, $handler)
+    {
+        $this->map('patch', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given OPTIONS route.
+     *
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function options($route, $handler)
+    {
+        $this->map('options', $route, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Adds a handler to the routing table for a given route.
+     *
+     * @param string $method  HTTP method
+     * @param string $route   path pattern
+     * @param mixed  $handler route handler
+     *
+     * @return self
+     */
+    public function map($method, $route, $handler)
+    {
+        $method = strtolower($method);
+        $this->routes[$method.' '.$route] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * Gets the routing table.
+     *
+     * @return array
+     */
+    public function getRoutes()
+    {
+        return $this->routes;
     }
 
     /**
      * Routes a request and resopnse to the appropriate controller.
      *
-     * @param array             $routes
+     * @param \Pimple\Container $app DI container
      * @param Request           $req
      * @param Response          $res
-     * @param \Pimple\Container $app    DI container
      *
      * @return bool was a route match made?
      */
-    public static function route(array $routes, Container $app, Request $req, Response $res)
+    public function route(Container $app, Request $req, Response $res)
     {
         /*
             Route Precedence:
@@ -63,7 +180,7 @@ class Router
         $staticRoutes = [];
         $dynamicRoutes = [];
 
-        foreach ($routes as $routeStr => $route) {
+        foreach ($this->routes as $routeStr => $route) {
             if (strpos($routeStr, ':')) {
                 $dynamicRoutes[$routeStr] = $route;
             } else {
@@ -73,20 +190,20 @@ class Router
 
         /* global static routes */
         if (isset($staticRoutes[$routeMethodStr]) &&
-            self::performRoute($staticRoutes[$routeMethodStr], $app, $req, $res) !== self::SKIP_ROUTE) {
+            $this->performRoute($staticRoutes[$routeMethodStr], $app, $req, $res) !== self::SKIP_ROUTE) {
             return true;
         }
 
         if (isset($staticRoutes[$routeGenericStr]) &&
-            self::performRoute($staticRoutes[$routeGenericStr], $app, $req, $res) !== self::SKIP_ROUTE) {
+            $this->performRoute($staticRoutes[$routeGenericStr], $app, $req, $res) !== self::SKIP_ROUTE) {
             return true;
         }
 
         /* global dynamic routes */
 
         foreach ($dynamicRoutes as $routeStr => $route) {
-            if (self::matchRouteToRequest($routeStr, $req) &&
-                self::performRoute($route, $app, $req, $res) !== self::SKIP_ROUTE) {
+            if ($this->matchRouteToRequest($routeStr, $req) &&
+                $this->performRoute($route, $app, $req, $res) !== self::SKIP_ROUTE) {
                 return true;
             }
         }
@@ -109,7 +226,7 @@ class Router
      *
      * @return bool
      */
-    private static function performRoute($route, Container $app, $req, $res)
+    private function performRoute($route, Container $app, $req, $res)
     {
         $result = false;
 
@@ -120,16 +237,16 @@ class Router
             }
             // method name supplied
             elseif (is_string($route)) {
-                $route = [self::$config['defaultController'], $route];
+                $route = [$this->settings['defaultController'], $route];
             }
             // no method name? fallback to the index() method
             elseif (count($route) == 1) {
-                $route[] = self::$config['defaultAction'];
+                $route[] = $this->settings['defaultAction'];
             }
 
             list($controller, $method) = $route;
 
-            $controller = self::$config['namespace'].'\\'.$controller;
+            $controller = $this->settings['namespace'].'\\'.$controller;
 
             if (!class_exists($controller)) {
                 return self::SKIP_ROUTE;
@@ -163,15 +280,15 @@ class Router
     }
 
     /**
-     * Checks if a request matches a given route. If so, the parameters will
-     * be extracted and returned.
+     * Checks if a request matches a given route. When there is
+     * a match the parameters will be added to the request.
      *
      * @param string  $routeStr route template we are trying to match
      * @param Request $req
      *
      * @return bool
      */
-    private static function matchRouteToRequest($routeStr, $req)
+    private function matchRouteToRequest($routeStr, $req)
     {
         $routeParts = explode(' ', $routeStr);
 
