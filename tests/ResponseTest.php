@@ -20,6 +20,11 @@ function header($arg1, $arg2 = true, $arg3 = 200)
     return ResponseTest::$mock ? ResponseTest::$mock->header($arg1, $arg2, $arg3) : \header($arg1, $arg2, $arg3);
 }
 
+function setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7)
+{
+    return ResponseTest::$mock ? ResponseTest::$mock->setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7) : \setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7);
+}
+
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
     public static $res;
@@ -41,6 +46,23 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('test', self::$res->headers('Test'));
 
         $this->assertEquals(['Test' => 'test'], self::$res->headers());
+    }
+
+    public function testCookies()
+    {
+        $this->assertEquals(self::$res, self::$res->setCookie('test', 'testValue', time() + 3600, '/', 'example.com', true, true));
+        self::$res->setCookie('test2', 'testValue2', time() + 3600, '/', 'example.com', true, true);
+
+        $this->assertEquals(['testValue', time() + 3600, '/', 'example.com', true, true], self::$res->cookies('test'));
+
+        $expected = [
+            'test' => ['testValue', time() + 3600, '/', 'example.com', true, true],
+            'test2' => ['testValue2', time() + 3600, '/', 'example.com', true, true],
+        ];
+
+        $this->assertEquals($expected, self::$res->cookies());
+
+        $this->assertNull(self::$res->cookies('doesnotexist'));
     }
 
     public function testVersion()
@@ -89,21 +111,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('application/json', self::$res->getContentType());
     }
 
-    public function testJsonDeprecated()
-    {
-        // DEPRECATED
-
-        $body = [
-            'test' => [
-                'meh',
-                'blah', ], ];
-
-        $this->assertEquals(self::$res, self::$res->setBodyJson($body));
-
-        $this->assertEquals(json_encode($body), self::$res->getBody());
-        $this->assertEquals('application/json', self::$res->getContentType());
-    }
-
     public function testRedirect()
     {
         $req = new Request([], [], [], [], [
@@ -146,10 +153,18 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     public function testSendHeaders()
     {
         self::$mock = \Mockery::mock('php');
-        self::$mock->shouldReceive('headers_sent')->andReturn(false)->once();
-        self::$mock->shouldReceive('header')->withArgs(['HTTP/1.0 401 Unauthorized', true, 401])->once();
-        self::$mock->shouldReceive('header')->withArgs(['Content-type: application/json; charset=utf-8', false, 401])->once();
-        self::$mock->shouldReceive('header')->withArgs(['Test: hello', false, 401])->once();
+        self::$mock->shouldReceive('headers_sent')
+                   ->andReturn(false)
+                   ->once();
+        self::$mock->shouldReceive('header')
+                   ->withArgs(['HTTP/1.0 401 Unauthorized', true, 401])
+                   ->once();
+        self::$mock->shouldReceive('header')
+                   ->withArgs(['Content-type: application/json; charset=utf-8', false, 401])
+                   ->once();
+        self::$mock->shouldReceive('header')
+                   ->withArgs(['Test: hello', false, 401])
+                   ->once();
 
         $res = new Response();
         $res->setVersion('1.0');
@@ -157,6 +172,28 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $res->setContentType('application/json');
         $res->setHeader('Test', 'hello');
         $res->sendHeaders();
+    }
+
+    public function testSendCookies()
+    {
+        self::$mock = \Mockery::mock('php');
+        self::$mock->shouldReceive('headers_sent')
+                   ->andReturn(false)
+                   ->once();
+        self::$mock->shouldReceive('setcookie')
+                   ->withArgs([
+                        'test',
+                        'hello world',
+                        0,
+                        '',
+                        '',
+                        false,
+                        false, ])
+                   ->once();
+
+        $res = new Response();
+        $res->setCookie('test', 'hello world');
+        $res->sendCookies();
     }
 
     public function testSendBody()

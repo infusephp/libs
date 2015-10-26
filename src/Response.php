@@ -77,12 +77,23 @@ class Response
     /**
      * @var array
      */
-    private $headers = [];
+    private $headers;
+
+    /**
+     * @var array
+     */
+    private $cookies;
 
     /**
      * @var string
      */
     private $body;
+
+    public function __construct()
+    {
+        $this->headers = [];
+        $this->cookies = [];
+    }
 
     /**
      * Gets one or all headers.
@@ -102,7 +113,7 @@ class Response
      * @param string $header
      * @param string $value
      *
-     * @return Response
+     * @return self
      */
     public function setHeader($header, $value)
     {
@@ -112,11 +123,43 @@ class Response
     }
 
     /**
+     * Gets the cookies that will be set with this response.
+     *
+     * @param string $index optional
+     *
+     * @return mixed
+     */
+    public function cookies($index = false)
+    {
+        return ($index) ? Utility::array_value($this->cookies, $index) : $this->cookies;
+    }
+
+    /**
+     * Sets a cookie with the same signature as PHP's setcookie().
+     *
+     * @param string $name
+     * @param string $value
+     * @param int    $expire
+     * @param string $path
+     * @param string $domain
+     * @param bool   $secure
+     * @param bool   $httponly
+     *
+     * @return self
+     */
+    public function setCookie($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false)
+    {
+        $this->cookies[$name] = [$value, $expire, $path, $domain, $secure, $httponly];
+
+        return $this;
+    }
+
+    /**
      * Sets the HTTP version.
      *
      * @param string $version HTTP version
      *
-     * @return Response
+     * @return self
      */
     public function setVersion($version)
     {
@@ -140,7 +183,7 @@ class Response
      *
      * @param int $code
      *
-     * @return Response
+     * @return self
      */
     public function setCode($code)
     {
@@ -174,7 +217,7 @@ class Response
      *
      * @param string $contentType content type
      *
-     * @return Response
+     * @return self
      */
     public function setContentType($contentType)
     {
@@ -188,7 +231,7 @@ class Response
      *
      * @param string $body
      *
-     * @return Response
+     * @return self
      */
     public function setBody($body)
     {
@@ -213,7 +256,7 @@ class Response
      * @param string $template   template to render
      * @param array  $parameters parameters to pass to the template
      *
-     * @return Response
+     * @return self
      */
     public function render(View $view)
     {
@@ -225,7 +268,7 @@ class Response
      *
      * @param object|array $obj object to be encoded
      *
-     * @return Response
+     * @return self
      */
     public function json($obj)
     {
@@ -240,7 +283,7 @@ class Response
      * @param int     $code HTTP status code to send
      * @param Request $req  request object for getting requested host information
      *
-     * @return Response
+     * @return self
      */
     public function redirect($url, $code = 302, Request $req = null)
     {
@@ -274,9 +317,9 @@ class Response
     }
 
     /**
-     * Sends the headers.
+     * Sends the headers to the client.
      *
-     * @return Response
+     * @return self
      */
     public function sendHeaders()
     {
@@ -297,9 +340,30 @@ class Response
     }
 
     /**
-     * Sends the content.
+     * Sends the cookies to the client.
      *
-     * @return Response
+     * @return self
+     */
+    public function sendCookies()
+    {
+        // check if headers have already been sent
+        if (headers_sent()) {
+            return $this;
+        }
+
+        // set cookies
+        foreach ($this->cookies as $name => $cookie) {
+            list($value, $expire, $path, $domain, $secure, $httponly) = $cookie;
+            setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sends the content to the client.
+     *
+     * @return self
      */
     public function sendBody()
     {
@@ -313,21 +377,14 @@ class Response
     }
 
     /**
-     * Sends the response using the given information.
+     * Sends the response to the client.
      *
-     * @return Response
+     * @return self
      */
     public function send()
     {
         return $this->sendHeaders()
+                    ->sendCookies()
                     ->sendBody();
-    }
-
-    /**
-     * @deprecated use json()
-     */
-    public function setBodyJson($obj)
-    {
-        return $this->json($obj);
     }
 }

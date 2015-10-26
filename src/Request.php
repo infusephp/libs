@@ -694,37 +694,6 @@ class Request
     }
 
     /**
-     * Sets a cookie with the same signature as PHP's setcookie().
-     *
-     * @param string $name
-     * @param string $value
-     * @param int    $expire
-     * @param string $path
-     * @param string $domain
-     * @param bool   $secure
-     * @param bool   $httponly
-     * @param bool   $mock
-     *
-     * @return bool success
-     */
-    public function setCookie($name, $value, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = false, $mock = false)
-    {
-        if (!$mock) {
-            if (setcookie($name, $value, $expire, $path, $domain, $secure, $httponly)) {
-                $this->cookies[$name] = $value;
-
-                return true;
-            }
-
-            return false;
-        } else {
-            $this->cookies[$name] = $value;
-
-            return true;
-        }
-    }
-
-    /**
      * Gets the files associated with the request. (i.e. $_FILES).
      *
      * @param string $index optional
