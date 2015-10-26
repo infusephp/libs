@@ -83,54 +83,66 @@ class Request
     private $paths;
 
     /**
-     * Constructs a request.
+     * Creates a request from the PHP globals.
      *
-     * @param array $query   defaults to $_GET
-     * @param array $request defaults to php://input
-     * @param array $cookies defaults to $_COOKIE
-     * @param array $files   defaults to $_FILES
-     * @param array $server  defaults to $_SERVER
-     * @param array $session defaults to $_SESSION
+     * @return Request
      */
-    public function __construct($query = null, $request = null, $cookies = null, $files = null, $server = null, $session = null)
+    public static function createFromGlobals()
     {
-        $this->params = [];
+        $server = $_SERVER;
 
-        if ($query) {
-            $this->query = $query;
-        } else {
-            $this->query = $_GET;
+        // parse the request body based on the content type
+        $request = [];
+        if (in_array(Utility::array_value($server, 'REQUEST_METHOD'), ['POST', 'PUT', 'PATCH'])) {
+            $contentType = Utility::array_value($server, 'CONTENT_TYPE');
+
+            // Multi-Part Form Data
+            if (strpos($contentType, 'multipart/form-data') !== false) {
+                $request = $_REQUEST;
+            } else {
+                $body = file_get_contents('php://input');
+
+                // JSON
+                if (strpos($contentType, 'application/json') !== false) {
+                    $request = json_decode($body, true);
+
+                // Plain-Text
+                } elseif (strpos($contentType, 'text/plain') !== false) {
+                    $request = $body;
+
+                // Default to Query String
+                } else {
+                    parse_str($body, $request);
+                }
+            }
         }
 
-        if ($cookies) {
-            $this->cookies = $cookies;
-        } else {
-            $this->cookies = $_COOKIE;
-        }
+        $session = (isset($_SESSION)) ? $_SESSION : [];
 
-        if ($files) {
-            $this->files = $files;
-        } else {
-            $this->files = $_FILES;
-        }
+        return new self($_GET, $request, $_COOKIE, $_FILES, $server, $session);
+    }
 
-        if (!$server) {
-            $server = $_SERVER;
-        }
-
-        if ($session) {
-            $this->session = $session;
-        } elseif (isset($_SESSION)) {
-            $this->session = $_SESSION;
-        } else {
-            $this->session = [];
-        }
-
-        $this->server = array_replace([
+    /**
+     * Creates a request from a given URI.
+     *
+     * @param string       $uri
+     * @param string       $method
+     * @param array|string $parameters
+     * @param array        $cookies
+     * @param array        $files
+     * @param array        $server
+     * @param array        $session
+     *
+     * @return Request
+     */
+    public static function create($uri, $method = 'GET', $parameters = [], array $cookies = [], array $files = [], array $server = [], array $session = [])
+    {
+        // ensure the basic server parameters are filled in
+        $server = array_replace([
             'SERVER_NAME' => 'localhost',
             'SERVER_PORT' => 80,
             'HTTP_HOST' => 'localhost',
-            'HTTP_USER_AGENT' => 'infuse/1.X',
+            'HTTP_USER_AGENT' => 'Infuse/1.X',
             'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
             'HTTP_ACCEPT_CHARSET' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
@@ -138,9 +150,103 @@ class Request
             'SCRIPT_NAME' => '',
             'SCRIPT_FILENAME' => '',
             'SERVER_PROTOCOL' => 'HTTP/1.1',
-            'REQUEST_METHOD' => 'GET',
+            'REQUEST_METHOD' => strtoupper($method),
             'REQUEST_TIME' => time(),
+            'PATH_INFO' => '',
         ], $server);
+
+        // parse the URI and overwrite extracted properties
+        $components = parse_url($uri);
+        if (isset($components['host'])) {
+            $server['SERVER_NAME'] = $components['host'];
+            $server['HTTP_HOST'] = $components['host'];
+        }
+
+        if (isset($components['scheme'])) {
+            if ('https' === $components['scheme']) {
+                $server['HTTPS'] = 'on';
+                $server['SERVER_PORT'] = 443;
+            } else {
+                unset($server['HTTPS']);
+                $server['SERVER_PORT'] = 80;
+            }
+        }
+
+        if (isset($components['port'])) {
+            $server['SERVER_PORT'] = $components['port'];
+            $server['HTTP_HOST'] = $server['HTTP_HOST'].':'.$components['port'];
+        }
+
+        if (isset($components['user'])) {
+            $server['PHP_AUTH_USER'] = $components['user'];
+        }
+
+        if (isset($components['pass'])) {
+            $server['PHP_AUTH_PW'] = $components['pass'];
+        }
+
+        if (!isset($components['path'])) {
+            $components['path'] = '/';
+        }
+
+        switch (strtoupper($method)) {
+            case 'POST':
+            case 'PUT':
+            case 'DELETE':
+                if (!isset($server['CONTENT_TYPE'])) {
+                    $server['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
+                }
+                // no break
+            case 'PATCH':
+                $request = $parameters;
+                $query = [];
+                break;
+            default:
+                $request = [];
+                $query = $parameters;
+                break;
+        }
+
+        // build the request URI and query string
+        $queryString = '';
+        if (isset($components['query'])) {
+            parse_str(html_entity_decode($components['query']), $qs);
+            if ($query) {
+                $query = array_replace($qs, $query);
+                $queryString = http_build_query($query, '', '&');
+            } else {
+                $query = $qs;
+                $queryString = $components['query'];
+            }
+        } elseif ($query) {
+            $queryString = http_build_query($query, '', '&');
+        }
+
+        $server['REQUEST_URI'] = $components['path'].('' !== $queryString ? '?'.$queryString : '');
+        $server['QUERY_STRING'] = $queryString;
+
+        return new self($query, $request, $cookies, $files, $server);
+    }
+
+    /**
+     * Constructs a request.
+     *
+     * @param array        $query
+     * @param array|string $request
+     * @param array        $cookies
+     * @param array        $files
+     * @param array        $server
+     * @param array        $session
+     */
+    public function __construct(array $query = [], $request = [], array $cookies = [], array $files = [], array $server = [], array $session = [])
+    {
+        $this->query = $query;
+        $this->request = $request;
+        $this->cookies = $cookies;
+        $this->files = $files;
+        $this->server = $server;
+        $this->session = $session;
+        $this->params = [];
 
         // remove slash in front of requested url
         $this->server['REQUEST_URI'] = substr_replace(Utility::array_value($this->server, 'REQUEST_URI'), '', 0, 1);
@@ -181,7 +287,7 @@ class Request
         }
 
         // parse url
-        $this->setPath(Utility::array_value($this->server, 'REQUEST_URI'));
+        $this->setPath($this->server['REQUEST_URI']);
 
         // parse headers
         $this->headers = $this->parseHeaders($this->server);
@@ -195,42 +301,10 @@ class Request
         // accept language header
         $this->languages = $this->parseAcceptHeader(Utility::array_value($this->headers, 'ACCEPT_LANGUAGE'));
 
-        // parse request body
-        $this->request = $request;
-
-        if (!$request && in_array($this->method(), ['POST', 'PUT', 'PATCH'])) {
-            $contentType = $this->contentType();
-
-            // content-type: multipart/form-data
-            if (strpos($contentType, 'multipart/form-data') !== false) {
-                $this->request = $_REQUEST;
-            } else {
-                $body = file_get_contents('php://input');
-
-                // content-type: application/json
-                if (strpos($contentType, 'application/json') !== false) {
-                    $this->request = json_decode($body, true);
-                }
-                // content-type: text/plain
-                elseif (strpos($contentType, 'text/plain') !== false) {
-                    $this->request = $body;
-                }
-                // otherwise, query string
-                else {
-                    parse_str($body, $this->request);
-                }
-            }
-        }
-
-        if (!$this->request) {
-            $this->request = [];
-        }
-
         // PUT, PATCH, and DELETE requests can come through POST
-        $requestMethodFromPost = Utility::array_value((array) $this->request, 'method');
         if ($this->method() == 'POST' &&
-            in_array($requestMethodFromPost, ['PUT', 'PATCH', 'DELETE'])) {
-            $this->server['REQUEST_METHOD'] = $requestMethodFromPost;
+            in_array($this->request('method'), ['PUT', 'PATCH', 'DELETE'])) {
+            $this->server['REQUEST_METHOD'] = $this->request('method');
         }
     }
 
@@ -346,10 +420,14 @@ class Request
      */
     public function host()
     {
-        if (!$host = Utility::array_value($this->headers, 'HOST')) {
-            if (!$host = Utility::array_value($this->server, 'SERVER_NAME')) {
-                $host = Utility::array_value($this->server, 'SERVER_ADDR', '');
-            }
+        $host = Utility::array_value($this->headers, 'HOST');
+
+        if (!$host) {
+            $host = Utility::array_value($this->server, 'SERVER_NAME');
+        }
+
+        if (!$host) {
+            $host = Utility::array_value($this->server, 'SERVER_ADDR', '');
         }
 
         // trim and remove port number from host
@@ -596,7 +674,11 @@ class Request
      */
     public function request($index = false)
     {
-        return ($index) ? Utility::array_value((array) $this->request, $index) : $this->request;
+        if (!is_array($this->request) && $index) {
+            return;
+        }
+
+        return ($index) ? Utility::array_value($this->request, $index) : $this->request;
     }
 
     /**
@@ -773,7 +855,7 @@ class Request
     // Credit to Jurgens du Toit: http://jrgns.net/parse_http_accept_header/
     private function parseAcceptHeader($acceptStr = '')
     {
-        $return = null;
+        $return = [];
 
         $types = explode(',', $acceptStr);
         $types = array_map('trim', $types);

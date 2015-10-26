@@ -64,9 +64,39 @@ class RequestTest extends PHPUnit_Framework_TestCase
         );
     }
 
-    protected function assertPreConditions()
+    public function testCreateFromGlobals()
     {
-        $this->assertInstanceOf('Infuse\Request', self::$req);
+        $req = Request::createFromGlobals();
+
+        $this->assertInstanceOf('Infuse\Request', $req);
+    }
+
+    public function testCreate()
+    {
+        $req = Request::create('http://example.com?k=v');
+
+        $this->assertInstanceOf('Infuse\Request', $req);
+        $this->assertEquals('http', $req->protocol());
+        $this->assertEquals('example.com', $req->host());
+        $this->assertEquals(80, $req->port());
+        $this->assertEquals('/', $req->path());
+        $this->assertEquals('GET', $req->method());
+        $this->assertEquals(['k' => 'v'], $req->query());
+    }
+
+    public function testCreateFullUrl()
+    {
+        $req = Request::create('https://user:pass@example.com:1234/test', 'post', ['test' => true]);
+
+        $this->assertInstanceOf('Infuse\Request', $req);
+        $this->assertEquals('https', $req->protocol());
+        $this->assertEquals('user', $req->user());
+        $this->assertEquals('pass', $req->password());
+        $this->assertEquals('example.com', $req->host());
+        $this->assertEquals(1234, $req->port());
+        $this->assertEquals('/test', $req->path());
+        $this->assertEquals('POST', $req->method());
+        $this->assertEquals(['test' => true], $req->request());
     }
 
     public function testIp()
@@ -79,7 +109,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('http', self::$req->protocol());
 
         // test when HTTPS header set
-        $req = new Request(null, null, null, null, ['HTTPS' => 'on']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTPS' => 'on']);
 
         $this->assertEquals('https', $req->protocol());
     }
@@ -89,7 +119,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(self::$req->isSecure());
 
         // test when HTTPS header set
-        $req = new Request(null, null, null, null, ['HTTPS' => 'on']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTPS' => 'on']);
 
         $this->assertTrue($req->isSecure());
     }
@@ -134,6 +164,20 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('example.com', self::$req->host());
     }
 
+    public function testHostFromServerName()
+    {
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => null, 'SERVER_NAME' => 'example.com']);
+
+        $this->assertEquals('example.com', $req->host());
+    }
+
+    public function testHostFromServerAddr()
+    {
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => null, 'SERVER_NAME' => null, 'SERVER_ADDR' => '127.0.0.1']);
+
+        $this->assertEquals('127.0.0.1', $req->host());
+    }
+
     public function testUrl()
     {
         $this->assertEquals('http://example.com:1234/users/comments/10', self::$req->url());
@@ -161,14 +205,29 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     public function testRemovingStartPath()
     {
-        $req = new Request(null, null, null, null, ['REQUEST_URI' => '/some/start/path/test', 'DOCUMENT_URI' => '/some/start/path']);
-
-        $expected = ['test'];
-        $this->assertEquals($expected, $req->paths());
+        $req = new Request([], [], [], [], ['REQUEST_URI' => '/some/start/path/test', 'DOCUMENT_URI' => '/some/start/path']);
 
         $this->assertEquals('/some/start/path', $req->basePath());
-
         $this->assertEquals('/test', $req->path());
+        $this->assertEquals(['test'], $req->paths());
+    }
+
+    public function testTrailingSlash()
+    {
+        $req = new Request([], [], [], [], ['REQUEST_URI' => '/some/start/path/test/', 'DOCUMENT_URI' => '/some/start/path']);
+
+        $this->assertEquals('/some/start/path', $req->basePath());
+        $this->assertEquals('/test', $req->path());
+        $this->assertEquals(['test'], $req->paths());
+    }
+
+    public function testPhpUri()
+    {
+        $req = new Request([], [], [], [], ['REQUEST_URI' => '/some/start/path/test.php', 'DOCUMENT_URI' => '/some/start/path/test.php']);
+
+        $this->assertEquals('/some/start/path/test.php', $req->basePath());
+        $this->assertEquals('/', $req->path());
+        $this->assertEquals([''], $req->paths());
     }
 
     public function testMethod()
@@ -178,10 +237,10 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     public function testMethodFromPost()
     {
-        $req = new Request(null, ['method' => 'DELETE'], null, null, ['REQUEST_METHOD' => 'POST']);
+        $req = Request::create('/', 'POST', ['method' => 'DELETE']);
         $this->assertEquals('DELETE', $req->method());
 
-        $req = new Request(null, ['method' => 'PUT'], null, null, ['REQUEST_METHOD' => 'POST']);
+        $req = Request::create('/', 'POST', ['method' => 'PUT']);
         $this->assertEquals('PUT', $req->method());
     }
 
@@ -265,7 +324,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $this->assertTrue(self::$req->isHtml());
 
-        $req = new Request(null, null, null, null, ['HTTP_ACCEPT' => 'application/json']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_ACCEPT' => 'application/json']);
         $this->assertFalse($req->isHtml());
     }
 
@@ -273,7 +332,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $this->assertFalse(self::$req->isJson());
 
-        $req = new Request(null, null, null, null, ['HTTP_ACCEPT' => 'application/json']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_ACCEPT' => 'application/json']);
         $this->assertTrue($req->isJson());
     }
 
@@ -281,7 +340,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $this->assertTrue(self::$req->isXml());
 
-        $req = new Request(null, null, null, null, ['HTTP_ACCEPT' => 'application/json']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_ACCEPT' => 'application/json']);
         $this->assertFalse($req->isXml());
     }
 
@@ -289,31 +348,31 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $this->assertFalse(self::$req->isXhr());
 
-        $req = new Request(null, null, null, null, ['HTTP_X-REQUESTED-WITH' => 'XMLHttpRequest']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_X-REQUESTED-WITH' => 'XMLHttpRequest']);
         $this->assertFalse($req->isXhr());
     }
 
     public function testIsNotApi()
     {
-        $req = new Request(null, null, null, null, []);
+        $req = Request::create('/', 'GET');
         $this->assertFalse($req->isApi());
     }
 
     public function testIsApiHeader()
     {
-        $req = new Request(null, null, null, null, ['HTTP_AUTHORIZATION' => 'test']);
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_AUTHORIZATION' => 'test']);
         $this->assertTrue($req->isApi());
     }
 
     public function testIsApiRequestBody()
     {
-        $req = new Request(['access_token' => 'test']);
+        $req = Request::create('/', 'POST', ['access_token' => 'test']);
         $this->assertTrue($req->isApi());
     }
 
     public function testIsApiQuery()
     {
-        $req = new Request(null, ['access_token' => 'test']);
+        $req = Request::create('/', 'GET', ['access_token' => 'test']);
         $this->assertTrue($req->isApi());
     }
 
@@ -363,7 +422,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     public function testRequestPlainText()
     {
-        $req = new Request(null, 'test', null, null, ['CONTENT_TYPE' => 'plain/text']);
+        $req = Request::create('/', 'POST', 'test', [], [], ['CONTENT_TYPE' => 'plain/text']);
 
         $this->assertEquals('test', $req->request());
         $this->assertEquals(null, $req->request('some_index'));

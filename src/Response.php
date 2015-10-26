@@ -247,7 +247,7 @@ class Response
         // handle relative URL redirects
         if (substr($url, 0, 7) != 'http://' && substr($url, 0, 8) != 'https://' && substr($url, 0, 2) != '//') {
             if (!$req) {
-                $req = new Request();
+                $req = Request::createFromGlobals();
             }
             $url = $req->headers('host').'/'.$req->basePath().'/'.urldecode($url);
 

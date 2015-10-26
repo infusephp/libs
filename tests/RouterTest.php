@@ -46,11 +46,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'get /this/is/a/test/route/' => ['MockController', 'fail'],
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'POST';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/this/is/a/test/route');
+        $req = Request::create('/this/is/a/test/route', 'POST');
 
         $res = new Response();
 
@@ -70,11 +66,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'get /this/is/a/test/route/' => 'fail',
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'PUT';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/dynamic/1/2/3/4');
+        $req = Request::create('/dynamic/1/2/3/4', 'PUT');
 
         $res = new Response();
 
@@ -97,11 +89,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'post /this/is/a/test/route/' => 'fail',
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'POST';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/this/is/a/test/route');
+        $req = Request::create('/this/is/a/test/route', 'POST');
 
         $res = new Response();
 
@@ -122,11 +110,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'post /this/is/a/test/route/' => ['MockController', 'fail'],
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'POST';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/this/is/a/test/route');
+        $req = Request::create('/this/is/a/test/route', 'POST');
 
         $res = new Response();
 
@@ -140,8 +124,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $view = new View('test');
         MockController::$view = $view;
 
-        $req = new Request();
-        $req->setPath('/view');
+        $req = Request::create('/view');
 
         $res = Mockery::mock('Infuse\Response');
         $res->shouldReceive('render')->withArgs([$view])->once();
@@ -159,8 +142,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $server = $_SERVER;
         $server['REQUEST_METHOD'] = 'POST';
 
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/this/is/a/test/route');
+        $req = Request::create('/this/is/a/test/route', 'POST');
 
         $res = new Response();
 
@@ -176,12 +158,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'get /not/it' => 'fail',
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'POST';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/this/is/a/test/route');
-
+        $req = Request::create('/this/is/a/test/route', 'POST');
         $req->setParams(['controller' => 'MockController']);
 
         $res = new Response();
@@ -204,8 +181,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $server = $_SERVER;
         $server['REQUEST_METHOD'] = 'GET';
 
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/test');
+        $req = Request::create('/test');
 
         $res = new Response();
 
@@ -225,11 +201,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'get /test' => ['MockController', 'staticRoute', $extraParams],
         ];
 
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'GET';
-
-        $req = new Request(null, null, null, null, $server);
-        $req->setPath('/test');
+        $req = Request::create('/test');
 
         $res = new Response();
 
