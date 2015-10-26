@@ -229,6 +229,76 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(MockController::$staticRouteCalled);
         $this->assertEquals($extraParams, $req->params());
     }
+
+    public function testGet()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->get('/users/:id', $handler));
+
+        $this->assertEquals(['get /users/:id' => $handler], $router->getRoutes());
+    }
+
+    public function testPost()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->post('/users', $handler));
+
+        $this->assertEquals(['post /users' => $handler], $router->getRoutes());
+    }
+
+    public function testPut()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->put('/users/:id', $handler));
+
+        $this->assertEquals(['put /users/:id' => $handler], $router->getRoutes());
+    }
+
+    public function testDelete()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->delete('/users/:id', $handler));
+
+        $this->assertEquals(['delete /users/:id' => $handler], $router->getRoutes());
+    }
+
+    public function testPatch()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->patch('/users/:id', $handler));
+
+        $this->assertEquals(['patch /users/:id' => $handler], $router->getRoutes());
+    }
+
+    public function testOptions()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->options('/users/:id', $handler));
+
+        $this->assertEquals(['options /users/:id' => $handler], $router->getRoutes());
+    }
+
+    public function testMap()
+    {
+        $router = new Router();
+        $handler = function () {};
+
+        $this->assertEquals($router, $router->map('GET', '/users/:id', $handler));
+
+        $this->assertEquals(['get /users/:id' => $handler], $router->getRoutes());
+    }
 }
 
 class MockController
