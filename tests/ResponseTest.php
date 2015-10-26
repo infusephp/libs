@@ -50,14 +50,16 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testCookies()
     {
-        $this->assertEquals(self::$res, self::$res->setCookie('test', 'testValue', time() + 3600, '/', 'example.com', true, true));
-        self::$res->setCookie('test2', 'testValue2', time() + 3600, '/', 'example.com', true, true);
+        $t = time() + 3600;
 
-        $this->assertEquals(['testValue', time() + 3600, '/', 'example.com', true, true], self::$res->cookies('test'));
+        $this->assertEquals(self::$res, self::$res->setCookie('test', 'testValue', $t, '/', 'example.com', true, true));
+        self::$res->setCookie('test2', 'testValue2', $t, '/', 'example.com', true, true);
+
+        $this->assertEquals(['testValue', $t, '/', 'example.com', true, true], self::$res->cookies('test'));
 
         $expected = [
-            'test' => ['testValue', time() + 3600, '/', 'example.com', true, true],
-            'test2' => ['testValue2', time() + 3600, '/', 'example.com', true, true],
+            'test' => ['testValue', $t, '/', 'example.com', true, true],
+            'test2' => ['testValue2', $t, '/', 'example.com', true, true],
         ];
 
         $this->assertEquals($expected, self::$res->cookies());
@@ -125,6 +127,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($res, $res->redirect('/test/url', 301, $req));
         $this->assertEquals('//example.com/some/start/test/url', $res->headers('Location'));
         $this->assertEquals(301, $res->getCode());
+
+        // test by creating a request from globals
+        $this->assertEquals($res, $res->redirect('/'));
+        $this->assertEquals('///', $res->headers('Location'));
 
         $this->assertEquals($res, $res->redirect('http://test.com'));
         $this->assertEquals('http://test.com', $res->headers('Location'));
@@ -208,6 +214,20 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         ob_end_clean();
 
         $this->assertEquals('test', $output);
+    }
+
+    public function testSendBodyEmpty()
+    {
+        $res = new Response();
+
+        ob_start();
+
+        $res->sendBody();
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('OK', $output);
     }
 
     public function testSend()
