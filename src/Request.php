@@ -619,16 +619,6 @@ class Request
     }
 
     /**
-     * Checks if the request was made over the command line.
-     *
-     * @return bool
-     */
-    public function isCli()
-    {
-        return defined('STDIN');
-    }
-
-    /**
      * Gets the parameters associated with the request.
      * These come from the router or other parts of the framework,
      * not the HTTP request itself. Request params are a convenient way
@@ -743,22 +733,6 @@ class Request
     {
         $_SESSION = [];
         $this->session = [];
-    }
-
-    /**
-     * Gets the CLI arguments associated with the request.
-     *
-     * @param int $index optional
-     *
-     * @return mixed
-     */
-    public function cliArgs($index = false)
-    {
-        if (!$this->isCli()) {
-            return false;
-        }
-
-        return ($index) ? Utility::array_value($this->server, "argv.$index") : Utility::array_value($this->server, 'argv');
     }
 
     ////////////////////////////////////

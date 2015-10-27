@@ -376,14 +376,6 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($req->isApi());
     }
 
-    public function testIsCli()
-    {
-        if (!defined('STDIN')) {
-            define('STDIN', true);
-        }
-        $this->assertTrue(self::$req->isCli());
-    }
-
     public function testParams()
     {
         $expected = ['test' => 1, 'test2' => 'meh'];
@@ -482,15 +474,5 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
         $this->assertNull(self::$req->session('test'));
         $this->assertEquals([], self::$req->session());
-    }
-
-    public function testCliArgs()
-    {
-        $expected = ['update', 'force', 'all'];
-
-        $this->assertEquals('force', self::$req->cliArgs(1));
-        $this->assertEquals($expected, self::$req->cliArgs());
-
-        $this->assertNull(self::$req->cliArgs(100));
     }
 }
