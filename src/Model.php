@@ -12,7 +12,6 @@ namespace Infuse;
 
 use ICanBoogie\Inflector;
 use Infuse\Model\ModelEvent;
-use Infuse\Model\Driver\DatabaseDriver;
 use Infuse\Model\Driver\DriverInterface;
 use Infuse\Model\Query;
 use Infuse\Model\Relation\HasOne;
@@ -300,11 +299,6 @@ abstract class Model implements \ArrayAccess
      */
     public static function getDriver()
     {
-        // use the database driver by default
-        if (!self::$driver) {
-            self::$driver = new DatabaseDriver(self::$injectedApp);
-        }
-
         return self::$driver;
     }
 
