@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use Infuse\ViewEngine;
+use Infuse\ViewEngine\Smarty;
 use Infuse\View;
 
 class SmartyViewEngineTest extends PHPUnit_Framework_TestCase
@@ -17,7 +17,25 @@ class SmartyViewEngineTest extends PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        self::$engine = new ViewEngine\Smarty(__DIR__.'/views');
+        self::$engine = new Smarty(__DIR__.'/views');
+    }
+
+    public function testViewsDir()
+    {
+        $engine = new Smarty('test');
+        $this->assertEquals('test', $engine->getViewsDir());
+    }
+
+    public function testCompileDir()
+    {
+        $engine = new Smarty('', 'test');
+        $this->assertEquals('test', $engine->getCompileDir());
+    }
+
+    public function testCacheDir()
+    {
+        $engine = new Smarty('', '', 'test');
+        $this->assertEquals('test', $engine->getCacheDir());
     }
 
     public function testAssetUrl()
@@ -39,10 +57,10 @@ class SmartyViewEngineTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['test' => 'overwrite', 'test2' => 'blah'], self::$engine->getGlobalParameters());
     }
 
-    public function testSmarty()
+    public function testGetSmarty()
     {
-        $engine = new ViewEngine\Smarty('view', 'compile', 'cache');
-        $this->assertInstanceOf('Smarty', $engine->smarty());
+        $engine = new Smarty('view', 'compile', 'cache');
+        $this->assertInstanceOf('Smarty', $engine->getSmarty());
     }
 
     public function testRenderView()

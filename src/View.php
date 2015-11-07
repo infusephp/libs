@@ -40,9 +40,9 @@ class View
     private $engine;
 
     /**
-     * Sets the default ViewEngine used by views.
+     * Sets the DI container.
      *
-     * @param ViewEngine $engine
+     * @param \Pimple\Container $container
      */
     public static function inject(Container $container)
     {
@@ -72,11 +72,11 @@ class View
     /**
      * Creates a new View.
      *
-     * @param string $template           template name
-     * @param array  $templateParameters optional parameters to render template with
-     * @param string $engine             rendering engine to use
+     * @param string     $template           template name
+     * @param array      $templateParameters optional parameters to render template with
+     * @param ViewEngine $engine             rendering engine to use
      */
-    public function __construct($template, $templateParameters = [], $engine = null)
+    public function __construct($template, $templateParameters = [], ViewEngine $engine = null)
     {
         // deal with relative template paths by checking for an optional
         // $viewsDir property on the calling class
@@ -95,7 +95,7 @@ class View
         $this->template = $template;
         $this->data = $templateParameters;
 
-        if ($engine) {
+        if ($engine !== null) {
             $this->engine = $engine;
         }
     }

@@ -23,9 +23,9 @@ class Message extends Event
     private $body;
 
     /**
-     * @param Queue  $queue
-     * @param string $id
-     * @param string $body
+     * @param \Infuse\Queue $queue
+     * @param string        $id
+     * @param string        $body
      */
     public function __construct(Queue $queue, $id, $body)
     {

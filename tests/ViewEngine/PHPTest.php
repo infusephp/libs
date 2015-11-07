@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use Infuse\ViewEngine;
+use Infuse\ViewEngine\PHP;
 use Infuse\View;
 
 class PHPViewEngineTest extends PHPUnit_Framework_TestCase
@@ -17,7 +17,13 @@ class PHPViewEngineTest extends PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        self::$engine = new ViewEngine\PHP(__DIR__.'/views');
+        self::$engine = new PHP(__DIR__.'/views');
+    }
+
+    public function testViewsDir()
+    {
+        $engine = new PHP('test');
+        $this->assertEquals('test', $engine->getViewsDir());
     }
 
     public function testAssetUrl()

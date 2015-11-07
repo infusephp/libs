@@ -16,12 +16,27 @@ use Smarty as SmartyClass;
 
 class Smarty extends ViewEngine
 {
-    private $viewsDir = 'views';
-    private $compileDir = 'temp/smarty';
-    private $cacheDir = 'temp/smarty/cache';
-    private $smarty;
-
     const EXTENSION = '.tpl';
+
+    /**
+     * @var string
+     */
+    private $viewsDir = 'views';
+
+    /**
+     * @var string
+     */
+    private $compileDir = 'temp/smarty';
+
+    /**
+     * @var string
+     */
+    private $cacheDir = 'temp/smarty/cache';
+
+    /**
+     * @var \Smarty
+     */
+    private $smarty;
 
     /**
      * Creates a new Smarty ViewEngine.
@@ -30,7 +45,7 @@ class Smarty extends ViewEngine
      * @param string $compileDir optional dir to save compiled templates
      * @param string $cacheDir   optional dir to save cached templates
      */
-    public function __construct($viewsDir = false, $compileDir = false, $cacheDir = false)
+    public function __construct($viewsDir = '', $compileDir = '', $cacheDir = '')
     {
         if ($viewsDir) {
             $this->viewsDir = $viewsDir;
@@ -45,9 +60,58 @@ class Smarty extends ViewEngine
         }
     }
 
+    /**
+     * Gets the views directory.
+     *
+     * @return string
+     */
+    public function getViewsDir()
+    {
+        return $this->viewsDir;
+    }
+
+    /**
+     * Gets the compile directory.
+     *
+     * @return string
+     */
+    public function getCompileDir()
+    {
+        return $this->compileDir;
+    }
+
+    /**
+     * Gets the cache directory.
+     *
+     * @return string
+     */
+    public function getCacheDir()
+    {
+        return $this->cacheDir;
+    }
+
+    /**
+     * Gets the Smarty instance.
+     *
+     * @return \Smarty
+     */
+    public function getSmarty()
+    {
+        if (!$this->smarty) {
+            $this->smarty = new SmartyClass();
+
+            $this->smarty->muteExpectedErrors();
+            $this->smarty->setTemplateDir($this->viewsDir)
+                         ->setCompileDir($this->compileDir)
+                         ->setCacheDir($this->cacheDir);
+        }
+
+        return $this->smarty;
+    }
+
     public function renderView(View $view)
     {
-        $smarty = $this->smarty();
+        $smarty = $this->getSmarty();
 
         // determine the full template name
         $template = $view->template();
@@ -66,24 +130,5 @@ class Smarty extends ViewEngine
 
         // now let smarty do its thing
         return $smarty->fetch($template);
-    }
-
-    /**
-     * Gets (and creates) a Smarty instance.
-     *
-     * @return \Smarty
-     */
-    public function smarty()
-    {
-        if (!$this->smarty) {
-            $this->smarty = new SmartyClass();
-
-            $this->smarty->muteExpectedErrors();
-            $this->smarty->setTemplateDir($this->viewsDir)
-                         ->setCompileDir($this->compileDir)
-                         ->setCacheDir($this->cacheDir);
-        }
-
-        return $this->smarty;
     }
 }

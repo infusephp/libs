@@ -15,7 +15,7 @@ class IronDriver implements DriverInterface
     private $app;
 
     /**
-     * @param Container $app
+     * @param \Pimple\Container $app
      */
     public function __construct(Container $app)
     {

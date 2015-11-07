@@ -96,7 +96,7 @@ class ErrorStack implements \Iterator, \Countable, \ArrayAccess
      *
      * @return array errors
      */
-    public function errors($context = false, $locale = false)
+    public function errors($context = '', $locale = '')
     {
         $errors = [];
         foreach ($this->stack as $error) {
@@ -116,7 +116,7 @@ class ErrorStack implements \Iterator, \Countable, \ArrayAccess
      *
      * @return array errors
      */
-    public function messages($context = null, $locale = false)
+    public function messages($context = '', $locale = '')
     {
         $messages = [];
         foreach ($this->errors($context, $locale) as $error) {
@@ -132,7 +132,7 @@ class ErrorStack implements \Iterator, \Countable, \ArrayAccess
      * @param string $value value we are searching for
      * @param string $param parameter name
      *
-     * @return array|false
+     * @return array|bool
      */
     public function find($value, $param = 'field')
     {
@@ -197,12 +197,12 @@ class ErrorStack implements \Iterator, \Countable, \ArrayAccess
     /**
      * Parses an error message before displaying it.
      *
-     * @param array        $error
-     * @param string|false $locale
+     * @param array  $error
+     * @param string $locale
      *
      * @return array
      */
-    private function parse(array $error, $locale = false)
+    private function parse(array $error, $locale = '')
     {
         // attempt to translate error into a message
         if (!isset($error['message'])) {

@@ -66,7 +66,7 @@ class DatabaseDriver implements DriverInterface
         try {
             $row = $this->app['db']->select('*')
                 ->from($tablename)
-                ->where($model->id(true))
+                ->where($model->ids())
                 ->one();
 
             if (is_array($row)) {
@@ -93,7 +93,7 @@ class DatabaseDriver implements DriverInterface
         try {
             return $this->app['db']->update($tablename)
                 ->values($values)
-                ->where($model->id(true))
+                ->where($model->ids())
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);
@@ -108,7 +108,7 @@ class DatabaseDriver implements DriverInterface
 
         try {
             return $this->app['db']->delete($tablename)
-                ->where($model->id(true))
+                ->where($model->ids())
                 ->execute() instanceof PDOStatement;
         } catch (PDOException $e) {
             $this->app['logger']->error($e);

@@ -28,7 +28,7 @@ class Redis implements SessionHandlerInterface
     /**
      * Starts the session using this handler.
      *
-     * @param Redis $app
+     * @param Redis $handler
      *
      * @return bool
      */

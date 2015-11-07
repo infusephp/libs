@@ -253,8 +253,7 @@ class Response
     /**
      * Convenience method to render a View and set the body to the result.
      *
-     * @param string $template   template to render
-     * @param array  $parameters parameters to pass to the template
+     * @param View $view view to render
      *
      * @return self
      */

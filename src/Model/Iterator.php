@@ -33,7 +33,7 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $limit;
 
     /**
-     * @var bool
+     * @var int|bool
      */
     private $loadedStart;
 
@@ -43,13 +43,12 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess
     private $models;
 
     /**
-     * @var int
+     * @var int|bool
      */
     private $count;
 
     /**
-     * @param string $model
-     * @param array  $parameters
+     * @param Query $query
      */
     public function __construct(Query $query)
     {

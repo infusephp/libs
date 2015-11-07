@@ -12,10 +12,24 @@ namespace Infuse;
 
 class Locale
 {
+    /**
+     * @var string
+     */
     private $locale = 'en';
-    private $localeDir = false;
-    private $localeData;
 
+    /**
+     * @var string
+     */
+    private $localeDir;
+
+    /**
+     * @var array
+     */
+    private $localeData = [];
+
+    /**
+     * @param string|bool $locale
+     */
     public function __construct($locale = false)
     {
         if ($locale) {
@@ -27,10 +41,14 @@ class Locale
      * Sets the locale.
      *
      * @param string $locale
+     *
+     * @return self
      */
     public function setLocale($locale)
     {
         $this->locale = $locale;
+
+        return $this;
     }
 
     /**
@@ -50,11 +68,14 @@ class Locale
      * an array with locale information.
      *
      * @param string $dir
+     *
+     * @return self
      */
     public function setLocaleDataDir($dir)
     {
         $this->localeDir = $dir;
-        $this->localeData = [];
+
+        return $this;
     }
 
     /**
@@ -184,7 +205,6 @@ class Locale
             if (!empty($city)) {
                 $key = $continent.'/'.$city;
                 $value = str_replace(['_', '/'], [' ', ': '], $city);
-            } else {
             }
 
             $return .= '<option '.(($key == $selected) ? 'selected="selected "' : '');
@@ -202,11 +222,13 @@ class Locale
      * Loads locale data for a supplied locale.
      *
      * @param string $locale
+     *
+     * @return self
      */
     private function loadLocaleData($locale)
     {
         if (isset($this->localeData[$locale])) {
-            return;
+            return $this;
         }
 
         $filename = str_replace('//', '/', $this->localeDir.'/').$locale.'.php';
@@ -216,6 +238,8 @@ class Locale
         } else {
             $this->localeData[$locale] = [];
         }
+
+        return $this;
     }
 
     /**

@@ -296,13 +296,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('5,2', $model->id());
     }
 
-    public function testIdKeyValue()
+    public function testIds()
     {
         $model = new TestModel(3);
-        $this->assertEquals(['id' => 3], $model->id(true));
+        $this->assertEquals(['id' => 3], $model->ids());
 
         $model = new TestModel2([5, 2]);
-        $this->assertEquals(['id' => 5, 'id2' => 2], $model->id(true));
+        $this->assertEquals(['id' => 5, 'id2' => 2], $model->ids());
     }
 
     public function testToString()

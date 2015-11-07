@@ -12,8 +12,14 @@ namespace Infuse;
 
 class Config
 {
+    /**
+     * @var array
+     */
     private $values = [];
 
+    /**
+     * @param array $values
+     */
     public function __construct(array $values = [])
     {
         $this->values = array_replace($this->values, $values);
@@ -22,13 +28,13 @@ class Config
     /**
      * Gets a global configuration value, section, or all values.
      *
-     * @param string $property dot value property name
+     * @param string|bool $property dot value property name
      *
      * @return mixed value
      */
     public function get($property = false)
     {
-        if (!$property) {
+        if ($property === false) {
             return $this->values;
         }
 
@@ -40,9 +46,13 @@ class Config
      *
      * @param string $property dot value property name
      * @param string $value    value to set
+     *
+     * @return self
      */
     public function set($property, $value)
     {
         Utility::array_set($this->values, $property, $value);
+
+        return $this;
     }
 }

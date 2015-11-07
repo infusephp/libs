@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use Infuse\ViewEngine;
+use Infuse\ViewEngine\Mustache;
 use Infuse\View;
 
 class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
@@ -17,7 +17,13 @@ class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        self::$engine = new ViewEngine\Mustache(__DIR__.'/views');
+        self::$engine = new Mustache(__DIR__.'/views');
+    }
+
+    public function testViewsDir()
+    {
+        $engine = new Mustache('test');
+        $this->assertEquals('test', $engine->getViewsDir());
     }
 
     public function testAssetUrl()
@@ -41,7 +47,7 @@ class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
 
     public function testMustache()
     {
-        $engine = new ViewEngine\Mustache('view');
+        $engine = new Mustache('view');
         $this->assertInstanceOf('Mustache_Engine', $engine->mustache());
     }
 

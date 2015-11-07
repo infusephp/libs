@@ -16,21 +16,38 @@ use Mustache_Engine;
 
 class Mustache extends ViewEngine
 {
-    private $viewsDir = 'views';
-    private $mustache;
-
     const EXTENSION = '.mustache';
+
+    /**
+     * @var string
+     */
+    private $viewsDir = 'views';
+
+    /**
+     * @var \Mustache_Engine
+     */
+    private $mustache;
 
     /**
      * Creates a new Mustache ViewEngine.
      *
      * @param string $viewsDir optional dir containing templates
      */
-    public function __construct($viewsDir = false)
+    public function __construct($viewsDir = '')
     {
         if ($viewsDir) {
             $this->viewsDir = $viewsDir;
         }
+    }
+
+    /**
+     * Gets the views directory.
+     *
+     * @return string
+     */
+    public function getViewsDir()
+    {
+        return $this->viewsDir;
     }
 
     public function renderView(View $view)

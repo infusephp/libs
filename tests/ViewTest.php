@@ -63,7 +63,7 @@ class ViewTest extends PHPUnit_Framework_TestCase
 
     public function testRender()
     {
-        $engine = Mockery::mock('ViewEngine');
+        $engine = Mockery::mock('Infuse\ViewEngine');
 
         $view = new View('test', [], $engine);
 

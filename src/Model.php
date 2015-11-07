@@ -79,7 +79,7 @@ abstract class Model implements \ArrayAccess
     protected static $dispatchers;
 
     /**
-     * @var number|string
+     * @var number|string|bool
      */
     protected $_id;
 
@@ -185,8 +185,8 @@ abstract class Model implements \ArrayAccess
     /**
      * Creates a new model object.
      *
-     * @param array|string $id     ordered array of ids or comma-separated id string
-     * @param array        $values optional key-value map to pre-seed model
+     * @param array|string|false $id     ordered array of ids or comma-separated id string
+     * @param array              $values optional key-value map to pre-seed model
      */
     public function __construct($id = false, array $values = [])
     {
@@ -324,19 +324,22 @@ abstract class Model implements \ArrayAccess
     }
 
     /**
-     * Gets the model identifier(s).
+     * Gets the model ID.
      *
-     * @param bool $keyValue return key-value array of id
-     *
-     * @return array|string key-value if specified, otherwise comma-separated id string
+     * @return string|number|false ID
      */
-    public function id($keyValue = false)
+    public function id()
     {
-        if (!$keyValue) {
-            return $this->_id;
-        }
+        return $this->_id;
+    }
 
-        // get id(s) into key-value format
+    /**
+     * Gets a key-value map of the model ID.
+     *
+     * @return array ID map
+     */
+    public function ids()
+    {
         $return = [];
 
         // match up id values from comma-separated id string with property names
@@ -643,7 +646,7 @@ abstract class Model implements \ArrayAccess
     public function get(array $properties)
     {
         // load the values from the IDs and local model cache
-        $values = array_replace($this->id(true), $this->_local);
+        $values = array_replace($this->ids(), $this->_local);
 
         // unless specified, use any unsaved values
         $ignoreUnsaved = $this->_ignoreUnsaved;
@@ -691,7 +694,6 @@ abstract class Model implements \ArrayAccess
         $ids = [];
         foreach (static::$ids as $k) {
             // attempt use the supplied value if the ID property is mutable
-            $id = null;
             $property = static::getProperty($k);
             if (in_array($property['mutable'], [self::MUTABLE, self::MUTABLE_CREATE_ONLY]) && isset($this->_unsaved[$k])) {
                 $ids[] = $this->_unsaved[$k];
@@ -983,7 +985,7 @@ abstract class Model implements \ArrayAccess
      */
     public function exists()
     {
-        return static::totalRecords($this->id(true)) == 1;
+        return static::totalRecords($this->ids()) == 1;
     }
 
     /**
@@ -1079,12 +1081,12 @@ abstract class Model implements \ArrayAccess
      * Creates the parent side of a One-To-One relationship.
      *
      * @param string $model      foreign model class
-     * @param string $foriegnKey identifying key on foreign model
+     * @param string $foreignKey identifying key on foreign model
      * @param string $localKey   identifying key on local model
      *
      * @return Relation
      */
-    public function hasOne($model, $foreignKey = false, $localKey = false)
+    public function hasOne($model, $foreignKey = '', $localKey = '')
     {
         // the default local key would look like `user_id`
         // for a model named User
@@ -1104,12 +1106,12 @@ abstract class Model implements \ArrayAccess
      * Creates the child side of a One-To-One or One-To-Many relationship.
      *
      * @param string $model      foreign model class
-     * @param string $foriegnKey identifying key on foreign model
+     * @param string $foreignKey identifying key on foreign model
      * @param string $localKey   identifying key on local model
      *
      * @return Relation
      */
-    public function belongsTo($model, $foreignKey = false, $localKey = false)
+    public function belongsTo($model, $foreignKey = '', $localKey = '')
     {
         if (!$foreignKey) {
             $foreignKey = self::DEFAULT_ID_PROPERTY;
@@ -1129,12 +1131,12 @@ abstract class Model implements \ArrayAccess
      * Creates the parent side of a Many-To-One or Many-To-Many relationship.
      *
      * @param string $model      foreign model class
-     * @param string $foriegnKey identifying key on foreign model
+     * @param string $foreignKey identifying key on foreign model
      * @param string $localKey   identifying key on local model
      *
      * @return Relation
      */
-    public function hasMany($model, $foreignKey = false, $localKey = false)
+    public function hasMany($model, $foreignKey = '', $localKey = '')
     {
         // the default local key would look like `user_id`
         // for a model named User
@@ -1154,12 +1156,12 @@ abstract class Model implements \ArrayAccess
      * Creates the child side of a Many-To-Many relationship.
      *
      * @param string $model      foreign model class
-     * @param string $foriegnKey identifying key on foreign model
+     * @param string $foreignKey identifying key on foreign model
      * @param string $localKey   identifying key on local model
      *
      * @return Relation
      */
-    public function belongsToMany($model, $foreignKey = false, $localKey = false)
+    public function belongsToMany($model, $foreignKey = '', $localKey = '')
     {
         if (!$foreignKey) {
             $foreignKey = self::DEFAULT_ID_PROPERTY;
@@ -1447,7 +1449,7 @@ abstract class Model implements \ArrayAccess
     /**
      * Returns the cache instance.
      *
-     * @return \Stash\Pool|false
+     * @return \Stash\Pool|bool
      */
     public function getCache()
     {

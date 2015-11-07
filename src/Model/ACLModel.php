@@ -19,7 +19,7 @@ abstract class ACLModel extends Model
     const LISTENER_PRIORITY = 1000;
 
     /**
-     * @staticvar Model|false
+     * @staticvar \Infuse\Model
      */
     protected static $requester;
 
@@ -46,7 +46,7 @@ abstract class ACLModel extends Model
     /**
      * Gets the requester.
      *
-     * @return Model|false
+     * @return Model|bool
      */
     public static function getRequester()
     {
@@ -68,18 +68,13 @@ abstract class ACLModel extends Model
             return true;
         }
 
-        $perm = false;
-
         // cache when checking permissions
         $k = $permission.'.'.$requester;
         if (!isset($this->permissionsCache[$k])) {
-            $perm = $this->hasPermission($permission, $requester);
-            $this->permissionsCache[$k] = $perm;
-        } else {
-            $perm = $this->permissionsCache[$k];
+            $this->permissionsCache[$k] = $this->hasPermission($permission, $requester);
         }
 
-        return $perm;
+        return $this->permissionsCache[$k];
     }
 
     abstract protected function hasPermission($permission, Model $requester);

@@ -43,7 +43,7 @@ class Query
     /**
      * @param string $model model class
      */
-    public function __construct($model = false)
+    public function __construct($model = '')
     {
         $this->model = $model;
         $this->where = [];
@@ -240,7 +240,7 @@ class Query
      *
      * @param int $limit
      * 
-     * @return \Infuse\Model|null
+     * @return array|\Infuse\Model|null when $limit = 1, returns a single model or null, otherwise returns an array
      */
     public function first($limit = 1)
     {

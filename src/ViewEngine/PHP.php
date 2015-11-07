@@ -15,20 +15,33 @@ use Infuse\View;
 
 class PHP extends ViewEngine
 {
-    private $viewsDir = 'views';
-
     const EXTENSION = '.php';
+
+    /**
+     * @var string
+     */
+    private $viewsDir = 'views';
 
     /**
      * Creates a new PHP ViewEngine.
      *
      * @param string $viewsDir
      */
-    public function __construct($viewsDir = false)
+    public function __construct($viewsDir = '')
     {
         if ($viewsDir) {
             $this->viewsDir = $viewsDir;
         }
+    }
+
+    /**
+     * Gets the views directory.
+     *
+     * @return string
+     */
+    public function getViewsDir()
+    {
+        return $this->viewsDir;
     }
 
     public function renderView(View $view)
