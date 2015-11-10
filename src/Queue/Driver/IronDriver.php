@@ -58,39 +58,53 @@ class IronDriver implements DriverInterface
     }
 
     /**
-     * Setup push queues with iron.io. Replaces any existing
+     * Installs a queue on iron.io. Replaces any existing
      * configuration or subscribers.
      *
-     * @param array  $queues    list of queue names to install
-     * @param string $baseUrl   URL of listening endpoint
-     * @param string $authToken secret auth token for validating incoming messages
-     * @param string $pushType  unicast or multicast
+     * @param string $queue     queue name
+     * @param array  $options   iron.io queue options
+     * @param string $baseUrl   URL of listening endpoint (for push queues)
+     * @param string $authToken secret auth token for validating incoming messages (for push queues)
      *
      * @return bool success
      */
-    public function install(array $queues, $baseUrl, $authToken, $pushType = 'unicast')
+    public function install($queue, array $options = [], $baseUrl = '', $authToken = '')
     {
         $ironmq = $this->app['ironmq'];
 
-        $success = true;
-        foreach ($queues as $queue) {
+        // build the options for creating a queue
+        $options = array_replace([
+                'type' => 'unicast',
+                'message_timeout' => 60, // 1 minute
+                'message_expiration' => 2592000, // 30 days
+            ], $options);
+
+        // set up push queue options
+        if ($options['type'] != 'pull') {
+            if (!isset($options['push'])) {
+                $options['push'] = [];
+            }
+
+            $options['push'] = array_replace([
+                    'retries' => 3,
+                    'retries_delay' => 60,
+                ], $options['push']);
+        }
+
+        if ($baseUrl) {
             // build the push endpoint for this queue
             $subscriberUrl = $this->getPushQueueUrl($queue, $baseUrl, $authToken);
 
             // each queue has a single subscriber at the
             // endpoint we just generated
-            $subscriber = [
+            $options['push']['subscribers'] = [[
                 'name' => 'infuse/iron-mq',
                 'url' => $subscriberUrl,
-            ];
-
-            // now create it on iron.io
-            $success = $ironmq->updateQueue($queue, [
-                'push_type' => $pushType,
-                'subscribers' => [$subscriber], ]) && $success;
+            ]];
         }
 
-        return $success;
+        // now create it on iron.io
+        return $ironmq->createQueue($queue, $options);
     }
 
     /**

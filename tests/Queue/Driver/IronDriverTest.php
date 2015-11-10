@@ -119,48 +119,59 @@ class IronTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('https://example.com/iron/message?q=test_iron&auth_token=secret', $driver->getPushQueueUrl($queue, $base, $authToken));
     }
 
-    public function testInstall()
+    public function testInstallPush()
     {
-        $queue1 = [
-            'push_type' => 'multicast',
-            'subscribers' => [
-                [
-                    'name' => 'infuse/iron-mq',
-                    'url' => 'https://example.com/iron/message?q=test1&auth_token=secret', ],
-            ],
-        ];
-
-        $queue2 = [
-            'push_type' => 'multicast',
-            'subscribers' => [
-                [
-                    'name' => 'infuse/iron-mq',
-                    'url' => 'https://example.com/iron/message?q=test2&auth_token=secret', ],
+        $queue = [
+            'type' => 'multicast',
+            'message_timeout' => 60,
+            'message_expiration' => 2592000,
+            'push' => [
+                'retries' => 3,
+                'retries_delay' => 60,
+                'subscribers' => [
+                    [
+                        'name' => 'infuse/iron-mq',
+                        'url' => 'https://example.com/iron/message?q=test1&auth_token=secret',
+                    ],
+                ],
             ],
         ];
 
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
-        $iron->shouldReceive('updateQueue')
-             ->withArgs(['test1', $queue1])
-             ->andReturn(true)
-             ->once();
-        $iron->shouldReceive('updateQueue')
-             ->withArgs(['test2', $queue2])
+        $iron->shouldReceive('createQueue')
+             ->withArgs(['test1', $queue])
              ->andReturn(true)
              ->once();
         $c['ironmq'] = $iron;
         $driver = new IronDriver($c);
 
-        $queues = [
-            'test1',
-            'test2',
-        ];
-
+        $options = ['type' => 'multicast'];
         $base = 'https://example.com/iron/message';
         $authToken = 'secret';
-        $pushType = 'multicast';
 
-        $this->assertTrue($driver->install($queues, $base, $authToken, $pushType));
+        $this->assertTrue($driver->install('test1', $options, $base, $authToken));
+    }
+
+    public function testInstallPull()
+    {
+        $queue = [
+            'type' => 'pull',
+            'message_timeout' => 1000,
+            'message_expiration' => 2592000,
+        ];
+
+        $c = new Container();
+        $iron = Mockery::mock('IronMQ');
+        $iron->shouldReceive('createQueue')
+             ->withArgs(['test2', $queue])
+             ->andReturn(true)
+             ->once();
+        $c['ironmq'] = $iron;
+        $driver = new IronDriver($c);
+
+        $options = ['type' => 'pull', 'message_timeout' => 1000];
+
+        $this->assertTrue($driver->install('test2', $options));
     }
 }
