@@ -124,14 +124,18 @@ class IronTest extends PHPUnit_Framework_TestCase
         $queue1 = [
             'push_type' => 'multicast',
             'subscribers' => [
-                ['url' => 'https://example.com/iron/message?q=test1&auth_token=secret'],
+                [
+                    'name' => 'infuse/iron-mq',
+                    'url' => 'https://example.com/iron/message?q=test1&auth_token=secret', ],
             ],
         ];
 
         $queue2 = [
             'push_type' => 'multicast',
             'subscribers' => [
-                ['url' => 'https://example.com/iron/message?q=test2&auth_token=secret'],
+                [
+                    'name' => 'infuse/iron-mq',
+                    'url' => 'https://example.com/iron/message?q=test2&auth_token=secret', ],
             ],
         ];
 

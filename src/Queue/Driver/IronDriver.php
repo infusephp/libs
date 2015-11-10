@@ -79,12 +79,15 @@ class IronDriver implements DriverInterface
 
             // each queue has a single subscriber at the
             // endpoint we just generated
-            $subscribers = [['url' => $subscriberUrl]];
+            $subscriber = [
+                'name' => 'infuse/iron-mq',
+                'url' => $subscriberUrl,
+            ];
 
             // now create it on iron.io
             $success = $ironmq->updateQueue($queue, [
                 'push_type' => $pushType,
-                'subscribers' => $subscribers, ]) && $success;
+                'subscribers' => [$subscriber], ]) && $success;
         }
 
         return $success;
