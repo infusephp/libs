@@ -95,7 +95,7 @@ class ACLModelTest extends PHPUnit_Framework_TestCase
         $errorStack = self::$app['errors']->clear();
 
         $model = new TestModelNoPermission(5);
-        $this->assertFalse($model->set('answer', 42));
+        $this->assertFalse($model->set(['answer' => 42]));
         $this->assertCount(1, $errorStack->errors());
     }
 

@@ -919,17 +919,12 @@ abstract class Model implements \ArrayAccess
     /**
      * Updates the model.
      *
-     * @param array|string $data  key-value properties or name of property
-     * @param string new   $value value to set if name supplied
+     * @param array $data optional key-value properties to set
      *
      * @return bool
      */
-    public function set($data, $value = false)
+    public function set(array $data = [])
     {
-        if (!is_array($data)) {
-            return $this->set([$data => $value]);
-        }
-
         if ($this->_id === false) {
             return false;
         }

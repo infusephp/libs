@@ -877,7 +877,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         TestModel::setDriver($driver);
 
-        $this->assertTrue($model->set('answer', 42));
+        $this->assertTrue($model->set(['answer' => 42]));
     }
 
     public function testSetWithSave()
@@ -949,7 +949,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         });
 
         $model = new TestModel(100);
-        $this->assertFalse($model->set('answer', 42));
+        $this->assertFalse($model->set(['answer' => 42]));
     }
 
     public function testUpdatedListenerFail()
@@ -966,13 +966,13 @@ class ModelTest extends PHPUnit_Framework_TestCase
         });
 
         $model = new TestModel(100);
-        $this->assertFalse($model->set('answer', 42));
+        $this->assertFalse($model->set(['answer' => 42]));
     }
 
     public function testSetHookFail()
     {
         $model = new TestModelHookFail(5);
-        $this->assertFalse($model->set('answer', 42));
+        $this->assertFalse($model->set(['answer' => 42]));
     }
 
     public function testSetUnique()
@@ -993,7 +993,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
-        $this->assertTrue($model->set('unique', 'works'));
+        $this->assertTrue($model->set(['unique' => 'works']));
 
         // validate query where statement
         $this->assertEquals(['unique' => 'works'], $query->getWhere());
@@ -1012,7 +1012,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         TestModel2::setDriver($driver);
 
         $model = new TestModel2(12);
-        $this->assertTrue($model->set('unique', 'works'));
+        $this->assertTrue($model->set(['unique' => 'works']));
     }
 
     public function testSetInvalid()
@@ -1021,7 +1021,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
 
         $model = new TestModel2(15);
 
-        $this->assertFalse($model->set('validate2', 'invalid'));
+        $this->assertFalse($model->set(['validate2' => 'invalid']));
         $this->assertCount(1, $errorStack->errors());
     }
 
