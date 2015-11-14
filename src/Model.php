@@ -751,8 +751,7 @@ abstract class Model implements \ArrayAccess
             }
 
             // call any accessors
-            $accessor = self::getAccessor($k);
-            if ($accessor) {
+            if ($accessor = self::getAccessor($k)) {
                 $return[$k] = $this->$accessor($return[$k]);
             }
         }
@@ -796,6 +795,10 @@ abstract class Model implements \ArrayAccess
         // remove any hidden properties
         $hide = (property_exists($this, 'hidden')) ? static::$hidden : [];
         $properties = array_diff($properties, $hide);
+
+        // add any appended properties
+        $append = (property_exists($this, 'appended')) ? static::$appended : [];
+        $properties = array_merge($properties, $append);
 
         // get the values for the properties
         $result = $this->get($properties);

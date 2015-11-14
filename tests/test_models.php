@@ -30,6 +30,7 @@ class TestModel extends Model
     public $postDelete;
 
     protected static $hidden = ['mutator', 'accessor'];
+    protected static $appended = ['appended'];
 
     public static $query;
 
@@ -110,6 +111,11 @@ class TestModel extends Model
     protected function getAccessorValue($value)
     {
         return strtolower($value);
+    }
+
+    protected function getAppendedValue()
+    {
+        return true;
     }
 }
 

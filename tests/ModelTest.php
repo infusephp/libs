@@ -438,6 +438,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'relation' => null,
             'answer' => null,
             'test_hook' => null,
+            'appended' => true,
             // this is tacked on in toArrayHook() below
             'toArray' => true,
         ];
@@ -461,6 +462,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'relation' => null,
             'answer' => null,
             'test_hook' => null,
+            'appended' => true,
             // this is tacked on in toArrayHook() below
             'toArray' => true,
         ];
@@ -484,7 +486,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
             'relation' => 100,
         ];
 
-        $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'answer', 'toArray', 'test_hook']));
+        $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'answer', 'toArray', 'test_hook', 'appended']));
     }
 
     public function testToArrayDeprecatedAutoTimestamps()
@@ -500,7 +502,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model->created_at = 100;
         $model->updated_at = 102;
 
-        $expected = ['created_at' => 100, 'updated_at' => '102'];
+        $expected = [
+            'created_at' => 100,
+            'updated_at' => '102',
+        ];
 
         $this->assertEquals($expected, $model->toArrayDeprecated(['id', 'id2', 'default', 'validate', 'unique', 'required']));
 
@@ -553,6 +558,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
                 'id',
                 'toArray',
                 'test_hook',
+                'appended',
                 'relation.created_at',
                 'relation.updated_at',
                 'relation.validate',
@@ -597,7 +603,7 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(5);
         $model->relation = 10;
 
-        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null,"toArray":true}', $model->toJson());
+        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null,"appended":true,"toArray":true}', $model->toJson());
     }
 
     public function testArrayAccess()
