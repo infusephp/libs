@@ -152,6 +152,16 @@ abstract class Model implements \ArrayAccess
     private static $driver;
 
     /**
+     * @staticvar array
+     */
+    private static $accessors = [];
+
+    /**
+     * @staticvar array
+     */
+    private static $mutators = [];
+
+    /**
      * @var array
      */
     private $_local = [];
@@ -392,7 +402,13 @@ abstract class Model implements \ArrayAccess
             unset($this->_relationModels[$name]);
         }
 
-        $this->_unsaved[$name] = $value;
+        // call any mutators
+        $mutator = self::getMutator($name);
+        if ($mutator) {
+            $this->_unsaved[$name] = $this->$mutator($value);
+        } else {
+            $this->_unsaved[$name] = $value;
+        }
     }
 
     /**
@@ -504,6 +520,62 @@ abstract class Model implements \ArrayAccess
         return isset(static::$properties[$property]);
     }
 
+    /**
+     * Gets the mutator method name for a given proeprty name.
+     * Looks for methods in the form of `setPropertyValue`.
+     * i.e. the mutator for `last_name` would be `setLastNameValue`.
+     *
+     * @param string $property property
+     *
+     * @return string|false method name if it exists
+     */
+    public static function getMutator($property)
+    {
+        $class = get_called_class();
+
+        $k = $class.':'.$property;
+        if (!array_key_exists($k, self::$mutators)) {
+            $inflector = Inflector::get();
+            $method = 'set'.$inflector->camelize($property).'Value';
+
+            if (!method_exists($class, $method)) {
+                $method = false;
+            }
+
+            self::$mutators[$k] = $method;
+        }
+
+        return self::$mutators[$k];
+    }
+
+    /**
+     * Gets the accessor method name for a given proeprty name.
+     * Looks for methods in the form of `getPropertyValue`.
+     * i.e. the accessor for `last_name` would be `getLastNameValue`.
+     *
+     * @param string $property property
+     *
+     * @return string|false method name if it exists
+     */
+    public static function getAccessor($property)
+    {
+        $class = get_called_class();
+
+        $k = $class.':'.$property;
+        if (!array_key_exists($k, self::$accessors)) {
+            $inflector = Inflector::get();
+            $method = 'get'.$inflector->camelize($property).'Value';
+
+            if (!method_exists($class, $method)) {
+                $method = false;
+            }
+
+            self::$accessors[$k] = $method;
+        }
+
+        return self::$accessors[$k];
+    }
+
     /////////////////////////////
     // CRUD Operations
     /////////////////////////////
@@ -516,7 +588,7 @@ abstract class Model implements \ArrayAccess
     public function save()
     {
         if ($this->_id === false) {
-            return $this->create($this->_unsaved);
+            return $this->create();
         }
 
         return $this->set($this->_unsaved);
@@ -525,7 +597,7 @@ abstract class Model implements \ArrayAccess
     /**
      * Creates a new model.
      *
-     * @param array $data key-value properties
+     * @param array $data optional key-value properties to set
      *
      * @return bool
      */
@@ -535,7 +607,11 @@ abstract class Model implements \ArrayAccess
             return false;
         }
 
-        $this->_unsaved = $data;
+        if (!empty($data)) {
+            foreach ($data as $k => $value) {
+                $this->$k = $value;
+            }
+        }
 
         // dispatch the model.creating event
         if (!$this->beforeCreate()) {
@@ -555,7 +631,7 @@ abstract class Model implements \ArrayAccess
             }
         }
 
-        // filter and validate the values being saved
+        // validate the values being saved
         $validated = true;
         $insertArray = [];
         foreach ($this->_unsaved as $name => $value) {
@@ -568,7 +644,7 @@ abstract class Model implements \ArrayAccess
 
             // cannot insert immutable values
             // (unless using the default value)
-            if ($property['mutable'] == self::IMMUTABLE && $value !== $this->getDefaultValue($property)) {
+            if ($property['mutable'] == self::IMMUTABLE && $value !== $this->getPropertyDefault($property)) {
                 continue;
             }
 
@@ -668,10 +744,16 @@ abstract class Model implements \ArrayAccess
                 $return[$k] = $values[$k];
             // set any missing values to the default value
             } elseif (static::hasProperty($k)) {
-                $return[$k] = $this->_local[$k] = $this->getDefaultValue(static::$properties[$k]);
+                $return[$k] = $this->_local[$k] = $this->getPropertyDefault(static::$properties[$k]);
             // use null for values of non-properties
             } else {
                 $return[$k] = null;
+            }
+
+            // call any accessors
+            $accessor = self::getAccessor($k);
+            if ($accessor) {
+                $return[$k] = $this->$accessor($return[$k]);
             }
         }
 
@@ -857,12 +939,19 @@ abstract class Model implements \ArrayAccess
             return true;
         }
 
+        // apply mutators
+        foreach ($data as $k => $value) {
+            if ($mutator = self::getMutator($k)) {
+                $data[$k] = $this->$mutator($value);
+            }
+        }
+
         // dispatch the model.updating event
         if (!$this->beforeUpdate($data)) {
             return false;
         }
 
-        // filter and validate the values being saved
+        // validate the values being saved
         $validated = true;
         $updateArray = [];
         foreach ($data as $name => $value) {
@@ -1575,9 +1664,6 @@ abstract class Model implements \ArrayAccess
             return true;
         }
 
-        // filter
-        $value = $this->filter($property, $value);
-
         // validate
         list($valid, $value) = $this->validate($property, $propertyName, $value);
 
@@ -1587,25 +1673,6 @@ abstract class Model implements \ArrayAccess
         }
 
         return $valid;
-    }
-
-    /**
-     * Filter a value for a property.
-     *
-     * @param array $property
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    private function filter(array $property, $value)
-    {
-        if (isset($property['filter'])) {
-            $filter = $property['filter'];
-
-            return $this->$filter($value);
-        }
-
-        return $value;
     }
 
     /**
@@ -1669,7 +1736,7 @@ abstract class Model implements \ArrayAccess
      *
      * @return mixed
      */
-    private function getDefaultValue(array $property)
+    private function getPropertyDefault(array $property)
     {
         return Utility::array_value($property, 'default');
     }

@@ -23,14 +23,13 @@ class TestModel extends Model
         'answer' => [
             'type' => Model::TYPE_STRING,
         ],
-        'filter' => [
-            'filter' => 'uppercase',
-        ],
+        'mutator' => [],
+        'accessor' => [],
     ];
     public $preDelete;
     public $postDelete;
 
-    protected static $hidden = ['filter'];
+    protected static $hidden = ['mutator', 'accessor'];
 
     public static $query;
 
@@ -103,9 +102,14 @@ class TestModel extends Model
         self::$query = $query;
     }
 
-    protected function uppercase($value)
+    protected function setMutatorValue($value)
     {
         return strtoupper($value);
+    }
+
+    protected function getAccessorValue($value)
+    {
+        return strtolower($value);
     }
 }
 

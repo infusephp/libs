@@ -35,12 +35,6 @@ String, Optional
         Default: true
         Optional
 
-#### `filter`
-
-Function on this object that mutates any property values before they are validated and saved
-        String
-        Optional
-
 #### `validate`
 
 Validation string passed to Validate::is() or validation function
