@@ -793,7 +793,7 @@ abstract class Model implements \ArrayAccess
         // build the list of properties to retrieve
         $properties = array_keys(static::$properties);
 
-        // skip hidden properties
+        // remove any hidden properties
         $hide = (property_exists($this, 'hidden')) ? static::$hidden : [];
         $properties = array_diff($properties, $hide);
 
@@ -819,7 +819,8 @@ abstract class Model implements \ArrayAccess
      */
     public function toArrayDeprecated(array $exclude = [], array $include = [], array $expand = [])
     {
-        // TODO this method is ripe for some performance improvements
+        // start with the base array representation of this object
+        $result = $this->toArray();
 
         // apply namespacing to $exclude
         $namedExc = [];
@@ -839,26 +840,19 @@ abstract class Model implements \ArrayAccess
             Utility::array_set($namedExp, $e, true);
         }
 
-        // get the list of appropriate properties
-        $properties = [];
-        $hide = (property_exists($this, 'hidden')) ? static::$hidden : [];
-        foreach (static::$properties as $name => $property) {
-            // skip excluded properties
-            if (isset($namedExc[$name]) && !is_array($namedExc[$name])) {
-                continue;
+        // remove excluded properties
+        foreach (array_keys($result) as $k) {
+            if (isset($namedExc[$k]) && !is_array($namedExc[$k])) {
+                unset($result[$k]);
             }
-
-            // skip hidden properties not explicitly included
-            if (in_array($name, $hide) && !isset($namedInc[$name])) {
-                continue;
-            }
-
-            $properties[] = $name;
         }
 
-        // fetch the values for all of the requested properties
-        // get() should fill in any missing values with null
-        $result = $this->get($properties);
+        // add included properties
+        foreach (array_keys($namedInc) as $k) {
+            if (!isset($result[$k]) && isset($namedInc[$k])) {
+                $result[$k] = $this->$k;
+            }
+        }
 
         // expand any relational model properties
         $result = $this->toArrayExpand($result, $namedExc, $namedInc, $namedExp);
