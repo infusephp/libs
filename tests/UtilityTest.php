@@ -120,7 +120,7 @@ class UtilityTest extends PHPUnit_Framework_TestCase
     public function testSeoify()
     {
         $this->assertEquals('some-test-string', U::seoify('some test string'));
-        $this->assertEquals('meh', U::seoify('*)#%*^&--meh'));
+        $this->assertEquals('meh', U::seoify('*)#%*^&--meh *#)$*#)*$'));
         $this->assertEquals('already-seoified-string', U::seoify('already-seoified-string'));
     }
 

@@ -163,7 +163,11 @@ class Utility
         $return = strtolower(preg_replace('/--+/u', '-', $return));
         // first character cannot be '-'
         if ($return[0] == '-') {
-            $return = substr_replace($return, '', 0, 1);
+            $return = substr($return, 1);
+        }
+        // last character cannot be '-'
+        if (substr($return, -1) == '-') {
+            $return = substr($return, 0, -1);
         }
 
         return $return;
