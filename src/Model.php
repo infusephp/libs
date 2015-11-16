@@ -420,7 +420,7 @@ abstract class Model implements \ArrayAccess
      */
     public function __isset($name)
     {
-        return array_key_exists($name, $this->_unsaved) || $this->hasProperty($name);
+        return array_key_exists($name, $this->_unsaved) || static::hasProperty($name);
     }
 
     /**
@@ -881,9 +881,9 @@ abstract class Model implements \ArrayAccess
     private function toArrayExpand(array $result, array $namedExc, array $namedInc, array $namedExp)
     {
         foreach ($namedExp as $k => $subExp) {
-            // if the property is null, excluded, or not included
+            // if not a property, or the value is null is null, excluded, or not included
             // then we are not going to expand it
-            if (!isset($result[$k]) || !$result[$k]) {
+            if (!static::hasProperty($k) || !isset($result[$k]) || !$result[$k]) {
                 continue;
             }
 
