@@ -904,16 +904,6 @@ abstract class Model implements \ArrayAccess
     }
 
     /**
-     * Converts the object to JSON.
-     *
-     * @return string json
-     */
-    public function toJson()
-    {
-        return json_encode($this->toArray());
-    }
-
-    /**
      * Updates the model.
      *
      * @param array $data optional key-value properties to set

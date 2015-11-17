@@ -591,21 +591,6 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testToJson()
-    {
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-
-        $driver->shouldReceive('loadModel')
-               ->andReturn([]);
-
-        TestModel::setDriver($driver);
-
-        $model = new TestModel(5);
-        $model->relation = 10;
-
-        $this->assertEquals('{"answer":null,"id":"5","relation":10,"test_hook":null,"appended":true,"toArray":true}', $model->toJson());
-    }
-
     public function testArrayAccess()
     {
         $model = new TestModel();
