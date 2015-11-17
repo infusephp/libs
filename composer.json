@@ -30,6 +30,7 @@
 		"smarty/smarty": ">=v3.1.19",
 		"mockery/mockery": "~0.9",
 		"mustache/mustache": "2.7.0",
+		"twig/twig": "~1.0",
 		"tedivm/stash": "0.12.*"
 	}
 }
