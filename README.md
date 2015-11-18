@@ -1,11 +1,11 @@
 libs
 ===========
 
-[![Build Status](https://travis-ci.org/infusephp/libs.png?branch=master)](https://travis-ci.org/infusephp/libs)
-[![Coverage Status](https://coveralls.io/repos/infusephp/libs/badge.png)](https://coveralls.io/r/infusephp/libs)
-[![Latest Stable Version](https://poser.pugx.org/infuse/libs/v/stable.png)](https://packagist.org/packages/infuse/libs)
-[![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.png)](https://packagist.org/packages/infuse/libs)
-[![HHVM Status](http://hhvm.h4cc.de/badge/infuse/libs.svg)](http://hhvm.h4cc.de/package/infuse/libs)
+[![Build Status](https://travis-ci.org/infusephp/libs.svg?branch=master&style=flat)](https://travis-ci.org/infusephp/libs)
+[![Coverage Status](https://coveralls.io/repos/infusephp/libs/badge.svg?style=flat)](https://coveralls.io/r/infusephp/libs)
+[![Latest Stable Version](https://poser.pugx.org/infuse/libs/v/stable.svg?style=flat)](https://packagist.org/packages/infuse/libs)
+[![Total Downloads](https://poser.pugx.org/infuse/libs/downloads.svg?style=flat)](https://packagist.org/packages/infuse/libs)
+[![HHVM Status](http://hhvm.h4cc.de/badge/infuse/libs.svg?style=flat)](http://hhvm.h4cc.de/package/infuse/libs)
 
 *infuse/libs* is a collection of libraries designed for rapid PHP development.
 
