@@ -194,8 +194,8 @@ abstract class Model implements \ArrayAccess
     /**
      * Creates a new model object.
      *
-     * @param array|string|false $id     ordered array of ids or comma-separated id string
-     * @param array              $values optional key-value map to pre-seed model
+     * @param array|string|Model|false $id     ordered array of ids or comma-separated id string
+     * @param array                    $values optional key-value map to pre-seed model
      */
     public function __construct($id = false, array $values = [])
     {
@@ -205,7 +205,17 @@ abstract class Model implements \ArrayAccess
         // TODO need to store the id as an array
         // instead of a string to maintain type integrity
         if (is_array($id)) {
+            // A model can be supplied as a primary key
+            foreach ($id as &$el) {
+                if ($el instanceof self) {
+                    $el = $el->id();
+                }
+            }
+
             $id = implode(',', $id);
+        // A model can be supplied as a primary key
+        } elseif ($id instanceof self) {
+            $id = $id->id();
         }
 
         $this->_id = $id;

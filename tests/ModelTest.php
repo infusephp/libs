@@ -307,6 +307,9 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel(5);
 
         $this->assertEquals(5, $model->id());
+
+        $model2 = new TestModel($model);
+        $this->assertEquals(5, $model2->id());
     }
 
     public function testMultipleIds()
@@ -314,6 +317,10 @@ class ModelTest extends PHPUnit_Framework_TestCase
         $model = new TestModel2([5, 2]);
 
         $this->assertEquals('5,2', $model->id());
+
+        $model2 = new TestModel(5);
+        $model3 = new TestModel2([$model2, 2]);
+        $this->assertEquals('5,2', $model3->id());
     }
 
     public function testIds()
