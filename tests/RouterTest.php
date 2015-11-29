@@ -34,6 +34,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         MockController::$dynamicRouteCalled = false;
         MockController::$dynamicRouteParams = [];
         MockController::$indexRouteCalled = false;
+        MockController::$appInjected = false;
     }
 
     public function testStaticRoute()
@@ -56,6 +57,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$staticRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
     }
 
     public function testDynamicRoute()
@@ -78,6 +80,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$dynamicRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
 
         // test route params
         $expected = ['a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4];
@@ -103,6 +106,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$staticRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
     }
 
     public function testIndex()
@@ -126,15 +130,13 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$indexRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
     }
 
     public function testView()
     {
-        $routes = [
-            'get /view' => ['MockController', 'view'],
-        ];
-
-        $router = new Router($routes, self::$config);
+        $router = new Router([], self::$config);
+        $router->map('GET', '/view', ['MockController', 'view']);
 
         $view = new View('test');
         MockController::$view = $view;
@@ -149,23 +151,42 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
     }
 
-    public function testNonExistentController()
+    public function testNotFound()
     {
-        // call a route with a bogus controller
-        $routes = [
-            'post /this/is/a/test/route' => ['BogusController', 'who_cares'],
-        ];
-
-        $router = new Router($routes, self::$config);
-
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'POST';
+        $router = new Router([], self::$config);
 
         $req = Request::create('/this/is/a/test/route', 'POST');
 
         $res = new Response();
 
         $this->assertFalse($router->route(self::$app, $req, $res));
+        $this->assertEquals(404, $res->getCode());
+    }
+
+    public function testNonExistentController()
+    {
+        $router = new Router([], self::$config);
+        $router->map('POST', '/this/is/a/test/route', ['BogusController', 'who_cares']);
+
+        $req = Request::create('/this/is/a/test/route', 'POST');
+
+        $res = new Response();
+
+        $this->assertFalse($router->route(self::$app, $req, $res));
+        $this->assertEquals(404, $res->getCode());
+    }
+
+    public function testWrongMethod()
+    {
+        $router = new Router([], self::$config);
+        $router->map('GET', '/this/is/a/test/route', 'handler');
+
+        $req = Request::create('/this/is/a/test/route', 'POST');
+
+        $res = new Response();
+
+        $this->assertFalse($router->route(self::$app, $req, $res));
+        $this->assertEquals(405, $res->getCode());
     }
 
     public function testRouterControllerParam()
@@ -185,22 +206,18 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$staticRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
     }
 
     public function testClosure()
     {
         $test = false;
+        $handler = function ($req, $res) use (&$test) {
+            $test = true;
+        };
 
-        $routes = [
-            'get /test' => function ($req, $res) use (&$test) {
-                $test = true;
-            },
-        ];
-
-        $router = new Router($routes, self::$config);
-
-        $server = $_SERVER;
-        $server['REQUEST_METHOD'] = 'GET';
+        $router = new Router([], self::$config);
+        $router->map('GET', '/test', $handler);
 
         $req = Request::create('/test');
 
@@ -218,11 +235,8 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'hello' => 'world',
         ];
 
-        $routes = [
-            'get /test' => ['MockController', 'staticRoute', $extraParams],
-        ];
-
-        $router = new Router($routes, self::$config);
+        $router = new Router([], self::$config);
+        $router->map('GET', '/test', ['MockController', 'staticRoute', $extraParams]);
 
         $req = Request::create('/test');
 
@@ -231,6 +245,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($router->route(self::$app, $req, $res));
 
         $this->assertTrue(MockController::$staticRouteCalled);
+        $this->assertTrue(MockController::$appInjected);
         $this->assertEquals($extraParams, $req->params());
     }
 
@@ -241,7 +256,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->get('/users/{id}', $handler));
 
-        $this->assertEquals(['get /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['GET', '/users/{id}', $handler]], $router->getRoutes());
     }
 
     public function testPost()
@@ -251,7 +266,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->post('/users', $handler));
 
-        $this->assertEquals(['post /users' => $handler], $router->getRoutes());
+        $this->assertEquals([['POST', '/users', $handler]], $router->getRoutes());
     }
 
     public function testPut()
@@ -261,7 +276,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->put('/users/{id}', $handler));
 
-        $this->assertEquals(['put /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['PUT', '/users/{id}', $handler]], $router->getRoutes());
     }
 
     public function testDelete()
@@ -271,7 +286,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->delete('/users/{id}', $handler));
 
-        $this->assertEquals(['delete /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['DELETE', '/users/{id}', $handler]], $router->getRoutes());
     }
 
     public function testPatch()
@@ -281,7 +296,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->patch('/users/{id}', $handler));
 
-        $this->assertEquals(['patch /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['PATCH', '/users/{id}', $handler]], $router->getRoutes());
     }
 
     public function testOptions()
@@ -291,7 +306,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->options('/users/{id}', $handler));
 
-        $this->assertEquals(['options /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['OPTIONS', '/users/{id}', $handler]], $router->getRoutes());
     }
 
     public function testMap()
@@ -301,7 +316,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($router, $router->map('GET', '/users/{id}', $handler));
 
-        $this->assertEquals(['get /users/{id}' => $handler], $router->getRoutes());
+        $this->assertEquals([['GET', '/users/{id}', $handler]], $router->getRoutes());
     }
 }
 
@@ -311,7 +326,13 @@ class MockController
     public static $dynamicRouteCalled = false;
     public static $dynamicRouteParams = [];
     public static $indexRouteCalled = false;
+    public static $appInjected = false;
     public static $view;
+
+    public function injectApp($app)
+    {
+        self::$appInjected = true;
+    }
 
     public function staticRoute($req, $res)
     {

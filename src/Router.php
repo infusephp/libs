@@ -10,16 +10,16 @@
  */
 namespace Infuse;
 
+use FastRoute\Dispatcher;
+use FastRoute\RouteCollector;
 use Pimple\Container;
 
 class Router
 {
-    const SKIP_ROUTE = -1;
-
     /**
      * @var array
      */
-    private $routes;
+    private $routes = [];
 
     /**
      * @var array
@@ -32,12 +32,18 @@ class Router
      */
     public function __construct(array $routes = [], array $settings = [])
     {
-        $this->routes = $routes;
         $this->settings = array_replace([
             'namespace' => '',
             'defaultController' => '',
             'defaultAction' => 'index',
         ], $settings);
+
+        foreach ($routes as $route => $handler) {
+            $parts = explode(' ', $route);
+            list($method, $endpoint) = $parts;
+
+            $this->map($method, $endpoint, $handler);
+        }
     }
 
     /**
@@ -50,7 +56,7 @@ class Router
      */
     public function get($route, $handler)
     {
-        $this->map('get', $route, $handler);
+        $this->map('GET', $route, $handler);
 
         return $this;
     }
@@ -65,7 +71,7 @@ class Router
      */
     public function post($route, $handler)
     {
-        $this->map('post', $route, $handler);
+        $this->map('POST', $route, $handler);
 
         return $this;
     }
@@ -80,7 +86,7 @@ class Router
      */
     public function put($route, $handler)
     {
-        $this->map('put', $route, $handler);
+        $this->map('PUT', $route, $handler);
 
         return $this;
     }
@@ -95,7 +101,7 @@ class Router
      */
     public function delete($route, $handler)
     {
-        $this->map('delete', $route, $handler);
+        $this->map('DELETE', $route, $handler);
 
         return $this;
     }
@@ -110,7 +116,7 @@ class Router
      */
     public function patch($route, $handler)
     {
-        $this->map('patch', $route, $handler);
+        $this->map('PATCH', $route, $handler);
 
         return $this;
     }
@@ -125,7 +131,7 @@ class Router
      */
     public function options($route, $handler)
     {
-        $this->map('options', $route, $handler);
+        $this->map('OPTIONS', $route, $handler);
 
         return $this;
     }
@@ -141,8 +147,8 @@ class Router
      */
     public function map($method, $route, $handler)
     {
-        $method = strtolower($method);
-        $this->routes[$method.' '.$route] = $handler;
+        $method = strtoupper($method);
+        $this->routes[] = [$method, $route, $handler];
 
         return $this;
     }
@@ -168,40 +174,37 @@ class Router
      */
     public function route(Container $app, Request $req, Response $res)
     {
-        /*
-            Route Precedence:
-            1) static routes (i.e. /about)
-            2) dynamic routes (i.e. /browse/{category})
-        */
-
-        $routeMethodStr = strtolower($req->method()).' '.$req->path();
-
-        $staticRoutes = [];
-        $dynamicRoutes = [];
-
-        foreach ($this->routes as $routeStr => $route) {
-            if (strpos($routeStr, '{') && strpos($routeStr, '}')) {
-                $dynamicRoutes[$routeStr] = $route;
-            } else {
-                $staticRoutes[$routeStr] = $route;
+        $router = $this;
+        $dispatcher = \FastRoute\simpleDispatcher(function (RouteCollector $r) use ($router) {
+            foreach ($router->getRoutes() as $route) {
+                $r->addRoute($route[0], $route[1], $route[2]);
             }
+        });
+
+        // the dispatcher returns an array in the format:
+        // [result, handler, parameters]
+        $routeInfo = $dispatcher->dispatch($req->method(), $req->path());
+
+        // 404 Not Found
+        if ($routeInfo[0] === Dispatcher::NOT_FOUND) {
+            $res->setCode(404);
+
+            return false;
         }
 
-        /* static routes */
-        if (isset($staticRoutes[$routeMethodStr]) &&
-            $this->performRoute($staticRoutes[$routeMethodStr], $app, $req, $res) !== self::SKIP_ROUTE) {
-            return true;
+        // 405 Method Not Allowed
+        if ($routeInfo[0] === Dispatcher::METHOD_NOT_ALLOWED) {
+            // $allowedMethods = $routeInfo[1];
+            $res->setCode(405);
+
+            return false;
         }
 
-        /* dynamic routes */
-        foreach ($dynamicRoutes as $routeStr => $route) {
-            if ($this->matchRouteToRequest($routeStr, $req) &&
-                $this->performRoute($route, $app, $req, $res) !== self::SKIP_ROUTE) {
-                return true;
-            }
-        }
+        // the route was found
+        // set any parameters that come from matching the route
+        $req->setParams($routeInfo[2]);
 
-        return false;
+        return $this->performRoute($routeInfo[1], $app, $req, $res);
     }
 
     //////////////////////////
@@ -209,7 +212,7 @@ class Router
     //////////////////////////
 
     /**
-     * Executes a route. If the route returns SKIP_ROUTE then failure is assumed.
+     * Executes a route handler.
      *
      * @param array|string $route array('controller','method') or array('controller')
      *                            or 'method'
@@ -242,7 +245,9 @@ class Router
             $controller = $this->settings['namespace'].'\\'.$controller;
 
             if (!class_exists($controller)) {
-                return self::SKIP_ROUTE;
+                $res->setCode(404);
+
+                return false;
             }
 
             $controllerObj = new $controller();
@@ -263,60 +268,9 @@ class Router
             $result = call_user_func($route, $req, $res);
         }
 
-        if ($result === self::SKIP_ROUTE) {
-            return self::SKIP_ROUTE;
-        } elseif ($result instanceof View) {
+        if ($result instanceof View) {
             $res->render($result);
         }
-
-        return true;
-    }
-
-    /**
-     * Checks if a request matches a given route. When there is
-     * a match the parameters will be added to the request.
-     *
-     * @param string  $routeStr route template we are trying to match
-     * @param Request $req
-     *
-     * @return bool
-     */
-    private function matchRouteToRequest($routeStr, $req)
-    {
-        $routeParts = explode(' ', $routeStr);
-
-        // verify that the method matches
-        if (count($routeParts) != 1 && $routeParts[0] != strtolower($req->method())) {
-            return false;
-        }
-
-        // break the url into components
-        $reqPaths = $req->paths();
-        $routePaths = explode('/', end($routeParts));
-        if ($routePaths[0] == '') {
-            array_splice($routePaths, 0, 1);
-        }
-
-        // check that the number of components match
-        if (count($reqPaths) != count($routePaths)) {
-            return false;
-        }
-
-        // compare each component of url, grab parameters along the way
-        $params = [];
-        foreach ($routePaths as $i => $path) {
-            // is this a parameter
-            if (substr($path, 0, 1) == '{' && substr($path, -1) == '}') {
-                $key = substr($path, 1, -1);
-                $params[$key] = $reqPaths[$i];
-            } else {
-                if ($reqPaths[$i] != $path) {
-                    return false;
-                }
-            }
-        }
-
-        $req->setParams($params);
 
         return true;
     }
