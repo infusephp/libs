@@ -924,7 +924,7 @@ class Locale
         ],
         'INR' => [
             'name' => 'India Rupee',
-            'symbol' => '₹',
+            'symbol' => '₨',
         ],
         'IQD' => [
             'name' => 'Iraq Dinar',
