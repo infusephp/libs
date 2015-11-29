@@ -170,37 +170,30 @@ class Router
     {
         /*
             Route Precedence:
-            1) global static routes (i.e. /about)
-            2) global dynamic routes (i.e. /browse/:category)
+            1) static routes (i.e. /about)
+            2) dynamic routes (i.e. /browse/{category})
         */
 
         $routeMethodStr = strtolower($req->method()).' '.$req->path();
-        $routeGenericStr = $req->path();
 
         $staticRoutes = [];
         $dynamicRoutes = [];
 
         foreach ($this->routes as $routeStr => $route) {
-            if (strpos($routeStr, ':')) {
+            if (strpos($routeStr, '{') && strpos($routeStr, '}')) {
                 $dynamicRoutes[$routeStr] = $route;
             } else {
                 $staticRoutes[$routeStr] = $route;
             }
         }
 
-        /* global static routes */
+        /* static routes */
         if (isset($staticRoutes[$routeMethodStr]) &&
             $this->performRoute($staticRoutes[$routeMethodStr], $app, $req, $res) !== self::SKIP_ROUTE) {
             return true;
         }
 
-        if (isset($staticRoutes[$routeGenericStr]) &&
-            $this->performRoute($staticRoutes[$routeGenericStr], $app, $req, $res) !== self::SKIP_ROUTE) {
-            return true;
-        }
-
-        /* global dynamic routes */
-
+        /* dynamic routes */
         foreach ($dynamicRoutes as $routeStr => $route) {
             if ($this->matchRouteToRequest($routeStr, $req) &&
                 $this->performRoute($route, $app, $req, $res) !== self::SKIP_ROUTE) {
@@ -313,8 +306,8 @@ class Router
         $params = [];
         foreach ($routePaths as $i => $path) {
             // is this a parameter
-            if (substr($path, 0, 1) == ':') {
-                $key = substr_replace($path, '', 0, 1);
+            if (substr($path, 0, 1) == '{' && substr($path, -1) == '}') {
+                $key = substr($path, 1, -1);
                 $params[$key] = $reqPaths[$i];
             } else {
                 if ($reqPaths[$i] != $path) {

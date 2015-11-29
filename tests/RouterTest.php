@@ -41,7 +41,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $routes = [
             'get /this/is/a' => ['MockController', 'fail'],
             'get /this/is/a/test/route' => ['MockController', 'fail'],
-            'post /this/is/a/test/route/:test' => ['MockController', 'fail'],
+            'post /this/is/a/test/route/{test}' => ['MockController', 'fail'],
             'post /this/is/a/test/route' => ['MockController', 'staticRoute'],
             'delete /this/is/a/test/route' => ['MockController', 'fail'],
             'get /this/is/a/test/route/' => ['MockController', 'fail'],
@@ -63,8 +63,8 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $routes = [
             'get /this/is/a' => 'fail',
             'get /this/is/a/test/route' => 'fail',
-            'post /:a1/:a2/:a3/:a4/:a5' => 'fail',
-            'put /dynamic/:a1/:a2/:a3/:a4' => 'dynamicRoute',
+            'post /{a1}/{a2}/{a3}/{a4}/{a5}' => 'fail',
+            'put /dynamic/{a1}/{a2}/{a3}/{a4}' => 'dynamicRoute',
             'delete /this/is/a/test/route' => 'fail',
             'get /this/is/a/test/route/' => 'fail',
         ];
@@ -88,7 +88,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
     {
         $routes = [
             'get /this/is/a/test/route' => 'fail',
-            'post /this/is/a/test/route/:test' => 'fail',
+            'post /this/is/a/test/route/{test}' => 'fail',
             'post /this/is/a/test/route' => 'staticRoute',
             'delete /this/is/a/test/route' => 'fail',
             'post /this/is/a/test/route/' => 'fail',
@@ -111,7 +111,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $routes = [
             'get /this/is/a' => ['MockController', 'fail'],
             'get /this/is/a/test/route' => ['MockController', 'fail'],
-            'post /this/is/a/test/route/:test' => ['MockController', 'fail'],
+            'post /this/is/a/test/route/{test}' => ['MockController', 'fail'],
             'post /this/is/a/test/route' => ['MockController'],
             'delete /this/is/a/test/route' => ['MockController', 'fail'],
             'post /this/is/a/test/route/' => ['MockController', 'fail'],
@@ -130,7 +130,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
 
     public function testView()
     {
-        $routes = ['/view' => ['MockController', 'view']];
+        $routes = [
+            'get /view' => ['MockController', 'view'],
+        ];
 
         $router = new Router($routes, self::$config);
 
@@ -140,7 +142,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $req = Request::create('/view');
 
         $res = Mockery::mock('Infuse\Response');
-        $res->shouldReceive('render')->withArgs([$view])->once();
+        $res->shouldReceive('render')
+            ->withArgs([$view])
+            ->once();
 
         $this->assertTrue($router->route(self::$app, $req, $res));
     }
@@ -235,9 +239,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->get('/users/:id', $handler));
+        $this->assertEquals($router, $router->get('/users/{id}', $handler));
 
-        $this->assertEquals(['get /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['get /users/{id}' => $handler], $router->getRoutes());
     }
 
     public function testPost()
@@ -255,9 +259,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->put('/users/:id', $handler));
+        $this->assertEquals($router, $router->put('/users/{id}', $handler));
 
-        $this->assertEquals(['put /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['put /users/{id}' => $handler], $router->getRoutes());
     }
 
     public function testDelete()
@@ -265,9 +269,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->delete('/users/:id', $handler));
+        $this->assertEquals($router, $router->delete('/users/{id}', $handler));
 
-        $this->assertEquals(['delete /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['delete /users/{id}' => $handler], $router->getRoutes());
     }
 
     public function testPatch()
@@ -275,9 +279,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->patch('/users/:id', $handler));
+        $this->assertEquals($router, $router->patch('/users/{id}', $handler));
 
-        $this->assertEquals(['patch /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['patch /users/{id}' => $handler], $router->getRoutes());
     }
 
     public function testOptions()
@@ -285,9 +289,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->options('/users/:id', $handler));
+        $this->assertEquals($router, $router->options('/users/{id}', $handler));
 
-        $this->assertEquals(['options /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['options /users/{id}' => $handler], $router->getRoutes());
     }
 
     public function testMap()
@@ -295,9 +299,9 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $router = new Router();
         $handler = function () {};
 
-        $this->assertEquals($router, $router->map('GET', '/users/:id', $handler));
+        $this->assertEquals($router, $router->map('GET', '/users/{id}', $handler));
 
-        $this->assertEquals(['get /users/:id' => $handler], $router->getRoutes());
+        $this->assertEquals(['get /users/{id}' => $handler], $router->getRoutes());
     }
 }
 
