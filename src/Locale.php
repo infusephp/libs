@@ -924,7 +924,7 @@ class Locale
         ],
         'INR' => [
             'name' => 'India Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'IQD' => [
             'name' => 'Iraq Dinar',
@@ -998,7 +998,7 @@ class Locale
         ],
         'LKR' => [
             'name' => 'Sri Lanka Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'LRD' => [
             'name' => 'Liberia Dollar',
@@ -1054,7 +1054,7 @@ class Locale
         ],
         'MUR' => [
             'name' => 'Mauritius Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'MVR' => [
             'name' => 'Maldives (Maldive Islands) Rufiyaa',
@@ -1094,7 +1094,7 @@ class Locale
         ],
         'NPR' => [
             'name' => 'Nepal Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'NZD' => [
             'name' => 'New Zealand Dollar',
@@ -1122,7 +1122,7 @@ class Locale
         ],
         'PKR' => [
             'name' => 'Pakistan Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'PLN' => [
             'name' => 'Poland Zloty',
@@ -1162,7 +1162,7 @@ class Locale
         ],
         'SCR' => [
             'name' => 'Seychelles Rupee',
-            'symbol' => '₨',
+            'symbol' => 'Rs',
         ],
         'SDG' => [
             'name' => 'Sudan Pound',
