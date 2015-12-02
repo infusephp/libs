@@ -23,6 +23,11 @@ class Query
     /**
      * @var array
      */
+    private $joins;
+
+    /**
+     * @var array
+     */
     private $where;
 
     /**
@@ -46,6 +51,7 @@ class Query
     public function __construct($model = '')
     {
         $this->model = $model;
+        $this->joins = [];
         $this->where = [];
         $this->start = 0;
         $this->limit = self::DEFAULT_LIMIT;
@@ -197,6 +203,33 @@ class Query
     public function getWhere()
     {
         return $this->where;
+    }
+
+    /**
+     * Adds a join to the query. Matches a property on this model
+     * to the ID of the model we are joining.
+     *
+     * @param string $model      model being joined
+     * @param string $column     name of local property
+     * @param string $foreignKey
+     *
+     * @return self
+     */
+    public function join($model, $column, $foreignKey)
+    {
+        $this->joins[] = [$model, $column, $foreignKey];
+
+        return $this;
+    }
+
+    /**
+     * Gets the joins.
+     *
+     * @return array
+     */
+    public function getJoins()
+    {
+        return $this->joins;
     }
 
     /**

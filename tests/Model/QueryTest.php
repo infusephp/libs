@@ -63,6 +63,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['test' => false, 'some condition', ['balance', 100, '>=']], $query->getWhere());
     }
 
+    public function testJoin()
+    {
+        $query = new Query();
+
+        $this->assertEquals([], $query->getJoins());
+
+        $this->assertEquals($query, $query->join('Person', 'author', 'id'));
+        $this->assertEquals([['Person', 'author', 'id']], $query->getJoins());
+    }
+
     public function testExecute()
     {
         $query = new Query('Person');

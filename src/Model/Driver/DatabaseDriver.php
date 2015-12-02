@@ -130,6 +130,16 @@ class DatabaseDriver implements DriverInterface
             ->limit($query->getLimit(), $query->getStart())
             ->orderBy($this->prefixSort($query->getSort(), $tablename));
 
+        // join conditions
+        foreach ($query->getJoins() as $join) {
+            list($foreignModel, $column, $foreignKey) = $join;
+
+            $foreignTablename = $this->getTablename($foreignModel);
+            $condition = $this->prefixColumn($column, $tablename).'='.$this->prefixColumn($foreignKey, $foreignTablename);
+
+            $dbQuery->join($foreignTablename, $condition);
+        }
+
         try {
             $data = $dbQuery->all();
 

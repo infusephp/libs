@@ -368,6 +368,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
               ->where(['city' => 'Austin'])
               ->where('RAW SQL')
               ->where('People.alreadyDotted', true)
+              ->join('Group', 'group', 'id')
               ->sort('name asc')
               ->limit(5)
               ->start(10);
@@ -376,6 +377,9 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
         $all = Mockery::mock();
         $all->shouldReceive('all')
             ->andReturn([['test' => true]]);
+        $all->shouldReceive('join')
+             ->withArgs(['Groups', 'People.group=Groups.id'])
+             ->once();
         $orderBy = Mockery::mock();
         $orderBy->shouldReceive('orderBy')
                 ->withArgs([[['People.name', 'asc']]])

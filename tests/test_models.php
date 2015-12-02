@@ -254,6 +254,10 @@ class Person extends ACLModel
     }
 }
 
+class Group extends Model
+{
+}
+
 class IteratorTestModel extends Model
 {
     protected static $properties = [
