@@ -364,7 +364,10 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
     public function testQueryModels()
     {
         $query = new Query('Person');
-        $query->where(['id', 50, '>'])
+        $query->where('id', 50, '>')
+              ->where(['city' => 'Austin'])
+              ->where('RAW SQL')
+              ->where('People.alreadyDotted', true)
               ->sort('name asc')
               ->limit(5)
               ->start(10);
@@ -375,7 +378,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
             ->andReturn([['test' => true]]);
         $orderBy = Mockery::mock();
         $orderBy->shouldReceive('orderBy')
-                ->withArgs([[['name', 'asc']]])
+                ->withArgs([[['People.name', 'asc']]])
                 ->andReturn($all);
         $limit = Mockery::mock();
         $limit->shouldReceive('limit')
@@ -383,7 +386,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
              ->andReturn($orderBy);
         $where = Mockery::mock();
         $where->shouldReceive('where')
-              ->withArgs([['id', 50, '>']])
+              ->withArgs([[['People.id', 50, '>'], 'People.city' => 'Austin', 'RAW SQL', 'People.alreadyDotted' => true]])
               ->andReturn($limit);
         $from = Mockery::mock();
         $from->shouldReceive('from')
@@ -391,7 +394,7 @@ class DatabaseDriverTest extends PHPUnit_Framework_TestCase
              ->andReturn($where);
         $db = Mockery::mock('JAQB\QueryBuilder');
         $db->shouldReceive('select')
-           ->withArgs(['*'])
+           ->withArgs(['People.*'])
            ->andReturn($from);
 
         self::$app['db'] = $db;

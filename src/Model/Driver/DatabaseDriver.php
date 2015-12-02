@@ -122,13 +122,16 @@ class DatabaseDriver implements DriverInterface
         $model = $query->getModel();
         $tablename = $this->getTablename($model);
 
+        // build a DB query from the model query
+        $dbQuery = $this->app['db']
+            ->select($this->prefixSelect('*', $tablename))
+            ->from($tablename)
+            ->where($this->prefixWhere($query->getWhere(), $tablename))
+            ->limit($query->getLimit(), $query->getStart())
+            ->orderBy($this->prefixSort($query->getSort(), $tablename));
+
         try {
-            $data = $this->app['db']->select('*')
-                ->from($tablename)
-                ->where($query->getWhere())
-                ->limit($query->getLimit(), $query->getStart())
-                ->orderBy($query->getSort())
-                ->all();
+            $data = $dbQuery->all();
 
             $properties = $model::getProperties();
             foreach ($data as &$row) {
@@ -273,5 +276,86 @@ class DatabaseDriver implements DriverInterface
         }
 
         return $values;
+    }
+
+    /**
+     * Returns a prefixed select statement.
+     *
+     * @param string $columns
+     * @param string $tablename
+     *
+     * @return string
+     */
+    private function prefixSelect($columns, $tablename)
+    {
+        $prefixed = [];
+        foreach (explode(',', $columns) as $column) {
+            $prefixed[] = $this->prefixColumn($column, $tablename);
+        }
+
+        return implode(',', $prefixed);
+    }
+
+    /**
+     * Returns a prefixed where statement.
+     *
+     * @param string $columns
+     * @param string $tablename
+     *
+     * @return string
+     */
+    private function prefixWhere(array $where, $tablename)
+    {
+        $return = [];
+        foreach ($where as $key => $condition) {
+            // handles $where[property] = value
+            if (!is_numeric($key)) {
+                $return[$this->prefixColumn($key, $tablename)] = $condition;
+            // handles $where[] = [property, value, '=']
+            } elseif (is_array($condition)) {
+                $condition[0] = $this->prefixColumn($condition[0], $tablename);
+                $return[] = $condition;
+            // handles raw SQL - do nothing
+            } else {
+                $return[] = $condition;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Returns a prefixed sort statement.
+     *
+     * @param string $columns
+     * @param string $tablename
+     *
+     * @return string
+     */
+    private function prefixSort(array $sort, $tablename)
+    {
+        foreach ($sort as &$condition) {
+            $condition[0] = $this->prefixColumn($condition[0], $tablename);
+        }
+
+        return $sort;
+    }
+
+    /**
+     * Prefix columns with tablename that contains only
+     * alphanumeric/underscores/*.
+     *
+     * @param string $column
+     * @param string $tablename
+     *
+     * @return string prefixed column
+     */
+    private function prefixColumn($column, $tablename)
+    {
+        if ($column === '*' || preg_match('/^[a-z0-9_]+$/i', $column)) {
+            return "$tablename.$column";
+        }
+
+        return $column;
     }
 }
