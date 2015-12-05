@@ -92,6 +92,16 @@ abstract class Model implements \ArrayAccess
      */
     protected $_cache;
 
+    /**
+     * @var array
+     */
+    protected $_values = [];
+
+    /**
+     * @var array
+     */
+    protected $_unsaved = [];
+
     /////////////////////////////
     // Base model variables
     /////////////////////////////
@@ -160,16 +170,6 @@ abstract class Model implements \ArrayAccess
      * @staticvar array
      */
     private static $mutators = [];
-
-    /**
-     * @var array
-     */
-    private $_local = [];
-
-    /**
-     * @var array
-     */
-    private $_unsaved = [];
 
     /**
      * @var bool
@@ -726,7 +726,7 @@ abstract class Model implements \ArrayAccess
     public function get(array $properties)
     {
         // load the values from the IDs and local model cache
-        $values = array_replace($this->ids(), $this->_local);
+        $values = array_replace($this->ids(), $this->_values);
 
         // unless specified, use any unsaved values
         $ignoreUnsaved = $this->_ignoreUnsaved;
@@ -740,7 +740,7 @@ abstract class Model implements \ArrayAccess
         $numMissing = count(array_diff($properties, array_keys($values)));
         if ($numMissing > 0) {
             $this->load();
-            $values = array_replace($values, $this->_local);
+            $values = array_replace($values, $this->_values);
 
             if (!$ignoreUnsaved) {
                 $values = array_replace($values, $this->_unsaved);
@@ -754,7 +754,7 @@ abstract class Model implements \ArrayAccess
                 $return[$k] = $values[$k];
             // set any missing values to the default value
             } elseif (static::hasProperty($k)) {
-                $return[$k] = $this->_local[$k] = $this->getPropertyDefault(static::$properties[$k]);
+                $return[$k] = $this->_values[$k] = $this->getPropertyDefault(static::$properties[$k]);
             // use null for values of non-properties
             } else {
                 $return[$k] = null;
@@ -1092,7 +1092,7 @@ abstract class Model implements \ArrayAccess
 
                 $this->loadFromStorage()->cache();
             } else {
-                $this->_local = $values;
+                $this->_values = $values;
             }
         } else {
             $this->loadFromStorage()->cache();
@@ -1105,7 +1105,7 @@ abstract class Model implements \ArrayAccess
     }
 
     /**
-     * Loads the model from the database and caches it.
+     * Loads the model from the storage layer.
      *
      * @param array $values optional values (if already loaded from DB)
      *
@@ -1118,9 +1118,9 @@ abstract class Model implements \ArrayAccess
         }
 
         if (is_array($values)) {
-            $this->_local = [];
+            $this->_values = [];
             foreach ($values as $k => $v) {
-                $this->_local[$k] = $v;
+                $this->_values[$k] = $v;
             }
         }
 
@@ -1605,12 +1605,12 @@ abstract class Model implements \ArrayAccess
      */
     public function cache()
     {
-        if (!$this->_cache || count($this->_local) == 0) {
+        if (!$this->_cache || count($this->_values) == 0) {
             return $this;
         }
 
         // cache the local properties
-        $this->cacheItem()->set($this->_local, $this->getCacheTTL());
+        $this->cacheItem()->set($this->_values, $this->getCacheTTL());
 
         return $this;
     }
@@ -1623,7 +1623,7 @@ abstract class Model implements \ArrayAccess
     public function clearCache()
     {
         $this->_unsaved = [];
-        $this->_local = [];
+        $this->_values = [];
         $this->_relationModels = [];
 
         if ($this->_cache) {
