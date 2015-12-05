@@ -1267,152 +1267,16 @@ class ModelTest extends PHPUnit_Framework_TestCase
     }
 
     /////////////////////////////
-    // CACHE
-    /////////////////////////////
-
-    public function testSetDefaultCache()
-    {
-        $cache = Mockery::mock('Stash\Pool');
-
-        TestModel::setDefaultCache($cache);
-        for ($i = 0; $i < 5; ++$i) {
-            $model = new TestModel();
-            $this->assertEquals($cache, $model->getCache());
-        }
-
-        TestModel::clearDefaultCache();
-    }
-
-    public function testSetDefaultCacheTTL()
-    {
-        TestModel::setDefaultCacheTTL(2);
-
-        $model = new TestModel();
-        $this->assertEquals(2, $model->getCacheTTL());
-    }
-
-    public function testSetCache()
-    {
-        $cache = Mockery::mock('Stash\Pool');
-
-        $model = new TestModel();
-        $this->assertEquals($model, $model->setCache($cache));
-
-        $this->assertEquals($cache, $model->getCache());
-    }
-
-    public function testCacheKey()
-    {
-        $model = new TestModel(5);
-        $this->assertEquals('models/testmodel/5', $model->cacheKey());
-
-        $model = new TestModel2(5);
-        $this->assertEquals('models/testmodel2/5', $model->cacheKey());
-    }
-
-    public function testCacheItem()
-    {
-        $cache = new Stash\Pool();
-
-        $model = new TestModel(5);
-        $this->assertNull($model->cacheItem());
-
-        $model->setCache($cache);
-        $item = $model->cacheItem();
-        $this->assertInstanceOf('Stash\Item', $item);
-        $this->assertEquals('models/testmodel/5', $item->getKey());
-
-        $model = new TestModel2(5);
-        $model->setCache($cache);
-        $item = $model->cacheItem();
-        $this->assertInstanceOf('Stash\Item', $item);
-        $this->assertEquals('models/testmodel2/5', $item->getKey());
-    }
-
-    public function testCacheHit()
-    {
-        $cache = new Stash\Pool();
-
-        $model = new TestModel(100);
-        $model->setCache($cache);
-
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-
-        $driver->shouldReceive('loadModel')
-               ->andReturn(['answer' => 42]);
-
-        TestModel2::setDriver($driver);
-
-        // load from the db first
-        $this->assertEquals($model, $model->load(true));
-        // load without skipping cache
-        $this->assertEquals($model, $model->load(false));
-
-        // this should be a hit from the cache
-        $this->assertEquals(42, $model->answer);
-    }
-
-    public function testCacheMiss()
-    {
-        $cache = new Stash\Pool();
-
-        $model = new TestModel(101);
-        $model->setCache($cache);
-
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-
-        $driver->shouldReceive('loadModel')
-               ->andReturn(['answer' => 42]);
-
-        TestModel2::setDriver($driver);
-
-        $this->assertEquals($model, $model->load());
-
-        // value should now be cached
-        $item = $cache->getItem($model->cacheKey());
-        $value = $item->get();
-        $this->assertFalse($item->isMiss());
-        $expected = ['answer' => 42];
-        $this->assertEquals($expected, $value);
-    }
-
-    public function testCache()
-    {
-        $cache = new Stash\Pool();
-
-        $model = new TestModel(102);
-        $model->setCache($cache);
-
-        $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
-
-        $driver->shouldReceive('loadModel')
-               ->andReturn(['answer' => 42]);
-
-        TestModel2::setDriver($driver);
-
-        // cache
-        $this->assertEquals($model, $model->load()->cache());
-        $item = $cache->getItem($model->cacheKey());
-        $value = $item->get();
-        $this->assertFalse($item->isMiss());
-
-        // clear the cache
-        $this->assertEquals($model, $model->clearCache());
-        $item = $cache->getItem($model->cacheKey());
-        $value = $item->get();
-        $this->assertTrue($item->isMiss());
-    }
-
-    /////////////////////////////
     // STORAGE
     /////////////////////////////
 
-    public function testLoadFromStorage()
+    public function testRefresh()
     {
         $model = new TestModel2();
+        $this->assertEquals($model, $model->refresh());
         $this->assertEquals($model, $model->load());
 
-        $model = new TestModel(12);
+        $model = new TestModel2(12);
 
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
@@ -1421,21 +1285,21 @@ class ModelTest extends PHPUnit_Framework_TestCase
                ->andReturn([])
                ->once();
 
-        TestModel::setDriver($driver);
+        TestModel2::setDriver($driver);
 
-        $this->assertEquals($model, $model->load(true));
+        $this->assertEquals($model, $model->refresh());
     }
 
-    public function testLoadFromStorageFail()
+    public function testRefreshFail()
     {
         $driver = Mockery::mock('Infuse\Model\Driver\DriverInterface');
 
         $driver->shouldReceive('loadModel')
                ->andReturn(false);
 
-        TestModel::setDriver($driver);
+        TestModel2::setDriver($driver);
 
-        $model = new TestModel(12);
-        $this->assertEquals($model, $model->load(true));
+        $model = new TestModel2(12);
+        $this->assertEquals($model, $model->refresh());
     }
 }

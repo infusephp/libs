@@ -19,8 +19,6 @@ use Infuse\Model\Relation\BelongsTo;
 use Infuse\Model\Relation\HasMany;
 use Infuse\Model\Relation\BelongsToMany;
 use Pimple\Container;
-use Stash\Pool;
-use Stash\Item;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 abstract class Model implements \ArrayAccess
@@ -68,11 +66,6 @@ abstract class Model implements \ArrayAccess
     protected static $injectedApp;
 
     /**
-     * @staticvar int
-     */
-    protected static $cacheTTL = 0;
-
-    /**
      * @staticvar array
      */
     protected static $dispatchers;
@@ -86,11 +79,6 @@ abstract class Model implements \ArrayAccess
      * @var \Pimple\Container
      */
     protected $app;
-
-    /**
-     * @var \Stash\Pool
-     */
-    protected $_cache;
 
     /**
      * @var array
@@ -147,16 +135,6 @@ abstract class Model implements \ArrayAccess
     private static $initialized = [];
 
     /**
-     * @staticvar \Stash\Pool
-     */
-    private static $defaultCache;
-
-    /**
-     * @staticvar string
-     */
-    private static $cachePrefix = [];
-
-    /**
      * @staticvar Model\Driver\DriverInterface
      */
     private static $driver;
@@ -180,16 +158,6 @@ abstract class Model implements \ArrayAccess
      * @var array
      */
     private $_relationModels = [];
-
-    /**
-     * @var \Stash\Item
-     */
-    private $_cacheItem;
-
-    /**
-     * @var int
-     */
-    private $_cacheTTL;
 
     /**
      * Creates a new model object.
@@ -222,15 +190,9 @@ abstract class Model implements \ArrayAccess
 
         $this->app = self::$injectedApp;
 
-        if (self::$defaultCache) {
-            $this->_cache = &self::$defaultCache;
-        }
-
-        $this->setCacheTTL(static::$cacheTTL);
-
-        // cache the loaded values
+        // load any given values
         if (count($values) > 0) {
-            $this->loadFromStorage($values)->cache();
+            $this->refreshWith($values);
         }
     }
 
@@ -686,10 +648,9 @@ abstract class Model implements \ArrayAccess
             // determine the model's new ID
             $this->_id = $this->getNewID();
 
-            // clear the cache
-            // NOTE the cache is cleared before the model.created
+            // NOTE clear the local cache before the model.created
             // event so that fetching values forces a reload
-            // from the persistent storage layer
+            // from the storage layer
             $this->clearCache();
 
             // dispatch the model.created event
@@ -717,7 +678,7 @@ abstract class Model implements \ArrayAccess
      * Fetches property values from the model.
      *
      * This method looks up values in this order:
-     * IDs, local cache, unsaved values, cache, database, defaults
+     * IDs, local cache, unsaved values, storage layer, defaults
      *
      * @param array $properties list of property names to fetch values of
      *
@@ -739,7 +700,7 @@ abstract class Model implements \ArrayAccess
         // attempt to load any missing values from the storage layer
         $numMissing = count(array_diff($properties, array_keys($values)));
         if ($numMissing > 0) {
-            $this->load();
+            $this->refresh();
             $values = array_replace($values, $this->_values);
 
             if (!$ignoreUnsaved) {
@@ -970,10 +931,9 @@ abstract class Model implements \ArrayAccess
         $updated = self::$driver->updateModel($this, $updateArray);
 
         if ($updated) {
-            // clear the cache
-            // NOTE the cache is cleared before the model.updated
+            // NOTE clear the local cache before the model.updated
             // event so that fetching values forces a reload
-            // from the persistent storage layer
+            // from the storage layer
             $this->clearCache();
 
             // dispatch the model.updated event
@@ -1009,10 +969,9 @@ abstract class Model implements \ArrayAccess
                 return false;
             }
 
-            // clear the cache
-            // NOTE clear the cache after the model.deleted
-            // event is fired so that cached model values
-            // are still available
+            // NOTE clear the local cache before the model.deleted
+            // event so that fetching values forces a reload
+            // from the storage layer
             $this->clearCache();
         }
 
@@ -1064,65 +1023,63 @@ abstract class Model implements \ArrayAccess
     }
 
     /**
-     * Loads the model from the cache or database.
-     * First, attempts to load the model from the caching layer.
-     * If that fails, then attempts to load the model from the
-     * database layer.
-     *
-     * @param bool $skipCache
-     *
-     * @return Model
+     * @deprecated alias for refresh()
      */
-    public function load($skipCache = false)
+    public function load()
     {
-        if ($this->_id === false) {
-            return $this;
-        }
-
-        if ($this->_cache && !$skipCache) {
-            // attempt load from the cache first
-            $item = $this->cacheItem();
-            $values = $item->get();
-
-            if ($item->isMiss()) {
-                // If the cache was a miss, then lock the item down,
-                // attempt to load from the database, and update it.
-                // Stash calls this Stampede Protection.
-                $item->lock();
-
-                $this->loadFromStorage()->cache();
-            } else {
-                $this->_values = $values;
-            }
-        } else {
-            $this->loadFromStorage()->cache();
-        }
-
-        // clear any relations
-        $this->_relationModels = [];
-
-        return $this;
+        return $this->refresh();
     }
 
     /**
      * Loads the model from the storage layer.
      *
-     * @param array $values optional values (if already loaded from DB)
+     * @return self
+     */
+    public function refresh()
+    {
+        if ($this->_id === false) {
+            return $this;
+        }
+
+        $values = self::$driver->loadModel($this);
+
+        if (!is_array($values)) {
+            return $this;
+        }
+
+        // clear any relations
+        $this->_relationModels = [];
+
+        return $this->refreshWith($values);
+    }
+
+    /**
+     * Loads values into the model.
+     *
+     * @param array $values values
      *
      * @return self
      */
-    public function loadFromStorage($values = false)
+    public function refreshWith(array $values)
     {
-        if (!is_array($values)) {
-            $values = self::$driver->loadModel($this);
+        $this->_values = [];
+        foreach ($values as $k => $v) {
+            $this->_values[$k] = $v;
         }
 
-        if (is_array($values)) {
-            $this->_values = [];
-            foreach ($values as $k => $v) {
-                $this->_values[$k] = $v;
-            }
-        }
+        return $this;
+    }
+
+    /**
+     * Clears the cache for this model.
+     *
+     * @return self
+     */
+    public function clearCache()
+    {
+        $this->_unsaved = [];
+        $this->_values = [];
+        $this->_relationModels = [];
 
         return $this;
     }
@@ -1483,154 +1440,6 @@ abstract class Model implements \ArrayAccess
         }
 
         return true;
-    }
-
-    /////////////////////////////
-    // Caching
-    /////////////////////////////
-
-    /**
-     * Sets the default cache instance used by new models.
-     *
-     * @param \Stash\Pool $pool
-     */
-    public static function setDefaultCache(Pool $pool)
-    {
-        self::$defaultCache = $pool;
-    }
-
-    /**
-     * Clears the default cache instance.
-     */
-    public static function clearDefaultCache()
-    {
-        self::$defaultCache = false;
-    }
-
-    /**
-     * Sets the cache instance.
-     *
-     * @param \Stash\Pool $pool
-     *
-     * @return self
-     */
-    public function setCache(Pool $pool)
-    {
-        $this->_cache = $pool;
-
-        return $this;
-    }
-
-    /**
-     * Returns the cache instance.
-     *
-     * @return \Stash\Pool|bool
-     */
-    public function getCache()
-    {
-        return $this->_cache;
-    }
-
-    /**
-     * Sets the default cache TTL.
-     *
-     * @param int $expires
-     */
-    public static function setDefaultCacheTTL($expires)
-    {
-        static::$cacheTTL = $expires;
-    }
-
-    /**
-     * Sets the cache TTL.
-     *
-     * @param int $expires
-     *
-     * @return self
-     */
-    public function setCacheTTL($expires)
-    {
-        $this->_cacheTTL = $expires;
-
-        return $this;
-    }
-
-    /**
-     * Returns the cache TTL.
-     *
-     * @return int|null
-     */
-    public function getCacheTTL()
-    {
-        return ($this->_cacheTTL < 1) ? null : $this->_cacheTTL;
-    }
-
-    /**
-     * Returns the cache key for this model.
-     *
-     * @return string
-     */
-    public function cacheKey()
-    {
-        $k = get_called_class();
-        if (!isset(self::$cachePrefix[$k])) {
-            self::$cachePrefix[$k] = 'models/'.strtolower(static::modelName());
-        }
-
-        return self::$cachePrefix[$k].'/'.$this->_id;
-    }
-
-    /**
-     * Returns the cache item for this model.
-     *
-     * @return \Stash\Item|null
-     */
-    public function cacheItem()
-    {
-        if (!$this->_cache) {
-            return;
-        }
-
-        if (!$this->_cacheItem) {
-            $this->_cacheItem = $this->_cache->getItem($this->cacheKey());
-        }
-
-        return $this->_cacheItem;
-    }
-
-    /**
-     * Caches the entire model.
-     *
-     * @return self
-     */
-    public function cache()
-    {
-        if (!$this->_cache || count($this->_values) == 0) {
-            return $this;
-        }
-
-        // cache the local properties
-        $this->cacheItem()->set($this->_values, $this->getCacheTTL());
-
-        return $this;
-    }
-
-    /**
-     * Clears the cache for this model.
-     *
-     * @return self
-     */
-    public function clearCache()
-    {
-        $this->_unsaved = [];
-        $this->_values = [];
-        $this->_relationModels = [];
-
-        if ($this->_cache) {
-            $this->cacheItem()->clear();
-        }
-
-        return $this;
     }
 
     /////////////////////////////

@@ -10,6 +10,7 @@
  */
 use Infuse\Model;
 use Infuse\Model\ACLModel;
+use Infuse\Model\Cacheable;
 use Infuse\Model\Query;
 
 class TestModel extends Model
@@ -283,5 +284,17 @@ class AclObject extends ACLModel
         } elseif ($permission == 'do nothing') {
             return $requester->id() == 5;
         }
+    }
+}
+
+class CacheableModel extends Model
+{
+    use Cacheable;
+
+    protected function initialize()
+    {
+        parent::initialize();
+
+        self::$cacheTTL = 10;
     }
 }
