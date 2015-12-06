@@ -291,10 +291,10 @@ class CacheableModel extends Model
 {
     use Cacheable;
 
+    public static $cacheTTL = 10;
+
     protected function initialize()
     {
         parent::initialize();
-
-        self::$cacheTTL = 10;
     }
 }

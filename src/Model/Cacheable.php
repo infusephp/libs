@@ -7,11 +7,6 @@ use Stash\Item;
 trait Cacheable
 {
     /**
-     * @staticvar int
-     */
-    protected static $cacheTTL = 86400; // 1 day
-
-    /**
      * @staticvar \Stash\Pool
      */
     private static $cachePool;
@@ -100,7 +95,7 @@ trait Cacheable
      */
     public function getCacheTTL()
     {
-        return (static::$cacheTTL < 1) ? null : static::$cacheTTL;
+        return (property_exists($this, 'cacheTTL')) ? static::$cacheTTL : 86400; // default = 1 day
     }
 
     /**
