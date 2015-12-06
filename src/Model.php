@@ -90,6 +90,11 @@ abstract class Model implements \ArrayAccess
      */
     protected $_unsaved = [];
 
+    /**
+     * @var array
+     */
+    protected $_relationships = [];
+
     /////////////////////////////
     // Base model variables
     /////////////////////////////
@@ -153,11 +158,6 @@ abstract class Model implements \ArrayAccess
      * @var bool
      */
     private $_ignoreUnsaved;
-
-    /**
-     * @var array
-     */
-    private $_relationModels = [];
 
     /**
      * Creates a new model object.
@@ -370,8 +370,8 @@ abstract class Model implements \ArrayAccess
     public function __set($name, $value)
     {
         // if changing property, remove relation model
-        if (isset($this->_relationModels[$name])) {
-            unset($this->_relationModels[$name]);
+        if (isset($this->_relationships[$name])) {
+            unset($this->_relationships[$name]);
         }
 
         // call any mutators
@@ -404,8 +404,8 @@ abstract class Model implements \ArrayAccess
     {
         if (array_key_exists($name, $this->_unsaved)) {
             // if changing property, remove relation model
-            if (isset($this->_relationModels[$name])) {
-                unset($this->_relationModels[$name]);
+            if (isset($this->_relationships[$name])) {
+                unset($this->_relationships[$name]);
             }
 
             unset($this->_unsaved[$name]);
@@ -1048,7 +1048,7 @@ abstract class Model implements \ArrayAccess
         }
 
         // clear any relations
-        $this->_relationModels = [];
+        $this->_relationships = [];
 
         return $this->refreshWith($values);
     }
@@ -1079,7 +1079,7 @@ abstract class Model implements \ArrayAccess
     {
         $this->_unsaved = [];
         $this->_values = [];
-        $this->_relationModels = [];
+        $this->_relationships = [];
 
         return $this;
     }
@@ -1101,12 +1101,12 @@ abstract class Model implements \ArrayAccess
         // TODO deprecated
         $property = static::getProperty($propertyName);
 
-        if (!isset($this->_relationModels[$propertyName])) {
+        if (!isset($this->_relationships[$propertyName])) {
             $relationModelName = $property['relation'];
-            $this->_relationModels[$propertyName] = new $relationModelName($this->$propertyName);
+            $this->_relationships[$propertyName] = new $relationModelName($this->$propertyName);
         }
 
-        return $this->_relationModels[$propertyName];
+        return $this->_relationships[$propertyName];
     }
 
     /**

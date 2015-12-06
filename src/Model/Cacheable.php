@@ -54,7 +54,7 @@ trait Cacheable
         }
 
         // clear any relationships
-        $this->_relationModels = [];
+        $this->_relationships = [];
 
         return $this;
     }
