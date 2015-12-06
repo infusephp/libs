@@ -143,7 +143,8 @@ trait Cacheable
         }
 
         // cache the local properties
-        $this->getCacheItem()->set($this->_values, $this->getCacheTTL());
+        $this->getCacheItem()
+             ->set($this->_values, $this->getCacheTTL());
 
         return $this;
     }

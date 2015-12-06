@@ -168,6 +168,7 @@ abstract class Model implements \ArrayAccess
     public function __construct($id = false, array $values = [])
     {
         // initialize the model
+        $this->app = self::$injectedApp;
         $this->init();
 
         // TODO need to store the id as an array
@@ -187,8 +188,6 @@ abstract class Model implements \ArrayAccess
         }
 
         $this->_id = $id;
-
-        $this->app = self::$injectedApp;
 
         // load any given values
         if (count($values) > 0) {
