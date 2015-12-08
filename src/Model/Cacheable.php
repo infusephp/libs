@@ -35,10 +35,20 @@ trait Cacheable
             $values = $item->get();
 
             if ($item->isMiss()) {
-                // If the cache was a miss, then lock the item down,
-                // attempt to load from the database, and update it.
+                // If the cache was a miss, then lock down the
+                // cache item, attempt to refresh the model from
+                // the database, and then update the cache.
                 // Stash calls this Stampede Protection.
-                $item->lock();
+
+                // NOTE Currently disabling Stampede Protection
+                // because there is no way to unlock the item
+                // if we fail to refresh the model, whether
+                // due to a DB failure or non-existent record.
+                // This is problematic with the Redis driver
+                // because it will attempt to unlock the cache
+                // item once the script shuts down and the
+                // redis connection has closed.
+                // $item->lock();
 
                 parent::refresh();
             } else {
