@@ -1061,10 +1061,7 @@ abstract class Model implements \ArrayAccess
      */
     public function refreshWith(array $values)
     {
-        $this->_values = [];
-        foreach ($values as $k => $v) {
-            $this->_values[$k] = $v;
-        }
+        $this->_values = $values;
 
         return $this;
     }
