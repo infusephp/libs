@@ -382,8 +382,15 @@ class Response
      */
     public function send()
     {
-        return $this->sendHeaders()
-                    ->sendCookies()
-                    ->sendBody();
+        $this->sendHeaders()
+             ->sendCookies()
+             ->sendBody();
+
+        if (function_exists('fastcgi_finish_request') ||
+            function_exists(__NAMESPACE__.'\fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+
+        return $this;
     }
 }

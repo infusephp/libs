@@ -25,6 +25,11 @@ function setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7)
     return ResponseTest::$mock ? ResponseTest::$mock->setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7) : \setcookie($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7);
 }
 
+function fastcgi_finish_request()
+{
+    return ResponseTest::$mock ? ResponseTest::$mock->fastcgi_finish_request() : \fastcgi_finish_request();
+}
+
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
     public static $res;
@@ -233,6 +238,12 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     public function testSend()
     {
         self::$res->setBody('test');
+
+        self::$mock = \Mockery::mock('php');
+        self::$mock->shouldReceive('headers_sent')
+                   ->andReturn(true);
+        self::$mock->shouldReceive('fastcgi_finish_request')
+                   ->once();
 
         ob_start();
 
