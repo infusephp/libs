@@ -26,6 +26,8 @@ class RouterTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::$app = new Container();
+
+        @unlink(__DIR__.'/routes.cache');
     }
 
     public function setUp()
@@ -35,6 +37,25 @@ class RouterTest extends PHPUnit_Framework_TestCase
         MockController::$dynamicRouteParams = [];
         MockController::$indexRouteCalled = false;
         MockController::$appInjected = false;
+    }
+
+    public function testStaticDispatcher()
+    {
+        $routes = ['get /test' => 'index'];
+        $settings = [];
+
+        $router = new Router($routes, $settings);
+        $this->assertInstanceOf('FastRoute\Dispatcher\GroupCountBased', $router->getDispatcher());
+    }
+
+    public function testCachedDispatcher()
+    {
+        $routes = ['get /test' => 'index'];
+        $settings = ['cacheFile' => __DIR__.'/routes.cache'];
+
+        $router = new Router($routes, $settings);
+        $this->assertInstanceOf('FastRoute\Dispatcher\GroupCountBased', $router->getDispatcher());
+        $this->assertTrue(file_exists(__DIR__.'/routes.cache'));
     }
 
     public function testStaticRoute()

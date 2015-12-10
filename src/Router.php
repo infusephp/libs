@@ -36,6 +36,7 @@ class Router
             'namespace' => '',
             'defaultController' => '',
             'defaultAction' => 'index',
+            'cacheFile' => null,
         ], $settings);
 
         foreach ($routes as $route => $handler) {
@@ -164,6 +165,32 @@ class Router
     }
 
     /**
+     * Builds a FastRoute dispatcher with the routing table.
+     *
+     * @return FastRute\Dispatcher\GroupCountBased
+     */
+    public function getDispatcher()
+    {
+        if ($this->settings['cacheFile']) {
+            $opts = ['cacheFile' => $this->settings['cacheFile']];
+
+            return \FastRoute\cachedDispatcher([$this, 'buildRoutes'], $opts);
+        } else {
+            return \FastRoute\simpleDispatcher([$this, 'buildRoutes']);
+        }
+    }
+
+    /**
+     * Adds routes to the given collector.
+     */
+    public function buildRoutes(RouteCollector $r)
+    {
+        foreach ($this->routes as $route) {
+            $r->addRoute($route[0], $route[1], $route[2]);
+        }
+    }
+
+    /**
      * Routes a request and resopnse to the appropriate controller.
      *
      * @param \Pimple\Container $app DI container
@@ -174,12 +201,7 @@ class Router
      */
     public function route(Container $app, Request $req, Response $res)
     {
-        $router = $this;
-        $dispatcher = \FastRoute\simpleDispatcher(function (RouteCollector $r) use ($router) {
-            foreach ($router->getRoutes() as $route) {
-                $r->addRoute($route[0], $route[1], $route[2]);
-            }
-        });
+        $dispatcher = $this->getDispatcher();
 
         // the dispatcher returns an array in the format:
         // [result, handler, parameters]
