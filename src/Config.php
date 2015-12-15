@@ -26,19 +26,32 @@ class Config
     }
 
     /**
-     * Gets a global configuration value, section, or all values.
+     * Gets the entire collection of configuration values.
      *
-     * @param string|bool $property dot value property name
+     * @return array
+     */
+    public function all()
+    {
+        return $this->values;
+    }
+
+    /**
+     * Gets a configuration value.
+     *
+     * @param string $property dot value property name
+     * @param mixed  $default  returns this if property was not found
      *
      * @return mixed value
      */
-    public function get($property = false)
+    public function get($property, $default = null)
     {
-        if ($property === false) {
-            return $this->values;
+        $value = Utility::array_value($this->values, $property);
+
+        if ($value === null) {
+            return $default;
         }
 
-        return Utility::array_value($this->values, $property);
+        return $value;
     }
 
     /**

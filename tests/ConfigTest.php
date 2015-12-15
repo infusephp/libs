@@ -12,7 +12,7 @@ use Infuse\Config;
 
 class ConfigTest extends PHPUnit_Framework_TestCase
 {
-    public function testConstruct()
+    public function testAll()
     {
         $testConfig = [
             'test' => 1,
@@ -28,7 +28,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
         $config = new Config($testConfig);
 
-        $this->assertEquals($config->get(), $testConfig);
+        $this->assertEquals($config->all(), $testConfig);
     }
 
     public function testSetandGet()
@@ -36,22 +36,16 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $config = new Config();
 
         $config->set('test-property', 'abc');
-        $this->assertEquals($config->get('test-property'), 'abc');
+        $this->assertEquals('abc', $config->get('test-property'));
 
         $config->set('test.1.2.3', 'test');
-        $this->assertEquals($config->get('test.1.2.3'), 'test');
+        $this->assertEquals('test', $config->get('test.1.2.3'));
 
         $config->set('test-property', 'blah');
-        $this->assertEquals($config->get('test-property'), 'blah');
+        $this->assertEquals('blah', $config->get('test-property'));
 
-        $this->assertEquals($config->get('some.invalid.property'), null);
+        $this->assertNull($config->get('some.invalid.property'));
 
-        $expected = [
-            'test-property' => 'blah',
-            'test' => [
-                '1' => [
-                    '2' => [
-                        '3' => 'test', ], ], ], ];
-        $this->assertEquals($expected, $config->get());
+        $this->assertEquals('default', $config->get('some.invalid.property', 'default'));
     }
 }
