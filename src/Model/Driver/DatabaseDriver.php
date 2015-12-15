@@ -13,7 +13,6 @@ namespace Infuse\Model\Driver;
 use ICanBoogie\Inflector;
 use Infuse\Model;
 use Infuse\Model\Query;
-use PDOException;
 use PDOStatement;
 use Pimple\Container;
 
@@ -37,48 +36,32 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
         $tablename = $this->getTablename($model);
 
-        try {
-            return $this->app['db']->insert($values)
-                ->into($tablename)
-                ->execute() instanceof PDOStatement;
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
+        return $this->app['db']->insert($values)
+            ->into($tablename)
+            ->execute() instanceof PDOStatement;
     }
 
     public function getCreatedID(Model $model, $propertyName)
     {
-        try {
-            $id = $this->app['db']->getPDO()->lastInsertId();
+        $id = $this->app['db']->getPDO()->lastInsertId();
 
-            return $this->unserializeValue($model::getProperty($propertyName), $id);
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
+        return $this->unserializeValue($model::getProperty($propertyName), $id);
     }
 
     public function loadModel(Model $model)
     {
         $tablename = $this->getTablename($model);
 
-        try {
-            $row = $this->app['db']->select('*')
-                ->from($tablename)
-                ->where($model->ids())
-                ->one();
+        $row = $this->app['db']->select('*')
+            ->from($tablename)
+            ->where($model->ids())
+            ->one();
 
-            if (is_array($row)) {
-                $row = $this->unserialize($row, $model::getProperties());
-            }
-
-            return $row;
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
+        if (is_array($row)) {
+            $row = $this->unserialize($row, $model::getProperties());
         }
 
-        return [];
+        return $row;
     }
 
     public function updateModel(Model $model, array $parameters)
@@ -90,31 +73,19 @@ class DatabaseDriver implements DriverInterface
         $values = $this->serialize($parameters);
         $tablename = $this->getTablename($model);
 
-        try {
-            return $this->app['db']->update($tablename)
-                ->values($values)
-                ->where($model->ids())
-                ->execute() instanceof PDOStatement;
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
+        return $this->app['db']->update($tablename)
+            ->values($values)
+            ->where($model->ids())
+            ->execute() instanceof PDOStatement;
     }
 
     public function deleteModel(Model $model)
     {
         $tablename = $this->getTablename($model);
 
-        try {
-            return $this->app['db']->delete($tablename)
-                ->where($model->ids())
-                ->execute() instanceof PDOStatement;
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return false;
+        return $this->app['db']->delete($tablename)
+            ->where($model->ids())
+            ->execute() instanceof PDOStatement;
     }
 
     public function queryModels(Query $query)
@@ -140,20 +111,14 @@ class DatabaseDriver implements DriverInterface
             $dbQuery->join($foreignTablename, $condition);
         }
 
-        try {
-            $data = $dbQuery->all();
+        $data = $dbQuery->all();
 
-            $properties = $model::getProperties();
-            foreach ($data as &$row) {
-                $row = $this->unserialize($row, $properties);
-            }
-
-            return $data;
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
+        $properties = $model::getProperties();
+        foreach ($data as &$row) {
+            $row = $this->unserialize($row, $properties);
         }
 
-        return [];
+        return $data;
     }
 
     public function totalRecords(Query $query)
@@ -161,16 +126,10 @@ class DatabaseDriver implements DriverInterface
         $model = $query->getModel();
         $tablename = $this->getTablename($model);
 
-        try {
-            return (int) $this->app['db']->select('count(*)')
-                ->from($tablename)
-                ->where($query->getWhere())
-                ->scalar();
-        } catch (PDOException $e) {
-            $this->app['logger']->error($e);
-        }
-
-        return 0;
+        return (int) $this->app['db']->select('count(*)')
+            ->from($tablename)
+            ->where($query->getWhere())
+            ->scalar();
     }
 
     /**
