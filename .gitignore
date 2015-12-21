@@ -7,6 +7,5 @@ Desktop.ini
 /headers.sh
 /composer.lock
 /build
-/convert.php
 /temp
 /tests/routes.cache

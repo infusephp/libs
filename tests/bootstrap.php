@@ -15,5 +15,3 @@ date_default_timezone_set('America/Chicago');
 exec('rm -rf '.dirname(__DIR__).'/temp');
 
 require __DIR__.'/../vendor/autoload.php';
-
-require_once 'tests/test_models.php';
