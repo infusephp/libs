@@ -96,7 +96,7 @@ class Utility
      */
     public static function encrypt_password($password, $salt = '', $nonce = '')
     {
-        return self::encrypt_password($password, $salt, $nonce);
+        return self::encryptPassword($password, $salt, $nonce);
     }
 
     /**
