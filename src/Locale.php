@@ -97,7 +97,7 @@ class Locale
         $this->loadLocaleData($locale);
 
         // look up the phrase
-        $translatedPhrase = Utility::array_value($this->localeData, "$locale.phrases.$phrase");
+        $translatedPhrase = array_value($this->localeData, "$locale.phrases.$phrase");
 
         if ($translatedPhrase != null) {
             // inject parameters into phrase
@@ -180,7 +180,7 @@ class Locale
         foreach (timezone_identifiers_list() as $tzIdentifier) {
             $exp = explode('/', $tzIdentifier);
             $zones[] = [
-                'continent' => Utility::array_value($exp, 0),
+                'continent' => array_value($exp, 0),
                 'city' => implode('/', (array) array_slice($exp, 1)), ];
         }
 

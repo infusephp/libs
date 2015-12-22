@@ -104,7 +104,7 @@ class Response
      */
     public function headers($index = null)
     {
-        return ($index) ? Utility::array_value($this->headers, $index) : $this->headers;
+        return ($index) ? array_value($this->headers, $index) : $this->headers;
     }
 
     /**
@@ -131,7 +131,7 @@ class Response
      */
     public function cookies($index = false)
     {
-        return ($index) ? Utility::array_value($this->cookies, $index) : $this->cookies;
+        return ($index) ? array_value($this->cookies, $index) : $this->cookies;
     }
 
     /**

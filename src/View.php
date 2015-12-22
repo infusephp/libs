@@ -84,7 +84,7 @@ class View
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             if (isset($backtrace[1])) {
-                $class = Utility::array_value($backtrace[1], 'class');
+                $class = array_value($backtrace[1], 'class');
                 if (class_exists($class) && property_exists($class, 'viewsDir') && $class::$viewsDir) {
                     $template = $class::$viewsDir.'/'.$template;
                     $templateParameters['viewsDir'] = $class::$viewsDir;

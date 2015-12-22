@@ -137,7 +137,7 @@ class ErrorStack implements \Iterator, \Countable, \ArrayAccess
     public function find($value, $param = 'field')
     {
         foreach ($this->errors() as $error) {
-            if (Utility::array_value($error['params'], $param) === $value) {
+            if (array_value($error['params'], $param) === $value) {
                 return $error;
             }
         }

@@ -17,7 +17,8 @@
 		"source": "https://github.com/infusephp/libs"
 	},
     "autoload": {
-        "psr-4": {"Infuse\\": "src/"}
+        "psr-4": {"Infuse\\": "src/"},
+        "files": ["src/functions.php"]
     },
 	"require": {
 		"php": ">=5.4.0",

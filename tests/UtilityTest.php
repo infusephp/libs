@@ -8,7 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
-use Infuse\Utility as U;
+use Infuse\Utility;
 
 class UtilityTest extends PHPUnit_Framework_TestCase
 {
@@ -26,27 +26,28 @@ class UtilityTest extends PHPUnit_Framework_TestCase
             ],
         ];
 
-        $this->assertEquals(U::array_value($a, 'test'), 2);
-        $this->assertEquals(U::array_value($a, 'test2.3.4'), ['asldfj']);
-        $this->assertEquals(U::array_value($a, 'test2.5'), 1234);
+        $this->assertEquals(Utility::arrayValue($a, 'test'), 2);
+        $this->assertEquals(array_value($a, 'test'), 2);
+        $this->assertEquals(Utility::arrayValue($a, 'test2.3.4'), ['asldfj']);
+        $this->assertEquals(Utility::arrayValue($a, 'test2.5'), 1234);
 
-        $this->assertNull(U::array_value($a, 'nonexistent'));
-        $this->assertNull(U::array_value($a, 'some.nonexistent.property'));
+        $this->assertNull(Utility::arrayValue($a, 'nonexistent'));
+        $this->assertNull(Utility::arrayValue($a, 'some.nonexistent.property'));
     }
 
     public function testArraySet()
     {
         $a = [];
 
-        U::array_set($a, '1.2.3.4.5', 'test');
+        Utility::arraySet($a, '1.2.3.4.5', 'test');
         $expected = ['1' => ['2' => ['3' => ['4' => ['5' => 'test']]]]];
         $this->assertEquals($expected, $a);
 
-        U::array_set($a, 'test', 'ok?');
+        array_set($a, 'test', 'ok?');
         $expected['test'] = 'ok?';
         $this->assertEquals($expected, $a);
 
-        U::array_set($a, '1.2.3', 'test');
+        Utility::arraySet($a, '1.2.3', 'test');
         $expected['1']['2']['3'] = 'test';
         $this->assertEquals($expected, $a);
     }
@@ -56,7 +57,7 @@ class UtilityTest extends PHPUnit_Framework_TestCase
         $a = ['1' => ['2' => ['3' => ['4' => ['5' => 'test']]]]];
         $expected = ['1.2.3.4.5' => 'test'];
 
-        $this->assertEquals($expected, U::array_dot($a));
+        $this->assertEquals($expected, Utility::arrayDot($a));
 
         $a = [
             'fruit' => [
@@ -79,7 +80,7 @@ class UtilityTest extends PHPUnit_Framework_TestCase
             'test' => true,
         ];
 
-        $this->assertEquals($expected, U::array_dot($a));
+        $this->assertEquals($expected, array_dot($a));
     }
 
     public function testEncryptPassword()
@@ -88,9 +89,9 @@ class UtilityTest extends PHPUnit_Framework_TestCase
 
         $test = [
             $password,
-            U::encrypt_password($password, 'salt should not be empty'),
-            U::encrypt_password($password, 'this is our salt'),
-            U::encrypt_password($password, 'this is our salt', 123456), ];
+            Utility::encryptPassword($password, 'salt should not be empty'),
+            Utility::encryptPassword($password, 'this is our salt'),
+            Utility::encryptPassword($password, 'this is our salt', 123456), ];
 
         // test each combination once to ensure they are not equal
         for ($i = 0; $i < count($test); ++$i) {
@@ -102,15 +103,15 @@ class UtilityTest extends PHPUnit_Framework_TestCase
 
     public function testGuid()
     {
-        $guid1 = U::guid();
-        $guid2 = U::guid();
+        $guid1 = Utility::guid();
+        $guid2 = Utility::guid();
 
         $this->assertEquals(36, strlen($guid1));
         $this->assertEquals(36, strlen($guid2));
         $this->assertTrue($guid1 != $guid2);
 
-        $guid1 = U::guid(false);
-        $guid2 = U::guid(false);
+        $guid1 = Utility::guid(false);
+        $guid2 = Utility::guid(false);
 
         $this->assertEquals(32, strlen($guid1));
         $this->assertEquals(32, strlen($guid2));
@@ -119,32 +120,32 @@ class UtilityTest extends PHPUnit_Framework_TestCase
 
     public function testSeoify()
     {
-        $this->assertEquals('some-test-string', U::seoify('some test string'));
-        $this->assertEquals('meh', U::seoify('*)#%*^&--meh *#)$*#)*$'));
-        $this->assertEquals('already-seoified-string', U::seoify('already-seoified-string'));
+        $this->assertEquals('some-test-string', Utility::seoify('some test string'));
+        $this->assertEquals('meh', Utility::seoify('*)#%*^&--meh *#)$*#)*$'));
+        $this->assertEquals('already-seoified-string', Utility::seoify('already-seoified-string'));
     }
 
     public function testParseMetricStr()
     {
-        $this->assertEquals(1000000000000, U::parse_metric_str('1T'));
-        $this->assertEquals(50000000000, U::parse_metric_str('50G'));
-        $this->assertEquals(1400000, U::parse_metric_str('1.4M'));
-        $this->assertEquals(2000, U::parse_metric_str('2K'));
+        $this->assertEquals(1000000000000, Utility::parseMetricStr('1T'));
+        $this->assertEquals(50000000000, Utility::parseMetricStr('50G'));
+        $this->assertEquals(1400000, Utility::parseMetricStr('1.4M'));
+        $this->assertEquals(2000, Utility::parseMetricStr('2K'));
 
-        $this->assertEquals(1073741824, U::parse_metric_str('1GBytes', true));
+        $this->assertEquals(1073741824, Utility::parseMetricStr('1GBytes', true));
     }
 
     public function testNumberAbbreviate()
     {
-        $this->assertEquals('12.3K', U::number_abbreviate(12345));
-        $this->assertEquals('1M', U::number_abbreviate(1000000, 2));
+        $this->assertEquals('12.3K', Utility::numberAbbreviate(12345));
+        $this->assertEquals('1M', Utility::numberAbbreviate(1000000, 2));
 
-        $this->assertEquals('-1234', U::number_abbreviate(-1234, 2));
-        $this->assertEquals('123', U::number_abbreviate(123, 3));
-        $this->assertEquals('12.345K', U::number_abbreviate(12345, 3));
-        $this->assertEquals('12.345M', U::number_abbreviate(12345000, 3));
-        $this->assertEquals('1.23G', U::number_abbreviate(1234567890, 2));
-        $this->assertEquals('1.23T', U::number_abbreviate(1234567890123, 2));
+        $this->assertEquals('-1234', Utility::numberAbbreviate(-1234, 2));
+        $this->assertEquals('123', Utility::numberAbbreviate(123, 3));
+        $this->assertEquals('12.345K', Utility::numberAbbreviate(12345, 3));
+        $this->assertEquals('12.345M', Utility::numberAbbreviate(12345000, 3));
+        $this->assertEquals('1.23G', Utility::numberAbbreviate(1234567890, 2));
+        $this->assertEquals('1.23T', Utility::numberAbbreviate(1234567890123, 2));
     }
 
     public function testSetCookieFixDomain()
@@ -157,7 +158,7 @@ class UtilityTest extends PHPUnit_Framework_TestCase
         $secure = true;
         $httponly = true;
 
-        $cookieStr = U::set_cookie_fix_domain(
+        $cookieStr = Utility::setCookieFixDomain(
             $name,
             $value,
             $expires,
@@ -176,31 +177,31 @@ class UtilityTest extends PHPUnit_Framework_TestCase
 
     public function testTimeAgo()
     {
-        $this->assertEquals('10 seconds ago', U::timeAgo(strtotime('-10 seconds')));
-        $this->assertEquals('5 minutes ago', U::timeAgo(strtotime('- 5 minutes')));
-        $this->assertEquals('1 day ago', U::timeAgo(strtotime('- 1 day')));
-        $this->assertEquals('1 week ago', U::timeAgo(strtotime('-1 week')));
-        $this->assertEquals('1 month ago', U::timeAgo(strtotime('- 1 month')));
-        $this->assertEquals('1 year ago', U::timeAgo(strtotime('-1 year')));
+        $this->assertEquals('10 seconds ago', Utility::timeAgo(strtotime('-10 seconds')));
+        $this->assertEquals('5 minutes ago', Utility::timeAgo(strtotime('- 5 minutes')));
+        $this->assertEquals('1 day ago', Utility::timeAgo(strtotime('- 1 day')));
+        $this->assertEquals('1 week ago', Utility::timeAgo(strtotime('-1 week')));
+        $this->assertEquals('1 month ago', Utility::timeAgo(strtotime('- 1 month')));
+        $this->assertEquals('1 year ago', Utility::timeAgo(strtotime('-1 year')));
 
-        $this->assertEquals('1 day, 1 minute, 40 seconds ago', U::timeAgo(strtotime('-86500 seconds'), true));
+        $this->assertEquals('1 day, 1 minute, 40 seconds ago', Utility::timeAgo(strtotime('-86500 seconds'), true));
     }
 
     public function testTimeUntil()
     {
-        $this->assertEquals('10 seconds', U::timeUntil(strtotime('+10 seconds')));
-        $this->assertEquals('5 minutes', U::timeUntil(strtotime('+5 minutes')));
-        $this->assertEquals('1 day', U::timeUntil(strtotime('+1 day')));
-        $this->assertEquals('1 week', U::timeUntil(strtotime('+1 week')));
-        $this->assertEquals('1 month', U::timeUntil(strtotime('+1 month')));
-        $this->assertEquals('1 year', U::timeUntil(strtotime('+ 1 year')));
+        $this->assertEquals('10 seconds', Utility::timeUntil(strtotime('+10 seconds')));
+        $this->assertEquals('5 minutes', Utility::timeUntil(strtotime('+5 minutes')));
+        $this->assertEquals('1 day', Utility::timeUntil(strtotime('+1 day')));
+        $this->assertEquals('1 week', Utility::timeUntil(strtotime('+1 week')));
+        $this->assertEquals('1 month', Utility::timeUntil(strtotime('+1 month')));
+        $this->assertEquals('1 year', Utility::timeUntil(strtotime('+ 1 year')));
 
-        $this->assertEquals('1 day, 1 minute, 40 seconds', U::timeUntil(strtotime('+86500 seconds'), true));
+        $this->assertEquals('1 day, 1 minute, 40 seconds', Utility::timeUntil(strtotime('+86500 seconds'), true));
     }
 
     public function testUnixToDb()
     {
         $t = mktime(23, 34, 20, 4, 18, 2012);
-        $this->assertEquals('2012-04-18 23:34:20', U::unixToDb($t));
+        $this->assertEquals('2012-04-18 23:34:20', Utility::unixToDb($t));
     }
 }

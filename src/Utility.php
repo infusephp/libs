@@ -21,30 +21,17 @@ class Utility
      *
      * @return mixed|null
      */
+    public static function arrayValue(array $a = [], $k = '')
+    {
+        return array_value($a, $k);
+    }
+
+    /**
+     * @deprecated
+     */
     public static function array_value(array $a = [], $k = '')
     {
-        $a = (array) $a;
-        if (array_key_exists($k, $a)) {
-            return $a[$k];
-        }
-
-        $pieces = explode('.', $k);
-
-        // use dot notation to search a nested array
-        if (count($pieces) > 1) {
-            foreach ($pieces as $piece) {
-                if (!is_array($a) || !array_key_exists($piece, $a)) {
-                    // not found
-                    return;
-                }
-
-                $a = &$a[$piece];
-            }
-
-            return $a;
-        }
-
-        return;
+        return array_value($a, $k);
     }
 
     /**
@@ -54,18 +41,17 @@ class Utility
      * @param string $key
      * @param mixed  $value
      */
+    public static function arraySet(array &$a, $key, $value)
+    {
+        return array_set($a, $key, $value);
+    }
+
+    /**
+     * @deprecated
+     */
     public static function array_set(array &$a, $key, $value)
     {
-        $pieces = explode('.', $key);
-
-        foreach ($pieces as $k => $piece) {
-            $a = &$a[$piece];
-            if (!is_array($a)) {
-                $a = [];
-            }
-        }
-
-        return $a = $value;
+        return array_set($a, $key, $value);
     }
 
     /**
@@ -78,25 +64,17 @@ class Utility
      *
      * @return array output array
      */
+    public static function arrayDot(array $a, $prefix = '')
+    {
+        return array_dot($a, $prefix);
+    }
+
+    /**
+     * @deprecated
+     */
     public static function array_dot(array $a, $prefix = '')
     {
-        $result = [];
-
-        if (!empty($prefix)) {
-            $prefix = $prefix.'.';
-        }
-
-        foreach ($a as $k => $v) {
-            if (is_array($v)) {
-                $result = array_replace(
-                    $result,
-                    self::array_dot($v, $prefix.$k));
-            } else {
-                $result[$prefix.$k] = $v;
-            }
-        }
-
-        return $result;
+        return array_dot($a, $prefix);
     }
 
     /**
@@ -108,9 +86,17 @@ class Utility
      *
      * @return string
      */
-    public static function encrypt_password($password, $salt = '', $nonce = '')
+    public static function encryptPassword($password, $salt = '', $nonce = '')
     {
         return hash_hmac('sha512', $password.$nonce, $salt);
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function encrypt_password($password, $salt = '', $nonce = '')
+    {
+        return self::encrypt_password($password, $salt, $nonce);
     }
 
     /**
@@ -213,6 +199,14 @@ class Utility
     }
 
     /**
+     * @deprecated
+     */
+    public static function parseMetricStr($str, $use1024 = false)
+    {
+        return self::parse_metric_str($str, $use1024);
+    }
+
+    /**
      * Formats a number with a set number of decimals and a metric suffix
      * i.e. number_abbreviate( 12345, 2 ) -> 12.35K.
      *
@@ -221,7 +215,7 @@ class Utility
      *
      * @return string
      */
-    public static function number_abbreviate($number, $decimals = 1)
+    public static function numberAbbreviate($number, $decimals = 1)
     {
         $abbrevs = [
             24 => 'Y',
@@ -248,6 +242,14 @@ class Utility
     }
 
     /**
+     * @deprecated
+     */
+    public static function number_abbreviate($number, $decimals = 1)
+    {
+        return self::numberAbbreviate($number, $decimals);
+    }
+
+    /**
      * Sets the cookie with a properly formatted domain to fix older versions of IE dropping sessions.
      *
      * from php.net user comments
@@ -263,7 +265,7 @@ class Utility
      *
      * @return string
      */
-    public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
+    public static function setCookieFixDomain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
     {
         if (!empty($domain)) {
             // Fix the domain to accept domains with and without 'www.'
@@ -291,6 +293,14 @@ class Utility
         }
 
         return $cookieStr;
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
+    {
+        return self::set_cookie_fix_domain($name, $value, $expires, $path, $domain, $secure, $httponly, $setHeader);
     }
 
     /**

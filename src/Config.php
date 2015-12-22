@@ -45,7 +45,7 @@ class Config
      */
     public function get($property, $default = null)
     {
-        $value = Utility::array_value($this->values, $property);
+        $value = array_value($this->values, $property);
 
         if ($value === null) {
             return $default;
@@ -64,7 +64,7 @@ class Config
      */
     public function set($property, $value)
     {
-        Utility::array_set($this->values, $property, $value);
+        array_set($this->values, $property, $value);
 
         return $this;
     }
