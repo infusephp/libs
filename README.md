@@ -15,6 +15,18 @@ These libraries are unit-tested, battle-tested, and can be used à la carte. Eac
 
 An MVC framework, called Infuse Framework, has been built using *infuse/libs*. Check it out at [https://github.com/infusephp/framework](https://github.com/infusephp/framework).
 
+## Requirements
+
+- PHP 5.4+, PHP 7, or HHVM 3.3+
+
+## Installation
+
+Install the package with [composer](http://getcomposer.org):
+
+```
+composer require infuse/libs
+```
+
 ## Tests
 
 Use phpunit to run the included tests:
@@ -22,10 +34,6 @@ Use phpunit to run the included tests:
 ```
 phpunit
 ```
-
-## Requirements
-
-- PHP 5.4+, PHP 7, or HHVM 3.3+
 
 ## Contributing
 
