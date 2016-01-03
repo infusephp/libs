@@ -300,7 +300,7 @@ class Utility
      */
     public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
     {
-        return self::set_cookie_fix_domain($name, $value, $expires, $path, $domain, $secure, $httponly, $setHeader);
+        return self::setCookieFixDomain($name, $value, $expires, $path, $domain, $secure, $httponly, $setHeader);
     }
 
     /**
