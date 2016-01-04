@@ -27,7 +27,7 @@
 		"nikic/fast-route": "0.6.*"
 	},
 	"require-dev": {
-		"satooshi/php-coveralls": "dev-master",
+		"satooshi/php-coveralls": "0.6.1",
 		"smarty/smarty": ">=v3.1.19",
 		"mockery/mockery": "~0.9",
 		"mustache/mustache": "2.7.0",
