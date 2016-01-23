@@ -27,14 +27,6 @@ class Utility
     }
 
     /**
-     * @deprecated
-     */
-    public static function array_value(array $a = [], $k = '')
-    {
-        return array_value($a, $k);
-    }
-
-    /**
      * Sets an element in an array using dot notation (i.e. fruit.apples.qty sets ['fruit']['apples']['qty'].
      *
      * @param array  $a
@@ -42,14 +34,6 @@ class Utility
      * @param mixed  $value
      */
     public static function arraySet(array &$a, $key, $value)
-    {
-        return array_set($a, $key, $value);
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function array_set(array &$a, $key, $value)
     {
         return array_set($a, $key, $value);
     }
@@ -70,14 +54,6 @@ class Utility
     }
 
     /**
-     * @deprecated
-     */
-    public static function array_dot(array $a, $prefix = '')
-    {
-        return array_dot($a, $prefix);
-    }
-
-    /**
      * Securely hashes a string, useful for passwords.
      *
      * @param string $password
@@ -89,14 +65,6 @@ class Utility
     public static function encryptPassword($password, $salt = '', $nonce = '')
     {
         return hash_hmac('sha512', $password.$nonce, $salt);
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function encrypt_password($password, $salt = '', $nonce = '')
-    {
-        return self::encryptPassword($password, $salt, $nonce);
     }
 
     /**
@@ -167,7 +135,7 @@ class Utility
      *
      * @return number
      */
-    public static function parse_metric_str($str, $use1024 = false)
+    public static function parseMetricStr($str, $use1024 = false)
     {
         // normalize
         $str = strtolower(trim($str));
@@ -196,14 +164,6 @@ class Utility
         }
 
         return $val;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function parseMetricStr($str, $use1024 = false)
-    {
-        return self::parse_metric_str($str, $use1024);
     }
 
     /**
@@ -239,14 +199,6 @@ class Utility
         }
 
         return $number;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function number_abbreviate($number, $decimals = 1)
-    {
-        return self::numberAbbreviate($number, $decimals);
     }
 
     /**
@@ -293,14 +245,6 @@ class Utility
         }
 
         return $cookieStr;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function set_cookie_fix_domain($name, $value = '', $expires = 0, $path = '', $domain = '', $secure = false, $httponly = false, $setHeader = true)
-    {
-        return self::setCookieFixDomain($name, $value, $expires, $path, $domain, $secure, $httponly, $setHeader);
     }
 
     /**

@@ -386,14 +386,6 @@ class Request
     }
 
     /**
-     * @deprecated
-     */
-    public function header($index = false)
-    {
-        return $this->headers($index);
-    }
-
-    /**
      * Gets the username from the auth headers associated with the request.
      *
      * @return string username
