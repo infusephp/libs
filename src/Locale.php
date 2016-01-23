@@ -82,12 +82,13 @@ class Locale
      * Translates a phrase.
      *
      * @param string $phrase
-     * @param array  $params parameters to inject into phrase
-     * @param string $locale
+     * @param array  $params   parameters to inject into phrase
+     * @param string $locale   optional locale
+     * @param string $fallback optional fallback phrase
      *
      * @return string
      */
-    public function translate($phrase, array $params = [], $locale = false)
+    public function translate($phrase, array $params = [], $locale = false, $fallback = null)
     {
         if (!$locale) {
             $locale = $this->locale;
@@ -98,6 +99,12 @@ class Locale
 
         // look up the phrase
         $translatedPhrase = array_value($this->localeData, "$locale.phrases.$phrase");
+
+        // use the fallback phrase if a translated phrase is not
+        // available
+        if (!$translatedPhrase) {
+            $translatedPhrase = $fallback;
+        }
 
         if ($translatedPhrase != null) {
             // inject parameters into phrase
@@ -118,9 +125,9 @@ class Locale
     /**
      * Alias for translate().
      */
-    public function t($phrase, array $params = [], $locale = false)
+    public function t($phrase, array $params = [], $locale = false, $fallback = null)
     {
-        return $this->translate($phrase, $params, $locale);
+        return $this->translate($phrase, $params, $locale, $fallback);
     }
 
     /**

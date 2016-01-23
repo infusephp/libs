@@ -42,6 +42,10 @@ class LocaleTest extends PHPUnit_Framework_TestCase
 
         // non-existent locale
         $this->assertEquals('some_phrase', self::$locale->t('some_phrase', [], 'pirate'));
+
+        // fallback phrase
+        $this->assertEquals('Hello, world', self::$locale->t('non_existent_phrase', [], false, 'Hello, world'));
+        $this->assertEquals('Fallback', self::$locale->t('some_phrase', [], 'pirate', 'Fallback'));
     }
 
     public function testTranslateParameterInjection()
@@ -56,6 +60,9 @@ class LocaleTest extends PHPUnit_Framework_TestCase
         $expected = 'Testing parameter injection: 1 blah testing';
 
         $this->assertEquals($expected, self::$locale->t('parameter_injection', $parameters));
+
+        // fallback phrase
+        $this->assertEquals($expected, self::$locale->t('non_existent_phrase', $parameters, false, 'Testing parameter injection: {{parameter_1}} {{blah}} {{test}}'));
     }
 
     public function testPluralize()
