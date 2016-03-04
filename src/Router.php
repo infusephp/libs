@@ -12,7 +12,6 @@ namespace Infuse;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
-use Pimple\Container;
 
 class Router
 {
@@ -33,9 +32,6 @@ class Router
     public function __construct(array $routes = [], array $settings = [])
     {
         $this->settings = array_replace([
-            'namespace' => '',
-            'defaultController' => '',
-            'defaultAction' => 'index',
             'cacheFile' => null,
         ], $settings);
 
@@ -191,109 +187,15 @@ class Router
     }
 
     /**
-     * Routes a request and resopnse to the appropriate controller.
+     * Dispatches a request using the routing table.
      *
-     * @param \Pimple\Container $app DI container
-     * @param Request           $req
-     * @param Response          $res
+     * @param string $method
+     * @param string $path
      *
-     * @return bool was a route match made?
+     * @return array route [result, handler, parameters]
      */
-    public function route(Container $app, Request $req, Response $res)
+    public function dispatch($method, $path)
     {
-        $dispatcher = $this->getDispatcher();
-
-        // the dispatcher returns an array in the format:
-        // [result, handler, parameters]
-        $routeInfo = $dispatcher->dispatch($req->method(), $req->path());
-
-        // 404 Not Found
-        if ($routeInfo[0] === Dispatcher::NOT_FOUND) {
-            $res->setCode(404);
-
-            return false;
-        }
-
-        // 405 Method Not Allowed
-        if ($routeInfo[0] === Dispatcher::METHOD_NOT_ALLOWED) {
-            // $allowedMethods = $routeInfo[1];
-            $res->setCode(405);
-
-            return false;
-        }
-
-        // the route was found
-        // set any parameters that come from matching the route
-        $req->setParams($routeInfo[2]);
-
-        return $this->performRoute($routeInfo[1], $app, $req, $res);
-    }
-
-    //////////////////////////
-    // PRIVATE METHODS
-    //////////////////////////
-
-    /**
-     * Executes a route handler.
-     *
-     * @param array|string $route array('controller','method') or array('controller')
-     *                            or 'method'
-     * @param \Pimple\Container DI container
-     * @param Request  $req
-     * @param Response $res
-     *
-     * @return bool
-     */
-    private function performRoute($route, Container $app, $req, $res)
-    {
-        $result = false;
-
-        if (is_array($route) || is_string($route)) {
-            // method name and controller supplied
-            if (is_string($route) && $req->params('controller')) {
-                $route = [$req->params('controller'), $route];
-            }
-            // method name supplied
-            elseif (is_string($route)) {
-                $route = [$this->settings['defaultController'], $route];
-            }
-            // no method name? fallback to the index() method
-            elseif (count($route) == 1) {
-                $route[] = $this->settings['defaultAction'];
-            }
-
-            list($controller, $method) = $route;
-
-            $controller = $this->settings['namespace'].'\\'.$controller;
-
-            if (!class_exists($controller)) {
-                $res->setCode(404);
-
-                return false;
-            }
-
-            $controllerObj = new $controller();
-
-            // give the controller access to the DI container
-            if (method_exists($controllerObj, 'injectApp')) {
-                $controllerObj->injectApp($app);
-            }
-
-            // collect any preset route parameters
-            if (isset($route[2])) {
-                $params = $route[2];
-                $req->setParams($params);
-            }
-
-            $result = $controllerObj->$method($req, $res);
-        } elseif (is_callable($route)) {
-            $result = call_user_func($route, $req, $res);
-        }
-
-        if ($result instanceof View) {
-            $res->render($result);
-        }
-
-        return true;
+        return $this->getDispatcher()->dispatch($method, $path);
     }
 }
