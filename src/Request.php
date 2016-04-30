@@ -353,7 +353,7 @@ class Request
     /**
      * Gets values from the request headers.
      *
-     * @param string $index optional
+     * @param string|false $index optional
      *
      * @return mixed
      */
