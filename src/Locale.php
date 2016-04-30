@@ -81,10 +81,10 @@ class Locale
     /**
      * Translates a phrase.
      *
-     * @param string $phrase
-     * @param array  $params   parameters to inject into phrase
-     * @param string $locale   optional locale
-     * @param string $fallback optional fallback phrase
+     * @param string      $phrase
+     * @param array       $params   parameters to inject into phrase
+     * @param string      $locale   optional locale
+     * @param string|null $fallback optional fallback phrase
      *
      * @return string
      */

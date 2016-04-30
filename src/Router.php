@@ -163,7 +163,7 @@ class Router
     /**
      * Builds a FastRoute dispatcher with the routing table.
      *
-     * @return FastRute\Dispatcher\GroupCountBased
+     * @return \FastRoute\Dispatcher\GroupCountBased
      */
     public function getDispatcher()
     {

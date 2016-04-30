@@ -419,7 +419,7 @@ class Request
         }
 
         if (!$host) {
-            $host = array_value($this->server, 'SERVER_ADDR', '');
+            $host = array_value($this->server, 'SERVER_ADDR');
         }
 
         // trim and remove port number from host

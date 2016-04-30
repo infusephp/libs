@@ -156,11 +156,16 @@ class Utility
         $thousand = ($use1024) ? 1024 : 1000;
         $hundred = ($use1024) ? 102.4 : 100;
         switch ($last) {
-            case 't': $val *= $thousand;
-            case 'g': $val *= $thousand;
-            case 'm': $val *= $thousand;
-            case 'k': $val *= 10;
-            case 'h': $val *= $hundred;
+            case 't':
+                $val *= $thousand;
+            case 'g':
+                $val *= $thousand;
+            case 'm':
+                $val *= $thousand;
+            case 'k':
+                $val *= 10;
+            case 'h':
+                $val *= $hundred;
         }
 
         return $val;
