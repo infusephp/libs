@@ -27,7 +27,9 @@ class RequestTest extends PHPUnit_Framework_TestCase
                 'meh' => 1,
                 'does' => 'this-work', ],
             // cookies
-            [],
+            [
+                'test' => 1234,
+            ],
              // files
             [
                 'test' => [
@@ -97,6 +99,17 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/test', $req->path());
         $this->assertEquals('POST', $req->method());
         $this->assertEquals(['test' => true], $req->request());
+    }
+
+    public function testCreateHead()
+    {
+        $req = Request::create('/test?k=v', 'HEAD', ['test' => true]);
+
+        $this->assertInstanceOf('Infuse\Request', $req);
+        $this->assertEquals('http', $req->protocol());
+        $this->assertEquals('/test', $req->path());
+        $this->assertEquals('HEAD', $req->method());
+        $this->assertEquals(['test' => true, 'k' => 'v'], $req->query());
     }
 
     public function testIp()
@@ -181,6 +194,9 @@ class RequestTest extends PHPUnit_Framework_TestCase
     public function testUrl()
     {
         $this->assertEquals('http://example.com:1234/users/comments/10', self::$req->url());
+
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => null, 'SERVER_NAME' => null, 'SERVER_ADDR' => '127.0.0.1']);
+        $this->assertEquals('http://127.0.0.1/', $req->url());
     }
 
     public function testPaths()
@@ -422,7 +438,15 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     public function testCookies()
     {
-        // TODO
+        $this->assertEquals(1234, self::$req->cookies('test'));
+
+        $expected = [
+            'test' => 1234,
+        ];
+
+        $this->assertEquals($expected, self::$req->cookies());
+
+        $this->assertNull(self::$req->cookies('non-existent'));
     }
 
     public function testFiles()
