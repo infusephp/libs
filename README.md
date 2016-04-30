@@ -13,7 +13,7 @@ These libraries are unit-tested, battle-tested, and can be used à la carte. Eac
 
 ## Infuse Framework
 
-An MVC framework, called Infuse Framework, has been built using *infuse/libs*. Check it out at [https://github.com/infusephp/framework](https://github.com/infusephp/framework).
+An MVC framework, called Infuse Framework, has been built using *infuse/libs*. Check it out at [https://github.com/infusephp/infuse](https://github.com/infusephp/infuse).
 
 ## Requirements
 
