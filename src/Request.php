@@ -15,11 +15,6 @@ class Request
     /**
      * @var array
      */
-    private $params;
-
-    /**
-     * @var array
-     */
     private $query;
 
     /**
@@ -81,6 +76,11 @@ class Request
      * @var array
      */
     private $paths;
+
+    /**
+     * @var array
+     */
+    private $params = [];
 
     /**
      * Creates a request from the PHP globals.
@@ -246,7 +246,6 @@ class Request
         $this->files = $files;
         $this->server = $server;
         $this->session = $session;
-        $this->params = [];
 
         // remove slash in front of requested url
         $this->server['REQUEST_URI'] = substr_replace(array_value($this->server, 'REQUEST_URI'), '', 0, 1);
@@ -255,35 +254,9 @@ class Request
         $this->basePath = '/';
 
         if (isset($this->server['DOCUMENT_URI'])) {
-            $docParts = explode('/', substr_replace($this->server['DOCUMENT_URI'], '', 0, 1));
-            $uriParts = explode('/', $this->server['REQUEST_URI']);
-
-            $basePaths = [];
-
-            // uriParts = uriParts - $docParts
-            // basePaths = docParts - uriParts
-            foreach ($uriParts as $key => $part) {
-                if (isset($docParts[$key]) && $docParts[$key] == $part) {
-                    $basePaths[] = $uriParts[$key];
-                    unset($uriParts[$key]);
-                }
-
-                if (strpos($part, '.php') !== false) {
-                    break;
-                }
-            }
-
-            // ignore a trailing "/"
-            end($uriParts);
-            $key = key($uriParts);
-            if (empty($uriParts[$key])) {
-                unset($uriParts[$key]);
-            }
-
-            // strip base path from REQUEST_URI
-            $this->server['REQUEST_URI'] = implode('/', $uriParts);
-
-            $this->basePath .= implode('/', $basePaths);
+            list($uri, $basePath) = $this->parseUri($this->server['DOCUMENT_URI'], $this->server['REQUEST_URI']);
+            $this->server['REQUEST_URI'] = $uri;
+            $this->basePath = $basePath;
         }
 
         // parse url
@@ -312,6 +285,8 @@ class Request
      * Sets the path for the request and parses it.
      *
      * @param string $path i.e. /users/10/comments
+     *
+     * @return self
      */
     public function setPath($path)
     {
@@ -326,6 +301,8 @@ class Request
         if ($this->paths[0] == '') {
             array_splice($this->paths, 0, 1);
         }
+
+        return $this;
     }
 
     /**
@@ -366,7 +343,7 @@ class Request
     /**
      * Gets the port associated with the request.
      *
-     * @param int port number
+     * @return int port number
      */
     public function port()
     {
@@ -432,7 +409,7 @@ class Request
     /**
      * Gets the complete url associated with the request.
      *
-     * @param string url
+     * @return string url
      */
     public function url()
     {
@@ -451,7 +428,9 @@ class Request
     /**
      * Returns each component of the requested path.
      *
-     * @return array paths
+     * @param int|false $index optional index to retrieve
+     *
+     * @return array|string paths
      */
     public function paths($index = false)
     {
@@ -469,11 +448,12 @@ class Request
     }
 
     /**
-     * Gets the base path associated with the request. i.e. /comments/10
+     * Gets the base path associated with the request.
+     *
      * Useful if the entry point to the request was not located in the root directory
      * i.e. /blog/index.php returns /blog or /index.php returns an empty string.
      *
-     * @param string base path
+     * @return string base path
      */
     public function basePath()
     {
@@ -483,7 +463,7 @@ class Request
     /**
      * Gets the method requested.
      *
-     * @param string method (i.e. GET, POST, DELETE, PUT, PATCH)
+     * @return string method (i.e. GET, POST, DELETE, PUT, PATCH)
      */
     public function method()
     {
@@ -493,7 +473,7 @@ class Request
     /**
      * Gets the content type the request was sent with.
      *
-     * @param string content type
+     * @return string content type
      */
     public function contentType()
     {
@@ -629,10 +609,14 @@ class Request
      * Adds parameters to the request.
      *
      * @param array $params parameters to add
+     *
+     * @return self
      */
     public function setParams($params = [])
     {
         $this->params = array_replace($this->params, (array) $params);
+
+        return $this;
     }
 
     /**
@@ -704,6 +688,8 @@ class Request
      *
      * @param array|string $key   key-value or just a key
      * @param mixed        $value value to set if not supplying key-value map in first argument
+     *
+     * @return self
      */
     public function setSession($key, $value = null)
     {
@@ -716,25 +702,80 @@ class Request
             $_SESSION[$key] = $value;
             $this->session[$key] = $value;
         }
+
+        return $this;
     }
 
     /**
      * Destroys the session for the request.
+     *
+     * @return self
      */
     public function destroySession()
     {
         $_SESSION = [];
         $this->session = [];
+
+        return $this;
     }
 
     ////////////////////////////////////
     // PRIVATE METHODS
     ////////////////////////////////////
 
-    private function parseHeaders($parameters)
+    /**
+     * Parses the document and request URI.
+     *
+     * @param string $documentUri
+     * @param string $requestUri
+     *
+     * @return array [uri, basePath]
+     */
+    private function parseUri($documentUri, $requestUri)
+    {
+        $docParts = explode('/', substr_replace($documentUri, '', 0, 1));
+        $uriParts = explode('/', $requestUri);
+
+        $basePaths = [];
+
+        // strip base path from REQUEST_URI
+        // uriParts = uriParts - $docParts
+        // basePaths = docParts - uriParts
+        foreach ($uriParts as $key => $part) {
+            if (isset($docParts[$key]) && $docParts[$key] == $part) {
+                $basePaths[] = $uriParts[$key];
+                unset($uriParts[$key]);
+            }
+
+            if (strpos($part, '.php') !== false) {
+                break;
+            }
+        }
+
+        // ignore a trailing "/"
+        end($uriParts);
+        $key = key($uriParts);
+        if (empty($uriParts[$key])) {
+            unset($uriParts[$key]);
+        }
+
+        $uri = implode('/', $uriParts);
+        $basePath = '/'.implode('/', $basePaths);
+
+        return [$uri, $basePath];
+    }
+
+    /**
+     * Parses the server parameters into headers.
+     *
+     * @param array $server
+     *
+     * @return array headers
+     */
+    private function parseHeaders(array $server)
     {
         $headers = [];
-        foreach ($parameters as $key => $value) {
+        foreach ($server as $key => $value) {
             if (0 === strpos($key, 'HTTP_')) {
                 $headers[substr($key, 5)] = $value;
             }
@@ -744,9 +785,9 @@ class Request
             }
         }
 
-        if (isset($parameters['PHP_AUTH_USER'])) {
-            $headers['PHP_AUTH_USER'] = $parameters['PHP_AUTH_USER'];
-            $headers['PHP_AUTH_PW'] = isset($parameters['PHP_AUTH_PW']) ? $parameters['PHP_AUTH_PW'] : '';
+        if (isset($server['PHP_AUTH_USER'])) {
+            $headers['PHP_AUTH_USER'] = $server['PHP_AUTH_USER'];
+            $headers['PHP_AUTH_PW'] = isset($server['PHP_AUTH_PW']) ? $server['PHP_AUTH_PW'] : '';
         } else {
             /*
             * php-cgi under Apache does not pass HTTP Basic user/pass to PHP by default
@@ -763,10 +804,10 @@ class Request
             */
 
             $authorizationHeader = null;
-            if (isset($parameters['HTTP_AUTHORIZATION'])) {
-                $authorizationHeader = $parameters['HTTP_AUTHORIZATION'];
-            } elseif (isset($parameters['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authorizationHeader = $parameters['REDIRECT_HTTP_AUTHORIZATION'];
+            if (isset($server['HTTP_AUTHORIZATION'])) {
+                $authorizationHeader = $server['HTTP_AUTHORIZATION'];
+            } elseif (isset($server['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $authorizationHeader = $server['REDIRECT_HTTP_AUTHORIZATION'];
             }
 
             // Decode AUTHORIZATION header into PHP_AUTH_USER and PHP_AUTH_PW when authorization header is basic
@@ -787,12 +828,20 @@ class Request
         return $headers;
     }
 
-    // Credit to Jurgens du Toit: http://jrgns.net/parse_http_accept_header/
-    private function parseAcceptHeader($acceptStr = '')
+    /**
+     * Parses an accept header string into types.
+     *
+     * Credit to Jurgens du Toit: http://jrgns.net/parse_http_accept_header/
+     *
+     * @param string $str
+     *
+     * @return array
+     */
+    private function parseAcceptHeader($str)
     {
         $return = [];
 
-        $types = explode(',', $acceptStr);
+        $types = explode(',', $str);
         $types = array_map('trim', $types);
         foreach ($types as $one_type) {
             $one_type = explode(';', $one_type);
@@ -817,6 +866,13 @@ class Request
         return $return;
     }
 
+    /**
+     * Parses accept header into options.
+     *
+     * @param array|string $type_options
+     *
+     * @return array [precedence, tokens]
+     */
     private function parseAcceptHeaderOptions($type_options)
     {
         $precedence = 1;
@@ -839,29 +895,37 @@ class Request
         return [$precedence, $tokens];
     }
 
-    private function compareMediaRanges($one, $two)
+    /**
+     * Compares media ranges (for sorting).
+     *
+     * @param array $a
+     * @param array $b
+     *
+     * @return int
+     */
+    private function compareMediaRanges(array $a, array $b)
     {
-        if ($one['main_type'] != '*' && $two['main_type'] != '*') {
-            if ($one['sub_type'] != '*' && $two['sub_type'] != '*') {
-                if ($one['precedence'] == $two['precedence']) {
-                    if (count($one['tokens']) == count($two['tokens'])) {
+        if ($a['main_type'] != '*' && $b['main_type'] != '*') {
+            if ($a['sub_type'] != '*' && $b['sub_type'] != '*') {
+                if ($a['precedence'] == $b['precedence']) {
+                    if (count($a['tokens']) == count($b['tokens'])) {
                         return 0;
-                    } elseif (count($one['tokens']) < count($two['tokens'])) {
+                    } elseif (count($a['tokens']) < count($b['tokens'])) {
                         return 1;
                     } else {
                         return -1;
                     }
-                } elseif ($one['precedence'] < $two['precedence']) {
+                } elseif ($a['precedence'] < $b['precedence']) {
                     return 1;
                 } else {
                     return -1;
                 }
-            } elseif ($one['sub_type'] == '*') {
+            } elseif ($a['sub_type'] == '*') {
                 return 1;
             } else {
                 return -1;
             }
-        } elseif ($one['main_type'] == '*') {
+        } elseif ($a['main_type'] == '*') {
             return 1;
         } else {
             return -1;
