@@ -124,6 +124,13 @@ class Locale
 
     /**
      * Alias for translate().
+     *
+     * @param string      $phrase
+     * @param array       $params   parameters to inject into phrase
+     * @param string      $locale   optional locale
+     * @param string|null $fallback optional fallback phrase
+     *
+     * @return string
      */
     public function t($phrase, array $params = [], $locale = false, $fallback = null)
     {
@@ -146,6 +153,12 @@ class Locale
 
     /**
      * Alias for pluaralize().
+     *
+     * @param int    $n        number in question
+     * @param string $singular singular string
+     * @param string $plural   plural string
+     *
+     * @return string
      */
     public function p($n, $singular, $plural)
     {
