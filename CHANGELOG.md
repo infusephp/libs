@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## 0.6.1 - 2016-08-15
 ### Changed
 - Support Symfony 3.
 - Update FastRoute to v1.0.
