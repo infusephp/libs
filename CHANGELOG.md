@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Support Symfony 3.
 - Update FastRoute to v0.8.
+- Updated currency codes.
 
 ## 0.6 - 2016-02-08
 ### Added

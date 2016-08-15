@@ -8,6 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse;
 
 class Locale
@@ -693,7 +694,7 @@ class Locale
         ],
         'AFN' => [
             'name' => 'Afghanistan Afghani',
-            'symbol' => '؋',
+            'symbol' => 'AFN',
         ],
         'ALL' => [
             'name' => 'Albania Lek',
@@ -951,7 +952,7 @@ class Locale
         ],
         'IRR' => [
             'name' => 'Iran Rial',
-            'symbol' => '﷼',
+            'symbol' => 'IRR',
         ],
         'ISK' => [
             'name' => 'Iceland Krona',
@@ -1122,7 +1123,7 @@ class Locale
         ],
         'OMR' => [
             'name' => 'Oman Rial',
-            'symbol' => '﷼',
+            'symbol' => 'OMR',
         ],
         'PAB' => [
             'name' => 'Panama Balboa',
@@ -1154,7 +1155,7 @@ class Locale
         ],
         'QAR' => [
             'name' => 'Qatar Riyal',
-            'symbol' => '﷼',
+            'symbol' => 'QAR',
         ],
         'RON' => [
             'name' => 'Romania New Leu',
@@ -1174,7 +1175,7 @@ class Locale
         ],
         'SAR' => [
             'name' => 'Saudi Arabia Riyal',
-            'symbol' => '﷼',
+            'symbol' => 'SAR',
         ],
         'SBD' => [
             'name' => 'Solomon Islands Dollar',
@@ -1330,7 +1331,7 @@ class Locale
         ],
         'YER' => [
             'name' => 'Yemen Rial',
-            'symbol' => '﷼',
+            'symbol' => 'YER',
         ],
         'ZAR' => [
             'name' => 'South Africa Rand',
