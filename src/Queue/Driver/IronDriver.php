@@ -31,7 +31,7 @@ class IronDriver implements DriverInterface
 
     public function dequeue(Queue $queue, $n)
     {
-        return $this->app['ironmq']->getMessages($queue->getName(), $n);
+        return $this->app['ironmq']->reserveMessages($queue->getName(), $n);
     }
 
     public function deleteMessage(Message $message)

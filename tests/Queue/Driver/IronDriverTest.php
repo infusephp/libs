@@ -61,7 +61,7 @@ class IronTest extends PHPUnit_Framework_TestCase
 
         $c = new Container();
         $iron = Mockery::mock('IronMQ');
-        $iron->shouldReceive('getMessages')
+        $iron->shouldReceive('reserveMessages')
              ->withArgs(['test_iron', 2])
              ->andReturn([$message, $message2])
              ->once();
