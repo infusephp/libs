@@ -47,12 +47,12 @@ class PHPViewEngineTest extends PHPUnit_Framework_TestCase
 
     public function testRenderView()
     {
-        $view = new View('test', ['to' => 'world']);
+        $view = new View('test', ['to' => 'world', 'escape' => '<script>console.log("hello");</script>']);
 
         self::$engine->setGlobalParameters([
             'to' => 'should_be_overwritten',
             'greeting' => 'Hello', ]);
 
-        $this->assertEquals("Hello, world!\n", self::$engine->renderView($view));
+        $this->assertEquals("Hello, world!\n&lt;script&gt;console.log(&quot;hello&quot;);&lt;/script&gt;", self::$engine->renderView($view));
     }
 }

@@ -65,12 +65,12 @@ class SmartyViewEngineTest extends PHPUnit_Framework_TestCase
 
     public function testRenderView()
     {
-        $view = new View('test', ['to' => 'world']);
+        $view = new View('test', ['to' => 'world', 'escape' => '<script>console.log("hello");</script>']);
 
         self::$engine->setGlobalParameters([
             'to' => 'should_be_overwritten',
             'greeting' => 'Hello', ]);
 
-        $this->assertEquals('Hello, world!', self::$engine->renderView($view));
+        $this->assertEquals("Hello, world!\n&amp;lt;script&amp;gt;console.log(&amp;quot;hello&amp;quot;);&amp;lt;/script&amp;gt;", self::$engine->renderView($view));
     }
 }

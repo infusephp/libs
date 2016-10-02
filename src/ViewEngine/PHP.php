@@ -8,6 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse\ViewEngine;
 
 use Infuse\ViewEngine;
@@ -55,13 +56,35 @@ class PHP extends ViewEngine
             $template .= self::EXTENSION;
         }
 
+        $template = $this->viewsDir.'/'.$template;
+
         // assign global and view parameters
         $parameters = array_replace($this->getGlobalParameters(), $view->getParameters());
+
+        // escape HTML special characters
+        foreach ($parameters as &$value) {
+            $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8', false);
+        }
+
+        return $this->render($parameters, $template);
+    }
+
+    /**
+     * Renders a PHP view.
+     *
+     * @param array  $parameters
+     * @param string $_phpTemplateFile location of template
+     *
+     * @return string rendered template
+     */
+    private function render(array $parameters, $_phpTemplateFile)
+    {
+        // make those variables available within this scope
         extract($parameters);
 
         // render the template with output buffering
         ob_start();
-        include $this->viewsDir.'/'.$template;
+        include $_phpTemplateFile;
         $renderedString = ob_get_contents();
         ob_end_clean();
 

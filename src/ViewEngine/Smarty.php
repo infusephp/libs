@@ -8,6 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse\ViewEngine;
 
 use Infuse\ViewEngine;
@@ -103,7 +104,11 @@ class Smarty extends ViewEngine
             $this->smarty->muteExpectedErrors();
             $this->smarty->setTemplateDir($this->viewsDir)
                          ->setCompileDir($this->compileDir)
-                         ->setCacheDir($this->cacheDir);
+                         ->setCacheDir($this->cacheDir)
+        // this escapes all template variables by wrapping them with:
+        // htmlspecialchars({$output}, ENT_QUOTES, SMARTY_RESOURCE_CHAR_SET)
+        // see: http://www.smarty.net/docs/en/variable.escape.html.tpl
+                         ->setEscapeHtml(true);
         }
 
         return $this->smarty;

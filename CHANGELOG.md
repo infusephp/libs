@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- View engines now have HTML escaping enabled by default
+
 ## 0.6.1 - 2016-08-15
 ### Changed
 - Support Symfony 3.
