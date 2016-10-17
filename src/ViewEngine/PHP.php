@@ -63,6 +63,10 @@ class PHP extends ViewEngine
 
         // escape HTML special characters
         foreach ($parameters as &$value) {
+            if (is_array($value) || is_object($value)) {
+                continue;
+            }
+
             $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8', false);
         }
 

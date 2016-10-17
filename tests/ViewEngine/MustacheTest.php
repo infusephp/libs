@@ -57,7 +57,10 @@ class MustacheViewEngineTest extends PHPUnit_Framework_TestCase
 
         self::$engine->setGlobalParameters([
             'to' => 'should_be_overwritten',
-            'greeting' => 'Hello', ]);
+            'greeting' => 'Hello',
+            'object' => new stdClass(),
+            'array' => [],
+        ]);
 
         $this->assertEquals("Hello, world!\n&lt;script&gt;console.log(&quot;hello&quot;);&lt;/script&gt;", self::$engine->renderView($view));
     }
