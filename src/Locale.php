@@ -926,6 +926,7 @@ class Locale
         ],
         'HTG' => [
             'name' => 'Haiti Gourde',
+            'symbol' => 'HTG',
         ],
         'HUF' => [
             'name' => 'Hungary Forint',
@@ -949,6 +950,7 @@ class Locale
         ],
         'IQD' => [
             'name' => 'Iraq Dinar',
+            'symbol' => 'IQD',
         ],
         'IRR' => [
             'name' => 'Iran Rial',
@@ -968,6 +970,7 @@ class Locale
         ],
         'JOD' => [
             'name' => 'Jordan Dinar',
+            'symbol' => 'JOD',
         ],
         'JPY' => [
             'name' => 'Japan Yen',
