@@ -2,9 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## 0.6.2 - 2016-10-17
 ### Changed
 - View engines now have HTML escaping enabled by default
+
+### Fixed
+- Added missing currency symbols
 
 ## 0.6.1 - 2016-08-15
 ### Changed
