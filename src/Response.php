@@ -350,7 +350,7 @@ class Response
         }
 
         // send status code
-        header('HTTP/'.$this->version.' '.$this->code.' '.self::$codes[$this->code], true, $this->code);
+        header('HTTP/'.$this->version.' '.$this->code.' '.array_value(self::$codes, $this->code), true, $this->code);
 
         // send other headers
         foreach ($this->headers as $header => $value) {
@@ -389,7 +389,7 @@ class Response
     public function sendBody()
     {
         if (empty($this->body)) {
-            $this->body = self::$codes[$this->code];
+            $this->body = array_value(self::$codes, $this->code);
         }
 
         echo $this->body;

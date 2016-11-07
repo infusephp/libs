@@ -8,6 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse;
 
 function headers_sent()
@@ -207,6 +208,21 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $res->sendCookies();
     }
 
+    public function testSendHeadersInvalidStatus()
+    {
+        self::$mock = \Mockery::mock('php');
+        self::$mock->shouldReceive('headers_sent')
+                   ->andReturn(false)
+                   ->once();
+        self::$mock->shouldReceive('header')
+                   ->withArgs(['HTTP/1.1 599 ', true, 599])
+                   ->once();
+
+        $res = new Response();
+        $res->setCode(599);
+        $res->sendHeaders();
+    }
+
     public function testSendBody()
     {
         self::$res->setBody('test');
@@ -233,6 +249,20 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         ob_end_clean();
 
         $this->assertEquals('OK', $output);
+    }
+
+    public function testSendBodyInvalidStatus()
+    {
+        self::$res->setBody('')->setCode(599);
+
+        ob_start();
+
+        $this->assertEquals(self::$res, self::$res->sendBody());
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('', $output);
     }
 
     public function testSend()

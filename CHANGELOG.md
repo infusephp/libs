@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Added missing HTTP status codes
 
+### Fixed
+- Gracefully handle sending unassigned HTTP status codes
+
 ## 0.6.2 - 2016-10-17
 ### Changed
 - View engines now have HTML escaping enabled by default
