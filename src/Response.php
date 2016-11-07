@@ -8,16 +8,20 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse;
 
 class Response
 {
     /**
+     * See https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml.
+     *
      * @staticvar array
      */
     public static $codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
+        102 => 'Processing',
         200 => 'OK',
         201 => 'Created',
         202 => 'Accepted',
@@ -25,6 +29,9 @@ class Response
         204 => 'No Content',
         205 => 'Reset Content',
         206 => 'Partial Content',
+        207 => 'Multi-Status',
+        208 => 'Already Reported',
+        226 => 'IM Used',
         300 => 'Multiple Choices',
         301 => 'Moved Permanently',
         302 => 'Found',
@@ -33,6 +40,7 @@ class Response
         305 => 'Use Proxy',
         306 => '(Unused)',
         307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect',
         400 => 'Bad Request',
         401 => 'Unauthorized',
         402 => 'Payment Required',
@@ -51,6 +59,14 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested Range Not Satisfiable',
         417 => 'Expectation Failed',
+        421 => 'Misdirected Request',
+        422 => 'Unprocessable Entity',
+        423 => 'Locked',
+        424 => 'Failed Dependency',
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required',
+        429 => 'Too Many Requests',
+        431 => 'Request Header Fields Too Large',
         451 => 'Unavailable For Legal Reasons',
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
@@ -58,6 +74,11 @@ class Response
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
+        506 => 'Variant Also Negotiates',
+        507 => 'Insufficient Storage',
+        508 => 'Loop Detected',
+        510 => 'Not Extended',
+        511 => 'Network Authentication Required',
     ];
 
     /**
