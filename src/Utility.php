@@ -8,6 +8,7 @@
  * @copyright 2015 Jared King
  * @license MIT
  */
+
 namespace Infuse;
 
 class Utility
@@ -197,9 +198,9 @@ class Utility
         foreach ($abbrevs as $exponent => $abbrev) {
             if ($number >= pow(10, $exponent)) {
                 $remainder = $number % pow(10, $exponent).' ';
-                $decimal = ($remainder > 0) ? round(round($remainder, $decimals) / pow(10, $exponent), $decimals) : '';
+                $decimal = ($remainder > 0) ? round(round($remainder, $decimals) / pow(10, $exponent), $decimals) : 0;
 
-                return intval($number / pow(10, $exponent)) + $decimal.$abbrev;
+                return (intval($number / pow(10, $exponent)) + $decimal).$abbrev;
             }
         }
 
