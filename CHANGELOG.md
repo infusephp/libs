@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+- Require PHP 5.6+
+
 ## 0.6.3 - 2016-11-07
 ### Fixed
 - Added missing HTTP status codes

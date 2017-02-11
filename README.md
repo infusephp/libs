@@ -17,7 +17,7 @@ An MVC framework, called Infuse Framework, has been built using *infuse/libs*. C
 
 ## Requirements
 
-- PHP 5.4+, PHP 7, or HHVM 3.3+
+- PHP 5.6+, PHP 7, or HHVM 3.3+
 
 ## Installation
 
