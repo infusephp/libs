@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Require PHP 5.6+
 
+### Fixed
+- `isXhr()` was not detecting the X-Requested-With header correctly
+
 ## 0.6.3 - 2016-11-07
 ### Fixed
 - Added missing HTTP status codes

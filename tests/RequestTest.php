@@ -364,8 +364,8 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $this->assertFalse(self::$req->isXhr());
 
-        $req = Request::create('/', 'GET', [], [], [], ['HTTP_X-REQUESTED-WITH' => 'XMLHttpRequest']);
-        $this->assertFalse($req->isXhr());
+        $req = Request::create('/', 'GET', [], [], [], ['HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest']);
+        $this->assertTrue($req->isXhr());
     }
 
     public function testIsNotApi()

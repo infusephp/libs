@@ -575,7 +575,7 @@ class Request
      */
     public function isXhr()
     {
-        return array_value($this->headers, 'X-Requested-With') == 'XMLHttpRequest';
+        return array_value($this->headers, 'X_REQUESTED_WITH') == 'XMLHttpRequest';
     }
 
     /**
