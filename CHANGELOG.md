@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+- Change Twig templating extension to `.twig`.
+
 ## 0.6.4 - 2017-04-08
 ### Changed
 - Require PHP 5.6+

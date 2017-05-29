@@ -53,7 +53,7 @@ class TwigViewEngineTest extends PHPUnit_Framework_TestCase
 
     public function testRenderView()
     {
-        $view = new View('test', [
+        $view = new View('test.html', [
             'to' => 'world',
             'escape' => '<script>console.log("hello");</script>',
             'object' => new stdClass(),

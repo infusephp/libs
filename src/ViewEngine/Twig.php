@@ -17,7 +17,7 @@ use Twig_Loader_Filesystem;
 
 class Twig extends ViewEngine
 {
-    const EXTENSION = '.html';
+    const EXTENSION = '.twig';
 
     /**
      * @var string
