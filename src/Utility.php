@@ -55,11 +55,13 @@ class Utility
     }
 
     /**
+     * @deprecated
+     *
      * Securely hashes a string, useful for passwords.
      *
      * @param string $password
      * @param string $salt
-     * @param int    $nonce    number used once
+     * @param string    $nonce    number used once
      *
      * @return string
      */
