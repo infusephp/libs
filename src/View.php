@@ -15,12 +15,12 @@ use Pimple\Container;
 class View
 {
     /**
-     * @staticvar \Pimple\Container
+     * @var \Pimple\Container
      */
     private static $container;
 
     /**
-     * @staticvar ViewEngine
+     * @var ViewEngine
      */
     private static $defaultEngine;
 

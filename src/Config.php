@@ -60,7 +60,7 @@ class Config
      * @param string $property dot value property name
      * @param string $value    value to set
      *
-     * @return self
+     * @return $this
      */
     public function set($property, $value)
     {

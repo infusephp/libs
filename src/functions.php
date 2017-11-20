@@ -42,6 +42,8 @@ function array_value(array $a = [], $k = '')
  * @param array  $a
  * @param string $key
  * @param mixed  $value
+ *
+ * @return mixed
  */
 function array_set(array &$a, $key, $value)
 {

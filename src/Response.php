@@ -16,7 +16,7 @@ class Response
     /**
      * See https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml.
      *
-     * @staticvar array
+     * @var array
      */
     public static $codes = [
         100 => 'Continue',
@@ -122,7 +122,7 @@ class Response
      *
      * @param string $index optional header to look up
      *
-     * @return string|null
+     * @return string|array|null
      */
     public function headers($index = null)
     {
@@ -135,7 +135,7 @@ class Response
      * @param string $header
      * @param string $value
      *
-     * @return self
+     * @return $this
      */
     public function setHeader($header, $value)
     {
@@ -167,7 +167,7 @@ class Response
      * @param bool   $secure
      * @param bool   $httponly
      *
-     * @return self
+     * @return $this
      */
     public function setCookie($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false)
     {
@@ -181,7 +181,7 @@ class Response
      *
      * @param string $version HTTP version
      *
-     * @return self
+     * @return $this
      */
     public function setVersion($version)
     {
@@ -205,7 +205,7 @@ class Response
      *
      * @param int $code
      *
-     * @return self
+     * @return $this
      */
     public function setCode($code)
     {
@@ -239,7 +239,7 @@ class Response
      *
      * @param string $contentType content type
      *
-     * @return self
+     * @return $this
      */
     public function setContentType($contentType)
     {
@@ -253,7 +253,7 @@ class Response
      *
      * @param string $body
      *
-     * @return self
+     * @return $this
      */
     public function setBody($body)
     {
@@ -277,7 +277,7 @@ class Response
      *
      * @param View $view view to render
      *
-     * @return self
+     * @return $this
      */
     public function render(View $view)
     {
@@ -289,7 +289,7 @@ class Response
      *
      * @param object|array $obj object to be encoded
      *
-     * @return self
+     * @return $this
      */
     public function json($obj)
     {
@@ -304,7 +304,7 @@ class Response
      * @param int     $code HTTP status code to send
      * @param Request $req  request object for getting requested host information
      *
-     * @return self
+     * @return $this
      */
     public function redirect($url, $code = 302, Request $req = null)
     {
@@ -340,7 +340,7 @@ class Response
     /**
      * Sends the headers to the client.
      *
-     * @return self
+     * @return $this
      */
     public function sendHeaders()
     {
@@ -363,7 +363,7 @@ class Response
     /**
      * Sends the cookies to the client.
      *
-     * @return self
+     * @return $this
      */
     public function sendCookies()
     {
@@ -384,7 +384,7 @@ class Response
     /**
      * Sends the content to the client.
      *
-     * @return self
+     * @return $this
      */
     public function sendBody()
     {
@@ -405,7 +405,7 @@ class Response
     /**
      * Sends the response to the client.
      *
-     * @return self
+     * @return $this
      */
     public function send()
     {

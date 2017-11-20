@@ -17,12 +17,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 class Queue
 {
     /**
-     * @staticvar DriverInterface
+     * @var DriverInterface
      */
     private static $driver;
 
     /**
-     * @staticvar \Symfony\Component\EventDispatcher\EventDispatcher
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher
      */
     private static $dispatcher;
 

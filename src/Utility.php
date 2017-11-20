@@ -33,6 +33,8 @@ class Utility
      * @param array  $a
      * @param string $key
      * @param mixed  $value
+     *
+     * @return mixed
      */
     public static function arraySet(array &$a, $key, $value)
     {

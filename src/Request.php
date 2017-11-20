@@ -286,7 +286,7 @@ class Request
      *
      * @param string $path i.e. /users/10/comments
      *
-     * @return self
+     * @return $this
      */
     public function setPath($path)
     {
@@ -610,7 +610,7 @@ class Request
      *
      * @param array $params parameters to add
      *
-     * @return self
+     * @return $this
      */
     public function setParams($params = [])
     {
@@ -689,7 +689,7 @@ class Request
      * @param array|string $key   key-value or just a key
      * @param mixed        $value value to set if not supplying key-value map in first argument
      *
-     * @return self
+     * @return $this
      */
     public function setSession($key, $value = null)
     {
@@ -709,7 +709,7 @@ class Request
     /**
      * Destroys the session for the request.
      *
-     * @return self
+     * @return $this
      */
     public function destroySession()
     {

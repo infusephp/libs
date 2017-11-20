@@ -49,7 +49,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function get($route, $handler)
     {
@@ -64,7 +64,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function post($route, $handler)
     {
@@ -79,7 +79,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function put($route, $handler)
     {
@@ -94,7 +94,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function delete($route, $handler)
     {
@@ -109,7 +109,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function patch($route, $handler)
     {
@@ -124,7 +124,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function options($route, $handler)
     {
@@ -140,7 +140,7 @@ class Router
      * @param string $route   path pattern
      * @param mixed  $handler route handler
      *
-     * @return self
+     * @return $this
      */
     public function map($method, $route, $handler)
     {
@@ -163,7 +163,7 @@ class Router
     /**
      * Builds a FastRoute dispatcher with the routing table.
      *
-     * @return \FastRoute\Dispatcher\GroupCountBased
+     * @return \FastRoute\Dispatcher
      */
     public function getDispatcher()
     {
@@ -178,6 +178,8 @@ class Router
 
     /**
      * Adds routes to the given collector.
+     *
+     * @param RouteCollector $r
      */
     public function buildRoutes(RouteCollector $r)
     {

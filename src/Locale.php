@@ -43,7 +43,7 @@ class Locale
      *
      * @param string $locale
      *
-     * @return self
+     * @return $this
      */
     public function setLocale($locale)
     {
@@ -70,7 +70,7 @@ class Locale
      *
      * @param string $dir
      *
-     * @return self
+     * @return $this
      */
     public function setLocaleDataDir($dir)
     {
@@ -244,7 +244,7 @@ class Locale
      *
      * @param string $locale
      *
-     * @return self
+     * @return $this
      */
     private function loadLocaleData($locale)
     {
@@ -264,7 +264,7 @@ class Locale
     }
 
     /**
-     * @staticvar $locales
+     * @var $locales
      *
      * List of locale codes
      */
@@ -481,7 +481,7 @@ class Locale
         'zu-ZA', ];
 
     /**
-     * @staticvar $countries
+     * @var $countries
      *
      * List of countries
      */
@@ -683,7 +683,7 @@ class Locale
     );
 
     /**
-     * @staticvar $currencies
+     * @var $currencies
      *
      * List of currency codes, names, and symbols
      **/
