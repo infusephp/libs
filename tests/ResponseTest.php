@@ -251,6 +251,21 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('OK', $output);
     }
 
+    public function testSendBody204()
+    {
+        $res = new Response();
+        $res->setCode(204);
+
+        ob_start();
+
+        $res->sendBody();
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('', $output);
+    }
+
     public function testSendBodyInvalidStatus()
     {
         self::$res->setBody('')->setCode(599);

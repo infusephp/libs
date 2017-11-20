@@ -388,6 +388,11 @@ class Response
      */
     public function sendBody()
     {
+        // 204 No Content should have an empty body
+        if ($this->code == 204) {
+            return $this;
+        }
+
         if (empty($this->body)) {
             $this->body = array_value(self::$codes, $this->code);
         }

@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-## Changed
+### Changed
 - Deprecated `Utility::encryptPassword()`
+
+### Fixed
+- Do not send a body with 204 response code
 
 ## 0.6.5 - 2017-08-04
 ### Changed
@@ -20,8 +23,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.6.3 - 2016-11-07
 ### Fixed
 - Added missing HTTP status codes
-
-### Fixed
 - Gracefully handle sending unassigned HTTP status codes
 
 ## 0.6.2 - 2016-10-17
