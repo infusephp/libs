@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 - Deprecated `Utility::encryptPassword()`
+- Support Symfony 4.
 
 ### Fixed
 - Do not send a body with 204 response code
