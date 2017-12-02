@@ -857,7 +857,8 @@ class Request
                     'main_type' => $main_type,
                     'sub_type' => $sub_type,
                     'precedence' => (float) $precedence,
-                    'tokens' => $tokens, ];
+                    'tokens' => $tokens,
+                ];
             }
         }
 
@@ -908,7 +909,9 @@ class Request
         if ($a['main_type'] != '*' && $b['main_type'] != '*') {
             if ($a['sub_type'] != '*' && $b['sub_type'] != '*') {
                 if ($a['precedence'] == $b['precedence']) {
-                    if (count($a['tokens']) == count($b['tokens'])) {
+                    if (!is_array($a['tokens']) || !is_array($b['tokens'])) {
+                        return -1;
+                    } if (count($a['tokens']) == count($b['tokens'])) {
                         return 0;
                     } elseif (count($a['tokens']) < count($b['tokens'])) {
                         return 1;
