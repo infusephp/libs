@@ -57,22 +57,6 @@ class Utility
     }
 
     /**
-     * @deprecated
-     *
-     * Securely hashes a string, useful for passwords.
-     *
-     * @param string $password
-     * @param string $salt
-     * @param string    $nonce    number used once
-     *
-     * @return string
-     */
-    public static function encryptPassword($password, $salt = '', $nonce = '')
-    {
-        return hash_hmac('sha512', $password.$nonce, $salt);
-    }
-
-    /**
      * Generates a unique 32-digit GUID. i.e. 12345678-1234-5678-123456789012.
      *
      * @param bool $dashes whether or not to separate guid with dashes

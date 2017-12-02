@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Require PHP 7.0+
 - Drop support for HHVM
 
+### Removed
+- Removed `Utility::encryptPassword()`
+
 ## 0.6.6 - 2017-11-19
 ### Changed
 - Deprecated `Utility::encryptPassword()`

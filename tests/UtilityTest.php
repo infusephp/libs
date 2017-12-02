@@ -84,24 +84,6 @@ class UtilityTest extends MockeryTestCase
         $this->assertEquals($expected, array_dot($a));
     }
 
-    public function testEncryptPassword()
-    {
-        $password = 'most-secure-p4ssw0rd ever';
-
-        $test = [
-            $password,
-            Utility::encryptPassword($password, 'salt should not be empty'),
-            Utility::encryptPassword($password, 'this is our salt'),
-            Utility::encryptPassword($password, 'this is our salt', 123456), ];
-
-        // test each combination once to ensure they are not equal
-        for ($i = 0; $i < count($test); ++$i) {
-            for ($j = $i + 1; $j < count($test); ++$j) {
-                $this->assertTrue($test[$i] != $test[$j]);
-            }
-        }
-    }
-
     public function testGuid()
     {
         $guid1 = Utility::guid();
