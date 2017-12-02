@@ -10,8 +10,9 @@
  */
 use Infuse\ViewEngine\Twig;
 use Infuse\View;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class TwigViewEngineTest extends PHPUnit_Framework_TestCase
+class TwigViewEngineTest extends MockeryTestCase
 {
     public static $engine;
 

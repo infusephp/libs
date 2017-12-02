@@ -9,8 +9,9 @@
  * @license MIT
  */
 use Infuse\Config;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class ConfigTest extends PHPUnit_Framework_TestCase
+class ConfigTest extends MockeryTestCase
 {
     public function testAll()
     {

@@ -10,8 +10,9 @@
  */
 use Infuse\Queue;
 use Infuse\Queue\Message;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class MessageTest extends PHPUnit_Framework_TestCase
+class MessageTest extends MockeryTestCase
 {
     public function testGetQueue()
     {

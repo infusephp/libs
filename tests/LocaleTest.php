@@ -9,8 +9,9 @@
  * @license MIT
  */
 use Infuse\Locale;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class LocaleTest extends PHPUnit_Framework_TestCase
+class LocaleTest extends MockeryTestCase
 {
     public static $locale;
 

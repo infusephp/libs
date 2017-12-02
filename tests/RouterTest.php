@@ -10,8 +10,9 @@
  */
 use Infuse\Router;
 use Pimple\Container;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class RouterTest extends PHPUnit_Framework_TestCase
+class RouterTest extends MockeryTestCase
 {
     public static $app;
 

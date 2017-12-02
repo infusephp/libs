@@ -11,8 +11,9 @@
 use Infuse\View;
 use Infuse\ViewEngine;
 use Pimple\Container;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class ViewTest extends PHPUnit_Framework_TestCase
+class ViewTest extends MockeryTestCase
 {
     public static $viewsDir;
 

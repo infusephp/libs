@@ -10,8 +10,9 @@
  */
 use Infuse\Queue;
 use Infuse\Queue\Message;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class QueueTest extends PHPUnit_Framework_TestCase
+class QueueTest extends MockeryTestCase
 {
     public static $heard;
 

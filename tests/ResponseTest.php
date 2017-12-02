@@ -11,6 +11,8 @@
 
 namespace Infuse;
 
+use Mockery\Adapter\Phpunit\MockeryTestCase;
+
 function headers_sent()
 {
     return ResponseTest::$mock ? ResponseTest::$mock->headers_sent() : \headers_sent();
@@ -31,7 +33,7 @@ function fastcgi_finish_request()
     return ResponseTest::$mock ? ResponseTest::$mock->fastcgi_finish_request() : \fastcgi_finish_request();
 }
 
-class ResponseTest extends \PHPUnit_Framework_TestCase
+class ResponseTest extends MockeryTestCase
 {
     public static $res;
     public static $mock;

@@ -9,8 +9,9 @@
  * @license MIT
  */
 use Infuse\Request;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class RequestTest extends PHPUnit_Framework_TestCase
+class RequestTest extends MockeryTestCase
 {
     public static $req;
 

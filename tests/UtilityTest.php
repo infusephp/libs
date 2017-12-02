@@ -9,8 +9,9 @@
  * @license MIT
  */
 use Infuse\Utility;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class UtilityTest extends PHPUnit_Framework_TestCase
+class UtilityTest extends MockeryTestCase
 {
     public function testArrayValue()
     {

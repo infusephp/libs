@@ -10,8 +10,9 @@
  */
 use Infuse\ViewEngine\Smarty;
 use Infuse\View;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class SmartyViewEngineTest extends PHPUnit_Framework_TestCase
+class SmartyViewEngineTest extends MockeryTestCase
 {
     public static $engine;
 

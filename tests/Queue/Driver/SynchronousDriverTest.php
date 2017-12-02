@@ -10,8 +10,9 @@
  */
 use Infuse\Queue;
 use Infuse\Queue\Driver\SynchronousDriver;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class SynchronousDriverTest extends PHPUnit_Framework_TestCase
+class SynchronousDriverTest extends MockeryTestCase
 {
     public static $heard;
     public static $driver;

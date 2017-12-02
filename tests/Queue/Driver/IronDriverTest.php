@@ -13,8 +13,9 @@ use Infuse\Queue\Driver\IronDriver;
 use Infuse\Queue\Message;
 use Infuse\Request;
 use Pimple\Container;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class IronTest extends PHPUnit_Framework_TestCase
+class IronTest extends MockeryTestCase
 {
     public function testEnqueue()
     {

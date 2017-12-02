@@ -10,8 +10,9 @@
  */
 use Infuse\ViewEngine\PHP;
 use Infuse\View;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class PHPViewEngineTest extends PHPUnit_Framework_TestCase
+class PHPViewEngineTest extends MockeryTestCase
 {
     public static $engine;
 
