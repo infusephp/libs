@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 - Require PHP 7.0+
+- Drop support for HHVM
 
 ## 0.6.6 - 2017-11-19
 ### Changed
