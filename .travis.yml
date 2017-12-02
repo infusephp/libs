@@ -1,21 +1,22 @@
 language: php
 php:
-    - 7.1
-    - 7.0
-    - hhvm
+  - 7.2
+  - 7.1
+  - 7.0
+  - hhvm
 
 dist: trusty
 sudo: required
 
 before_script:
-    - composer install
-    - mkdir -p build/logs
+  - composer install
+  - mkdir -p build/logs
 
 script:
-    - vendor/bin/phpunit
+  - vendor/bin/phpunit
 
 after_script:
-    - vendor/bin/coveralls
+  - vendor/bin/coveralls
 
 notifications:
-    email: false
+  email: false
