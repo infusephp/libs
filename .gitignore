@@ -10,3 +10,4 @@ Desktop.ini
 /temp
 /tests/routes.cache
 /.idea
+/phpunit.xml

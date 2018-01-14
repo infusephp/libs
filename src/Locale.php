@@ -854,7 +854,7 @@ class Locale
         ],
         'EGP' => [
             'name' => 'Egypt Pound',
-            'symbol' => '£',
+            'symbol' => 'E£',
         ],
         'ERN' => [
             'name' => 'Eritrea Nakfa',
