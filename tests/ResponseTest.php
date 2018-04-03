@@ -174,7 +174,7 @@ class ResponseTest extends MockeryTestCase
                    ->withArgs(['HTTP/1.0 401 Unauthorized', true, 401])
                    ->once();
         self::$mock->shouldReceive('header')
-                   ->withArgs(['Content-type: application/json; charset=utf-8', false, 401])
+                   ->withArgs(['Content-Type: application/json; charset=utf-8', false, 401])
                    ->once();
         self::$mock->shouldReceive('header')
                    ->withArgs(['Test: hello', false, 401])

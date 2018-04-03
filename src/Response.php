@@ -245,7 +245,7 @@ class Response
     {
         $this->contentType = $contentType;
 
-        return $this->setHeader('Content-type', $contentType.'; charset=utf-8');
+        return $this->setHeader('Content-Type', $contentType.'; charset=utf-8');
     }
 
     /**
