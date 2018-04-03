@@ -393,10 +393,6 @@ class Response
             return $this;
         }
 
-        if (empty($this->body)) {
-            $this->body = array_value(self::$codes, $this->code);
-        }
-
         echo $this->body;
 
         return $this;

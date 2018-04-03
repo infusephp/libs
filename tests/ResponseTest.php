@@ -250,7 +250,7 @@ class ResponseTest extends MockeryTestCase
         $output = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals('OK', $output);
+        $this->assertEquals('', $output);
     }
 
     public function testSendBody204()
