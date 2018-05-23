@@ -1340,6 +1340,10 @@ class Locale
             'name' => 'South Africa Rand',
             'symbol' => 'R',
         ],
+        'ZMW' => [
+            'name' => 'Zambia Kwacha',
+            'symbol' => 'ZK',
+        ],
         'ZWD' => [
             'name' => 'Zimbabwe Dollar',
             'symbol' => 'Z$',
