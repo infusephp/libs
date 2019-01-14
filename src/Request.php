@@ -274,10 +274,17 @@ class Request
         // accept language header
         $this->languages = $this->parseAcceptHeader(array_value($this->headers, 'ACCEPT_LANGUAGE'));
 
-        // PUT, PATCH, and DELETE requests can come through POST
-        if ($this->method() == 'POST' &&
-            in_array($this->request('method'), ['PUT', 'PATCH', 'DELETE'])) {
-            $this->server['REQUEST_METHOD'] = $this->request('method');
+        // If the method is POST and the X-HTTP-Method-Override
+        // header is set then use that value as the request method.
+        //
+        // Or, PUT, PATCH, and DELETE requests can come through POST
+        // as the "method" request parameter.
+        if ($this->method() == 'POST') {
+            if ($method = $this->headers('X_HTTP_METHOD_OVERRIDE')) {
+                $this->server['REQUEST_METHOD'] = strtoupper($method);
+            } elseif (in_array($this->request('method'), ['PUT', 'PATCH', 'DELETE'])) {
+                $this->server['REQUEST_METHOD'] = strtoupper($this->request('method'));
+            }
         }
     }
 

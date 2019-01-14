@@ -261,6 +261,15 @@ class RequestTest extends MockeryTestCase
         $this->assertEquals('PUT', $req->method());
     }
 
+    public function testMethodFromXHttpMethodOverrideHeader()
+    {
+        $req = Request::create('/', 'POST', [], [], [], ['HTTP_X_HTTP_METHOD_OVERRIDE' => 'DELETE']);
+        $this->assertEquals('DELETE', $req->method());
+
+        $req = Request::create('/', 'POST', [], [], [], ['HTTP_X_HTTP_METHOD_OVERRIDE' => 'PUT']);
+        $this->assertEquals('PUT', $req->method());
+    }
+
     public function testContentType()
     {
         $this->assertEquals('application/json', self::$req->contentType());
