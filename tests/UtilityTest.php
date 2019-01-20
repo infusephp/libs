@@ -172,12 +172,13 @@ class UtilityTest extends MockeryTestCase
 
     public function testTimeUntil()
     {
-        $this->assertEquals('10 seconds', Utility::timeUntil(strtotime('+10 seconds')));
-        $this->assertEquals('5 minutes', Utility::timeUntil(strtotime('+5 minutes')));
-        $this->assertEquals('1 day', Utility::timeUntil(strtotime('+1 day')));
-        $this->assertEquals('1 week', Utility::timeUntil(strtotime('+1 week')));
-        $this->assertEquals('1 month', Utility::timeUntil(strtotime('+1 month')));
-        $this->assertEquals('1 year', Utility::timeUntil(strtotime('+ 1 year')));
+        // sometimes tests can run a little slow, hence the ranges
+        $this->assertTrue(in_array(Utility::timeUntil(strtotime('+10 seconds')), ['9 seconds', '10 seconds']));
+        $this->assertTrue(in_array(Utility::timeUntil(strtotime('+5 minutes')), ['4 minutes', '5 minutes']));
+        $this->assertEquals('1 day', Utility::timeUntil(strtotime('+1 day') + 60));
+        $this->assertEquals('1 week', Utility::timeUntil(strtotime('+1 week') + 60));
+        $this->assertEquals('1 month', Utility::timeUntil(strtotime('+1 month') + 60));
+        $this->assertEquals('1 year', Utility::timeUntil(strtotime('+ 1 year') + 60));
 
         $this->assertEquals('1 day, 1 minute, 40 seconds', Utility::timeUntil(strtotime('+86500 seconds'), true));
     }
