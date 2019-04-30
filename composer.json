@@ -33,6 +33,6 @@
 		"smarty/smarty": ">=v3.1.19",
 		"mockery/mockery": "~1.0",
 		"mustache/mustache": "2.7.0",
-		"twig/twig": "~1.0"
+		"twig/twig": "~2.7"
 	}
 }

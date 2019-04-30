@@ -12,8 +12,8 @@ namespace Infuse\ViewEngine;
 
 use Infuse\ViewEngine;
 use Infuse\View;
-use Twig_Environment;
-use Twig_Loader_Filesystem;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 class Twig extends ViewEngine
 {
@@ -25,7 +25,7 @@ class Twig extends ViewEngine
     private $viewsDir = 'views';
 
     /**
-     * @var Twig_Environment
+     * @var Environment
      */
     private $twig;
 
@@ -79,13 +79,13 @@ class Twig extends ViewEngine
     /**
      * Gets (and creates) a new Twig instance.
      *
-     * @return Twig_Environment
+     * @return Environment
      */
     public function twig()
     {
         if (!$this->twig) {
-            $loader = new Twig_Loader_Filesystem($this->viewsDir);
-            $this->twig = new Twig_Environment($loader, $this->twigConfig);
+            $loader = new FilesystemLoader($this->viewsDir);
+            $this->twig = new Environment($loader, $this->twigConfig);
         }
 
         return $this->twig;

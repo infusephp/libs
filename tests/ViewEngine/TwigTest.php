@@ -11,6 +11,7 @@
 use Infuse\ViewEngine\Twig;
 use Infuse\View;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
+use Twig\Environment;
 
 class TwigViewEngineTest extends MockeryTestCase
 {
@@ -49,7 +50,7 @@ class TwigViewEngineTest extends MockeryTestCase
     public function testTwig()
     {
         $engine = new Twig(__DIR__.'/views');
-        $this->assertInstanceOf('Twig_Environment', $engine->twig());
+        $this->assertInstanceOf(Environment::class, $engine->twig());
     }
 
     public function testRenderView()
