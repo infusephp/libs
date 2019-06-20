@@ -3,7 +3,7 @@
 /**
  * @author Jared King <j@jaredtking.com>
  *
- * @link http://jaredtking.com
+ * @see http://jaredtking.com
  *
  * @copyright 2015 Jared King
  * @license MIT
@@ -180,7 +180,10 @@ class UtilityTest extends MockeryTestCase
         $this->assertEquals('1 month', Utility::timeUntil(strtotime('+1 month') + 60));
         $this->assertEquals('1 year', Utility::timeUntil(strtotime('+ 1 year') + 60));
 
-        $this->assertEquals('1 day, 1 minute, 40 seconds', Utility::timeUntil(strtotime('+86500 seconds'), true));
+        $now = '1560999241';
+        $timestamp = '1561085741'; // 86500 seconds later
+
+        $this->assertEquals('1 day, 1 minute, 40 seconds', Utility::timeUntil($timestamp, true, $now));
     }
 
     public function testUnixToDb()

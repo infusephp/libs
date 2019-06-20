@@ -283,12 +283,17 @@ class Utility
      *
      * @param int  $timestamp timestamp
      * @param bool $full      true: time ago has every granularity, false: time ago has biggest granularity only
+     * @param int|null $currentTime
      *
      * @return string computed time until
      */
-    public static function timeUntil($timestamp, $full = false)
+    public static function timeUntil($timestamp, $full = false, $currentTime = null)
     {
         $now = new \DateTime();
+        if ($currentTime) {
+            $now->setTimestamp($currentTime);
+        }
+
         $then = new \DateTime();
         $then->setTimestamp($timestamp);
 
