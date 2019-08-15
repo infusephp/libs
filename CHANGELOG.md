@@ -2,20 +2,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 1.1 - 2019-08-15
-### Added
-- Support the `X-HTTP-Method-Override` header.
-
-### Fixed
-- No longer send a response body when one has not been supplied.
-- Stop using deprecated Twig classes and switch to namespaces (Twig 2.7+)
-
+## 1.2 - 2019-08-15
 ### Changed
 - satooshi/php-coveralls replaced with to php-coveralls/php-coveralls package.
 - Stop using deprecated symfony/event-dispatcher 4.2 and switch to 4.3
 
 ### Removed
 - PHP 7.0 support
+
+## 1.1 - 2019-06-12
+### Added
+- Support the `X-HTTP-Method-Override` header.
+
+### Fixed
+- No longer send a response body when one has not been supplied.
+- Stop using deprecated Twig classes and switch to namespaces (Twig 2.7+)
 
 ## 1.0 - 2017-12-02
 ### Changed
