@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 1.1 - 2019-08-15
 ### Added
 - Support the `X-HTTP-Method-Override` header.
 
@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Stop using deprecated Twig classes and switch to namespaces (Twig 2.7+)
 
 ### Changed
-- satooshi/php-coveralls replaced with to php-coveralls/php-coveralls pachage.
+- satooshi/php-coveralls replaced with to php-coveralls/php-coveralls package.
 - Stop using deprecated symfony/event-dispatcher 4.2 and switch to 4.3
 
 ### Removed
