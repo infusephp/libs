@@ -10,6 +10,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - No longer send a response body when one has not been supplied.
 - Stop using deprecated Twig classes and switch to namespaces (Twig 2.7+)
 
+### Changed
+- satooshi/php-coveralls replaced with to php-coveralls/php-coveralls pachage.
+- Stop using deprecated symfony/event-dispatcher 4.2 and switch to 4.3
+
+### Removed
+- PHP 7.0 support
+
 ## 1.0 - 2017-12-02
 ### Changed
 - Require PHP 7.0+

@@ -126,7 +126,7 @@ class Queue
      */
     public static function receiveMessage(Message $message)
     {
-        return self::getDispatcher()->dispatch($message->getQueue()->getName(), $message);
+        return self::getDispatcher()->dispatch($message, $message->getQueue()->getName());
     }
 
     /**
