@@ -21,7 +21,7 @@
         "files": ["src/functions.php"]
     },
 	"require": {
-		"php": ">=7.0.0",
+		"php": ">=7.1.0",
 		"pimple/pimple": "~3.0",
 		"symfony/event-dispatcher": "^4.3",
 		"nikic/fast-route": "1.0.*"
