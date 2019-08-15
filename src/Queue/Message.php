@@ -3,7 +3,7 @@
 namespace Infuse\Queue;
 
 use Infuse\Queue;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class Message extends Event
 {
