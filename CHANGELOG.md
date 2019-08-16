@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+- Updated currency codes.
+
 ## 1.2 - 2019-08-15
 ### Changed
 - satooshi/php-coveralls replaced with to php-coveralls/php-coveralls package.

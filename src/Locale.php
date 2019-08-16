@@ -3,7 +3,7 @@
 /**
  * @author Jared King <j@jaredtking.com>
  *
- * @link http://jaredtking.com
+ * @see http://jaredtking.com
  *
  * @copyright 2015 Jared King
  * @license MIT
@@ -107,7 +107,7 @@ class Locale
             $translatedPhrase = $fallback;
         }
 
-        if ($translatedPhrase != null) {
+        if (null != $translatedPhrase) {
             // inject parameters into phrase
             if (count($params) > 0) {
                 foreach ($params as $param => $paramValue) {
@@ -149,7 +149,7 @@ class Locale
      */
     public function pluralize($n, $singular, $plural)
     {
-        return ($n == 1) ? $singular : $plural;
+        return (1 == $n) ? $singular : $plural;
     }
 
     /**
@@ -264,7 +264,7 @@ class Locale
     }
 
     /**
-     * @var $locales
+     * @var
      *
      * List of locale codes
      */
@@ -481,11 +481,11 @@ class Locale
         'zu-ZA', ];
 
     /**
-     * @var $countries
+     * @var
      *
      * List of countries
      */
-    public static $countries = array(
+    public static $countries = [
         'Afghanistan',
         'Albania',
         'Algeria',
@@ -680,10 +680,10 @@ class Locale
         'Yemen',
         'Zambia',
         'Zimbabwe',
-    );
+    ];
 
     /**
-     * @var $currencies
+     * @var
      *
      * List of currency codes, names, and symbols
      **/
@@ -783,6 +783,10 @@ class Locale
         'BWP' => [
             'name' => 'Botswana Pula',
             'symbol' => 'P',
+        ],
+        'BYN' => [
+            'name' => 'Belarusian Ruble',
+            'symbol' => 'Br',
         ],
         'BYR' => [
             'name' => 'Belarus Ruble',
